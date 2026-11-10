@@ -1,0 +1,164 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:root {
+  --nol-docs-brand-mark: #000000;
+  scroll-padding-block-start: var(--nol-docs-header-height, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-nol-theme-mode="Light"]) {
+    --nol-docs-brand-mark: #FFFFFF;
+  }
+}
+
+:root[data-nol-theme-mode="Dark"] {
+  --nol-docs-brand-mark: #FFFFFF;
+}
+
+body {
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-docs-page {
+  display: grid;
+  gap: var(--nol-space-6);
+  min-width: 0;
+  max-width: 60rem;
+}
+
+.nol-docs-page-title {
+  margin: 0;
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-heading);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-heading);
+}
+
+.nol-docs-section {
+  display: grid;
+  gap: var(--nol-space-3);
+  min-width: 0;
+}
+
+.nol-docs-section-title {
+  margin: 0;
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-title);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-title);
+}
+
+.nol-docs-subsection-title {
+  margin: 0;
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-panel);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-docs-text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.nol-docs-page code,
+.nol-docs-page kbd,
+.nol-docs-code {
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  overflow-wrap: anywhere;
+}
+
+.nol-docs-code {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.nol-docs-table-holder {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.nol-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nol-docs-table :where(th, td) {
+  padding: var(--nol-space-1) var(--nol-space-2);
+  border: var(--nol-border-width) solid var(--nol-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.nol-docs-table :is(th, td),
+.nol-docs-table :is(th, td) *,
+.nol-docs-page .nol-markdown-table :is(th, td),
+.nol-docs-page .nol-markdown-table :is(th, td) * {
+  overflow-wrap: normal;
+}
+
+.nol-docs-table kbd,
+.nol-docs-table th[scope="row"] code,
+.nol-docs-page .nol-markdown-table code,
+.nol-docs-type-part {
+  white-space: nowrap;
+}
+
+.nol-docs-table th {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}
+
+nol-markdown-view.nol-docs-markdown {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+@media (width < 48rem) {
+  .nol-docs-stacked-table,
+  .nol-docs-stacked-table tbody {
+    display: block;
+  }
+
+  .nol-docs-stacked-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .nol-docs-stacked-table tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--nol-space-1) var(--nol-space-3);
+    padding-block: var(--nol-space-2);
+    border-block-end: var(--nol-border-width) solid var(--nol-border);
+  }
+
+  .nol-docs-stacked-table :is(th, td) {
+    min-width: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .nol-docs-stacked-table td:last-child {
+    flex: 1 0 100%;
+  }
+
+  .nol-docs-stacked-table td[data-label]::before {
+    content: attr(data-label) " " / "";
+    color: var(--nol-text-muted);
+  }
+}

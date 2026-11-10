@@ -1,0 +1,218 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nol-space-1);
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--nol-button-height);
+  padding: 0 var(--nol-button-padding);
+  border: var(--nol-border-width) solid var(--nol-button-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-button);
+  color: var(--nol-button-text);
+  font: inherit;
+  text-decoration: none;
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+  white-space: nowrap;
+}
+
+:where(:host) {
+  margin: 0;
+}
+
+.nol-button-icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.nol-button-icon:empty {
+  display: none;
+}
+
+:host(:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-button-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+:host(.nol-button-danger) {
+  background-color: var(--nol-error);
+  color: var(--nol-button-danger-text);
+}
+
+:host(.nol-button-danger:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-button-danger-hover);
+}
+
+:host(.nol-button-secondary) {
+  background-color: var(--nol-button-secondary);
+  color: var(--nol-button-secondary-text);
+}
+
+:host(.nol-button-secondary:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-button-secondary-hover);
+}
+
+:host(.nol-button-text) {
+  width: calc-size(auto, max(4rem, size));
+  border: 0;
+  background-color: transparent;
+  color: var(--nol-text);
+}
+
+:host(.nol-button-text:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-toolbar-hover);
+}
+
+:host(:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * 2);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+:host(:is(:disabled, [aria-disabled="true"])) {
+  opacity: 0.5;
+  cursor: default;
+
+  @media (forced-colors: active) {
+    border-color: GrayText;
+    color: GrayText;
+    opacity: 1;
+  }
+}
+
+:host(.nol-button-text:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline-offset: calc(var(--nol-border-width) * -1);
+}
+
+:host(.nol-button-text:is(:disabled, [aria-disabled="true"])) {
+  opacity: 0.4;
+
+  @media (forced-colors: active) {
+    opacity: 1;
+  }
+}
+
+:host(.nol-button-overlay) {
+  border: var(--nol-border-width) solid transparent;
+  border-radius: calc(var(--nol-button-height) / 2);
+  background-color: var(--nol-overlay);
+  color: var(--nol-overlay-text);
+}
+
+:host(.nol-button-overlay:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background: linear-gradient(var(--nol-toolbar-hover), var(--nol-toolbar-hover)), var(--nol-overlay);
+}
+
+:host(.nol-button-overlay:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline-offset: calc(var(--nol-border-width) * 2);
+}
+
+:host(.nol-button-overlay:is(:disabled, [aria-disabled="true"])) {
+  opacity: 0.5;
+
+  @media (forced-colors: active) {
+    opacity: 1;
+  }
+}
+
+@media (forced-colors: none) {
+  :host(.nol-button-backdrop) {
+    background-color: var(--nol-overlay-control);
+    color: var(--nol-overlay-control-text);
+  }
+
+  :host(.nol-button-backdrop:is(:disabled, [aria-disabled="true"])) {
+    opacity: 0.35;
+  }
+
+  :host(.nol-button-backdrop:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+    background: linear-gradient(var(--nol-overlay-control-hover), var(--nol-overlay-control-hover)), var(--nol-overlay-control);
+  }
+}
+
+@media (forced-colors: active) {
+  :host(.nol-button-overlay) {
+    border-color: ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+  }
+
+  :host(.nol-button-overlay:is(:disabled, [aria-disabled="true"])) {
+    border-color: GrayText;
+    color: GrayText;
+  }
+}
+
+:host(.nol-button-outlined) {
+  min-height: 0;
+  padding: var(--nol-space-1) var(--nol-button-padding);
+  border-color: var(--nol-border);
+  background-color: transparent;
+  color: var(--nol-text-muted);
+}
+
+:host(.nol-button-outlined) .nol-button-icon {
+  font-size: var(--nol-icon);
+}
+
+:host(.nol-button-outlined:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: transparent;
+}
+
+@media (forced-colors: active) {
+  :host(.nol-button-outlined) {
+    border-color: ButtonText;
+    color: ButtonText;
+  }
+
+  :host(.nol-button-outlined:is(:disabled, [aria-disabled="true"])) {
+    border-color: GrayText;
+    color: GrayText;
+  }
+}
+
+:host(.nol-button-compact) {
+  min-height: var(--nol-button-compact-height);
+}
+
+:host(.nol-button-compact.nol-button-overlay) {
+  border-radius: calc(var(--nol-button-compact-height) / 2);
+}
+
+:host(.nol-button-compact.nol-button-outlined) {
+  padding-block: 0;
+}
+
+:host(.nol-button-busy) {
+  --nol-progress: currentColor;
+
+  position: relative;
+}
+
+:host(.nol-button-busy) > :not(.nol-button-spinner) {
+  opacity: 0;
+}
+
+.nol-button-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}

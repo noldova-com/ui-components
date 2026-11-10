@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.chip" noHover noFocus>
+  <nol-gallery-cell [caption]="text.chipCount"><nol-chip [count]="3" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipLargeCount"><nol-chip [count]="128" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipAdded"><nol-chip [kind]="chipKinds.Added" [count]="12" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipRemoved"><nol-chip [kind]="chipKinds.Removed" [count]="4" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipKeyCaption"><nol-chip [kind]="chipKinds.Key">{{ text.chipKey }}</nol-chip></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipStatusCaption"><nol-chip [kind]="chipKinds.Status">{{ text.chipStatus }}</nol-chip></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipFailed"><nol-chip [kind]="chipKinds.Failed">{{ text.chipFailed }}</nol-chip></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipWarningCaption"><nol-chip [kind]="chipKinds.Warning">{{ text.chipWarning }}</nol-chip></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.chipOnCaption"><nol-chip [kind]="chipKinds.On">{{ text.chipOn }}</nol-chip></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-chip class="nol-gallery-narrow" [kind]="chipKinds.Key">{{ text.chipLong }}</nol-chip></nol-gallery-cell>
+</nol-gallery-specimen>

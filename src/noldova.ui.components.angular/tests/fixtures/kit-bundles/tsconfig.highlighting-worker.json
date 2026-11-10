@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "highlighting-worker-app.fixture.ts",
+    "code-highlighting.worker.ts"
+  ]
+}

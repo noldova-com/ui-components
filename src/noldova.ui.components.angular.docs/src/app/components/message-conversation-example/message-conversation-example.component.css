@@ -1,0 +1,21 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+}
+
+.nol-docs-message-column {
+  display: grid;
+  max-width: 36rem;
+}
+
+.nol-docs-message-article:focus-visible {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+}

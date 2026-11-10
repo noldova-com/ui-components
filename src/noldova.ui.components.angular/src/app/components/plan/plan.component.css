@@ -1,0 +1,86 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-plan {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: var(--nol-space-1) var(--nol-space-3);
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-medium);
+  color: var(--nol-text);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-plan-unframed {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.nol-plan-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  forced-color-adjust: none;
+}
+
+.nol-plan-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nol-plan-step {
+  display: flex;
+  gap: var(--nol-space-2);
+  padding-block: calc((var(--nol-space-6) - var(--nol-line-panel)) / 2);
+}
+
+.nol-plan-marker {
+  display: flex;
+  flex: none;
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  margin-block: calc((var(--nol-line-panel) - var(--nol-icon)) / 2);
+  color: var(--nol-text-muted);
+
+  @media (forced-colors: active) {
+    color: CanvasText;
+  }
+}
+
+.nol-plan-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  forced-color-adjust: none;
+}
+
+.nol-plan-marker > .nol-plan-spinner {
+  --nol-spinner-ring: 100%;
+
+  width: 100%;
+  height: 100%;
+}
+
+.nol-plan-step-pending .nol-plan-mark {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 1.25 0.75;
+}
+
+.nol-plan-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

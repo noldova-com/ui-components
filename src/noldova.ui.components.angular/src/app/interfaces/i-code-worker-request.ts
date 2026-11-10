@@ -1,0 +1,17 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import type { CodeWorkerMessageKind } from "../enums/code-worker-message-kind.js";
+
+export interface ICodeWorkerRequest {
+  readonly kind: CodeWorkerMessageKind;
+  readonly id: number;
+  readonly languageId: string;
+  readonly code: string;
+  readonly timeLimit: number;
+}

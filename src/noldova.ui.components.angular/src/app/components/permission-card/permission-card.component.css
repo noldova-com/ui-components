@@ -1,0 +1,236 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-permission-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: var(--nol-space-3);
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-medium);
+  outline: none;
+  color: var(--nol-text);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-permission-card:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+}
+
+@media (forced-colors: active) {
+  .nol-permission-card:is(:focus-visible, [data-nol-state="Focus"]) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-permission-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-1) var(--nol-space-2);
+  min-width: 0;
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+}
+
+.nol-permission-card-title {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nol-permission-card-kind {
+  overflow-wrap: anywhere;
+}
+
+.nol-permission-card-risk {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+  min-width: 0;
+}
+
+.nol-permission-card-requester {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.nol-permission-card-glyph,
+.nol-permission-card-risk-glyph,
+.nol-permission-card-outcome-glyph {
+  flex: none;
+  font-size: var(--nol-icon);
+}
+
+.nol-permission-card-glyph {
+  color: var(--nol-accent);
+}
+
+.nol-permission-card-risk-glyph {
+  color: var(--nol-icon-color);
+}
+
+.nol-permission-card-high .nol-permission-card-risk-glyph,
+.nol-permission-card-denied .nol-permission-card-outcome-glyph,
+.nol-permission-card-failed .nol-permission-card-outcome-glyph {
+  color: var(--nol-error);
+}
+
+.nol-permission-card-high .nol-permission-card-risk {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}
+
+.nol-permission-card-decided-by {
+  padding-inline-start: var(--nol-space-2);
+  border-inline-start: var(--nol-border-width) solid var(--nol-card-border);
+}
+
+.nol-permission-card-expiry {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nol-permission-card-heading {
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-panel);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-panel);
+  overflow-wrap: anywhere;
+}
+
+.nol-permission-card-description {
+  margin: 0;
+  color: var(--nol-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.nol-permission-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-1);
+  min-width: 0;
+}
+
+.nol-permission-card-code {
+  box-sizing: border-box;
+  margin: 0;
+  outline: none;
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  line-height: var(--nol-line-code);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.nol-permission-card-code-scrolls {
+  max-height: calc(var(--nol-text-code) * var(--nol-line-code) * 12);
+  overflow-y: auto;
+}
+
+.nol-permission-card-code:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+}
+
+@media (forced-colors: active) {
+  .nol-permission-card-code:is(:focus-visible, [data-nol-state="Focus"]) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-permission-card-more {
+  align-self: flex-start;
+  min-height: var(--nol-pointer-target);
+  padding-inline: var(--nol-space-1);
+  margin-inline-start: calc(var(--nol-space-1) * -1);
+  border: 0;
+  border-radius: var(--nol-radius-hover);
+  background: none;
+  color: var(--nol-link);
+  font: inherit;
+}
+
+.nol-permission-card-more:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-hover);
+}
+
+@media (forced-colors: active) {
+  .nol-permission-card-more:is(:hover, [data-nol-state="Hover"]) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-permission-card-answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-permission-card-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  margin-inline-start: auto;
+}
+
+.nol-permission-card-question {
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+}
+
+.nol-permission-card-sending,
+.nol-permission-card-failed {
+  color: var(--nol-text-muted);
+}
+
+.nol-permission-card-sending {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+}
+
+.nol-permission-card-outcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-1) var(--nol-space-2);
+  margin: 0;
+}
+
+.nol-permission-card-outcome-label {
+  margin-inline-start: calc(var(--nol-space-1) - var(--nol-space-2));
+}
+
+.nol-permission-card-allowed .nol-permission-card-outcome-glyph {
+  color: var(--nol-added);
+}
+
+.nol-permission-card-decided-by {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+}

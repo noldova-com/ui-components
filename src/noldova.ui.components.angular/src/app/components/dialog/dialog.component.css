@@ -1,0 +1,117 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  --nol-dialog-bounds-width: calc(100cqw - var(--nol-space-2) * 2);
+  --nol-dialog-bounds-height: calc(100cqh - var(--nol-window-row-height) - var(--nol-status-bar-height) - var(--nol-space-2) * 2);
+  box-sizing: border-box;
+  width: min(var(--nol-dialog-width), var(--nol-dialog-bounds-width));
+  max-height: var(--nol-dialog-bounds-height);
+  border: var(--nol-border-width) solid var(--nol-widget-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-dialog);
+  box-shadow: var(--nol-shadow-xlarge);
+  color: var(--nol-text);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+:host(.nol-dialog-large) {
+  width: min(max(var(--nol-dialog-large-width), var(--nol-dialog-large-min-width)), var(--nol-dialog-bounds-width));
+  height: min(max(var(--nol-dialog-large-height), var(--nol-dialog-large-min-height)), var(--nol-dialog-bounds-height));
+  overflow: hidden;
+}
+
+:host(.nol-dialog-maximized) {
+  width: var(--nol-dialog-bounds-width);
+  height: var(--nol-dialog-bounds-height);
+}
+
+.nol-dialog-header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+  touch-action: none;
+}
+
+:host(:not(.nol-dialog-large)) .nol-dialog-header {
+  padding: var(--nol-dialog-body-padding);
+  padding-block: 0;
+  padding-inline-start: 0;
+}
+
+:host(.nol-dialog-large) .nol-dialog-header {
+  align-items: center;
+  padding: var(--nol-dialog-large-header-padding);
+  border-bottom: var(--nol-border-width) solid var(--nol-widget-border);
+}
+
+.nol-dialog-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: var(--nol-dialog-title-padding);
+  padding-inline-end: 0;
+  color: var(--nol-text-strong);
+  font-size: inherit;
+  font-weight: var(--nol-weight-emphasis);
+  line-height: inherit;
+  overflow-wrap: anywhere;
+}
+
+:host(.nol-dialog-large) .nol-dialog-title {
+  padding: 0;
+}
+
+.nol-dialog-controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-inline-end: calc((var(--nol-icon-button-target) - var(--nol-icon)) / -2 - var(--nol-icon) * 0.28);
+}
+
+:host(:not(.nol-dialog-large)) .nol-dialog-controls {
+  box-sizing: content-box;
+  height: var(--nol-line-panel);
+  padding: var(--nol-dialog-title-padding);
+  padding-block-end: 0;
+  padding-inline: 0;
+}
+
+.nol-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--nol-dialog-body-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
+:host(.nol-dialog-large) .nol-dialog-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nol-dialog-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--nol-space-2);
+  padding: var(--nol-dialog-actions-padding);
+}
+
+.nol-dialog-actions:empty {
+  display: none;
+}

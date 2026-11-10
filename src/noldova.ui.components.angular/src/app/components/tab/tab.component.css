@@ -1,0 +1,318 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-tab {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: var(--nol-tab-max-width);
+  min-height: var(--nol-tab-height);
+  padding-inline: var(--nol-tab-inset);
+  color: var(--nol-text-tab);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  outline: none;
+  user-select: none;
+}
+
+.nol-tab.nol-tab-selected {
+  color: var(--nol-text);
+}
+
+.nol-tab-pill {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+
+  @media (forced-colors: active) {
+    max-width: calc(100% + 2 * var(--nol-tab-inset));
+    margin-inline: calc(var(--nol-tab-inset) * -1);
+    padding-inline: var(--nol-tab-inset);
+  }
+}
+
+[data-nol-tab-shape="pill"] .nol-tab-pill {
+  min-height: var(--nol-tab-pill);
+  padding-inline: var(--nol-pill-padding);
+  border-radius: var(--nol-radius-small);
+
+  @media (forced-colors: active) {
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
+[data-nol-tab-shape="pill"] .nol-tab:is(:hover, [data-nol-state="Hover"]) .nol-tab-pill {
+  background-color: var(--nol-hover);
+}
+
+.nol-tab:is(:hover, [data-nol-state="Hover"]) .nol-tab-pill {
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+[data-nol-tab-shape="pill"] .nol-tab.nol-tab-selected .nol-tab-pill {
+  --nol-text-muted: var(--nol-text);
+  background-color: var(--nol-selected);
+
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+.nol-tab.nol-tab-selected .nol-tab-pill {
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+.nol-tab:is(:focus-visible, [data-nol-state="Focus"]) .nol-tab-pill {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: calc(var(--nol-border-width) * 2);
+  }
+}
+
+.nol-tab-icon {
+  flex: none;
+  margin-inline-end: var(--nol-space-1);
+  color: var(--nol-icon-color);
+}
+
+.nol-tab-marker,
+.nol-tab-leading {
+  flex: none;
+  margin-inline-end: var(--nol-tab-part-gap);
+}
+
+.nol-tab .nol-tab-glyph {
+  width: var(--nol-tab-image);
+  height: var(--nol-tab-image);
+  font-size: var(--nol-tab-image);
+  line-height: 1;
+}
+
+.nol-tab-marker {
+  color: var(--nol-accent);
+}
+
+.nol-tab-status {
+  color: inherit;
+}
+
+.nol-tab-status[data-nol-tone="Ok"] {
+  color: var(--nol-status-ok);
+}
+
+.nol-tab-status[data-nol-tone="Failed"] {
+  color: var(--nol-status-failed);
+}
+
+.nol-tab-image {
+  display: grid;
+  width: var(--nol-tab-image);
+  height: var(--nol-tab-image);
+  color: var(--nol-icon-color);
+}
+
+.nol-tab-image > * {
+  grid-area: 1 / 1;
+}
+
+.nol-tab-image-picture {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--nol-tab-image-radius);
+  object-fit: contain;
+  visibility: hidden;
+}
+
+.nol-tab-image-loaded > .nol-tab-image-picture {
+  visibility: visible;
+}
+
+.nol-tab-image-loaded > .nol-tab-image-glyph {
+  visibility: hidden;
+}
+
+.nol-tab .nol-tab-leading-spinner {
+  --nol-spinner: var(--nol-tab-spinner);
+  --nol-spinner-ring: var(--nol-tab-spinner);
+  --nol-spinner-stroke: var(--nol-tab-spinner-stroke);
+}
+
+.nol-tab.nol-tab-underlined .nol-tab-pill {
+  box-shadow: inset 0 calc(var(--nol-tab-underline) * -1) 0 var(--nol-accent);
+}
+
+@media (forced-colors: active) {
+  .nol-tab-marker,
+  .nol-tab-status[data-nol-tone] {
+    color: inherit;
+  }
+
+  .nol-tab-image-loaded > .nol-tab-image-glyph {
+    visibility: visible;
+  }
+
+  .nol-tab-image-loaded > .nol-tab-image-picture {
+    visibility: hidden;
+  }
+
+  .nol-tab.nol-tab-underlined .nol-tab-pill {
+    position: relative;
+  }
+
+  .nol-tab.nol-tab-underlined .nol-tab-pill::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--nol-tab-underline);
+    background-color: Highlight;
+    forced-color-adjust: none;
+  }
+
+  .nol-tab.nol-tab-selected.nol-tab-underlined .nol-tab-pill::after {
+    background-color: HighlightText;
+  }
+}
+
+.nol-tab-badge {
+  flex: none;
+  margin-inline-start: var(--nol-space-1);
+}
+
+.nol-tab.nol-tab-preview .nol-tab-label {
+  font-style: italic;
+}
+
+.nol-tab.nol-tab-editing .nol-tab-label {
+  position: relative;
+  overflow: visible;
+  visibility: hidden;
+}
+
+.nol-tab .nol-tab-label > .nol-tab-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  background-color: var(--nol-input);
+  color: var(--nol-input-text);
+  font: inherit;
+  user-select: text;
+  visibility: visible;
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    forced-color-adjust: auto;
+  }
+}
+
+.nol-tab-action {
+  display: grid;
+  flex: none;
+  margin-inline: var(--nol-space-1) calc((var(--nol-icon) - var(--nol-tab-action-slot)) / 2);
+  place-items: center;
+  width: var(--nol-tab-action-slot);
+  height: var(--nol-tab-action-slot);
+}
+
+.nol-tab-action > * {
+  grid-area: 1 / 1;
+}
+
+.nol-tab-close {
+  display: grid;
+  place-items: center;
+  --nol-tab-close-target: max(var(--nol-pointer-target), var(--nol-tab-action-slot));
+
+  box-sizing: border-box;
+  width: var(--nol-tab-close-target);
+  height: var(--nol-tab-close-target);
+  margin: calc((var(--nol-tab-action-slot) - var(--nol-tab-close-target)) / 2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  visibility: hidden;
+}
+
+.nol-tab-close::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: var(--nol-tab-close);
+  height: var(--nol-tab-close);
+  border-radius: var(--nol-radius-small);
+}
+
+.nol-tab-close > span {
+  grid-area: 1 / 1;
+}
+
+.nol-tab-close:is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-toolbar-hover);
+}
+
+@media (forced-colors: active) {
+  .nol-tab-close:is(:hover, [data-nol-state="Hover"])::before {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-tab.nol-tab-selected .nol-tab-close,
+.nol-tab:is(:hover, [data-nol-state="Hover"]) .nol-tab-close,
+.nol-tab:is(:focus-visible, [data-nol-state="Focus"]) .nol-tab-close {
+  visibility: visible;
+}
+
+.nol-tab:is(.nol-tab-working, .nol-tab-waiting):not(:is(:hover, [data-nol-state="Hover"]), :is(:focus-visible, [data-nol-state="Focus"])) .nol-tab-close {
+  visibility: hidden;
+}
+
+.nol-tab:is(.nol-tab-working, .nol-tab-waiting):is(:is(:hover, [data-nol-state="Hover"]), :is(:focus-visible, [data-nol-state="Focus"])) .nol-tab-action:has(> .nol-tab-close) > :is(.nol-tab-spinner, .nol-tab-waiting-glyph) {
+  visibility: hidden;
+}
+
+.nol-tab .nol-tab-spinner {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+}

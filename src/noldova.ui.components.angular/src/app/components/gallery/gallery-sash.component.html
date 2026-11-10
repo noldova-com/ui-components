@@ -1,0 +1,31 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.sash" noHover noLongText>
+  <nol-gallery-cell [caption]="text.sashVerticalCaption">
+    <div class="nol-gallery-sash-box">
+      <div class="nol-gallery-pane"></div>
+      <nol-sash [orientation]="orientations.Vertical" [label]="text.sashVertical" />
+      <div class="nol-gallery-pane"></div>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sashHorizontalCaption">
+    <div class="nol-gallery-sash-box nol-gallery-sash-box-column">
+      <div class="nol-gallery-pane"></div>
+      <nol-sash [orientation]="orientations.Horizontal" [label]="text.sashHorizontal" />
+      <div class="nol-gallery-pane"></div>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div class="nol-gallery-sash-box">
+      <div class="nol-gallery-pane"></div>
+      <nol-sash nolGalleryFocus [orientation]="orientations.Vertical" [label]="text.sashVertical" />
+      <div class="nol-gallery-pane"></div>
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

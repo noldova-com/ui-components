@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-split-button icon="add" label="New terminal" menuLabel="Choose a terminal" [menu]="terminals" (triggered)="opened.set('New terminal')" />
+<span>Opened: {{ opened() }}</span>
+<ng-template #terminals>
+  <nol-menu aria-label="Choose a terminal">
+    <button type="button" nol-menu-item label="Blank terminal" (triggered)="opened.set('Blank terminal')"></button>
+    <button type="button" nol-menu-item label="Terminal in the project folder" (triggered)="opened.set('Terminal in the project folder')"></button>
+  </nol-menu>
+</ng-template>

@@ -1,0 +1,21 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-group-header-heading" role="heading" [attr.aria-level]="level()">
+  <button type="button" class="nol-group-header-toggle" [attr.aria-expanded]="expanded()" [attr.aria-controls]="controls()" [attr.aria-label]="name()" [nolTooltip]="label()" [nolTooltipTruncated]="true"
+    (click)="toggle()">
+    <span class="nol-group-header-twistie material-symbols-rounded" aria-hidden="true">{{ resources.twistieGlyph }}</span>
+    <span class="nol-group-header-title" data-truncates>{{ label() }}</span>
+    @if (count() !== null) {
+      <span class="nol-group-header-count">{{ count() }}</span>
+    }
+  </button>
+</div>
+<div class="nol-group-header-actions">
+  <ng-content />
+</div>

@@ -1,0 +1,21 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div nolToolbar nolToolbarLabel="Sync">
+  <button type="button" nol-toolbar-button nolToolbarItem icon="sync" label="Sync" nolTooltip="Sync" [busy]="isSyncing()" (click)="isSyncing.set(true)"></button>
+  <button type="button" nol-toolbar-button nolToolbarItem icon="filter_list" label="Filter" [isShowingLabel]="true" [hasMenu]="true" [nolMenuTriggerFor]="filterMenu"></button>
+  <button type="button" nol-toolbar-button nolToolbarItem label="Stop" (click)="isSyncing.set(false)"></button>
+</div>
+<span>Syncing: {{ isSyncing() ? "Yes" : "No" }} · Showing: {{ filter() }}</span>
+<ng-template #filterMenu>
+  <nol-menu aria-label="Filter">
+    @for (choice of choices; track choice) {
+      <button type="button" nol-menu-item [label]="choice" [checked]="choice === filter()" (triggered)="filter.set(choice)"></button>
+    }
+  </nol-menu>
+</ng-template>

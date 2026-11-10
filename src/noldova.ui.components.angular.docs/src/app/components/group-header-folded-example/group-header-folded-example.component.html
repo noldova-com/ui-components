@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-group-header label="Archived" controls="nol-docs-group-header-archived" [count]="3" [(expanded)]="isOpen" />
+<div id="nol-docs-group-header-archived">
+  @if (isOpen()) {
+    <ul>
+      <li>Old budget</li>
+      <li>Last year's trip</li>
+      <li>Recipes</li>
+    </ul>
+  }
+</div>

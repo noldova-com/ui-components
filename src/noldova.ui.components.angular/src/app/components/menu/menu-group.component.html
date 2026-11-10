@@ -1,0 +1,11 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-menu-label" aria-hidden="true" [id]="labelId">{{ label() }}</div>
+<ng-content select="[nolMenuGroupAction]" />
+<div #rows class="nol-menu-group-rows" (scroll)="settle()" (focusin)="reveal($event)"><ng-content /></div>

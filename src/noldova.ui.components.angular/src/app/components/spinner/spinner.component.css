@@ -1,0 +1,68 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  width: var(--nol-spinner);
+  height: var(--nol-spinner);
+  flex: none;
+}
+
+:host(.nol-reveal-pending) {
+  visibility: hidden;
+}
+
+.nol-spinner-ring {
+  display: block;
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  width: var(--nol-spinner-ring);
+  height: var(--nol-spinner-ring);
+  margin: auto;
+  border: var(--nol-spinner-stroke) solid color-mix(in srgb, var(--nol-progress) 25%, transparent);
+  border-top-color: var(--nol-progress);
+  border-radius: 50%;
+  animation: nol-spinner-turn 0.8s linear infinite;
+
+  @media (forced-colors: active) {
+    border-width: var(--nol-border-width);
+    border-top-width: var(--nol-spinner-stroke);
+    border-color: GrayText;
+    border-top-color: Highlight;
+  }
+}
+
+.nol-spinner-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nol-spinner-ring {
+    animation: none;
+    border-inline-end-color: var(--nol-progress);
+
+    @media (forced-colors: active) {
+      border-inline-end-width: var(--nol-spinner-stroke);
+      border-inline-end-color: Highlight;
+    }
+  }
+}
+
+@keyframes nol-spinner-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}

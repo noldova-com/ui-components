@@ -1,0 +1,85 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<p class="nol-docs-text">
+  {{ resources.selectorLabel }} <code nol-inline-code>{{ component().selector }}</code>
+</p>
+<p class="nol-docs-text">
+  {{ resources.importLabel }} <code nol-inline-code>{{ component().entry }}</code>
+</p>
+@if (component().inputs.length > 0) {
+  <h3 class="nol-docs-subsection-title">{{ resources.inputsTitle }}</h3>
+  <div class="nol-docs-table-holder">
+    <table class="nol-docs-table nol-docs-stacked-table" role="table" [attr.aria-label]="resources.inputsTitle">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th scope="col" role="columnheader">{{ resources.nameColumn }}</th>
+          <th scope="col" role="columnheader">{{ resources.typeColumn }}</th>
+          <th scope="col" role="columnheader">{{ resources.defaultColumn }}</th>
+          <th scope="col" role="columnheader">{{ resources.descriptionColumn }}</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (item of component().inputs; track item.name) {
+          <tr role="row">
+            <th scope="row" role="rowheader"><code>{{ item.name }}</code></th>
+            <td role="cell" [attr.data-label]="resources.typeColumn"><code>@for (part of typeParts(item.type); track $index) {@if (!$first) {<wbr />}<span class="nol-docs-type-part">{{ part }}</span>}</code></td>
+            <td role="cell" [attr.data-label]="item.isRequired ? null : resources.defaultColumn">
+              @if (item.isRequired) {
+                {{ resources.requiredValue }}
+              } @else {
+                <code>{{ item.defaultValue }}</code>
+              }
+            </td>
+            <td role="cell">
+              @for (paragraph of item.description; track $index) {
+                <nol-markdown-view class="nol-docs-markdown" [text]="paragraph" />
+              }
+              @if (item.kind === resources.modelKind) {
+                <p class="nol-docs-text">{{ resources.modelNote }} <code nol-inline-code>{{ resources.formatModelBinding(item.name) }}</code>.</p>
+              }
+              @if (item.directive !== null) {
+                <p class="nol-docs-text">{{ resources.formatHostDirective(item.directive) }}</p>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+@if (component().outputs.length > 0) {
+  <h3 class="nol-docs-subsection-title">{{ resources.outputsTitle }}</h3>
+  <div class="nol-docs-table-holder">
+    <table class="nol-docs-table nol-docs-stacked-table" role="table" [attr.aria-label]="resources.outputsTitle">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th scope="col" role="columnheader">{{ resources.nameColumn }}</th>
+          <th scope="col" role="columnheader">{{ resources.typeColumn }}</th>
+          <th scope="col" role="columnheader">{{ resources.descriptionColumn }}</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (item of component().outputs; track item.name) {
+          <tr role="row">
+            <th scope="row" role="rowheader"><code>{{ item.name }}</code></th>
+            <td role="cell" [attr.data-label]="resources.typeColumn"><code>@for (part of typeParts(item.type); track $index) {@if (!$first) {<wbr />}<span class="nol-docs-type-part">{{ part }}</span>}</code></td>
+            <td role="cell">
+              @for (paragraph of item.description; track $index) {
+                <nol-markdown-view class="nol-docs-markdown" [text]="paragraph" />
+              }
+              @if (item.directive !== null) {
+                <p class="nol-docs-text">{{ resources.formatHostDirective(item.directive) }}</p>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

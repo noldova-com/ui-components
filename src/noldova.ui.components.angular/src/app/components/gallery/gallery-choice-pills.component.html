@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.choicePills" [size]="sizes.Wide">
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-choice-pills [options]="pillOptions" [value]="pill()" [label]="text.choicePillsLabel" (valueChange)="pill.set($event)" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <nol-choice-pills [nolGalleryHover]="hoveredPill" [options]="pillOptions" [value]="text.choicePillInitial" [label]="text.hover" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-choice-pills [nolGalleryFocus]="focusedPill" [options]="pillOptions" [value]="text.choicePillInitial" [label]="text.focus" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-choice-pills class="nol-gallery-narrow" [options]="longPillOptions" value="long" [label]="text.choicePillsLong" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "button-app.fixture.ts"
+  ]
+}

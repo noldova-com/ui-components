@@ -1,0 +1,34 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [disabled]="disabled()"
+  [attr.aria-label]="name()" [attr.aria-describedby]="describedBy()" (click)="toggle(button, list)">
+  <span class="nol-select-value" data-truncates>{{ title() }}</span>
+  <span class="nol-select-arrow material-symbols-rounded" aria-hidden="true">{{ partResources.selectGlyph }}</span>
+</button>
+<ng-template #list>
+  <div class="nol-select-list" cdkListbox cdkListboxUseActiveDescendant [cdkListboxValue]="marked()" [attr.aria-label]="label()" [style.min-width.px]="button.offsetWidth"
+    (cdkListboxValueChange)="choose($event, button)" (keydown)="handleKey($event, button)">
+    @for (section of sections(); track $index) {
+      <div class="nol-select-section" [attr.role]="section.label === null ? null : 'group'" [attr.aria-labelledby]="section.labelId">
+        @if (section.label !== null) {
+          <div class="nol-select-group-label" aria-hidden="true" [id]="section.labelId">{{ section.label }}</div>
+        }
+        @for (option of section.options; track option.value) {
+          <div class="nol-select-option" [cdkOption]="option.value" [cdkOptionTypeaheadLabel]="option.title" [cdkOptionDisabled]="option.isDisabled" [attr.data-value]="option.value" [nolTooltip]="option.title"
+            [nolTooltipSide]="optionTooltipSide" [nolTooltipBeside]="partResources.selectListSelector" [nolTooltipTruncated]="true"
+            (click)="closeOnCurrent(option.value, button)"><span class="nol-select-option-title" data-truncates>{{ option.title }}</span>
+            @if (option.tag; as tag) {
+              <nol-chip class="nol-select-option-tag" [kind]="tagKind">{{ tag }}</nol-chip>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

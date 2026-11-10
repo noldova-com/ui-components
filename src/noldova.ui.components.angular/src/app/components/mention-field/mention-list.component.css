@@ -1,0 +1,108 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-height: var(--nol-mention-list-height);
+  padding: var(--nol-space-1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: var(--nol-border-width) solid var(--nol-menu-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-menu);
+  box-shadow: var(--nol-shadow-large);
+  color: var(--nol-menu-text);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-mention-section {
+  padding: var(--nol-menu-label-padding);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+}
+
+.nol-mention-option {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: calc(var(--nol-mention-row-height) + var(--nol-row-gap));
+  padding: calc(var(--nol-space-1) + var(--nol-tab-inset)) var(--nol-space-2);
+  cursor: pointer;
+}
+
+.nol-mention-option::before {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--nol-tab-inset);
+  inset-inline: 0;
+  border-radius: var(--nol-radius-small);
+  content: "";
+}
+
+.nol-mention-option:is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-mention-option[aria-selected="true"] {
+  --nol-text-muted: var(--nol-menu-text);
+
+  &::before {
+    background-color: var(--nol-selected);
+  }
+
+  @media (forced-colors: active) {
+    --nol-text-muted: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}
+
+.nol-mention-option-unavailable {
+  opacity: 0.5;
+}
+
+.nol-mention-name,
+.nol-mention-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nol-mention-name:has(+ .nol-mention-note) {
+  flex: none;
+  max-width: calc(100% - var(--nol-avatar-small) - var(--nol-space-2));
+}
+
+.nol-mention-note {
+  margin-inline-start: calc(var(--nol-space-2) * -1);
+  color: var(--nol-text-muted);
+
+  &::before {
+    content: "";
+    padding-inline-start: var(--nol-space-2);
+  }
+}

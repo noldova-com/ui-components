@@ -1,0 +1,45 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.fileBadge" noHover noFocus noLongText>
+  <nol-gallery-cell [caption]="text.fileBadgeLetters">
+    <ul class="nol-gallery-files">
+      @for (name of text.fileBadgeLetterNames; track name) {
+        <li class="nol-gallery-file"><nol-file-badge [fileName]="name" />{{ name }}</li>
+      }
+    </ul>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.fileBadgeTile">
+    <ul class="nol-gallery-files">
+      @for (name of text.fileBadgeTileNames; track name) {
+        <li class="nol-gallery-file"><nol-file-badge [fileName]="name" />{{ name }}</li>
+      }
+    </ul>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.fileBadgeGlyph">
+    <ul class="nol-gallery-files">
+      @for (name of text.fileBadgeGlyphNames; track name) {
+        <li class="nol-gallery-file"><nol-file-badge [fileName]="name" />{{ name }}</li>
+      }
+    </ul>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.fileBadgePlain">
+    <ul class="nol-gallery-files">
+      @for (name of text.fileBadgePlainNames; track name) {
+        <li class="nol-gallery-file"><nol-file-badge [fileName]="name" />{{ name }}</li>
+      }
+    </ul>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.fileBadgeFolder">
+    <ul class="nol-gallery-files">
+      @for (name of text.fileBadgeFolderNames; track name) {
+        <li class="nol-gallery-file"><nol-file-badge [fileName]="name" [isFolder]="true" />{{ name }}</li>
+      }
+    </ul>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

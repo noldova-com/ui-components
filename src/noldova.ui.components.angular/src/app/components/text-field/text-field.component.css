@@ -1,0 +1,75 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  box-sizing: border-box;
+  width: var(--nol-text-field-width);
+  max-width: 100%;
+  min-width: 0;
+  min-height: var(--nol-field-height);
+  padding: 0 var(--nol-field-padding);
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-input);
+  color: var(--nol-input-text);
+  font: inherit;
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  cursor: text;
+}
+
+:where(:host) {
+  margin: 0;
+}
+
+:host(textarea) {
+  padding-block: var(--nol-field-padding);
+  resize: vertical;
+  vertical-align: top;
+}
+
+:host::placeholder {
+  color: var(--nol-placeholder);
+  opacity: 1;
+}
+
+:host(:is(:focus, [data-nol-state="Focus"])) {
+  border-color: var(--nol-accent);
+  outline: none;
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+:host([aria-invalid="true"]) {
+  border-color: var(--nol-error);
+
+  @media (forced-colors: active) {
+    padding-inline: calc(var(--nol-field-padding) - var(--nol-border-width));
+    border-width: calc(var(--nol-border-width) * 2);
+    border-style: dashed;
+    border-color: CanvasText;
+  }
+}
+
+:host(textarea[aria-invalid="true"]) {
+  @media (forced-colors: active) {
+    padding-block: calc(var(--nol-field-padding) - var(--nol-border-width));
+  }
+}
+
+:host(:disabled) {
+  opacity: 0.5;
+  cursor: default;
+
+  @media (forced-colors: active) {
+    border-color: GrayText;
+    color: GrayText;
+  }
+}

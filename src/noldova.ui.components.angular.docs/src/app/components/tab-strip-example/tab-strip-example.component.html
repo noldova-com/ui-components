@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-tab-strip" role="tablist" aria-label="Open notes" (keydown)="move($event)">
+  @for (tab of tabs(); track tab) {
+    <nol-tab icon="description" [label]="tab" [selected]="tab === selected()" (activate)="selected.set(tab)" (close)="close(tab)" />
+  }
+</div>
+<p>{{ shown() }}</p>

@@ -1,0 +1,17 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-message-column">
+  <nol-message [author]="person" [time]="asked" [blocks]="question" [layout]="layouts.Column" [math]="false" />
+  <div class="nol-docs-message-article" role="article" tabindex="-1" aria-labelledby="nol-docs-message-reply-label">
+    <nol-message [author]="guide" [time]="answered" [blocks]="answer" [layout]="layouts.Column" labelId="nol-docs-message-reply-label">
+      <button type="button" nol-icon-button nolMessageAction icon="thumb_up" label="Helpful" [pressed]="isHelpful()"
+        (click)="isHelpful.set(!isHelpful())"></button>
+    </nol-message>
+  </div>
+</div>

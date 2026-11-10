@@ -1,0 +1,218 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: calc(var(--nol-menu-item-height) + var(--nol-row-gap));
+  padding-block: var(--nol-tab-inset);
+  padding-inline: calc(var(--nol-menu-item-inset) + var(--nol-menu-item-padding));
+  border: 0;
+  background: none;
+  color: var(--nol-menu-text);
+  font: inherit;
+  text-align: start;
+  white-space: nowrap;
+  outline: none;
+}
+
+:where(:host) {
+  margin: 0;
+}
+
+:host(.nol-menu-item-danger) {
+  color: var(--nol-error);
+}
+
+:host::before {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--nol-tab-inset);
+  inset-inline: var(--nol-menu-item-inset);
+  border-radius: var(--nol-radius-medium);
+  content: "";
+}
+
+:host(:not([aria-disabled="true"]):is(:is(:hover, [data-nol-state="Hover"]), [aria-expanded="true"]))::before,
+:host(:is(:focus-visible, [data-nol-state="Focus"]))::before {
+  background-color: var(--nol-hover);
+}
+
+@media (forced-colors: active) {
+  :host(:not([aria-disabled="true"]):is(:is(:hover, [data-nol-state="Hover"]), [aria-expanded="true"]))::before,
+  :host(:is(:focus-visible, [data-nol-state="Focus"]))::before {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+@media (forced-colors: active) {
+  :host(:not([aria-disabled="true"])[aria-expanded="true"])::before,
+  :host(:is(:focus-visible, [data-nol-state="Focus"]))::before {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+:host-context(.nol-menu-pointer-still):hover:not(:is(:focus-visible, [data-nol-state="Focus"]), [aria-expanded="true"])::before {
+  background-color: transparent;
+}
+
+:host([aria-current="true"]) {
+  --nol-text-muted: var(--nol-menu-text);
+
+  &::before {
+    background-color: var(--nol-selected);
+  }
+
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}
+
+:host([aria-disabled="true"]) {
+  cursor: default;
+}
+
+:host([aria-disabled="true"]) > * {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) {
+  :host([aria-disabled="true"]),
+  :host([aria-disabled="true"]) * {
+    color: GrayText;
+  }
+}
+
+@media (forced-colors: active) {
+  :host([aria-current="true"][aria-disabled="true"]) {
+    --nol-text: GrayText;
+    --nol-text-muted: GrayText;
+    --nol-menu-text: GrayText;
+    --nol-icon-color: GrayText;
+    --nol-list-highlight: GrayText;
+    --nol-list-active-text: GrayText;
+
+    color: GrayText;
+  }
+
+  :host([aria-current="true"][aria-disabled="true"])::before {
+    background-color: Canvas;
+  }
+
+  :host([aria-current="true"][aria-disabled="true"]:not(:focus-visible, [data-nol-state="Focus"]))::before {
+    outline: var(--nol-border-width) solid GrayText;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-menu-item-icon,
+.nol-menu-item-check,
+.nol-menu-item-chevron {
+  flex: none;
+  font-size: var(--nol-icon);
+}
+
+:host([aria-checked="false"]) .nol-menu-item-check {
+  visibility: hidden;
+}
+
+.nol-menu-item-chevron:dir(rtl) {
+  rotate: 180deg;
+}
+
+.nol-menu-item-icon,
+.nol-menu-item-lead {
+  grid-column: 1;
+  margin-inline-end: var(--nol-menu-item-padding);
+}
+
+.nol-menu-item-lead {
+  display: inline-flex;
+}
+
+.nol-menu-item-lead:empty {
+  display: none;
+}
+
+:host(:has(> .nol-menu-item-lead:not(:empty))) {
+  padding-block: calc(var(--nol-space-1) + var(--nol-tab-inset));
+}
+
+.nol-menu-item-body {
+  display: grid;
+  grid-column: 2;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.nol-menu-item-label,
+.nol-menu-item-heading {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.nol-menu-item-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-menu-item-padding);
+  min-width: 0;
+}
+
+.nol-menu-item-tag {
+  flex: none;
+  max-width: calc(100% - var(--nol-menu-item-padding));
+}
+
+.nol-menu-item-description {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--nol-text-muted);
+}
+
+:host(:has(> .nol-menu-item-body > .nol-menu-item-description)) {
+  padding-block: calc(var(--nol-space-1) + var(--nol-tab-inset));
+}
+
+.nol-menu-item-body:has(> .nol-menu-item-description) > .nol-menu-item-trail {
+  grid-row: 1 / span 2;
+}
+
+.nol-menu-item-trail {
+  display: flex;
+  grid-column: 2;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--nol-menu-item-padding);
+  margin-inline-start: var(--nol-menu-trail-gap);
+}
+
+.nol-menu-item-value,
+.nol-menu-item-shortcut {
+  flex: none;
+  color: var(--nol-text-muted);
+}

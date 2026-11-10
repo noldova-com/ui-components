@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu aria-label="Responder" [minWidth]="14">
+  <nol-menu-group label="Responder" [maxRows]="4">
+    @for (name of names; track name) {
+      <button type="button" nol-menu-item [label]="name" [checked]="name === responder()" (triggered)="responder.set(name)"></button>
+    }
+  </nol-menu-group>
+  <nol-menu-separator />
+  <button type="button" nol-menu-item label="Manage responders" icon="settings"></button>
+</nol-menu>
+<span>Responder: {{ responder() }}</span>

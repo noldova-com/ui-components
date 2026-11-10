@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../_build/angular/spec-tsc",
+    "types": [
+      "vitest/globals"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "tests/coverage/**",
+    "tests/fixtures/kit-bundles/**",
+    "tests/fixtures/node-load/**"
+  ]
+}

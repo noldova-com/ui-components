@@ -1,0 +1,35 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-2);
+}
+
+.nol-docs-sash-layout {
+  display: flex;
+  align-items: stretch;
+  height: 6rem;
+}
+
+.nol-docs-sash-pane {
+  flex: none;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--nol-space-2);
+  background-color: var(--nol-raised);
+}
+
+.nol-docs-sash-main {
+  flex: 1 1 0;
+}
+
+p {
+  margin: 0;
+}

@@ -1,0 +1,15 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.select" [size]="sizes.Wide" noHover>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-select [options]="options" [value]="choice()" [label]="text.select" (valueChange)="choice.set($event)" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><nol-select [options]="options" value="two" [label]="text.disabled" [disabled]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-select [nolGalleryFocus]="focusedSelect" [options]="options" [value]="text.selectInitial" [label]="text.focus" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-select [options]="options" value="long" [label]="text.longText" class="nol-gallery-narrow" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.selectGroupsCaption"><nol-select [options]="groupOptions" value="fast" [label]="text.selectGroupsCaption" /></nol-gallery-cell>
+</nol-gallery-specimen>

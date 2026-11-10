@@ -1,0 +1,178 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-3);
+  box-sizing: border-box;
+  width: var(--nol-reference-card-width);
+  max-width: calc(100cqw - var(--nol-space-4));
+  padding: var(--nol-reference-card-padding);
+  border: var(--nol-border-width) solid var(--nol-hover-widget-border);
+  border-radius: var(--nol-reference-card-radius);
+  background-color: var(--nol-raised);
+  box-shadow: var(--nol-shadow-xlarge);
+  color: var(--nol-text);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-message);
+  line-height: max(var(--nol-line-panel), calc(var(--nol-text-message) + 0.3125rem));
+}
+
+.nol-link-reference-card-top,
+.nol-link-reference-card-foot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--nol-text-muted);
+}
+
+.nol-link-reference-card-top {
+  gap: var(--nol-reference-card-top-gap);
+}
+
+.nol-link-reference-card-foot {
+  gap: var(--nol-space-2);
+}
+
+.nol-link-reference-card-state,
+.nol-link-reference-card-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-reference-item-gap);
+}
+
+.nol-link-reference-card-state {
+  height: var(--nol-reference-badge-height);
+  padding-inline: var(--nol-space-3);
+  border-radius: 999px;
+  background-color: var(--nol-link-reference-state-background);
+  color: var(--nol-link-reference-state);
+  font-weight: var(--nol-weight-emphasis);
+}
+
+.nol-link-reference-card-state-icon {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+}
+
+.nol-link-reference-card-location {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nol-link-reference-card-author {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nol-link-reference-card-age {
+  flex: none;
+  margin-inline-start: auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.nol-link-reference-card-title {
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-message);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-reference-title);
+  overflow-wrap: anywhere;
+}
+
+.nol-link-reference-card-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--nol-space-1) var(--nol-space-3);
+  margin: 0;
+  color: var(--nol-text-muted);
+  font-size: max(12px, calc(var(--nol-text-message) - 1px));
+}
+
+.nol-link-reference-card-detail-value {
+  min-width: 0;
+  margin: 0;
+  color: var(--nol-text);
+  overflow-wrap: anywhere;
+}
+
+.nol-link-reference-card-footnote {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nol-link-reference-card-status-icon {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  color: var(--nol-link-reference-status-tone, currentColor);
+}
+
+.nol-link-reference-card-spacer {
+  flex: 1;
+}
+
+.nol-link-reference-card-pill {
+  height: var(--nol-reference-pill-height);
+  padding-inline: var(--nol-reference-pill-padding);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-hover);
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.nol-link-reference-card-link) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nol-link-reference-card-link:is(:hover, [data-nol-state="Hover"]) .nol-link-reference-card-text-link,
+.nol-link-reference-card-text-link:is(:hover, [data-nol-state="Hover"]) {
+  text-decoration: underline;
+}
+
+.nol-link-reference-card-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-link-reference-card-added {
+  color: var(--nol-added);
+}
+
+.nol-link-reference-card-removed {
+  color: var(--nol-removed);
+}
+
+.nol-link-reference-card-glyph {
+  font-size: var(--nol-icon);
+}
+
+@media (forced-colors: active) {
+  :host,
+  .nol-link-reference-card-state,
+  .nol-link-reference-card-pill {
+    border: var(--nol-border-width) solid CanvasText;
+  }
+
+  .nol-link-reference-card-state,
+  .nol-link-reference-card-added,
+  .nol-link-reference-card-removed,
+  .nol-link-reference-card-status-icon {
+    color: CanvasText;
+  }
+
+  .nol-link-reference-card-state.nol-link-reference-card-link,
+  .nol-link-reference-card-link .nol-link-reference-card-added,
+  .nol-link-reference-card-link .nol-link-reference-card-removed {
+    color: LinkText;
+  }
+}

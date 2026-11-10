@@ -1,0 +1,25 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.toolbarButtons">
+  <nol-gallery-cell [caption]="text.defaultState"><button type="button" nol-toolbar-button [icon]="text.glyphAdd" [label]="text.button"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><button type="button" nol-toolbar-button nolGalleryHover [icon]="text.glyphAdd" [label]="text.button"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolbarWithLabel">
+    <button type="button" nol-toolbar-button [icon]="text.glyphSave" [label]="text.toolbarWithLabel" [isShowingLabel]="true"></button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.pressed"><button type="button" nol-toolbar-button [icon]="text.iconGlyph" [label]="text.pressed" [pressed]="true"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menu">
+    <button type="button" nol-toolbar-button [icon]="text.glyphDescription" [label]="text.menu" [isShowingLabel]="true" [hasMenu]="true"></button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled">
+    <button type="button" nol-toolbar-button [icon]="text.glyphAdd" [label]="text.disabled" [isUnavailable]="true"></button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><button type="button" nol-toolbar-button nolGalleryFocus [icon]="text.glyphAdd" [label]="text.button"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.busy"><button type="button" nol-toolbar-button [busy]="true" [icon]="text.glyphAdd" [label]="text.button"></button></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><button type="button" nol-toolbar-button class="nol-gallery-narrow" [label]="text.longText" [nolTooltip]="text.longText" [nolTooltipTruncated]="true"></button></nol-gallery-cell>
+</nol-gallery-specimen>

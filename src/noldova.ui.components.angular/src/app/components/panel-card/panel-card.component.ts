@@ -1,0 +1,25 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { Component, type Signal, computed, input } from "@angular/core";
+
+import { PanelSurface } from "../../enums/panel-surface.js";
+
+@Component({
+  selector: "nol-panel-card",
+  templateUrl: "./panel-card.component.html",
+  styleUrl: "./panel-card.component.css",
+  host: {
+    "[class.nol-panel-card-shell]": "isShell()"
+  }
+})
+export class PanelCardComponent {
+  protected readonly isShell: Signal<boolean> = computed(() => this.surface() === PanelSurface.Shell);
+
+  public readonly surface = input<PanelSurface>(PanelSurface.Panel);
+}

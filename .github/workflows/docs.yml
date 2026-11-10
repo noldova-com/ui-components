@@ -1,0 +1,29 @@
+# @license
+# Copyright (c) Noldova.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Docs
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    name: Docs
+    uses: noldova-com/.github/.github/workflows/docs-image.yml@26ff41562ad2e9d3a3514bceee20c2a02f45273c # v2.15.0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      build: npm ci --no-audit --no-fund && npm run build
+      output: _build/docs/browser
+      image: ui-components-angular-docs

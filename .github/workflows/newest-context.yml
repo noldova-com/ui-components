@@ -1,0 +1,83 @@
+# @license
+# Copyright (c) Noldova.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Newest context
+
+on:
+  schedule:
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  ISSUE_TITLE: The kit fails its build or tests with the newest context in its peer range
+
+jobs:
+  versions:
+    name: Versions
+    uses: noldova-com/.github/.github/workflows/versions.yml@26ff41562ad2e9d3a3514bceee20c2a02f45273c # v2.15.0
+    permissions: {}
+
+  newest-context:
+    name: Build and test with the newest context
+    needs: versions
+    runs-on: ${{ fromJSON(needs.versions.outputs.runs-on-linux-x64) }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+      issues: write
+    steps:
+      - name: Check out the revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ needs.versions.outputs.node-version }}
+          package-manager-cache: false
+          registry-url: ${{ needs.versions.outputs.install-registry-url }}
+          scope: ${{ needs.versions.outputs.install-scope }}
+
+      - name: Move the kit to the newest context in its peer range
+        env:
+          NODE_AUTH_TOKEN: ${{ needs.versions.outputs.install-registry-url == 'https://npm.pkg.github.com' && github.token || '' }}
+        run: npm run newest-context
+
+      - name: Build the packages
+        env:
+          NODE_AUTH_TOKEN: ${{ needs.versions.outputs.install-registry-url == 'https://npm.pkg.github.com' && github.token || '' }}
+        run: npm run build
+
+      - name: Test the packages
+        run: npm run test -- --skip-test-details --skip-coverage-details
+
+      - name: Open or update the issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          body="The nightly build and tests of the kit against the newest context in its peer range failed: $RUN_URL"
+          number=$(gh issue list -R "$REPOSITORY" --state open --search "\"$ISSUE_TITLE\" in:title" --json number,title --jq "map(select(.title == env.ISSUE_TITLE)) | .[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" -R "$REPOSITORY" --body "$body"
+          else
+            gh issue create -R "$REPOSITORY" --title "$ISSUE_TITLE" --body "$body"
+          fi

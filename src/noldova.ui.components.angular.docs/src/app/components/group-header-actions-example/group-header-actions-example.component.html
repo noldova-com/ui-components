@@ -1,0 +1,19 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-group-header label="Drafts" countLabel="2 notes" controls="nol-docs-group-header-drafts" [count]="2" [(expanded)]="isOpen">
+  <button type="button" nol-icon-button icon="add" label="New draft"></button>
+</nol-group-header>
+<div id="nol-docs-group-header-drafts">
+  @if (isOpen()) {
+    <ul>
+      <li>Letter to the club</li>
+      <li>Packing list</li>
+    </ul>
+  }
+</div>

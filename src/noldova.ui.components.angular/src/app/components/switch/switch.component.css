@@ -1,0 +1,169 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nol-switch-label {
+  display: inline-flex;
+  flex: none;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  cursor: pointer;
+}
+
+.nol-switch-label:has([aria-disabled="true"]) {
+  cursor: default;
+}
+
+.nol-switch-label:has([aria-disabled="true"]) .nol-switch-text {
+  opacity: 0.5;
+}
+
+.nol-switch-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nol-switch-text:empty {
+  display: none;
+}
+
+.nol-switch-control {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  grid-template-rows: 1lh;
+  align-items: center;
+  height: 1lh;
+}
+
+.nol-switch-track {
+  box-sizing: border-box;
+  width: var(--nol-switch-width);
+  height: var(--nol-switch-height);
+  margin: 0;
+  border: var(--nol-border-width) solid var(--nol-checkbox-border);
+  border-radius: calc(var(--nol-switch-height) / 2);
+  background-color: var(--nol-checkbox);
+  appearance: none;
+  cursor: pointer;
+}
+
+.nol-switch-track:checked {
+  border-color: var(--nol-accent);
+  background-color: var(--nol-accent);
+}
+
+.nol-switch-track:not([aria-disabled="true"]):is(:focus-visible, [data-nol-state="Focus"]),
+.nol-switch-control:has(> .nol-switch-track[aria-disabled="true"]:is(:focus-visible, [data-nol-state="Focus"]))::after {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-switch-control::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: var(--nol-switch-width);
+  height: var(--nol-switch-height);
+  margin: auto;
+  border-radius: calc(var(--nol-switch-height) / 2);
+  pointer-events: none;
+}
+
+.nol-switch-knob {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc((var(--nol-switch-height) - var(--nol-switch-knob-size)) / 2);
+  width: var(--nol-switch-knob-size);
+  height: var(--nol-switch-knob-size);
+  margin-block: auto;
+  border-radius: 50%;
+  background-color: var(--nol-checkbox-border);
+  pointer-events: none;
+}
+
+.nol-switch-track:checked + .nol-switch-knob {
+  background-color: var(--nol-switch-knob);
+  inset-inline-start: calc(var(--nol-switch-width) - (var(--nol-switch-height) + var(--nol-switch-knob-size)) / 2);
+}
+
+.nol-switch-track[aria-disabled="true"],
+.nol-switch-track[aria-disabled="true"] + .nol-switch-knob {
+  outline: none;
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nol-switch-reason {
+  contain: inline-size;
+  margin-inline-end: calc(var(--nol-switch-width) + var(--nol-space-2));
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+  overflow-wrap: anywhere;
+}
+
+:host:has(.nol-switch-text:empty) .nol-switch-reason {
+  margin-inline-end: 0;
+}
+
+@media (forced-colors: active) {
+  .nol-switch-track,
+  .nol-switch-knob {
+    forced-color-adjust: none;
+  }
+
+  .nol-switch-track {
+    border-color: CanvasText;
+    background-color: Canvas;
+  }
+
+  .nol-switch-knob {
+    background-color: CanvasText;
+  }
+
+  .nol-switch-track:checked {
+    border-color: Highlight;
+    background-color: Highlight;
+  }
+
+  .nol-switch-track:checked + .nol-switch-knob {
+    background-color: HighlightText;
+  }
+
+  .nol-switch-track[aria-disabled="true"] {
+    border-color: GrayText;
+  }
+
+  .nol-switch-track[aria-disabled="true"]:checked {
+    background-color: GrayText;
+  }
+
+  .nol-switch-track[aria-disabled="true"] + .nol-switch-knob {
+    background-color: GrayText;
+  }
+
+  .nol-switch-track[aria-disabled="true"]:checked + .nol-switch-knob {
+    background-color: Canvas;
+  }
+
+  .nol-switch-label:has([aria-disabled="true"]),
+  .nol-switch-label:has([aria-disabled="true"]) * {
+    color: GrayText;
+  }
+}

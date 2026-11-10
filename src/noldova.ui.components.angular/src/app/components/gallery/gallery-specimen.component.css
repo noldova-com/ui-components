@@ -1,0 +1,48 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.nol-gallery-specimen {
+  display: grid;
+  gap: var(--nol-space-3);
+  min-width: 0;
+}
+
+.nol-gallery-specimen-name {
+  margin: 0;
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-label);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-label);
+}
+
+.nol-gallery-specimen-cells {
+  --nol-gallery-cell: 12.5rem;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, min(var(--nol-gallery-cell), 100%));
+  gap: var(--nol-space-4);
+  min-width: 0;
+}
+
+.nol-gallery-specimen-cells[data-size="Wide"] {
+  --nol-gallery-cell: calc(25rem + var(--nol-space-4));
+}
+
+.nol-gallery-specimen-cells[data-size="Full"] {
+  --nol-gallery-cell: 100%;
+}
+
+.nol-gallery-specimen-long {
+  display: grid;
+  min-width: 0;
+}

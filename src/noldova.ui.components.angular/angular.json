@@ -1,0 +1,237 @@
+{
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "analytics": false,
+    "cache": {
+      "enabled": false
+    }
+  },
+  "projects": {
+    "components": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest",
+            "runnerConfig": "vitest.config.mts",
+            "browsers": [
+              "chromiumHeadless"
+            ],
+            "browserViewport": "1280x800",
+            "include": [
+              "tests/**/*.spec.ts"
+            ],
+            "providersFile": "tests/test-providers.ts",
+            "setupFiles": [
+              "tests/shared-page.setup.ts",
+              "tests/browser-matchers.setup.ts",
+              "tests/kit-stylesheet.setup.ts"
+            ],
+            "watch": false,
+            "coverage": true,
+            "coverageInclude": [
+              "src/**/*.ts"
+            ],
+            "coverageReporters": [
+              "text",
+              "json-summary",
+              "json"
+            ],
+            "coverageThresholds": {
+              "statements": 100,
+              "branches": 100,
+              "functions": 100,
+              "lines": 100
+            },
+            "coverageExclude": [
+              "src/app/enums/**"
+            ]
+          }
+        },
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/angular/build",
+            "tsConfig": "tsconfig.spec.json",
+            "styles": [
+              "src/styles/kit.css"
+            ]
+          },
+          "configurations": {
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "bundle-typography": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-typography",
+            "browser": "tests/fixtures/kit-bundles/typography-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.typography.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-code-block": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-code-block",
+            "browser": "tests/fixtures/kit-bundles/code-block-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.code-block.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-highlighted-code-block": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-highlighted-code-block",
+            "browser": "tests/fixtures/kit-bundles/highlighted-code-block-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.highlighted-code-block.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-highlighting-worker": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-highlighting-worker",
+            "browser": "tests/fixtures/kit-bundles/highlighting-worker-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.highlighting-worker.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-message": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-message",
+            "browser": "tests/fixtures/kit-bundles/message-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.message.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-progress": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-progress",
+            "browser": "tests/fixtures/kit-bundles/progress-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.progress.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-menu": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-menu",
+            "browser": "tests/fixtures/kit-bundles/menu-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.menu.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
+    "bundle-button": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-button",
+            "browser": "tests/fixtures/kit-bundles/button-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.button.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    }
+  }
+}

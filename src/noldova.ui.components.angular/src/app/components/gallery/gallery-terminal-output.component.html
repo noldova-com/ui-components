@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.terminalOutput" [size]="sizes.Full" noHover noFocus>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-terminal-output [lines]="terminalOutputs.testRun" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.terminalOutputStylesCaption"><nol-terminal-output [lines]="terminalOutputs.styles" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.terminalOutputCappedCaption"><nol-terminal-output [lines]="terminalOutputs.log" [maxHeight]="8" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-terminal-output class="nol-gallery-narrow" [lines]="terminalOutputs.testRun" /></nol-gallery-cell>
+</nol-gallery-specimen>

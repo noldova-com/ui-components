@@ -1,0 +1,65 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-message-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  position: relative;
+  min-width: 0;
+}
+
+.nol-message-run-limit {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.nol-message-run-limit-height {
+  display: block;
+  height: var(--nol-message-collapsed-height);
+}
+
+.nol-message-run-body {
+  min-width: 0;
+}
+
+.nol-message-collapsed {
+  max-height: var(--nol-message-collapsed-height);
+  overflow: hidden;
+}
+
+.nol-message-clipped {
+  scroll-padding-block-end: var(--nol-space-6);
+  mask-image: linear-gradient(to bottom, black calc(100% - var(--nol-space-6)), transparent);
+}
+
+.nol-message-run-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+}
+
+.nol-markdown-view.nol-message-interim {
+  padding-inline-start: var(--nol-space-3);
+  border-inline-start: calc(var(--nol-border-width) * 2) solid var(--nol-border);
+  color: var(--nol-text-muted);
+}
+
+.nol-message-more {
+  align-self: flex-start;
+}
+
+@media (forced-colors: active) {
+  .nol-message-clipped {
+    mask-image: none;
+  }
+}

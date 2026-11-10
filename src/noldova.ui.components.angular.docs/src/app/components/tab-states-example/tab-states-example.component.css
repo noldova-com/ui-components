@@ -1,0 +1,18 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-2);
+}
+
+.nol-docs-tab-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nol-space-1);
+}

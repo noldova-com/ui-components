@@ -1,0 +1,56 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.tab">
+  <nol-gallery-cell [caption]="text.defaultState">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.defaultState"><nol-tab [label]="text.tabNormal" [icon]="text.glyphDescription" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.hover"><nol-tab nolGalleryHover [label]="text.tabNormal" [icon]="text.glyphDescription" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.selected">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.selected"><nol-tab [label]="text.tabSelected" [icon]="text.glyphDescription" [selected]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabPreviewCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabPreviewCaption"><nol-tab [label]="text.tabPreview" [preview]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.working">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.working"><nol-tab [label]="text.tabWorking" [working]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabWaitingCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabWaitingCaption"><nol-tab [label]="text.tabWaiting" [waiting]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabBadgeCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabBadgeCaption"><nol-tab [label]="text.tabBadge" [badge]="text.tabBadgeLabel" [badgeCount]="3" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabNotClosableCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabNotClosableCaption"><nol-tab [label]="text.tabNotClosable" [closable]="false" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabImageCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabImageCaption"><nol-tab [label]="text.tabPage" [image]="tabImage" [imageGlyph]="text.glyphPublic" [selected]="true" /><nol-tab
+      [label]="text.tabSite" [imageGlyph]="text.glyphPublic" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabStatusCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabStatusCaption"><nol-tab [label]="text.tabSite" [status]="tabFailed" [selected]="true" /><nol-tab
+      [label]="text.tabBlockedSite" [status]="tabBlocked" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabLoadingCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabLoadingCaption"><nol-tab [label]="text.tabSite" [image]="tabImage" [imageGlyph]="text.glyphPublic" [working]="true"
+      [leadingSpinner]="true" [selected]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabMarkerCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.tabMarkerCaption"><nol-tab [label]="text.tabPage" [image]="tabImage" [imageGlyph]="text.glyphPublic" [underline]="text.tabUnderline"
+      /><nol-tab [label]="text.tabOpened" [image]="tabImage" [imageGlyph]="text.glyphPublic" [marker]="tabMarker" [underline]="text.tabUnderline" [selected]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.focus"><nol-tab nolGalleryFocus [label]="text.tabSelected" [icon]="text.glyphDescription" [selected]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-strip" role="tablist" [attr.aria-label]="text.longCaption"><nol-tab class="nol-gallery-narrow" [label]="text.tabLong" [icon]="text.glyphDescription" /></div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

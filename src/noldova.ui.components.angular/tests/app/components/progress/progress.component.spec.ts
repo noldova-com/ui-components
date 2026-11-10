@@ -1,0 +1,131 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { Component, signal } from "@angular/core";
+import { type ComponentFixture, TestBed } from "@angular/core/testing";
+
+import { ProgressComponent } from "../../../../src/app/components/progress/progress.component";
+import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomFixture } from "../../../fixtures/dom.fixture";
+import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { MotionFixture } from "../../../fixtures/motion.fixture";
+
+@Component({
+  imports: [ProgressComponent],
+  template: `
+    <div class="frame" [style.width]="'200px'"><nol-progress label="Syncing the clock" [value]="value()" /></div>
+    <div class="popover" [style.background]="'var(--nol-menu)'"><nol-progress label="Syncing the clock" [value]="0.5" /></div>
+    <div class="toast" [style.background]="'var(--nol-notification)'"><nol-progress label="Syncing the clock" [value]="0.5" /></div>
+  `
+})
+class ProgressHostComponent {
+  public readonly value = signal<number | null>(null);
+}
+
+describe("ProgressComponent", () => {
+  let fixture: ComponentFixture<ProgressHostComponent>;
+  let host: ProgressHostComponent;
+
+  beforeEach(() => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(ProgressHostComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  afterEach(async () => {
+    AppearanceFixture.reset();
+    await MotionFixture.resetAsync();
+  });
+
+  const progress = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-progress");
+  const bar = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), ".nol-progress-bar");
+
+  function update(value: number | null): void {
+    host.value.set(value);
+    fixture.detectChanges();
+  }
+
+  it("is a progress bar that names its work and reports its fraction only when it knows it", () => {
+    expect(progress().getAttribute("role")).toBe("progressbar");
+    expect(progress().getAttribute("aria-label")).toBe("Syncing the clock");
+    expect(progress().getAttribute("aria-valuemin")).toBe("0");
+    expect(progress().getAttribute("aria-valuemax")).toBe("1");
+    expect(progress().hasAttribute("aria-valuenow")).toBe(false);
+    expect(progress().classList.contains("nol-progress-indeterminate")).toBe(true);
+
+    update(0.25);
+
+    expect(progress().getAttribute("aria-valuenow")).toBe("0.25");
+    expect(progress().classList.contains("nol-progress-indeterminate")).toBe(false);
+  });
+
+  it("keeps a fraction outside its range inside it", () => {
+    update(1.5);
+    expect(progress().getAttribute("aria-valuenow")).toBe("1");
+
+    update(-0.5);
+    expect(progress().getAttribute("aria-valuenow")).toBe("0");
+  });
+
+  it("fills its track by the fraction and a part of it, moving, when the fraction is unknown", () => {
+    update(0.5);
+    expect(bar().getBoundingClientRect().width).toBe(100);
+    expect(getComputedStyle(bar()).animationName).toBe("none");
+
+    update(null);
+    expect(bar().getBoundingClientRect().width).toBe(80);
+    expect(getComputedStyle(bar()).animationName).toContain("nol-progress-slide");
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws its bar in the ${theme.id} theme's progress color over a fainter track in ${mode} mode`, () => {
+        AppearanceFixture.apply(theme, mode);
+        const track = getComputedStyle(progress()).backgroundColor;
+        const fill = getComputedStyle(bar()).backgroundColor;
+
+        expect(fill).toBe(AppearanceFixture.readColor(theme, mode, "progress"));
+        expect(fill).not.toBe(track);
+        expect(bar().getBoundingClientRect().height).toBe(2);
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      for (const surface of ["popover", "toast"])
+        it(`keeps its bar at least 3:1 against the ${surface} it sits on in the ${theme.id} theme in ${mode} mode`, () => {
+          AppearanceFixture.apply(theme, mode);
+          const fill = getComputedStyle(fixture.nativeElement.querySelector(`.${surface} .nol-progress-bar`)).backgroundColor;
+          const ground = getComputedStyle(fixture.nativeElement.querySelector(`.${surface}`)).backgroundColor;
+
+          expect(fill.startsWith("rgb(")).toBe(true);
+          expect(ground.startsWith("rgb(")).toBe(true);
+          expect(AppearanceFixture.contrast(fill, ground)).toBeGreaterThanOrEqual(3);
+        });
+
+  it("outlines its track in the system text color and fills its fraction in the selection color in forced colors", async () => {
+    await ForcedColorsFixture.activateAsync();
+    try {
+      update(0.5);
+      const track = getComputedStyle(progress());
+
+      expect([track.outlineStyle, track.outlineWidth, track.outlineColor, track.backgroundColor, getComputedStyle(bar()).backgroundColor, bar().getBoundingClientRect().width])
+        .toEqual(["solid", "1px", ForcedColorsFixture.resolve("CanvasText"), ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("Highlight"), 100]);
+    } finally {
+      await ForcedColorsFixture.resetAsync();
+    }
+  });
+
+  it("shows an unknown amount as a still part of the track when the person prefers reduced motion", async () => {
+    await MotionFixture.reduceAsync();
+
+    expect(getComputedStyle(bar()).animationName).toBe("none");
+    expect(bar().getBoundingClientRect().width).toBe(80);
+    expect(bar().getBoundingClientRect().left - progress().getBoundingClientRect().left).toBe(60);
+  });
+});

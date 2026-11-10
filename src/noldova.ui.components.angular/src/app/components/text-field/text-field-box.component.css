@@ -1,0 +1,124 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-text-field-box {
+  --nol-text-field-box-inset: max(0px, (var(--nol-field-height) - var(--nol-border-width) * 2 - var(--nol-icon-button-target)) / 2);
+
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  box-sizing: border-box;
+  width: var(--nol-text-field-width);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.nol-text-field-box > input.nol-text-field {
+  grid-area: 1 / 1 / 2 / 3;
+  width: auto;
+  padding-inline-end: calc(var(--nol-field-padding) + var(--nol-icon-button-target) + var(--nol-text-field-box-inset));
+}
+
+.nol-text-field-box:has(> .nol-text-field-start) {
+  --nol-text-field-box-start: calc(var(--nol-icon) + var(--nol-space-2));
+}
+
+.nol-text-field-box:has(> .nol-text-field-start) > input.nol-text-field {
+  padding-inline-start: calc(var(--nol-field-padding) + var(--nol-text-field-box-start));
+}
+
+.nol-text-field-box > .nol-text-field-start {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: start;
+  margin-inline: calc(var(--nol-border-width) + var(--nol-field-padding));
+  color: var(--nol-text-muted);
+  pointer-events: none;
+}
+
+.nol-text-field-box:has(> .nol-text-field-start):not(:has(> .nol-icon-button, > .nol-text-field-end)) > input.nol-text-field {
+  padding-inline-end: var(--nol-field-padding);
+}
+
+.nol-text-field-box:has(> input.nol-text-field:disabled) > .nol-text-field-start {
+  opacity: 0.5;
+
+  @media (forced-colors: active) {
+    color: GrayText;
+  }
+}
+
+.nol-text-field-box > .nol-icon-button {
+  grid-area: 1 / 2;
+  align-self: center;
+  margin-inline-end: calc(var(--nol-border-width) + var(--nol-text-field-box-inset));
+}
+
+.nol-text-field-box:has(> .nol-text-field-end) {
+  --nol-text-field-box-text-minimum: 4rem;
+
+  container-type: inline-size;
+}
+
+.nol-text-field-box:has(> .nol-text-field-end) > input.nol-text-field {
+  padding-inline-end: calc(var(--nol-field-padding) + var(--nol-space-2) + var(--nol-text-field-end-width, 0px));
+}
+
+.nol-text-field-box > .nol-text-field-end {
+  grid-area: 1 / 2;
+  align-self: center;
+  overflow: hidden;
+  min-width: 0;
+  max-width: max(0px, 100cqi - var(--nol-border-width) * 2 - var(--nol-field-padding) * 2 - var(--nol-text-field-box-start, 0px) - var(--nol-space-2)
+    - var(--nol-text-field-box-text-minimum));
+  margin-inline-end: calc(var(--nol-border-width) + var(--nol-field-padding));
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.nol-text-field-box:has(> input.nol-text-field:disabled) > .nol-text-field-end {
+  opacity: 0.5;
+
+  @media (forced-colors: active) {
+    color: GrayText;
+  }
+}
+
+.nol-text-field-box:has(> .nol-icon-button:is(:focus-visible, [data-nol-state="Focus"])) > input.nol-text-field:not([aria-invalid="true"]) {
+  border-color: var(--nol-accent);
+}
+
+@media (forced-colors: active) {
+  .nol-text-field-box > input.nol-text-field[aria-invalid="true"] {
+    padding-inline-end: calc(var(--nol-field-padding) + var(--nol-icon-button-target) + var(--nol-text-field-box-inset) - var(--nol-border-width) * 2);
+  }
+
+  .nol-text-field-box:has(> .nol-text-field-start) > input.nol-text-field[aria-invalid="true"] {
+    padding-inline-start: calc(var(--nol-field-padding) + var(--nol-text-field-box-start) - var(--nol-border-width));
+  }
+
+  .nol-text-field-box:has(> .nol-text-field-start):not(:has(> .nol-icon-button, > .nol-text-field-end)) > input.nol-text-field[aria-invalid="true"] {
+    padding-inline-end: calc(var(--nol-field-padding) - var(--nol-border-width));
+  }
+
+  .nol-text-field-box:has(> .nol-text-field-end) > input.nol-text-field[aria-invalid="true"] {
+    padding-inline-end: calc(var(--nol-field-padding) + var(--nol-space-2) + var(--nol-text-field-end-width, 0px) - var(--nol-border-width));
+  }
+
+  .nol-text-field-box > input.nol-text-field[aria-invalid="true"] ~ .nol-icon-button::before {
+    width: calc(var(--nol-icon-button) - var(--nol-border-width) * 2);
+    height: calc(var(--nol-icon-button) - var(--nol-border-width) * 2);
+  }
+
+  .nol-text-field-box:has(> .nol-icon-button:is(:focus-visible, [data-nol-state="Focus"])) > input.nol-text-field {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}

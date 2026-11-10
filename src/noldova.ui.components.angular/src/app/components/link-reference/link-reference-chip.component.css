@@ -1,0 +1,65 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--nol-space-1);
+  max-width: min(100%, var(--nol-reference-chip-max-width));
+  text-decoration-color: color-mix(in srgb, var(--nol-link) 45%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.nol-link-reference-chip-mark,
+.nol-link-reference-chip-slot,
+.nol-link-reference-chip-icon {
+  align-self: center;
+}
+
+.nol-link-reference-chip-slot {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--nol-reference-mark);
+  height: var(--nol-reference-mark);
+  border: var(--nol-border-width) dashed color-mix(in srgb, currentColor 70%, transparent);
+  border-radius: var(--nol-reference-mark-slot-radius);
+}
+
+.nol-link-reference-chip-mark {
+  width: var(--nol-reference-mark);
+  height: var(--nol-reference-mark);
+  color: var(--nol-text-strong);
+}
+
+.nol-link-reference-chip-icon {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  color: var(--nol-link-reference-state, var(--nol-text-muted));
+}
+
+.nol-link-reference-chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  :host {
+    text-decoration-color: LinkText;
+  }
+
+  .nol-link-reference-chip-mark,
+  .nol-link-reference-chip-icon {
+    color: LinkText;
+  }
+
+  .nol-link-reference-chip-slot {
+    border-color: LinkText;
+  }
+}

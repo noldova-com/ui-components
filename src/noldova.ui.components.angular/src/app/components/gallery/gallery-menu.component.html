@@ -1,0 +1,126 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.menu" [size]="sizes.Wide">
+  <nol-gallery-cell [caption]="text.menuRowsCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+      <button type="button" nol-menu-item [label]="text.menuPlain"></button>
+      <button type="button" nol-menu-item nolGalleryHover [label]="text.menuHovered"></button>
+      <button type="button" nol-menu-item [label]="text.menuIcon" [icon]="text.glyphAdd"></button>
+      <button type="button" nol-menu-item [label]="text.menuShortcut" [shortcut]="text.menuShortcutKeys"></button>
+      <button type="button" nol-menu-item [label]="text.menuChecked" [checked]="true"></button>
+      <button type="button" nol-menu-item [label]="text.menuCheckbox" [checkbox]="true" [checked]="isChecked()" (triggered)="isChecked.set(!isChecked())"></button>
+      <nol-menu-separator />
+      <button type="button" nol-menu-item [label]="text.menuDisabled" [disabled]="true"></button>
+      <button type="button" nol-menu-item [label]="text.menuSubmenu" [nolMenuTriggerFor]="submenu"></button>
+      <button type="button" nol-menu-item [label]="text.menuLong"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuDangerCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+      <button type="button" nol-menu-item [label]="text.menuDanger" [icon]="text.glyphDelete" [danger]="true"></button>
+      <button type="button" nol-menu-item nolGalleryHover [label]="text.menuDangerHovered" [icon]="text.glyphDelete" [danger]="true"></button>
+      <button type="button" nol-menu-item nolGalleryFocus [label]="text.menuDangerFocused" [icon]="text.glyphDelete" [danger]="true"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuGroupsCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+      <nol-menu-group [label]="text.menuGroupSort">
+        <button type="button" nol-menu-item [label]="text.menuGroupName" [checked]="true"></button>
+        <button type="button" nol-menu-item [label]="text.menuGroupDate" [checked]="false"></button>
+      </nol-menu-group>
+      <nol-menu-group [label]="text.menuGroupShow">
+        <button type="button" nol-menu-item [label]="text.menuGroupHidden" [checkbox]="true" [checked]="false"></button>
+      </nol-menu-group>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuGroupActionCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu nol-gallery-menu-action">
+      <nol-menu-group [label]="text.menuGroupModel">
+        <button type="button" nol-icon-button nolMenuGroupAction [icon]="text.glyphRefresh" [label]="text.menuRefreshLabel" [nolMenuOpensOn]="false"></button>
+        <button type="button" nol-menu-item [label]="text.menuGroupDefaultModel" [tag]="text.menuTag" [checked]="true"></button>
+        <button type="button" nol-menu-item [label]="text.menuGroupLargeModel" [checked]="false"></button>
+      </nol-menu-group>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuRespondersCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+      <nol-menu-group [label]="text.menuGroupResponder" [maxRows]="text.menuResponderRows">
+        @for (responder of text.menuResponders; track responder.name; let first = $first) {
+          <button type="button" nol-menu-item [label]="responder.name" [description]="responder.description" [checked]="first">
+            <nol-avatar nolMenuItemLead [name]="responder.name" [size]="avatarSizes.Small" [decorative]="true" />
+          </button>
+        }
+      </nol-menu-group>
+      <nol-menu-separator />
+      <button type="button" nol-menu-item [label]="text.menuGroupModel" [value]="text.menuModelValue" [nolMenuTriggerFor]="submenu"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuMinWidthCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu nol-gallery-menu-wide" [minWidth]="text.menuMinWidth">
+      <button type="button" nol-menu-item [label]="text.menuPlain"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.triggerCaption">
+    <button type="button" nol-button [variant]="variants.Secondary" [nolMenuTriggerFor]="popup">{{ text.menuTrigger }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuOpensOnCaption">
+    <button type="button" nol-button class="nol-gallery-opens-on" [variant]="variants.Secondary" [nolMenuTriggerFor]="opensOn">{{ text.menuOpensOnTrigger }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.contextMenuCaption">
+    <div class="nol-gallery-context" tabindex="0" [nolContextMenuTriggerFor]="popup">{{ text.contextMenu }}</div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuBar">
+    <nol-menu-bar [label]="text.menuBarLabel">
+      <button type="button" nol-menu-bar-item [label]="text.file" [nolMenuTriggerFor]="popup"></button>
+      <button type="button" nol-menu-bar-item [label]="text.edit" [nolMenuTriggerFor]="popup"></button>
+    </nol-menu-bar>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.menuBarHover">
+    <nol-menu-bar [label]="text.menuBarHover">
+      <button type="button" nol-menu-bar-item nolGalleryHover [label]="text.file" [nolMenuTriggerFor]="popup"></button>
+      <button type="button" nol-menu-bar-item [label]="text.edit" [nolMenuTriggerFor]="popup"></button>
+    </nol-menu-bar>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+      <button type="button" nol-menu-item nolGalleryFocus [label]="text.menuPlain"></button>
+      <button type="button" nol-menu-item [label]="text.menuIcon" [icon]="text.glyphAdd"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu nol-gallery-narrow">
+      <button type="button" nol-menu-item [label]="text.menuLong"></button>
+      <button type="button" nol-menu-item [label]="text.menuLong" [tag]="text.menuTag"></button>
+    </nol-menu>
+  </nol-gallery-cell>
+  <ng-template #popup>
+    <nol-menu>
+      <button type="button" nol-menu-item [label]="text.menuIcon" [icon]="text.glyphAdd"></button>
+      <button type="button" nol-menu-item [label]="text.menuChecked" [checked]="true"></button>
+      <button type="button" nol-menu-item [label]="text.menuSubmenu" [nolMenuTriggerFor]="submenu"></button>
+    </nol-menu>
+  </ng-template>
+  <ng-template #opensOn>
+    <nol-menu>
+      <nol-menu-group [label]="text.menuGroupSort">
+        <button type="button" nol-menu-item [label]="text.menuGroupName" [checked]="true"></button>
+        <button type="button" nol-menu-item [label]="text.menuGroupDate" [checked]="false"></button>
+      </nol-menu-group>
+      <nol-menu-group [label]="text.menuGroupModel">
+        <button type="button" nol-menu-item [label]="text.menuGroupDefaultModel"></button>
+        <button type="button" nol-menu-item [label]="text.menuGroupLargeModel" [nolMenuOpensOn]="true"></button>
+      </nol-menu-group>
+    </nol-menu>
+  </ng-template>
+  <ng-template #submenu>
+    <nol-menu>
+      <button type="button" nol-menu-item [label]="text.submenuRow"></button>
+    </nol-menu>
+  </ng-template>
+</nol-gallery-specimen>

@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (shownImage(); as image) {
+  <img #picture class="nol-avatar-image" [src]="image" alt="" (error)="fail(picture.getAttribute('src'))">
+} @else {
+  <span #letters class="nol-avatar-initials">{{ shownInitials() }}</span>
+}

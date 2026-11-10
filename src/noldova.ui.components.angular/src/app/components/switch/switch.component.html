@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<label class="nol-switch-label">
+  <span class="nol-switch-text"><ng-content /></span>
+  <span class="nol-switch-control">
+    <input #track type="checkbox" role="switch" class="nol-switch-track" [checked]="checked()" [attr.aria-label]="label()"
+      [attr.aria-disabled]="disabled() ? resources.trueValue : null" [attr.aria-describedby]="shownReason() === null ? null : reasonId"
+      (click)="refuse($event)" (change)="askOwnerToToggle(track)" />
+    <span class="nol-switch-knob" aria-hidden="true"></span>
+  </span>
+</label>
+@if (shownReason(); as reason) {
+  <span class="nol-switch-reason" [id]="reasonId">{{ reason }}</span>
+}

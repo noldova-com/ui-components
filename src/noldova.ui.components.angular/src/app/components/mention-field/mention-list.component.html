@@ -1,0 +1,22 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@for (row of rows(); track row.candidate.id; let index = $index) {
+  @if (row.section; as section) {
+    <div class="nol-mention-section" aria-hidden="true">{{ section }}</div>
+  }
+  <div class="nol-mention-option" role="option" [id]="row.id" [attr.aria-selected]="index === active()" [attr.aria-label]="row.name"
+    [class.nol-mention-option-unavailable]="row.candidate.unavailable" (click)="chosen.emit(row.candidate)">
+    <nol-avatar [name]="row.candidate.name" [image]="row.candidate.image" [initials]="row.candidate.initials" [color]="row.candidate.color" [colorKey]="row.candidate.id"
+      [filledColor]="row.candidate.avatarColor" [size]="small" [decorative]="true" />
+    <span class="nol-mention-name" data-truncates>{{ row.candidate.name }}</span>
+    @if (row.candidate.note; as note) {
+      <span class="nol-mention-note" data-truncates>{{ note }}</span>
+    }
+  </div>
+}

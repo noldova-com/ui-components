@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-radio-group label="Line endings" [(value)]="ending">
+  <nol-radio value="lf">Line feed</nol-radio>
+  <nol-radio value="crlf">Carriage return and line feed</nol-radio>
+  <nol-radio value="keep" [disabled]="true">As each file has them</nol-radio>
+</nol-radio-group>

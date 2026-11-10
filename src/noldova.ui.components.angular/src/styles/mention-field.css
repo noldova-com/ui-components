@@ -1,0 +1,84 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-mention-field {
+  position: relative;
+  background-color: transparent !important;
+  -webkit-text-fill-color: transparent;
+}
+
+.nol-mention-field::placeholder {
+  -webkit-text-fill-color: currentcolor;
+}
+
+.nol-mention-field::selection {
+  background-color: var(--nol-text-selection);
+  color: var(--nol-text-selection-foreground);
+}
+
+@media (forced-colors: none) {
+  .nol-mention-field::spelling-error,
+  .nol-mention-field::grammar-error {
+    color: transparent;
+  }
+}
+
+.nol-mention-backdrop {
+  position: absolute;
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.nol-mention-chip {
+  color: var(--nol-mention);
+  -webkit-text-stroke: 0.03em currentcolor;
+}
+
+.nol-mention-code {
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-inline-code);
+  box-decoration-break: clone;
+}
+
+.nol-mention-code-mark {
+  color: transparent;
+}
+
+@media (forced-colors: active) {
+  .nol-mention-field {
+    -webkit-text-fill-color: currentcolor;
+  }
+
+  .nol-mention-field::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  .nol-mention-backdrop {
+    forced-color-adjust: none;
+  }
+
+  .nol-mention-backdrop,
+  .nol-mention-chip,
+  .nol-mention-code-mark {
+    color: transparent !important;
+  }
+
+  .nol-mention-chip {
+    outline: 1px solid Highlight;
+  }
+
+  .nol-mention-code {
+    background-color: transparent;
+    outline: 1px dashed CanvasText;
+  }
+}

@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@for (scope of scopes(); track scope.id) {
+  <section #frame class="nol-gallery-scope-frame" [nolGalleryScope]="scope.theme" [nolGalleryMode]="scope.mode" [attr.aria-label]="scope.label" [attr.data-theme]="scope.theme.id"
+    [attr.data-mode]="scope.mode">
+    <h2 class="nol-gallery-scope-title">{{ scope.label }}</h2>
+    @for (section of kitSections; track $index) {
+      <ng-container *ngComponentOutlet="section; injector: injectorOf(frame)" />
+    }
+    @for (section of sections(); track $index) {
+      <ng-container *ngComponentOutlet="section; injector: injectorOf(frame)" />
+    }
+  </section>
+}

@@ -1,0 +1,132 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  gap: 0.125rem;
+  min-width: var(--nol-toolbar-button);
+  max-width: 100%;
+  height: var(--nol-toolbar-button);
+  padding: 0 var(--nol-pill-padding);
+  border: 0;
+  border-radius: var(--nol-radius-small);
+  background: none;
+  color: var(--nol-icon-color);
+  font: inherit;
+  white-space: nowrap;
+  vertical-align: middle;
+  outline: none;
+}
+
+:host(.nol-toolbar-button-icon-only) {
+  padding: 0;
+}
+
+:host(:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])),
+:host([aria-pressed="true"]) {
+  background-color: var(--nol-toolbar-hover);
+}
+
+:host(:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+:host([aria-pressed="true"]) {
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+:host(:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+:host([aria-disabled="true"]) {
+  cursor: default;
+}
+
+:host([aria-disabled="true"]) > * {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) {
+  :host([aria-disabled="true"]),
+  :host([aria-disabled="true"]) * {
+    color: GrayText;
+  }
+}
+
+:host([aria-disabled="true"][aria-pressed="true"]) {
+  background-color: color-mix(in srgb, var(--nol-toolbar-hover) 50%, transparent);
+}
+
+@media (forced-colors: active) {
+  :host([aria-disabled="true"][aria-pressed="true"]) {
+    --nol-text: GrayText;
+    --nol-text-muted: GrayText;
+    --nol-menu-text: GrayText;
+    --nol-icon-color: GrayText;
+    --nol-list-highlight: GrayText;
+    --nol-list-active-text: GrayText;
+
+    color: GrayText;
+    background-color: Canvas;
+  }
+
+  :host([aria-disabled="true"][aria-pressed="true"]:not(:focus-visible, [data-nol-state="Focus"])) {
+    outline: var(--nol-border-width) solid GrayText;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-toolbar-button-glyph,
+.nol-toolbar-button-chevron {
+  flex: none;
+  font-size: var(--nol-icon);
+}
+
+.nol-toolbar-button-label {
+  color: var(--nol-text);
+}
+
+:host(.nol-toolbar-button-busy) {
+  --nol-progress: currentColor;
+
+  position: relative;
+}
+
+:host(.nol-toolbar-button-busy) > :not(.nol-toolbar-button-spinner) {
+  opacity: 0;
+}
+
+.nol-toolbar-button-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}

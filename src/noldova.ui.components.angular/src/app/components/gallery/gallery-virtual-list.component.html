@@ -1,0 +1,35 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.virtualList" [size]="sizes.Wide" noHover>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-virtual-list class="nol-gallery-list" [label]="text.virtualListLabel" [source]="listItems" [selected]="listSelected()" (activated)="listSelected.set($event.index)">
+      <ng-template [nolVirtualRow]="listItems" let-item>{{ item }}</ng-template>
+    </nol-virtual-list>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.virtualListLoadingCaption">
+    <nol-virtual-list class="nol-gallery-list" [label]="text.virtualListLabel" [source]="listLoading">
+      <ng-template [nolVirtualRow]="listLoading" let-item>{{ item }}</ng-template>
+    </nol-virtual-list>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-virtual-list class="nol-gallery-list" [nolGalleryFocus]="focusedRow" [label]="text.virtualListLabel" [source]="listItems">
+      <ng-template [nolVirtualRow]="listItems" let-item>{{ item }}</ng-template>
+    </nol-virtual-list>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.error">
+    <nol-virtual-list class="nol-gallery-list" [label]="text.virtualListLabel" [source]="listFailing">
+      <ng-template [nolVirtualRow]="listFailing" let-item>{{ item }}</ng-template>
+    </nol-virtual-list>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-virtual-list class="nol-gallery-list nol-gallery-narrow" [label]="text.virtualListLabel" [source]="listLong">
+      <ng-template [nolVirtualRow]="listLong" let-item>{{ item }}</ng-template>
+    </nol-virtual-list>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

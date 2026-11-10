@@ -1,0 +1,44 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-terminal-output {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.nol-terminal-output-sample {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  visibility: hidden;
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-terminal);
+  line-height: normal;
+  pointer-events: none;
+}
+
+.nol-terminal-output-body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.375rem var(--nol-space-2);
+  overflow-y: auto;
+  background-color: var(--nol-terminal-background);
+  color: var(--nol-terminal-foreground);
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-terminal);
+  line-height: var(--nol-terminal-output-row, var(--nol-line-terminal));
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.nol-terminal-output-body ::selection,
+.nol-terminal-output-body::selection {
+  background-color: var(--nol-terminal-selection);
+  color: var(--nol-terminal-selection-foreground);
+}

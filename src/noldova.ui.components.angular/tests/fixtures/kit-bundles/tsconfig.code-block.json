@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "code-block-app.fixture.ts"
+  ]
+}

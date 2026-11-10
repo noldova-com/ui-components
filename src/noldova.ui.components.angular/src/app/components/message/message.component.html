@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<ng-template #timeTemplate>
+  <time class="nol-message-time" tabindex="0" [attr.datetime]="isoTime()" [attr.aria-label]="absoluteTime()" [nolTooltip]="absoluteTime()">{{ shownTime() }}</time>
+</ng-template>
+<ng-template #actionsTemplate>
+  <div class="nol-message-actions" nolToolbar [nolToolbarLabel]="partResources.messageActionsLabel" [nolToolbarItems]="actionItems()">
+    <ng-content select="[nolMessageAction]" />
+    <button type="button" nol-icon-button nolToolbarItem class="nol-message-copy" [class.nol-message-copied]="isCopied()" [icon]="copyGlyph()" [label]="copyLabel()"
+      [nolTooltip]="copyLabel()" (click)="copy()"></button>
+  </div>
+</ng-template>
+<ng-template #footerEndTemplate>
+  <div class="nol-message-footer-end">
+    <ng-content select="[nolMessageFooterEnd]" />
+  </div>
+</ng-template>
+<ng-template #footerTemplate>
+  <div class="nol-message-footer">
+    <ng-container *ngTemplateOutlet="actionsTemplate" />
+    <ng-container *ngTemplateOutlet="timeTemplate" />
+    @if (hasFooterEnd()) {
+      <ng-container *ngTemplateOutlet="footerEndTemplate" />
+    }
+  </div>
+</ng-template>
+<ng-template #avatarTemplate>
+  <nol-avatar class="nol-message-avatar" [name]="author().name" [image]="author().avatar" [initials]="author().initials" [color]="author().accent" [decorative]="true"
+    [size]="isColumn() ? avatarSizes.Small : avatarSizes.Normal" [filledColor]="author().avatarColor" [unavailable]="author().unavailable"
+    [nolTooltip]="author().name" [nolTooltipDescription]="authorDescription()" [nolTooltipDisabled]="!authorDescription()" />
+</ng-template>
+@if (isRow()) {
+  <div class="nol-message-gutter">
+    @if (!continuation()) {
+      <ng-container *ngTemplateOutlet="avatarTemplate" />
+    }
+  </div>
+}
+<div class="nol-message-main">
+  <span class="nol-message-label" hidden [attr.id]="labelId()">{{ label() }}</span>
+  @if (isRow() && !continuation()) {
+    <div class="nol-message-header">
+      <span class="nol-message-author" [class.nol-message-author-unavailable]="author().unavailable" data-truncates [attr.tabindex]="authorDescription() ? 0 : null"
+        [nolTooltip]="author().name" [nolTooltipDescription]="authorDescription()" [nolTooltipDisabled]="!authorDescription()">{{ author().name }}</span>
+      <ng-container *ngTemplateOutlet="timeTemplate" />
+    </div>
+  } @else if (isColumn() && !isBubble() && header()) {
+    <div class="nol-message-header">
+      @if (author().kind !== authorKinds.System) {
+        <ng-container *ngTemplateOutlet="avatarTemplate" />
+      }
+      <span class="nol-message-author" [class.nol-message-author-unavailable]="author().unavailable" data-truncates [attr.tabindex]="authorDescription() ? 0 : null"
+        [nolTooltip]="author().name" [nolTooltipDescription]="authorDescription()" [nolTooltipDisabled]="!authorDescription()">{{ author().name }}</span>
+      <ng-content select="[nolMessageHeader]" />
+      @if (!hasFooter()) {
+        <ng-container *ngTemplateOutlet="actionsTemplate" />
+      }
+    </div>
+  } @else if (isColumn() && !isBubble() && !hasFooter()) {
+    <ng-container *ngTemplateOutlet="actionsTemplate" />
+  }
+  <div class="nol-message-content">
+    @if (isEmpty()) {
+      @if (!isStreaming()) {
+        <p class="nol-message-empty">{{ partResources.messageEmptyText }}</p>
+      }
+    } @else {
+      @for (part of parts(); track part.key) {
+        @if (part.isRun) {
+          <nol-message-run [blocks]="part.blocks" [streaming]="isStreaming()" [collapsible]="!isColumn()" [entering]="entering()" [mentions]="mentions()"
+            [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"
+            (fileActivate)="fileActivate.emit($event)" (shellRun)="shellRun.emit($event)" />
+        } @else {
+          @for (block of part.blocks; track $index) {
+            @if (isAttachment(block) && block.picture; as picture) {
+              <button type="button" class="nol-message-picture" [attr.data-nol-attachment]="block.id" [attr.aria-label]="block.name" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip"
+                [style.--nol-message-picture-width]="picture.width + 'px'" [style.--nol-message-picture-ratio]="picture.ratio" (click)="attachmentOpen.emit(block.id)">
+                <img class="nol-message-picture-image" [src]="picture.source" alt="" [width]="picture.width" [height]="picture.height">
+              </button>
+            } @else if (isAttachment(block)) {
+              <button type="button" class="nol-message-attachment" [attr.data-nol-attachment]="block.id" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip" (click)="attachmentOpen.emit(block.id)">
+                @if (block.preview; as preview) {
+                  <img class="nol-message-attachment-preview" [src]="preview" alt="">
+                } @else {
+                  <span class="nol-message-attachment-mark"><nol-file-badge [fileName]="block.name" /></span>
+                }
+                <span class="nol-message-attachment-text">
+                  <span class="nol-message-attachment-name" data-truncates>{{ block.name }}</span>
+                  <span class="nol-message-attachment-size">{{ sizeOf(block) }}</span>
+                </span>
+              </button>
+            } @else if (isSlot(block)) {
+              @if (slotOf(block.id); as slot) {
+                <ng-container *ngTemplateOutlet="slot" />
+              }
+            }
+          }
+        }
+      }
+    }
+  </div>
+  @if (isBubble() && hasFooter()) {
+    <ng-container *ngTemplateOutlet="footerTemplate" />
+  }
+  @if (!isColumn()) {
+    @switch (status()) {
+      @case (statuses.Streaming) {
+        <div class="nol-message-status">
+          <nol-spinner [isDelayed]="false" />
+          <span>{{ partResources.messageStreamingLabel }}</span>
+        </div>
+      }
+      @case (statuses.Cancelled) {
+        <div class="nol-message-status">
+          <span class="material-symbols-rounded nol-message-status-glyph" aria-hidden="true">{{ partResources.messageCancelledGlyph }}</span>
+          <span>{{ partResources.messageCancelledLabel }}</span>
+        </div>
+      }
+      @case (statuses.Error) {
+        <div class="nol-message-error">
+          <span class="material-symbols-rounded nol-message-status-glyph" aria-hidden="true">{{ partResources.messageErrorGlyph }}</span>
+          <span class="nol-message-error-text">{{ errorText() }}</span>
+          @if (retries.isListened()) {
+            <button type="button" nol-button class="nol-message-retry" [variant]="variants.Secondary" (click)="retries.emit()">{{ partResources.messageRetryLabel }}</button>
+          }
+        </div>
+      }
+    }
+  }
+  @if (isColumn() && !isBubble()) {
+    @if (hasFooter()) {
+      <ng-container *ngTemplateOutlet="footerTemplate" />
+    }
+  } @else if (isRow()) {
+    @if (hasFooterEnd()) {
+      <div #tools class="nol-message-tools">
+        <ng-container *ngTemplateOutlet="actionsTemplate" />
+        <ng-container *ngTemplateOutlet="footerEndTemplate" />
+      </div>
+    } @else {
+      <ng-container *ngTemplateOutlet="actionsTemplate" />
+    }
+  }
+</div>

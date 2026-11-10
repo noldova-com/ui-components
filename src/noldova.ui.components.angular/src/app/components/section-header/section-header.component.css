@@ -1,0 +1,102 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  padding-block: calc((var(--nol-section-header-height) - var(--nol-line-label)) / 2);
+  padding-inline: var(--nol-space-2);
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-label);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-label);
+}
+
+:host(.nol-section-header-uppercase) {
+  color: var(--nol-text);
+  font-size: var(--nol-text-small);
+  letter-spacing: var(--nol-letter-spacing-caps);
+  text-transform: uppercase;
+}
+
+:host(:not(:first-child)) {
+  margin-block-start: var(--nol-space-3);
+}
+
+:host(.nol-section-header-with-icon) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+}
+
+.nol-section-header-icon {
+  flex: none;
+  margin-block: calc((var(--nol-line-label) - var(--nol-icon)) / 2);
+  color: var(--nol-icon-color);
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.nol-section-header-label {
+  min-width: 0;
+}
+
+:host(.nol-section-header-collapsible) {
+  padding: 0;
+  border-radius: var(--nol-radius-small);
+}
+
+:host(.nol-section-header-collapsible:is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-section-header-toggle {
+  display: flex;
+  flex: auto;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding-block: calc((var(--nol-section-header-height) - var(--nol-line-label)) / 2);
+  padding-inline: var(--nol-space-2);
+  border: 0;
+  border-radius: var(--nol-radius-small);
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  text-transform: inherit;
+}
+
+.nol-section-header-toggle > .nol-section-header-label {
+  margin-inline-end: calc(var(--nol-space-1) - var(--nol-space-2));
+}
+
+.nol-section-header-caret {
+  flex: none;
+  margin-block: calc((var(--nol-line-label) - var(--nol-icon)) / 2);
+  color: var(--nol-icon-color);
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+:host(.nol-section-header-collapsed) .nol-section-header-caret {
+  rotate: -90deg;
+}
+
+:host(.nol-section-header-collapsed) .nol-section-header-caret:dir(rtl) {
+  rotate: 90deg;
+}

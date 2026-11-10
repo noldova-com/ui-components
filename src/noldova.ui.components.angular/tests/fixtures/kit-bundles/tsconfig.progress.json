@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "progress-app.fixture.ts"
+  ]
+}

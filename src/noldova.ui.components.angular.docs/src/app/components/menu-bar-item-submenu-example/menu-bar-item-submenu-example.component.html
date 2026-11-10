@@ -1,0 +1,33 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu-bar label="Navigation menu">
+  <button type="button" nol-menu-bar-item label="Go" [nolMenuTriggerFor]="go"></button>
+  <button type="button" nol-menu-bar-item label="Help" [nolMenuTriggerFor]="help"></button>
+</nol-menu-bar>
+<span>Opened: {{ opened() }}</span>
+<ng-template #go>
+  <nol-menu aria-label="Go">
+    <button type="button" nol-menu-item label="Back" shortcut="Alt+Left" (triggered)="opened.set('Back')"></button>
+    <button type="button" nol-menu-item label="Forward" shortcut="Alt+Right" (triggered)="opened.set('Forward')"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Recent notes" [nolMenuTriggerFor]="recent"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #recent>
+  <nol-menu aria-label="Recent notes">
+    @for (note of notes; track note) {
+      <button type="button" nol-menu-item [label]="note" (triggered)="opened.set(note)"></button>
+    }
+  </nol-menu>
+</ng-template>
+<ng-template #help>
+  <nol-menu aria-label="Help">
+    <button type="button" nol-menu-item label="Keyboard shortcuts" (triggered)="opened.set('Keyboard shortcuts')"></button>
+  </nol-menu>
+</ng-template>

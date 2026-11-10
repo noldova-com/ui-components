@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<label>
+  Agent name
+  <input #nameField type="text" nol-text-field [value]="name()" [attr.aria-invalid]="isInvalid() ? 'true' : null"
+    [attr.aria-describedby]="isInvalid() ? 'nol-docs-field-message-error' : null" (input)="name.set(field().nativeElement.value)" />
+</label>
+@if (isInvalid()) {
+  <nol-field-message id="nol-docs-field-message-error">Give the agent a name.</nol-field-message>
+}

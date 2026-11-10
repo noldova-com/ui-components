@@ -1,0 +1,22 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<button type="button" nol-icon-button icon="tune" label="View options" [nolMenuTriggerFor]="options"></button>
+<span>Sort: {{ sort() }} · Hidden files: {{ showsHidden() ? "Shown" : "Hidden" }}</span>
+<ng-template #options>
+  <nol-menu aria-label="View options">
+    <nol-menu-group label="Sort by">
+      <button type="button" nol-menu-item label="Name" [checked]="sort() === 'Name'" (triggered)="sort.set('Name')"></button>
+      <button type="button" nol-menu-item label="Date" [checked]="sort() === 'Date'" (triggered)="sort.set('Date')"></button>
+      <button type="button" nol-menu-item label="Size" [checked]="sort() === 'Size'" (triggered)="sort.set('Size')"></button>
+    </nol-menu-group>
+    <nol-menu-group label="Show">
+      <button type="button" nol-menu-item label="Hidden files" [checkbox]="true" [checked]="showsHidden()" (triggered)="showsHidden.set(!showsHidden())"></button>
+    </nol-menu-group>
+  </nol-menu>
+</ng-template>

@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig-base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "../../noldova.ui.components.angular.docs/scripts/**/*.ts",
+    "../tests/coverage/**/*.ts"
+  ]
+}

@@ -1,0 +1,512 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-message {
+  --nol-message-actions-top: initial;
+  --nol-message-actions-end: initial;
+
+  display: flex;
+  gap: var(--nol-space-3);
+  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--nol-space-2) var(--nol-space-3);
+  border-inline-start: calc(var(--nol-border-width) * 3) solid transparent;
+  color: var(--nol-text);
+  font-size: var(--nol-text-message);
+}
+
+.nol-message-continuation {
+  padding-top: 0;
+}
+
+.nol-message-column {
+  padding: var(--nol-space-6) 0 0;
+  border-inline-start-width: 0;
+}
+
+.nol-message-column.nol-message-bubble .nol-message-content {
+  max-width: 70%;
+}
+
+.nol-message-column:not(.nol-message-bubble) .nol-message-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.nol-message-column:not(.nol-message-bubble) .nol-message-header {
+  grid-area: 1 / 1;
+}
+
+.nol-message-column:not(.nol-message-bubble) .nol-message-content {
+  grid-area: 2 / 1;
+}
+
+.nol-message-column:not(.nol-message-bubble) .nol-message-footer {
+  grid-area: 3 / 1;
+}
+
+.nol-message-column .nol-message-header {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-1) var(--nol-space-3);
+  padding-inline-end: 0;
+  color: var(--nol-text-muted);
+}
+
+.nol-message-column .nol-message-author {
+  color: inherit;
+  font-weight: 400;
+}
+
+.nol-message-column :is(.nol-message-header, .nol-message-time) {
+  font-size: var(--nol-text-panel);
+}
+
+.nol-message-column.nol-message-system .nol-message-content {
+  color: var(--nol-text);
+}
+
+.nol-message-column.nol-message-selected {
+  box-shadow: inset calc(var(--nol-border-width) * 3) 0 var(--nol-accent);
+}
+
+.nol-message-column.nol-message-selected:dir(rtl) {
+  box-shadow: inset calc(var(--nol-border-width) * -3) 0 var(--nol-accent);
+}
+
+.nol-message-author-unavailable {
+  opacity: 0.5;
+}
+
+.nol-message-copied .nol-icon-button-glyph {
+  color: var(--nol-added);
+  animation: nol-copied-pop 200ms ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.nol-message-bubble {
+  padding-inline-end: 0;
+}
+
+.nol-message-bubble .nol-message-main {
+  align-items: flex-end;
+  gap: var(--nol-space-1);
+}
+
+.nol-message-bubble .nol-message-content {
+  box-sizing: border-box;
+  max-width: calc((100% + var(--nol-space-3) + var(--nol-border-width) * 3) * 0.7);
+  padding: var(--nol-space-3) var(--nol-space-4);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-raised);
+}
+
+.nol-message-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+  opacity: 0;
+  transition: opacity 120ms linear;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.nol-message-footer .nol-message-time {
+  margin-inline-start: var(--nol-space-1);
+}
+
+.nol-message-footer .nol-message-actions,
+.nol-message-tools .nol-message-actions {
+  position: static;
+  opacity: 1;
+}
+
+.nol-message-header .nol-message-actions {
+  position: static;
+  margin-block: calc((var(--nol-line-panel) - var(--nol-icon-button-target)) / 2);
+  transition: opacity 120ms linear;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.nol-message-footer-end {
+  display: flex;
+  flex: 1 0 auto;
+  align-items: center;
+  gap: var(--nol-space-1);
+}
+
+.nol-message-footer-end > [data-nol-placement="End"] {
+  margin-inline-start: auto;
+}
+
+.nol-message-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+  position: absolute;
+  top: var(--nol-space-1);
+  inset-inline-end: var(--nol-space-2);
+  opacity: 0;
+}
+
+.nol-message:has(.nol-message-tools) .nol-message-header {
+  padding-inline-end: calc(var(--nol-message-tools-width, 0px) + var(--nol-space-2));
+}
+
+.nol-message-selected {
+  border-inline-start-color: var(--nol-accent);
+  background-color: var(--nol-selected);
+}
+
+.nol-message-selected.nol-message-raised-selection {
+  border-inline-start-color: transparent;
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-raised);
+  box-shadow: none;
+}
+
+.nol-message-column.nol-message-selected.nol-message-raised-selection {
+  box-shadow: none;
+}
+
+.nol-message-flashing:not(.nol-message-bubble) {
+  --nol-message-flash: color-mix(in srgb, var(--nol-accent) 18%, transparent);
+}
+
+.nol-message-flashing.nol-message-selected:not(.nol-message-bubble, .nol-message-column) {
+  --nol-message-flash: color-mix(in srgb, var(--nol-accent) 18%, var(--nol-selected));
+}
+
+.nol-message-flashing.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble) {
+  --nol-message-flash: color-mix(in srgb, var(--nol-accent) 18%, var(--nol-raised));
+}
+
+.nol-message-flashing.nol-message-column:not(.nol-message-bubble, .nol-message-selected.nol-message-raised-selection) .nol-message-main::before {
+  content: "";
+  grid-area: 1 / 1 / 3 / 2;
+  margin: calc(var(--nol-space-3) * -1) calc(var(--nol-space-4) * -1);
+  border-radius: var(--nol-radius-medium);
+  pointer-events: none;
+}
+
+.nol-message-column.nol-message-headless:not(.nol-message-bubble) .nol-message-content {
+  grid-row: 1;
+}
+
+.nol-message-column.nol-message-headless:not(.nol-message-bubble) .nol-message-footer {
+  grid-row: 2;
+}
+
+.nol-message-flashing.nol-message-column.nol-message-headless:not(.nol-message-bubble, .nol-message-selected.nol-message-raised-selection) .nol-message-main::before {
+  grid-row: 1;
+}
+
+.nol-message-flashing.nol-message-bubble .nol-message-content {
+  --nol-message-flash: color-mix(in srgb, var(--nol-accent) 18%, var(--nol-raised));
+}
+
+.nol-message-flashing:not(.nol-message-bubble, .nol-message-column),
+.nol-message-flashing.nol-message-column.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble),
+.nol-message-flashing.nol-message-column:not(.nol-message-bubble, .nol-message-selected.nol-message-raised-selection) .nol-message-main::before,
+.nol-message-flashing.nol-message-bubble .nol-message-content {
+  animation: nol-message-flash 1.6s ease-out var(--nol-message-flash-delay, 0ms);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-timing-function: step-end;
+  }
+}
+
+@keyframes nol-message-flash {
+  from {
+    background-color: var(--nol-message-flash);
+  }
+}
+
+@keyframes nol-message-flash-outline {
+  from {
+    opacity: 1;
+  }
+}
+
+.nol-message-gutter {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: var(--nol-avatar);
+}
+
+.nol-message-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-message-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  padding-inline-end: calc(var(--nol-message-action-count, 1) * (var(--nol-icon-button-target) + var(--nol-space-1)) + var(--nol-space-1));
+}
+
+.nol-message-author {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}
+
+.nol-message-time {
+  flex: none;
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+}
+
+.nol-message-system .nol-message-content {
+  color: var(--nol-text-muted);
+}
+
+.nol-message-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  user-select: text;
+}
+
+.nol-message-empty {
+  margin: 0;
+  color: var(--nol-text-muted);
+  font-style: italic;
+}
+
+.nol-message-attachment {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: var(--nol-space-2);
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-panel);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.nol-message-attachment:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-hover);
+}
+
+.nol-message-attachment:is(:hover, [data-nol-state="Hover"]):not(:focus-visible, [data-nol-state="Focus"]) {
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-message-picture {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: max(var(--nol-pointer-target), min(var(--nol-message-picture-width), var(--nol-message-picture-height) * var(--nol-message-picture-ratio)));
+  max-width: 100%;
+  min-height: var(--nol-pointer-target);
+  max-height: max(var(--nol-pointer-target), var(--nol-message-picture-height));
+  aspect-ratio: var(--nol-message-picture-ratio);
+  padding: 0;
+  border: 0;
+  border-radius: var(--nol-radius-medium);
+  overflow: hidden;
+  background-color: transparent;
+  cursor: zoom-in;
+  align-self: flex-start;
+}
+
+.nol-message-picture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: inherit;
+  pointer-events: none;
+
+  @media (forced-colors: active) {
+    border-color: CanvasText;
+  }
+}
+
+.nol-message-picture:is(:hover, [data-nol-state="Hover"]):not(:focus-visible, [data-nol-state="Focus"]) {
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-message-picture-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+}
+
+.nol-message-attachment-preview {
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  border-radius: var(--nol-radius-small);
+  object-fit: cover;
+}
+
+.nol-message-attachment-mark {
+  display: flex;
+  flex: none;
+  align-self: flex-start;
+  align-items: center;
+  height: 1lh;
+}
+
+.nol-message-attachment-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nol-message-attachment-size {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+}
+
+.nol-message-status,
+.nol-message-error {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+}
+
+.nol-message-error {
+  flex-wrap: wrap;
+  color: var(--nol-text);
+}
+
+.nol-message-error .nol-message-status-glyph {
+  color: var(--nol-error);
+}
+
+.nol-message-selected :is(.nol-message-time, .nol-message-empty, .nol-message-status, .nol-markdown-quote, .nol-markdown-view.nol-message-interim),
+.nol-message-selected.nol-message-column .nol-message-header,
+.nol-message-selected.nol-message-system .nol-message-content {
+  color: var(--nol-text);
+}
+
+.nol-message-actions {
+  display: flex;
+  gap: var(--nol-space-1);
+  position: absolute;
+  top: var(--nol-message-actions-top, var(--nol-space-1));
+  inset-inline-end: var(--nol-message-actions-end, var(--nol-space-2));
+  opacity: 0;
+}
+
+.nol-message:is(:hover, :focus-within, :has([data-nol-state="Hover"], [data-nol-state="Focus"])) :is(.nol-message-actions, .nol-message-footer, .nol-message-tools),
+.nol-message:has(:is(.nol-message-actions, .nol-message-footer, .nol-message-tools) [aria-expanded="true"]) :is(.nol-message-actions, .nol-message-footer, .nol-message-tools),
+:is(:focus-within, [data-nol-state="Focus"]) > .nol-message :is(.nol-message-actions, .nol-message-footer, .nol-message-tools) {
+  opacity: 1;
+}
+
+:is(.nol-message-footer, .nol-message-tools):has(> .nol-message-footer-end > [data-nol-placement="End"]) {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  :is(.nol-message-actions, .nol-message-footer, .nol-message-tools) {
+    opacity: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  .nol-message {
+    border-inline-start-color: Canvas;
+  }
+
+  .nol-message-selected {
+    border-inline-start-color: Highlight;
+  }
+
+  .nol-message-selected.nol-message-raised-selection {
+    border-inline-start-color: Canvas;
+  }
+
+  .nol-message-column.nol-message-selected,
+  .nol-message-selected.nol-message-raised-selection {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: calc(var(--nol-border-width) * -2);
+  }
+
+  .nol-message-bubble .nol-message-content {
+    outline: var(--nol-border-width) solid CanvasText;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+
+  .nol-message-flashing:not(.nol-message-bubble, .nol-message-column),
+  .nol-message-flashing.nol-message-column.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble),
+  .nol-message-flashing.nol-message-bubble .nol-message-content {
+    animation: none;
+  }
+
+  .nol-message-flashing.nol-message-bubble .nol-message-content {
+    position: relative;
+  }
+
+  .nol-message-flashing:not(.nol-message-bubble, .nol-message-column)::after,
+  .nol-message-flashing.nol-message-column.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble)::after,
+  .nol-message-flashing.nol-message-bubble .nol-message-content::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .nol-message-flashing:not(.nol-message-bubble, .nol-message-column)::after,
+  .nol-message-flashing.nol-message-column.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble)::after,
+  .nol-message-flashing.nol-message-column:not(.nol-message-bubble, .nol-message-selected.nol-message-raised-selection) .nol-message-main::before,
+  .nol-message-flashing.nol-message-bubble .nol-message-content::after {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: calc(var(--nol-border-width) * -2);
+    opacity: 0;
+    pointer-events: none;
+    animation: nol-message-flash-outline 1.6s ease-out var(--nol-message-flash-delay, 0ms);
+
+    @media (prefers-reduced-motion: reduce) {
+      animation-timing-function: step-end;
+    }
+  }
+
+  .nol-message-flashing:not(.nol-message-bubble, .nol-message-column)::after {
+    inset-inline-start: calc(var(--nol-border-width) * -3);
+  }
+
+  .nol-message-flashing.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble)::after,
+  .nol-message-flashing.nol-message-column.nol-message-selected.nol-message-raised-selection:not(.nol-message-bubble)::after {
+    outline-offset: calc(var(--nol-border-width) * -4);
+  }
+}

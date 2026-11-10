@@ -1,0 +1,72 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<article class="nol-docs-page">
+  <h1 class="nol-docs-page-title">{{ page().title }}</h1>
+  @for (paragraph of api().description; track $index) {
+    <nol-markdown-view class="nol-docs-markdown" [text]="paragraph" />
+  }
+  <section class="nol-docs-section" aria-labelledby="nol-docs-page-examples">
+    <h2 id="nol-docs-page-examples" class="nol-docs-section-title">{{ resources.examplesTitle }}</h2>
+    @defer (on immediate) {
+      @for (example of page().examples; track example.title) {
+        <nol-docs-example-view [example]="example" />
+      }
+    } @placeholder {
+      <p class="nol-docs-text">{{ resources.loading }}</p>
+    }
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-page-states">
+    <h2 id="nol-docs-page-states" class="nol-docs-section-title">{{ resources.statesTitle }}</h2>
+    @defer (on immediate) {
+      <ng-container *ngComponentOutlet="page().states" />
+    } @placeholder {
+      <p class="nol-docs-text">{{ resources.loading }}</p>
+    }
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-page-api">
+    <h2 id="nol-docs-page-api" class="nol-docs-section-title">{{ resources.apiTitle }}</h2>
+    <nol-docs-api-table [component]="api()" />
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-page-accessibility">
+    <h2 id="nol-docs-page-accessibility" class="nol-docs-section-title">{{ resources.accessibilityTitle }}</h2>
+    @if (page().keys.length > 0) {
+      <div class="nol-docs-table-holder">
+        <table class="nol-docs-table nol-docs-stacked-table" role="table" [attr.aria-label]="resources.accessibilityTitle">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">{{ resources.keyColumn }}</th>
+              <th scope="col" role="columnheader">{{ resources.actionColumn }}</th>
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            @for (row of page().keys; track row.key) {
+              <tr role="row">
+                <th scope="row" role="rowheader"><kbd>{{ row.key }}</kbd></th>
+                <td role="cell">{{ row.action }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="nol-docs-text">{{ resources.noKeys }}</p>
+    }
+    @for (paragraph of page().roles; track $index) {
+      <p class="nol-docs-text">{{ paragraph }}</p>
+    }
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-page-specification">
+    <h2 id="nol-docs-page-specification" class="nol-docs-section-title">{{ resources.specificationTitle }}</h2>
+    @defer (on immediate) {
+      <nol-markdown-view [text]="page().specification" />
+    } @placeholder {
+      <p class="nol-docs-text">{{ resources.loading }}</p>
+    }
+  </section>
+</article>

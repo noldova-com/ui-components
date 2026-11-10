@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu-bar label="Document menu">
+  <button type="button" nol-menu-bar-item label="Format" [nolMenuTriggerFor]="format"></button>
+  <button type="button" nol-menu-bar-item label="Zoom" [nolMenuTriggerFor]="zoom"></button>
+</nol-menu-bar>
+<span>Bold: {{ isBold() ? "On" : "Off" }} · Zoom: {{ scale() }}</span>
+<ng-template #format>
+  <nol-menu aria-label="Format">
+    <button type="button" nol-menu-item label="Bold" shortcut="Ctrl+B" [checkbox]="true" [checked]="isBold()" (triggered)="isBold.set(!isBold())"></button>
+    <button type="button" nol-menu-item label="Italic" shortcut="Ctrl+I" [checkbox]="true" [checked]="isItalic()" (triggered)="isItalic.set(!isItalic())"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #zoom>
+  <nol-menu aria-label="Zoom">
+    @for (step of scales; track step) {
+      <button type="button" nol-menu-item [label]="step" [checked]="step === scale()" (triggered)="scale.set(step)"></button>
+    }
+  </nol-menu>
+</ng-template>

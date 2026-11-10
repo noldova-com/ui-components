@@ -1,0 +1,60 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.textField" noHover>
+  <nol-gallery-cell [caption]="text.defaultState"><input type="text" nol-text-field [placeholder]="text.placeholder" [attr.aria-label]="text.textField" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><input type="text" nol-text-field [value]="text.disabled" [attr.aria-label]="text.disabled" disabled /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><input type="text" nol-text-field nolGalleryFocus [placeholder]="text.placeholder" [attr.aria-label]="text.focus" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.error">
+    <span class="nol-gallery-invalid">
+      <input type="text" nol-text-field [value]="text.invalidField" [attr.aria-label]="text.error" aria-invalid="true" [attr.aria-describedby]="messageId" />
+      <nol-field-message [id]="messageId">{{ text.validationText }}</nol-field-message>
+    </span>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.noteCaption">
+    <span class="nol-gallery-noted">
+      <input type="text" nol-text-field [placeholder]="text.placeholder" [attr.aria-label]="text.noteField" [attr.aria-describedby]="noteId" />
+      <nol-field-message [id]="noteId" [kind]="fieldMessageKinds.Note">{{ text.noteText }}</nol-field-message>
+    </span>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldLines">
+    <textarea nol-text-field rows="4" [placeholder]="text.textFieldLinesPlaceholder" [attr.aria-label]="text.textFieldLines"></textarea>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldAction">
+    <nol-text-field-box>
+      <input type="text" nol-text-field [value]="text.textFieldActionValue" [attr.aria-label]="text.textFieldActionField" />
+      <button type="button" nol-icon-button [icon]="text.glyphFolder" [label]="text.textFieldActionButton"></button>
+    </nol-text-field-box>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldActionFocus">
+    <nol-text-field-box>
+      <input type="text" nol-text-field [value]="text.textFieldActionValue" [attr.aria-label]="text.textFieldActionFocus" />
+      <button type="button" nol-icon-button nolGalleryFocus [icon]="text.glyphFolder" [label]="text.textFieldActionButton"></button>
+    </nol-text-field-box>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldActionDisabled">
+    <nol-text-field-box>
+      <input type="text" nol-text-field [value]="text.textFieldActionValue" [attr.aria-label]="text.textFieldActionDisabled" disabled />
+      <button type="button" nol-icon-button [icon]="text.glyphFolder" [label]="text.textFieldActionButton" disabled></button>
+    </nol-text-field-box>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldEnd">
+    <nol-text-field-box>
+      <input type="text" nol-text-field [value]="text.textFieldEndValue" [attr.aria-label]="text.textFieldEndField" [attr.aria-describedby]="endTextId" />
+      <span nolTextFieldEnd [id]="endTextId">{{ text.textFieldEndText }}</span>
+    </nol-text-field-box>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFieldIcon">
+    <nol-text-field-box [icon]="text.glyphSearch">
+      <input type="text" nol-text-field [placeholder]="text.textFieldIconPlaceholder" [attr.aria-label]="text.textFieldIconField" />
+    </nol-text-field-box>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <input type="text" nol-text-field [value]="text.longValue" [attr.aria-label]="text.longText" class="nol-gallery-narrow" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

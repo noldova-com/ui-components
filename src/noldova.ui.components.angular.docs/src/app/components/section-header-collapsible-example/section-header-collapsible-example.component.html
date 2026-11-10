@@ -1,0 +1,17 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-section-header label="Drafts" icon="edit_note" controls="nol-docs-section-header-drafts" [collapsible]="true" [(expanded)]="isOpen" />
+<div id="nol-docs-section-header-drafts">
+  @if (isOpen()) {
+    <ul>
+      <li>Letter to the club</li>
+      <li>Packing list</li>
+    </ul>
+  }
+</div>

@@ -1,0 +1,110 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<ng-template #stateContent><nol-link-reference-image class="nol-link-reference-card-state-icon" [image]="reference().icon" />{{ state().label }}</ng-template>
+@let itemHref = reference().itemHref;
+<div class="nol-link-reference-card-top">
+  @if (itemHref !== null) {
+    <a class="nol-link-reference-card-state nol-link-reference-card-link" [href]="itemHref" draggable="false" (click)="activate($event, itemHref)" (auxclick)="activateAuxiliary($event, itemHref)" (keydown)="activateKey($event, itemHref)" (contextmenu)="openMenu($event, itemHref)"><ng-container
+      [ngTemplateOutlet]="stateContent" /></a>
+  }
+  @else {
+    <span class="nol-link-reference-card-state"><ng-container [ngTemplateOutlet]="stateContent" /></span>
+  }
+  @if (place(); as place) {
+    @let locationHref = reference().locationHref;
+    <span class="nol-link-reference-card-location">@if (locationHref !== null) {<a class="nol-link-reference-card-link nol-link-reference-card-text-link" [href]="locationHref"
+      draggable="false" (click)="activate($event, locationHref)" (auxclick)="activateAuxiliary($event, locationHref)" (keydown)="activateKey($event, locationHref)" (contextmenu)="openMenu($event, locationHref)">{{ place.name }}</a>}
+      @else {{{ place.name }}}@if (place.number !== null) {{{ partResources.linkReferenceLocationSeparator }}@if (itemHref !== null) {<a
+      class="nol-link-reference-card-link nol-link-reference-card-text-link" [href]="itemHref" draggable="false" (click)="activate($event, itemHref)" (auxclick)="activateAuxiliary($event, itemHref)" (keydown)="activateKey($event, itemHref)" (contextmenu)="openMenu($event, itemHref)">{{ place.number }}</a>}
+      @else {{{ place.number }}}}</span>
+  }
+  @if (age(); as age) {
+    <span class="nol-link-reference-card-age" [nolTooltip]="age.full">{{ age.short }}</span>
+  }
+</div>
+@if (reference().title; as title) {
+  <div class="nol-link-reference-card-title">@if (itemHref !== null) {<a class="nol-link-reference-card-link nol-link-reference-card-text-link" [href]="itemHref"
+    draggable="false" (click)="activate($event, itemHref)" (auxclick)="activateAuxiliary($event, itemHref)" (keydown)="activateKey($event, itemHref)" (contextmenu)="openMenu($event, itemHref)">{{ title }}</a>}
+    @else {{{ title }}}</div>
+}
+@if (reference().details.length > 0) {
+  <dl class="nol-link-reference-card-details">
+    @for (detail of reference().details; track $index) {
+      <dt class="nol-link-reference-card-detail-label">{{ detail.label }}</dt>
+      <dd class="nol-link-reference-card-detail-value">{{ detail.value }}</dd>
+    }
+  </dl>
+}
+@if (hasFoot()) {
+  <div class="nol-link-reference-card-foot">
+    @let workItemState = reference().workItemState;
+    @if (workItemState !== null) {
+      <nol-link-reference-work-item-state [state]="workItemState" />
+      <span class="nol-link-reference-card-spacer"></span>
+    }
+    @if (reference().footnote; as footnote) {
+      <span class="nol-link-reference-card-footnote">{{ footnote }}</span>
+    }
+    @else if (reference().author; as author) {
+      @let authorHref = reference().authorHref;
+      @if (authorHref !== null) {
+        <a class="nol-link-reference-card-link nol-link-reference-card-author-link" [href]="authorHref" draggable="false" (click)="activate($event, authorHref)" (auxclick)="activateAuxiliary($event, authorHref)" (keydown)="activateKey($event, authorHref)" (contextmenu)="openMenu($event, authorHref)"><nol-avatar
+          [name]="author.name" [image]="author.image" [colorKey]="author.name" [size]="avatarSizes.Byline" [decorative]="true" /><span
+          class="nol-link-reference-card-author nol-link-reference-card-text-link">{{ author.name }}</span></a>
+      }
+      @else {
+        <nol-avatar [name]="author.name" [image]="author.image" [colorKey]="author.name" [size]="avatarSizes.Byline" [decorative]="true" />
+        <span class="nol-link-reference-card-author">{{ author.name }}</span>
+      }
+    }
+    @if (workItemState === null) {
+      <span class="nol-link-reference-card-spacer"></span>
+    }
+    @for (status of reference().statuses; track $index) {
+      <span class="nol-link-reference-card-pill nol-link-reference-card-status">@if (status.icon; as icon) {<nol-link-reference-image class="nol-link-reference-card-status-icon"
+        [image]="icon" [style.--nol-link-reference-status-tone]="toneOf(status)" />}{{ status.text }}</span>
+    }
+    @if (reference().diff; as diff) {
+      <ng-template #linesContent><span class="nol-link-reference-card-added">{{ resources.formatLinkReferenceAdded(diff.added) }}</span><span
+        class="nol-link-reference-card-removed">{{ resources.formatLinkReferenceRemoved(diff.removed) }}</span></ng-template>
+      @let diffHref = reference().diffHref;
+      @if (diffHref !== null) {
+        <a class="nol-link-reference-card-pill nol-link-reference-card-link" [href]="diffHref" draggable="false" (click)="activate($event, diffHref)" (auxclick)="activateAuxiliary($event, diffHref)" (keydown)="activateKey($event, diffHref)" (contextmenu)="openMenu($event, diffHref)"><ng-container
+          [ngTemplateOutlet]="linesContent" /></a>
+        <a class="nol-link-reference-card-pill nol-link-reference-card-link" [href]="diffHref" draggable="false" (click)="activate($event, diffHref)" (auxclick)="activateAuxiliary($event, diffHref)" (keydown)="activateKey($event, diffHref)" (contextmenu)="openMenu($event, diffHref)">{{
+          resources.formatLinkReferenceFiles(diff.files) }}</a>
+      }
+      @else {
+        <span class="nol-link-reference-card-pill"><ng-container [ngTemplateOutlet]="linesContent" /></span>
+        <span class="nol-link-reference-card-pill">{{ resources.formatLinkReferenceFiles(diff.files) }}</span>
+      }
+    }
+    @let comments = reference().comments;
+    @if (comments !== null) {
+      <ng-template #commentsContent><span class="nol-link-reference-card-glyph material-symbols-rounded" aria-hidden="true">{{ resources.linkReferenceCommentsGlyph }}</span>{{
+        comments }}</ng-template>
+      @let commentsHref = reference().commentsHref;
+      @if (commentsHref !== null) {
+        <a class="nol-link-reference-card-pill nol-link-reference-card-link" [href]="commentsHref" draggable="false" (click)="activate($event, commentsHref)" (auxclick)="activateAuxiliary($event, commentsHref)" (keydown)="activateKey($event, commentsHref)" (contextmenu)="openMenu($event, commentsHref)"><ng-container
+          [ngTemplateOutlet]="commentsContent" /></a>
+      }
+      @else {
+        <span class="nol-link-reference-card-pill"><ng-container [ngTemplateOutlet]="commentsContent" /></span>
+      }
+    }
+    @let duration = reference().duration;
+    @if (duration !== null) {
+      <span class="nol-link-reference-card-pill">{{ resources.formatLinkReferenceDuration(duration) }}</span>
+    }
+    @if (reference().action; as action) {
+      <a class="nol-link-reference-card-pill nol-link-reference-card-action nol-link-reference-card-link" [href]="action.href" draggable="false" (click)="activate($event, action.href)" (auxclick)="activateAuxiliary($event, action.href)" (keydown)="activateKey($event, action.href)" (contextmenu)="openMenu($event, action.href)"><span class="nol-link-reference-card-glyph material-symbols-rounded"
+        aria-hidden="true">{{ action.glyph }}</span>{{ action.label }}</a>
+    }
+  </div>
+}

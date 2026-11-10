@@ -1,0 +1,48 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<span class="nol-tab-pill">
+  @if (marker(); as marker) {
+    <span class="nol-tab-marker nol-tab-glyph material-symbols-rounded" aria-hidden="true" [nolTooltip]="marker.label" [nolTooltipSide]="partResources.tabTooltip.side">{{ marker.glyph }}</span>
+  }
+  @if (hasLeadingSpinner()) {
+    <nol-spinner class="nol-tab-leading nol-tab-leading-spinner" aria-hidden="true" />
+  } @else if (status(); as status) {
+    <span class="nol-tab-leading nol-tab-status nol-tab-glyph material-symbols-rounded" aria-hidden="true" [attr.data-nol-tone]="status.tone">{{ status.glyph }}</span>
+  } @else if (hasImage()) {
+    <span class="nol-tab-leading nol-tab-image" [class.nol-tab-image-loaded]="isImageLoaded()">
+      @if (shownImageGlyph(); as glyph) {
+        <span class="nol-tab-image-glyph nol-tab-glyph material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
+      }
+      @if (image(); as source) {
+        <img class="nol-tab-image-picture" alt="" draggable="false" [src]="source" (load)="isImageLoaded.set(true)" (error)="isImageLoaded.set(false)" />
+      }
+    </span>
+  } @else if (icon(); as glyph) {
+    <span class="nol-tab-icon material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
+  }
+  <span class="nol-tab-label" data-truncates>{{ label() }}@if (editing()) {<input #field nol-text-field class="nol-tab-field" type="text" spellcheck="false" [attr.aria-label]="partResources.tabTitleFieldLabel"
+    (keydown)="onFieldKeyDown($event)" (blur)="keep()" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" (auxclick)="$event.stopPropagation()" />}</span>
+  @if (badge() !== null) {
+    <nol-view-badge class="nol-tab-badge" [count]="badgeCount()" />
+  }
+  @if (closable() || waiting() || working() && !hasLeadingSpinner()) {
+    <span class="nol-tab-action">
+      @if (waiting()) {
+        <span class="nol-tab-waiting-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.tabWaitingGlyph }}</span>
+      } @else if (working() && !hasLeadingSpinner()) {
+        <nol-spinner class="nol-tab-spinner" aria-hidden="true" />
+      }
+      @if (closable()) {
+        <button type="button" class="nol-tab-close" tabindex="-1" [attr.aria-label]="closeLabel()" (click)="onCloseClick($event)">
+          <span class="material-symbols-rounded" aria-hidden="true">{{ resources.closeGlyph }}</span>
+        </button>
+      }
+    </span>
+  }
+</span>
