@@ -1,0 +1,51 @@
+# @license
+# Copyright (c) Noldova.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Release npm packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to release, 0.0.n, which version.json holds at the commit
+        required: true
+        type: string
+      commit:
+        description: The full hash of the commit on main to build and release
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: noldova-com/.github/.github/workflows/release-npm.yml@26ff41562ad2e9d3a3514bceee20c2a02f45273c # v2.15.0
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    with:
+      version: ${{ inputs.version }}
+      commit: ${{ inputs.commit }}
+      environment: release
+    secrets:
+      # For a new package's first publish only, since npm's trusted publishing needs each package to exist; this line goes once each has its trusted publisher.
+      registry-token: ${{ secrets.NPM_FIRST_PUBLISH_TOKEN }}
+
+  dependents:
+    needs: release
+    uses: noldova-com/.github/.github/workflows/update-dependents.yml@26ff41562ad2e9d3a3514bceee20c2a02f45273c # v2.15.0
+    permissions:
+      contents: read
+      packages: read
+    with:
+      version: ${{ inputs.version }}
+      commit: ${{ inputs.commit }}
+    secrets: inherit

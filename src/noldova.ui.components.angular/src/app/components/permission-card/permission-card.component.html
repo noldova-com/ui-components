@@ -1,0 +1,97 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-permission-card-header">
+  <span class="nol-permission-card-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionGlyph }}</span>
+  <span class="nol-permission-card-title">
+    <span class="nol-permission-card-heading" [id]="id + '-heading'">{{ request().heading }}</span>
+    @if (request().kind; as kind) {
+      <span class="nol-permission-card-kind" [id]="id + '-kind'">{{ kind }}</span>
+    }
+  </span>
+  @if (request().risk; as risk) {
+    <span class="nol-permission-card-risk" [id]="id + '-risk'">
+      <span class="nol-permission-card-risk-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionRiskGlyphs[risk] }}</span>
+      <span>{{ partResources.permissionRiskLabels[risk] }}</span>
+    </span>
+  }
+  @if (expiryText(); as expiry) {
+    <span class="nol-permission-card-expiry">{{ expiry }}</span>
+  }
+</div>
+<span class="nol-permission-card-requester" [id]="id + '-requester'">{{ request().requester.name }}, {{ request().requester.kind }}</span>
+@if (request().description; as description) {
+  <p class="nol-permission-card-description" [id]="id + '-description'">{{ description }}</p>
+}
+@if (detailLines().length > 0) {
+  <div class="nol-permission-card-details">
+    <pre class="nol-permission-card-code" [id]="id + '-details'" [class.nol-permission-card-code-scrolls]="isCut() && detailsExpanded()"
+      [attr.tabindex]="isCut() && detailsExpanded() ? 0 : null" [attr.role]="isCut() && detailsExpanded() ? 'region' : null"
+      [attr.aria-label]="isCut() && detailsExpanded() ? partResources.permissionDetailsLabel : null">{{ shownDetails() }}</pre>
+    @if (isCut()) {
+      <button type="button" class="nol-permission-card-more" data-nol-resizes-row [attr.aria-expanded]="detailsExpanded()" [attr.aria-controls]="id + '-details'" (click)="toggleDetails()">{{
+        detailsExpanded() ? partResources.permissionShowFewerLines : partResources.formatPermissionShowAllLines(detailLines().length) }}</button>
+    }
+  </div>
+}
+@if (confirmOption(); as option) {
+  <div class="nol-permission-card-answer">
+    <span class="nol-permission-card-question" [id]="id + '-question'">{{ confirmQuestion(option) }}</span>
+    <div class="nol-permission-card-options" nolToolbar [nolToolbarLabel]="confirmToolbarLabel(option)" [nolToolbarStart]="1" [attr.aria-describedby]="id + '-question'">
+      <button type="button" nol-button nolToolbarItem class="nol-permission-card-confirm" [variant]="variants.Secondary" (click)="confirm(option, $event)">{{ partResources.permissionConfirmLabel }}</button>
+      <button #cancel type="button" nol-button nolToolbarItem class="nol-permission-card-cancel" [variant]="variants.Secondary" (click)="leaveConfirmation(option)">{{ partResources.permissionCancelLabel }}</button>
+    </div>
+  </div>
+} @else if (isOpen()) {
+  <div class="nol-permission-card-answer">
+    <div class="nol-permission-card-options" nolToolbar [nolToolbarLabel]="partResources.permissionOptionsLabel" [nolToolbarStart]="defaultIndex()" [nolToolbarWrap]="true">
+      @for (option of request().options; track option.id) {
+        <button type="button" nol-button nolToolbarItem class="nol-permission-card-option" [attr.data-nol-option]="option.id"
+          [variant]="variants.Secondary" [attr.aria-disabled]="isLocked() ? 'true' : null" (click)="choose(option)">{{ option.label }}</button>
+      }
+    </div>
+    @if (isSending()) {
+      <span class="nol-permission-card-sending"><nol-spinner /><span>{{ partResources.permissionSending }}</span></span>
+    }
+  </div>
+} @else {
+  @switch (request().status) {
+    @case (statuses.SendFailed) {
+      <div class="nol-permission-card-answer nol-permission-card-failed">
+        <span class="nol-permission-card-outcome-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionSendFailedGlyph }}</span>
+        <span>{{ partResources.permissionSendFailed }}</span>
+        @if (request().chosenOption; as chosen) {
+          <button type="button" nol-button class="nol-permission-card-retry" [variant]="variants.Secondary" [attr.aria-disabled]="isLocked() ? 'true' : null" (click)="retry(chosen)">{{ partResources.permissionRetryLabel }}</button>
+        }
+      </div>
+    }
+    @case (statuses.Decided) {
+      @if (request().chosenOption; as chosen) {
+        <p class="nol-permission-card-outcome" [class.nol-permission-card-allowed]="chosen.isAllow" [class.nol-permission-card-denied]="!chosen.isAllow">
+          <span class="nol-permission-card-outcome-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionDecidedGlyphs[chosen.effect] }}</span>
+          <span class="nol-permission-card-outcome-label">{{ decidedLabel(chosen) }}</span>
+          @if (request().decision; as decision) {
+            <span class="nol-permission-card-decided-by">{{ decidedText(decision) }}</span>
+          }
+        </p>
+      }
+    }
+    @case (statuses.Expired) {
+      <p class="nol-permission-card-outcome">
+        <span class="nol-permission-card-outcome-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionExpiredGlyph }}</span>
+        <span class="nol-permission-card-outcome-label">{{ partResources.permissionExpiredLabel }}</span>
+      </p>
+    }
+    @default {
+      <p class="nol-permission-card-outcome">
+        <span class="nol-permission-card-outcome-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.permissionWithdrawnGlyph }}</span>
+        <span class="nol-permission-card-outcome-label">{{ partResources.permissionWithdrawnLabel }}</span>
+      </p>
+    }
+  }
+}

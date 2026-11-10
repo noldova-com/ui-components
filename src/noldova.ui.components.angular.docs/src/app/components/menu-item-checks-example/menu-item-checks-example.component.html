@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<button type="button" nol-button [variant]="variants.Secondary" [nolMenuTriggerFor]="view">View</button>
+<span>Word wrap: {{ isWrapped() ? "On" : "Off" }} · Density: {{ density() }} · Theme: {{ theme() }}</span>
+<ng-template #view>
+  <nol-menu aria-label="View">
+    <button type="button" nol-menu-item label="Word wrap" shortcut="Alt+Z" [checkbox]="true" [checked]="isWrapped()" (triggered)="isWrapped.set(!isWrapped())"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Compact" [checked]="density() === 'Compact'" (triggered)="density.set('Compact')"></button>
+    <button type="button" nol-menu-item label="Comfortable" [checked]="density() === 'Comfortable'" (triggered)="density.set('Comfortable')"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Theme" [value]="theme()" [nolMenuTriggerFor]="themes"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #themes>
+  <nol-menu aria-label="Theme">
+    <button type="button" nol-menu-item label="Light" [checked]="theme() === 'Light'" (triggered)="theme.set('Light')"></button>
+    <button type="button" nol-menu-item label="Dark" [checked]="theme() === 'Dark'" (triggered)="theme.set('Dark')"></button>
+  </nol-menu>
+</ng-template>

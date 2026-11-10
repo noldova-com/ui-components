@@ -1,0 +1,36 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.nol-menu-label {
+  grid-row: 1;
+}
+
+:host(:has(> .nol-menu-group-action)) .nol-menu-label {
+  padding-inline-end: calc(var(--nol-menu-item-inset) + var(--nol-menu-item-padding) + var(--nol-icon-button) + var(--nol-space-2));
+}
+
+.nol-menu-group-rows {
+  display: contents;
+}
+
+.nol-menu-group-scrolls {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-auto-rows: min-content;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}

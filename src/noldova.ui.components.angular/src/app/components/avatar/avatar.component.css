@@ -1,0 +1,74 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--nol-avatar);
+  height: var(--nol-avatar);
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-avatar-fill);
+  color: var(--nol-avatar-letter);
+  font-size: var(--nol-text-panel);
+  font-weight: 400;
+}
+
+.nol-avatar-initials {
+  flex: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+:host(.nol-avatar-small) {
+  width: var(--nol-avatar-small);
+  height: var(--nol-avatar-small);
+}
+
+:host(.nol-avatar-icon-button) {
+  width: var(--nol-icon-button);
+  height: var(--nol-icon-button);
+
+  @media (forced-colors: active) {
+    font-size: var(--nol-text-small);
+  }
+}
+
+:host(.nol-avatar-byline) {
+  width: var(--nol-avatar-byline);
+  height: var(--nol-avatar-byline);
+  border-radius: 50%;
+  font-size: var(--nol-text-avatar-byline);
+  font-weight: var(--nol-weight-strong);
+}
+
+:host(.nol-avatar-icon) {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  border-radius: var(--nol-radius-small);
+  font-size: var(--nol-text-small);
+}
+
+@media (forced-colors: active) {
+  :host {
+    border: var(--nol-border-width) solid CanvasText;
+  }
+}
+
+:host(.nol-avatar-unavailable) {
+  opacity: 0.5;
+}
+
+.nol-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

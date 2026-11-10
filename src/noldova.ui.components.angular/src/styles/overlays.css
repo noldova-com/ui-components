@@ -1,0 +1,38 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+nol-menu .nol-menu-label {
+  grid-column: 1 / -1;
+  padding: var(--nol-menu-label-padding);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+nol-menu-group > .nol-menu-group-action {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  justify-self: end;
+  align-self: stretch;
+  padding: var(--nol-menu-label-padding);
+  padding-inline: 0;
+  margin-block: calc((var(--nol-line-panel) - var(--nol-icon-button)) / 2);
+  margin-inline-end: calc(var(--nol-menu-item-inset) + var(--nol-menu-item-padding) - (var(--nol-icon-button-target) - var(--nol-icon-button)) / 2);
+}
+
+.nol-dialog-backdrop {
+  background-color: var(--nol-backdrop);
+}
+
+.nol-dialog-pane {
+  margin-block: calc(var(--nol-window-row-height) + var(--nol-space-2)) calc(var(--nol-status-bar-height) + var(--nol-space-2));
+}
+
+.cdk-global-overlay-wrapper:has(> :is(.nol-dialog-pane, .nol-dropdown-pane, .nol-menu-pane, .nol-popover-pane, .nol-tooltip-pane, .nol-link-reference-card-pane), nol-quick-input) {
+  container-type: size;
+}

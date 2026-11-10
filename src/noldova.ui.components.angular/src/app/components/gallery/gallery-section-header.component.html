@@ -1,0 +1,65 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.sectionHeader" [size]="sizes.Wide">
+  <nol-gallery-cell [caption]="text.defaultState">
+    <div class="nol-gallery-sections">
+      <nol-section-header [label]="text.sectionRecent" [level]="4" />
+      <nol-tree [label]="text.sectionRecent" [nodes]="recentRows" />
+      <nol-section-header [label]="text.sectionOlder" [level]="4" />
+      <nol-tree [label]="text.sectionOlder" [nodes]="olderRows" />
+      <nol-section-header [label]="text.sectionLong" [level]="4" />
+      <nol-tree [label]="text.sectionLong" [nodes]="recentRows" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sectionIcon">
+    <div class="nol-gallery-sections">
+      <nol-section-header [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" />
+      <nol-tree [label]="text.sectionChats" [nodes]="recentRows" />
+      <nol-section-header [label]="text.sectionLong" [icon]="text.glyphChat" [level]="4" />
+      <nol-tree [label]="text.sectionLong" [nodes]="olderRows" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sectionCollapsible">
+    <div class="nol-gallery-sections">
+      <nol-section-header [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" [collapsible]="true" [controls]="groupRowsId + '-chats'" [(expanded)]="isChatsOpen" />
+      <div [id]="groupRowsId + '-chats'">
+        @if (isChatsOpen()) {
+          <nol-tree [label]="text.sectionChats" [nodes]="recentRows" />
+        }
+      </div>
+      <nol-section-header [label]="text.sectionOlder" [level]="4" [collapsible]="true" [controls]="groupRowsId + '-pinned'" [(expanded)]="isPinnedOpen" />
+      <div [id]="groupRowsId + '-pinned'">
+        @if (isPinnedOpen()) {
+          <nol-tree [label]="text.sectionOlder" [nodes]="olderRows" />
+        }
+      </div>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sectionUppercase">
+    <div class="nol-gallery-sections">
+      <nol-section-header [label]="text.sectionPinned" [icon]="text.glyphPin" [level]="4" [uppercase]="true" />
+      <nol-tree [label]="text.sectionPinned" [nodes]="recentRows" />
+      <nol-section-header [label]="text.sectionProjects" [icon]="text.glyphFolder" [level]="4" [uppercase]="true" />
+      <nol-tree [label]="text.sectionProjects" [nodes]="olderRows" />
+      <nol-section-header [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" [uppercase]="true" [collapsible]="true" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <div class="nol-gallery-sections"><nol-section-header nolGalleryHover [label]="text.sectionRecent" [level]="4" [collapsible]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div class="nol-gallery-sections"><nol-section-header nolGalleryFocus="button" [label]="text.sectionRecent" [level]="4" [collapsible]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-narrow"><nol-section-header [label]="text.sectionLong" [level]="4" /></div>
+    <div class="nol-gallery-narrow"><nol-section-header [label]="text.sectionLong" [icon]="text.glyphChat" [level]="4" /></div>
+    <div class="nol-gallery-narrow"><nol-section-header [label]="text.sectionLong" [icon]="text.glyphChat" [level]="4" [collapsible]="true" /></div>
+    <div class="nol-gallery-narrow"><nol-section-header [label]="text.sectionLong" [icon]="text.glyphChat" [level]="4" [uppercase]="true" /></div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

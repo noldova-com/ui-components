@@ -1,0 +1,27 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.avatar" noHover noFocus noLongText>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-avatar [name]="text.feedAuthors[0]" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarInitials"><nol-avatar [name]="text.messageReviewer" [initials]="text.messageReviewerInitials" [color]="avatarColor" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarFromKey">
+    @for (keyed of text.avatarKeys; track keyed.key) {
+      <nol-avatar [name]="keyed.name" [colorKey]="keyed.key" />
+    }
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarImageCaption"><nol-avatar [name]="text.feedAuthors[1]" [image]="avatarImage" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarSmall"><nol-avatar [name]="text.feedAuthors[2]" [size]="avatarSizes.Small" [color]="avatarColor" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarIcon"><nol-avatar [name]="text.messageReviewer" [initials]="text.messageReviewerInitials" [size]="avatarSizes.Icon" [color]="avatarColor" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarIconButton"><nol-avatar [name]="text.messageReviewer" [initials]="text.messageReviewerInitials" [size]="avatarSizes.IconButton" [color]="avatarColor" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarUnavailable"><nol-avatar [name]="text.feedAuthors[3]" [unavailable]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.avatarFilled">
+    @for (color of filledColors; track color) {
+      <nol-avatar [name]="color ?? text.avatarFilledDefault" [size]="avatarSizes.Small" [filledColor]="color" />
+    }
+  </nol-gallery-cell>
+</nol-gallery-specimen>

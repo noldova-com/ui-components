@@ -1,0 +1,12 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<span class="nol-button-icon"><ng-content select="[nolButtonIcon]" /></span><span class="nol-button-label" data-truncates><ng-content /></span>
+@if (busy()) {
+  <nol-spinner class="nol-button-spinner" [isDelayed]="false" />
+}

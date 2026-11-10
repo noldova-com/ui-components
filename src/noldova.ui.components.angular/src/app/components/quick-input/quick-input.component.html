@@ -1,0 +1,69 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-quick-input-box">
+  <input #field class="nol-quick-input-field" type="text" role="combobox" aria-autocomplete="list" [attr.aria-expanded]="!isEmptyShown()" [attr.aria-controls]="isEmptyShown() ? null : listId"
+    [attr.aria-activedescendant]="activeId()" [attr.aria-label]="label()" [placeholder]="label()" [value]="query()" spellcheck="false" autocomplete="off"
+    (input)="onInput(field.value)" (keydown)="onKey($event)" (focusout)="stopFollowing()" />
+  @if (icon() !== null) {
+    <span class="nol-quick-input-glyph material-symbols-rounded" aria-hidden="true">{{ icon() }}</span>
+  }
+</div>
+<div class="nol-quick-input-filters-area">
+  <div class="nol-quick-input-filters"><ng-content select="[nolQuickInputFilters]" /></div>
+</div>
+<div #list class="nol-quick-input-list" role="listbox" [class.nol-quick-input-list-hidden]="isEmptyShown()" [id]="listId" [attr.aria-label]="label()">
+  @for (group of groups(); track group.start) {
+    <div class="nol-quick-input-group" [attr.role]="group.label === null ? 'none' : 'group'" [attr.aria-labelledby]="group.label === null ? null : headingId(group.start)">
+      @if (group.label; as heading) {
+        <div class="nol-quick-input-heading" [id]="headingId(group.start)">{{ heading }}</div>
+      }
+      @for (item of group.items; track item.id; let offset = $index) {
+        @let index = group.start + offset;
+        <div class="nol-quick-input-option" role="option" [id]="optionId(index)" [attr.aria-selected]="index === active()" [attr.data-item]="item.id"
+          [attr.aria-describedby]="offset === 0 && group.label !== null ? headingId(group.start) : null"
+          [nolTooltip]="tooltipOf(item)" [nolTooltipSide]="tooltipSide" [nolTooltipBeside]="partResources.quickInputListSelector" [nolTooltipTruncated]="true" (click)="choose(index)">
+          <span class="nol-quick-input-icon material-symbols-rounded" aria-hidden="true">{{ item.icon }}</span>
+          <span class="nol-quick-input-title" data-truncates>
+            @for (segment of item.segments; track $index) {
+              @if (segment.isMatch) {
+                <mark class="nol-quick-input-match">{{ segment.text }}</mark>
+              } @else {
+                <span>{{ segment.text }}</span>
+              }
+            }
+          </span>
+          @if (item.detail) {
+            <span class="nol-quick-input-detail" data-truncates>
+              @for (segment of item.detailSegments; track $index) {
+                @if (segment.isMatch) {
+                  <mark class="nol-quick-input-match">{{ segment.text }}</mark>
+                } @else {
+                  <span>{{ segment.text }}</span>
+                }
+              }
+            </span>
+          }
+          @if (item.keyLabel; as keys) {
+            <span class="nol-quick-input-key">{{ keys }}</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+@if (isEmptyShown()) {
+  <div class="nol-quick-input-empty-area">
+    <p class="nol-quick-input-empty">{{ emptyText() }}</p>
+  </div>
+}
+<div class="nol-quick-input-footer-area">
+  <div class="nol-quick-input-footer"><ng-content select="[nolQuickInputFooter]" /></div>
+</div>
+<span class="nol-quick-input-status" role="status">{{ status() }}</span>
+<span class="nol-quick-input-status" role="alert">{{ alert() }}</span>

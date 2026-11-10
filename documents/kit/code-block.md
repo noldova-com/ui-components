@@ -1,0 +1,35 @@
+# Code block
+
+**Scope:** The kit's code block: its default geometry, the text role it uses, and its surface and behavior.
+
+The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
+
+## Default geometry
+
+Fills its container's width; automatic height, with an inner vertical scroll only past the maximum height its owner gives; header at least 1.625rem high, with the language's text 0.75rem from its start and the Copy glyph 0.75rem from its end; Run, when offered, is an icon button of Copy's size just before it, with the same gap as between Word wrap and Run; the code padded 0.875rem on every side, keeping its end padding when a line is scrolled to its end, with the line height's leading trimmed over the first line and under the last, so the space over and under the text is the padding at every text size, and a sideways scrollbar takes its height from the bottom padding, so the space under the last line matches the space over the first; medium radius; 1px border and header divider.
+
+## Text role
+
+Code body; the language in the label role, muted, cut with an ellipsis when too long.
+
+## Surface and behavior
+
+The kit's code block: the code-header surface over the code surface; the language, or nothing, then a toolbar named Code block actions with Word wrap and Copy, always shown, and Run between them when the owner turns on `runnable` and the language is a shell: bash, sh, shell, zsh, powershell, pwsh or cmd, in any case.
+Run has the play glyph and is named Run, the language and command, as Run bash command; choosing it, by pointer, Enter or Space, sends the code as bound and the language as written to `run` as a `ShellRun`, and the block shows only the state its owner gives and announces nothing more, since the app decides what running means.
+Run shows a `ShellRunState`: Idle shows Run as above; Running gives it the [icon button's busy look](icon-button.md#busy), its spinner centered in place of the glyph and its size kept, with `busyPressable`, so a press while it runs still goes to `run`, and names it as Run bash command (running); Ended shows it as Idle does, named as Run bash command again.
+A block in a message or a markdown view takes its index among that message's code blocks, from 0 in reading order, which `block` reads and `run` sends as the `ShellRun`'s `block`, and its state from the owner's `shellRunStates` by that index; a block on its own sends 0 and takes its state from `runState`, Idle by default.
+With wrap off, long lines scroll sideways inside the body and never widen what holds it; with wrap on, they wrap anywhere.
+Code in a language the block knows, by its name or an alias, is colored by the kind of each token with the code token colors, and stays plain until its grammar has loaded, or when it fails to load, which is reported once, with no new try for 10 seconds; code longer than 100,000 characters stays plain, and so does any line longer than 2,000 characters, so pasted minified code never holds up the page; code in any other language or none stays plain, and so does all code in forced colors, in the system's text color on its background, with no selection color behind any token.
+Once its grammar has loaded, code up to 1,000 characters is colored in the block's first render; longer code shows plain first and is colored a task later, so a long block never holds up the frame it appears in.
+A language the app names in `provideCodeHighlighting({ preload })` loads ahead, while the page is idle, so its first block is colored in its first render rather than holding up a frame while the grammar loads and compiles; compiling it on the page still holds up one idle frame, 150 milliseconds or more for TypeScript's grammar measured on Linux, which only a highlighting worker keeps off the page, while the worker runs.
+With a highlighting worker from `provideCodeHighlightingWorker`, the grammars load and the code is tokenized in the worker, so no frame waits for them; code without kept tokens shows plain until the worker answers, and a worker that fails is reported once and given up for tokenizing on the page.
+The tokens of the code shown last, up to 1,000,000 characters, are kept, so a block shown again with the same code and language, as a list's rows scroll back in, is colored at once without tokenizing again; code that grows, as a block streams in, takes the place of the code it grew from, so a streaming block keeps only its latest length.
+Code that grows from a code it tokenized, as a block streams in, is tokenized only after that code's complete lines, from the grammar's state at their end, which gives the tokens of the whole code; the complete lines of the 8 codes settled last are kept for this, and code with a carriage return is tokenized whole.
+Code that grows, as a reply streams in, keeps the colors of the code it grew from until its own arrive.
+While its owner marks it `streaming`, a block that scrolls inside itself keeps its newest line in view, scrolled to its end after each change, as the chat feed follows its end; once the reader scrolls up inside it, by any amount, it stops following and stays where they left it, and it follows again when they scroll down to within 16px of its end; a view the browser pulls back to its end, as the block grows taller, keeps following.
+When it stops streaming it stays where it is, and a block shown complete starts at its top.
+In a message, the one streaming is the markdown code block whose fence is still open while its text streams, or a streaming run's last block when that is a code block.
+A block shows its tokens as spans of their color in each line that has ended with its line break, and as highlights over one text node only in the line still growing while it streams, cut to the text a reveal leaves in that node so a token partway through keeps its color, so each change touches only its last line, and a change to a highlight, which repaints every range in it on the page, repaints only the growing lines; a block not streaming shows every line as spans, so the blocks a reply has finished add nothing to the cost of later changes to the page, and a selection in a block keeps its place when a line turns into spans.
+Its code's characters advance by a whole number of the browser's layout units, 1/64 of a zoomed pixel, at any zoom: the block measures a run of its character, again whenever the code grows or the code's size, font or zoom changes the run, and where the platform's or the zoom's advances are fractional, as on Windows, adds a spacing of under a layout unit to each. So a settled line's spans, whose widths the browser rounds up to those units, lie where its highlights did, even at the end of a long minified line.
+A character the code font lacks, such as a CJK character or an emoji, comes from a fallback font at that font's own advance, so the spans after it on its line may still settle a fraction of a pixel to the right.
+Coloring never changes the text or its layout, so Copy copies the code as bound.

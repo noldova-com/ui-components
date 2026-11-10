@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu aria-label="Chat" [minWidth]="14">
+  <button type="button" nol-menu-item label="New chat" icon="add" shortcut="Ctrl+N" (triggered)="chosen.set('New chat')"></button>
+  <button type="button" nol-menu-item label="Export" icon="download" tag="New" (triggered)="chosen.set('Export')"></button>
+  <button type="button" nol-menu-item label="Rename" icon="edit" description="Only you see the name" (triggered)="chosen.set('Rename')"></button>
+  <nol-menu-separator />
+  <button type="button" nol-menu-item label="Delete" icon="delete" [danger]="true" (triggered)="chosen.set('Delete')"></button>
+</nol-menu>
+<span>Chosen: {{ chosen() }}</span>

@@ -1,0 +1,130 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.nol-radio-label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  cursor: pointer;
+}
+
+.nol-radio-label:has([aria-disabled="true"]) {
+  cursor: default;
+}
+
+.nol-radio-label:has([aria-disabled="true"]) .nol-radio-text {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) {
+  .nol-radio-label:has([aria-disabled="true"]),
+  .nol-radio-label:has([aria-disabled="true"]) * {
+    color: GrayText;
+  }
+}
+
+:host(.nol-choice-row-control) {
+  display: flex;
+}
+
+:host(.nol-choice-row-control) .nol-radio-label {
+  flex: 1;
+  padding: var(--nol-space-2) var(--nol-space-3);
+}
+
+.nol-radio-control {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  grid-template-rows: 1lh;
+  align-items: center;
+  height: 1lh;
+  color: var(--nol-text);
+}
+
+.nol-radio-box {
+  box-sizing: border-box;
+  width: var(--nol-checkbox-size);
+  height: var(--nol-checkbox-size);
+  margin: 0;
+  border: var(--nol-border-width) solid var(--nol-checkbox-border);
+  border-radius: 50%;
+  background-color: var(--nol-checkbox);
+  appearance: none;
+  cursor: pointer;
+}
+
+.nol-radio-box:not([aria-disabled="true"]):is(:focus-visible, [data-nol-state="Focus"]),
+.nol-radio-control:has(> .nol-radio-box[aria-disabled="true"]:is(:focus-visible, [data-nol-state="Focus"]))::after {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-radio-box[aria-disabled="true"] {
+  outline: none;
+  opacity: 0.5;
+  cursor: default;
+
+  @media (forced-colors: active) {
+    border-color: GrayText;
+  }
+}
+
+.nol-radio-control::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: var(--nol-checkbox-size);
+  height: var(--nol-checkbox-size);
+  margin: auto;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.nol-radio-dot {
+  position: absolute;
+  inset: 0;
+  width: calc(var(--nol-checkbox-size) / 2);
+  height: calc(var(--nol-checkbox-size) / 2);
+  margin: auto;
+  border-radius: 50%;
+  background-color: currentColor;
+  visibility: hidden;
+  pointer-events: none;
+
+  @media (forced-colors: active) {
+    background-color: CanvasText;
+    forced-color-adjust: none;
+  }
+}
+
+.nol-radio-box:checked + .nol-radio-dot {
+  visibility: visible;
+}
+
+.nol-radio-box[aria-disabled="true"] + .nol-radio-dot {
+  opacity: 0.5;
+
+  @media (forced-colors: active) {
+    background-color: GrayText;
+  }
+}
+
+.nol-radio-text:empty {
+  display: none;
+}

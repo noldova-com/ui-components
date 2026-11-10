@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-sash-layout">
+  <div class="nol-docs-sash-pane" [style.width.px]="width()">Outline</div>
+  <nol-sash label="Resize the outline" [orientation]="orientations.Vertical" [value]="width()" [minimum]="minimum" [maximum]="maximum" (resize)="resize($event)" />
+  <div class="nol-docs-sash-pane nol-docs-sash-main">Note</div>
+</div>
+<p>Outline: {{ width() }} px</p>

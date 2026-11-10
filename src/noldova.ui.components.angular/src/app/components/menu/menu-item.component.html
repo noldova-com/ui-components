@@ -1,0 +1,40 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (icon(); as glyph) {
+  <span class="nol-menu-item-icon material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
+}
+<span class="nol-menu-item-lead"><ng-content select="[nolMenuItemLead]" /></span>
+<span #body class="nol-menu-item-body" [nolTooltip]="keyTooltipText()" [nolTooltipSide]="keyTooltipSide"
+  [nolTooltipBeside]="partResources.menuSelector" [nolTooltipTruncated]="true" [nolTooltipDisabled]="!isKeyFocused() || isSubmenuOpen()">
+@if (tag(); as text) {
+  <span class="nol-menu-item-heading">
+    <span class="nol-menu-item-label" data-truncates [nolTooltip]="label()" [nolTooltipTruncated]="true">{{ label() }}</span>
+    <nol-chip class="nol-menu-item-tag" [kind]="tagKind">{{ text }}</nol-chip>
+  </span>
+} @else {
+  <span class="nol-menu-item-label" data-truncates [nolTooltip]="label()" [nolTooltipTruncated]="true">{{ label() }}</span>
+}
+@if (description(); as text) {
+  <span class="nol-menu-item-description" data-truncates [nolTooltip]="text" [nolTooltipTruncated]="true">{{ text }}</span>
+}
+<span class="nol-menu-item-trail">
+@if (value(); as chosen) {
+  <span class="nol-menu-item-value">{{ chosen }}</span>
+}
+@if (shortcut(); as keys) {
+  <span class="nol-menu-item-shortcut">{{ keys }}</span>
+}
+@if (checked() !== null) {
+  <span class="nol-menu-item-check material-symbols-rounded" aria-hidden="true">{{ partResources.checkedGlyph }}</span>
+}
+@if (hasSubmenu) {
+  <span class="nol-menu-item-chevron material-symbols-rounded" aria-hidden="true">{{ partResources.submenuGlyph }}</span>
+}
+</span>
+</span>

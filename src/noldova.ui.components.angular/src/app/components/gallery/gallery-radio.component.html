@@ -1,0 +1,19 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.radio" noHover>
+  <nol-gallery-cell [caption]="text.picked">
+    <nol-radio-group [label]="text.radioGroup" [(value)]="radio">
+      <nol-radio [value]="text.picked">{{ text.picked }}</nol-radio>
+      <nol-radio [value]="text.notPicked">{{ text.notPicked }}</nol-radio>
+    </nol-radio-group>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><nol-radio [value]="text.disabled" [checked]="true" [disabled]="true">{{ text.disabled }}</nol-radio></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-radio [value]="text.notPicked" [nolGalleryFocus]="focusedRadio">{{ text.notPicked }}</nol-radio></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-radio class="nol-gallery-narrow" [value]="text.longText">{{ text.longText }}</nol-radio></nol-gallery-cell>
+</nol-gallery-specimen>

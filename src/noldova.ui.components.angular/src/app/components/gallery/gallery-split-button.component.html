@@ -1,0 +1,32 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.splitButton" noLongText>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-split-button [icon]="text.glyphAdd" [label]="text.splitLabel" [tooltip]="text.splitTooltip" [menuLabel]="text.splitMenuLabel" [menu]="splitMenu" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <nol-split-button nolGalleryHover=".nol-split-button-main" [icon]="text.glyphAdd" [label]="text.splitLabel" [tooltip]="text.splitTooltip" [menuLabel]="text.splitMenuLabel" [menu]="splitMenu" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled">
+    <nol-split-button [icon]="text.glyphAdd" [label]="text.splitLabel" [menuLabel]="text.splitMenuLabel" [menu]="splitMenu" [disabled]="true" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-split-button nolGalleryFocus=".nol-split-button-main" [icon]="text.glyphAdd" [label]="text.splitLabel" [tooltip]="text.splitTooltip" [menuLabel]="text.splitMenuLabel" [menu]="splitMenu" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.busy">
+    <nol-split-button [icon]="text.glyphAdd" [label]="text.splitLabel" [tooltip]="text.splitTooltip" [menuLabel]="text.splitMenuLabel" [menu]="splitMenu" [busy]="true" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<ng-template #splitMenu>
+  <nol-menu [attr.aria-label]="text.splitMenuLabel">
+    <button type="button" nol-menu-item [label]="text.splitBlank"></button>
+    <button type="button" nol-menu-item [label]="text.splitText"></button>
+  </nol-menu>
+</ng-template>

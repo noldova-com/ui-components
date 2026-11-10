@@ -1,0 +1,10 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-choice-pills label="Review" describedBy="nol-docs-choice-pills-note" [options]="options" [value]="review()" (valueChange)="review.set($event)" />
+<nol-field-message id="nol-docs-choice-pills-note" [kind]="kinds.Note">Who checks a change before it merges.</nol-field-message>

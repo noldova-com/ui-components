@@ -1,0 +1,73 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: var(--nol-chip);
+  max-width: 100%;
+  height: var(--nol-chip);
+  padding-inline: var(--nol-chip-padding);
+  border: var(--nol-border-width) solid var(--nol-widget-border);
+  border-radius: var(--nol-radius-small);
+  background: none;
+  color: var(--nol-text);
+  font-size: var(--nol-text-panel);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nol-chip-text {
+  line-height: normal;
+}
+
+:host(.nol-chip-added) {
+  color: var(--nol-added);
+}
+
+:host(.nol-chip-removed) {
+  color: var(--nol-removed);
+}
+
+:host(.nol-chip-key) {
+  background-color: var(--nol-raised);
+  font-weight: 400;
+}
+
+:host(.nol-chip-status) {
+  padding-inline: var(--nol-space-2);
+  border-color: var(--nol-border);
+  color: var(--nol-text-muted);
+  font-weight: 400;
+}
+
+:host(.nol-chip-failed) {
+  color: var(--nol-error);
+}
+
+:host(.nol-chip-warning) {
+  color: var(--nol-warning);
+}
+
+:host(.nol-chip-on) {
+  border-color: var(--nol-status-ok);
+  color: var(--nol-text);
+}
+
+.nol-chip-dot {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--nol-chip-dot);
+  height: var(--nol-chip-dot);
+  margin-inline-end: var(--nol-chip-dot);
+  border: calc(var(--nol-chip-dot) / 2) solid var(--nol-status-ok);
+  border-radius: 50%;
+}

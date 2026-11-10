@@ -1,0 +1,113 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.message" [size]="sizes.Wide">
+  <nol-gallery-cell [caption]="text.defaultState">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="answer" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <div class="nol-gallery-message"><nol-message nolGalleryHover=".nol-message-attachment" [author]="reviewer" [time]="time" [blocks]="hovered" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div class="nol-gallery-message"><nol-message nolGalleryFocus=".nol-message-copy" [author]="reviewer" [time]="time" [blocks]="answer" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageContinuation">
+    <div class="nol-gallery-message">
+      <nol-message [author]="reviewer" [time]="time" [blocks]="answer" />
+      <nol-message [author]="reviewer" [time]="time" [blocks]="continued" [continuation]="true" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageBubble">
+    <div class="nol-gallery-message">
+      <nol-message [author]="person" [time]="time" [blocks]="continued" [layout]="layouts.Bubble" [timeFormat]="timeFormats.Clock" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageBubbleHover">
+    <div class="nol-gallery-message">
+      <nol-message nolGalleryHover=".nol-message-copy" [author]="person" [time]="time" [blocks]="continued" [layout]="layouts.Bubble" [timeFormat]="timeFormats.Clock" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageClock">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="continued" [timeFormat]="timeFormats.Clock" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageAttachments">
+    <div class="nol-gallery-message">
+      <nol-message [author]="person" [time]="time" [blocks]="attached">
+        <ng-template [nolMessageSlot]="text.messageSlotId"><p class="nol-gallery-message-slot">{{ text.messageSlotText }}</p></ng-template>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messagePicture">
+    <div class="nol-gallery-message">
+      <nol-message [author]="person" [time]="time" [blocks]="pictureAttached" [layout]="layouts.Bubble" [timeFormat]="timeFormats.Clock" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageFileLinks">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="linked" [fileLinks]="true" [folderLinks]="linkedFolders" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageImage">
+    <div class="nol-gallery-message">
+      <nol-message [author]="reviewer" [time]="time" [blocks]="pictured">
+        <ng-template nolMessageImage let-alt="alt" let-title="title"><span class="nol-gallery-message-image" role="img" [attr.aria-label]="alt">{{ title }}</span></ng-template>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.selected">
+    <div class="nol-gallery-message"><nol-message [author]="person" [time]="time" [blocks]="continued" [selected]="true" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.working">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="partial" [status]="statuses.Streaming" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageCancelled">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="stopped" [status]="statuses.Cancelled" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.error">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="stopped" [status]="statuses.Error" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageErrorRetry">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="stopped" [status]="retryStatus()" (retry)="retry()" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageColumn">
+    <div class="nol-gallery-message">
+      <nol-message [author]="assistant" [time]="time" [blocks]="columnBlocks" [layout]="layouts.Column" [mentions]="mentions">
+        <nol-chip nolMessageHeader [kind]="chipKinds.Status">{{ text.messageColumnStatus }}</nol-chip>
+        <button type="button" nol-icon-button nolMessageAction [icon]="text.messageRewindGlyph" [label]="text.messageRewind"></button>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageActionsPlaced">
+    <div class="nol-gallery-message">
+      <nol-message nolGalleryFocus=".nol-message-copy" [author]="assistant" [time]="time" [blocks]="continued" [layout]="layouts.Column" [header]="false" [footer]="false"
+        [actionsTop]="actionsTop" [actionsEnd]="actionsEnd" />
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageColumnPerson">
+    <div class="nol-gallery-message"><nol-message [author]="person" [time]="time" [blocks]="continued" [layout]="layouts.Column" [timeFormat]="timeFormats.Clock" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageColumnApp">
+    <div class="nol-gallery-message">
+      <nol-message [author]="app" [time]="time" [blocks]="continued" [layout]="layouts.Column">
+        <nol-chip nolMessageHeader [kind]="chipKinds.Failed">{{ text.chipFailed }}</nol-chip>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageFooterEnd">
+    <div class="nol-gallery-message">
+      <nol-message [author]="assistant" [time]="time" [blocks]="continued" [layout]="layouts.Column">
+        <button type="button" nol-icon-button nolMessageFooterEnd [icon]="text.messageStatsGlyph" [label]="text.messageStats"></button>
+      </nol-message>
+      <nol-message [author]="assistant" [time]="time" [blocks]="partial" [layout]="layouts.Column" [status]="statuses.Streaming">
+        <button type="button" nol-icon-button nolMessageFooterEnd [nolMessageFooterEndPlacement]="footerPlacements.End" [icon]="text.messageStopGlyph"
+          [label]="text.messageStop"></button>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-message nol-gallery-narrow"><nol-message [author]="person" [time]="time" [blocks]="long" [timeFormat]="timeFormats.Clock" /></div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

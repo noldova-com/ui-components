@@ -1,0 +1,100 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-6);
+}
+
+.nol-gallery-table {
+  width: min(36rem, 100%);
+}
+
+.nol-gallery-narrow {
+  max-width: 12rem;
+}
+
+.nol-gallery-table-holder {
+  width: 100%;
+  box-sizing: border-box;
+  margin-block: calc(var(--nol-space-1) * -1);
+  padding: var(--nol-space-1) var(--nol-space-2);
+  overflow-x: auto;
+}
+
+.nol-gallery-bar {
+  width: 12.5rem;
+}
+
+.nol-gallery-invalid,
+.nol-gallery-noted {
+  display: grid;
+}
+
+.nol-gallery-table-actions {
+  display: flex;
+  gap: var(--nol-space-2);
+  justify-content: flex-end;
+}
+
+.nol-gallery-picture {
+  position: relative;
+  display: block;
+  width: 7rem;
+  height: 4.5rem;
+  border-radius: var(--nol-radius-large);
+  background: linear-gradient(135deg, var(--nol-panel), var(--nol-text));
+}
+
+.nol-gallery-picture-action {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-end: 0.125rem;
+}
+
+.nol-gallery-picture-tools {
+  display: grid;
+  place-items: end center;
+  box-sizing: border-box;
+  padding-block-end: 0.25rem;
+}
+
+.nol-gallery-picture-wide {
+  width: 10rem;
+}
+
+.nol-gallery-backdrop {
+  background: var(--nol-overlay);
+}
+
+.nol-gallery-picture-row,
+.nol-gallery-compact-row {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+}
+
+.nol-gallery-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  padding: var(--nol-space-1) var(--nol-space-2);
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-attachment);
+  color: var(--nol-text);
+}
+
+.nol-gallery-attachment-glyph {
+  color: var(--nol-icon-color);
+  font-size: var(--nol-icon);
+}
+
+.nol-gallery-attachment-size {
+  color: var(--nol-text-muted);
+}

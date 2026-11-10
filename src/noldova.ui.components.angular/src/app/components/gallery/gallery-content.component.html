@@ -1,0 +1,131 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-avatar />
+
+<nol-gallery-card />
+
+<nol-gallery-code-block />
+
+<nol-gallery-specimen [name]="text.diffView" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffSideBySideCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [layout]="sideBySide" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffReviewedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [reviews]="diffReviews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffPartlyReviewedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffPartial" [reviews]="diffReviews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffCollapsedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [collapsed]="diffCollapsed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffReadOnlyCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [reviews]="diffReviews" [readOnly]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffNoOpeningCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [readOnly]="true" [canOpenFiles]="false" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffStatesCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffStates" [collapseLimit]="diffHeldLimit" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffEmptyCaption"><nol-diff-view [label]="text.diffLabel" [files]="[]" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-diff-view nolGalleryFocus=".nol-diff-cell-changed" [label]="text.diffLabel" [files]="diffFiles" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-diff-view class="nol-gallery-narrow" [label]="text.diffLabel" [files]="diffLong" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.diffWrappedCaption">
+    <nol-diff-view class="nol-gallery-narrow" [label]="text.diffLabel" [files]="diffLong" [wrapped]="true" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-file-badge />
+
+<nol-gallery-inline-code />
+
+<nol-gallery-markdown-view />
+
+<nol-gallery-specimen [name]="text.terminal" [size]="sizes.Full" noHover noFocus noLongText>
+  @for (surface of terminalSurfaces; track surface[0]) {
+    <nol-gallery-cell [caption]="surface[1]">
+      <div class="nol-gallery-terminal" [style.background]="'var(--nol-' + surface[0] + ')'">
+        @for (color of terminalColors; track color) {
+          <span class="nol-gallery-terminal-color"><span class="nol-gallery-terminal-swatch" [style.background]="'var(--nol-terminal-ansi-' + color + ')'"></span>{{ color }}</span>
+        }
+      </div>
+    </nol-gallery-cell>
+  }
+  <nol-gallery-cell [caption]="text.terminalTextCaption">
+    <div class="nol-gallery-terminal">
+      <span>{{ text.terminalText }}<span class="nol-gallery-terminal-cursor">{{ text.terminalCursor }}</span><span class="nol-gallery-terminal-selection">{{ text.terminalSelected }}</span></span>
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-terminal-output />
+
+<nol-gallery-specimen [name]="text.statusColors" noHover noFocus noLongText>
+  @for (surface of statusSurfaces; track surface[0]) {
+    <nol-gallery-cell [caption]="surface[1]">
+      <div class="nol-gallery-status" [style.background]="'var(--nol-' + surface[0] + ')'">
+        @for (status of text.statuses; track status.token) {
+          <span class="nol-gallery-status-row"><span class="nol-gallery-status-dot" [style.background]="'var(--nol-' + status.token + ')'"></span>{{ status.label }}</span>
+        }
+      </div>
+    </nol-gallery-cell>
+  }
+</nol-gallery-specimen>
+
+<nol-gallery-specimen [name]="text.toolCall" [size]="sizes.Full">
+  <nol-gallery-cell [caption]="text.defaultState"><nol-tool-call [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallRunningCaption"><nol-tool-call [call]="calls.running" [views]="calls.runningViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallQueuedCaption"><nol-tool-call [call]="calls.queued" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallPermissionCaption"><nol-tool-call [call]="calls.awaiting" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallAnswerCaption"><nol-tool-call [call]="calls.answering" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallCancelledCaption"><nol-tool-call [call]="calls.cancelled" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallDeniedCaption"><nol-tool-call [call]="calls.denied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNothingCaption"><nol-tool-call [call]="calls.nothing" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNestedCaption"><nol-tool-call [call]="calls.nested" [views]="calls.nestedViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNestedClosedCaption"><nol-tool-call [call]="calls.nestedClosed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLongOutputCaption"><nol-tool-call [call]="calls.longOutput" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallAllLinesCaption"><nol-tool-call [call]="calls.allLines" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallControlCaption">
+    <nol-tool-call [call]="calls.control" [views]="calls.openViews">
+      <ng-template nolToolCallOutput let-call><nol-code-block [language]="text.toolCallDiff" [code]="call.output ?? text.toolCallNoDiff" /></ng-template>
+    </nol-tool-call>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLoadingCaption"><nol-tool-call [call]="calls.loading" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><nol-tool-call [nolGalleryHover]="toggle" [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-tool-call [nolGalleryFocus]="toggle" [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallFailedCaption"><nol-tool-call [call]="calls.failed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLoadFailedCaption"><nol-tool-call [call]="calls.loadFailed" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-tool-call class="nol-gallery-narrow" [call]="calls.long" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-specimen [name]="text.planSection" [size]="sizes.Full" noHover noFocus>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-plan [plan]="plans.working" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.planTypedCaption"><nol-markdown-view [text]="text.planTyped" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.planDoneCaption"><nol-plan [plan]="plans.done" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.planNotStartedCaption"><nol-plan [plan]="plans.notStarted" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-plan class="nol-gallery-narrow" [plan]="plans.long" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-specimen [name]="text.permissionCard" [size]="sizes.Full">
+  <nol-gallery-cell [caption]="text.defaultState"><nol-permission-card [request]="permissions.pending" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionMediumCaption"><nol-permission-card [request]="permissions.medium" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionHighCaption"><nol-permission-card [request]="permissions.high" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionConfirmCaption"><nol-permission-card [nolGalleryPress]="alwaysAllow" [request]="permissions.confirming" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAppOptionsCaption"><nol-permission-card [request]="permissions.appOptions" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionSendingCaption"><nol-permission-card [request]="permissions.sending" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionSendFailedCaption"><nol-permission-card [request]="permissions.sendFailed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAllowedOnceCaption"><nol-permission-card [request]="permissions.allowedOnce" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAlwaysAllowedCaption"><nol-permission-card [request]="permissions.alwaysAllowed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionDeniedCaption"><nol-permission-card [request]="permissions.denied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAlwaysDeniedCaption"><nol-permission-card [request]="permissions.alwaysDenied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionUnscopedCaption"><nol-permission-card [request]="permissions.unscoped" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionExpiredCaption"><nol-permission-card [request]="permissions.expired" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionWithdrawnCaption"><nol-permission-card [request]="permissions.withdrawn" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionLongDetailsCaption"><nol-permission-card [request]="permissions.longDetails" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionExpandedCaption"><nol-permission-card [request]="permissions.expanded" [detailsExpanded]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><nol-permission-card [nolGalleryHover]="option" [request]="permissions.hover" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-permission-card [nolGalleryFocus]="option" [request]="permissions.focus" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-permission-card class="nol-gallery-narrow" [request]="permissions.long" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

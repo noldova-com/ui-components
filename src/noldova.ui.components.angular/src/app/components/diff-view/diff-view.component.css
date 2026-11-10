@@ -1,0 +1,355 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-diff-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--nol-text);
+}
+
+.nol-diff-view-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nol-diff-file {
+  min-width: 0;
+  overflow: hidden;
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-code);
+}
+
+.nol-diff-file-header,
+.nol-diff-hunk-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: var(--nol-code-header-height);
+  padding-inline: var(--nol-space-2);
+  background-color: var(--nol-code-header);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+}
+
+.nol-diff-file-toggle {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.nol-diff-file-toggle:is(:focus-visible, [data-nol-state="Focus"]),
+.nol-diff-cell:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(0px - var(--nol-border-width));
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-diff-file-twistie {
+  flex: none;
+  color: var(--nol-icon-color);
+  font-size: var(--nol-icon);
+}
+
+.nol-diff-file-toggle[aria-expanded="true"] .nol-diff-file-twistie {
+  rotate: 90deg;
+}
+
+.nol-diff-file-toggle:dir(rtl)[aria-expanded="false"] .nol-diff-file-twistie {
+  rotate: 180deg;
+}
+
+.nol-diff-file-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nol-diff-file-status,
+.nol-diff-hunk-range,
+.nol-diff-review {
+  flex: none;
+  color: var(--nol-text-muted);
+}
+
+.nol-diff-file-counts {
+  display: flex;
+  flex: none;
+  gap: var(--nol-space-1);
+}
+
+.nol-diff-hunk-range {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--nol-font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nol-diff-actions {
+  display: flex;
+  flex: none;
+}
+
+.nol-diff-file-body {
+  border-top: var(--nol-border-width) solid var(--nol-card-border);
+}
+
+.nol-diff-hunk + .nol-diff-hunk {
+  border-top: var(--nol-border-width) solid var(--nol-card-border);
+}
+
+.nol-diff-note {
+  margin: 0;
+  padding: var(--nol-space-2) var(--nol-space-3);
+  color: var(--nol-text-muted);
+}
+
+.nol-diff-held {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-2);
+  padding-inline-end: var(--nol-space-3);
+}
+
+.nol-diff-hunk-lines {
+  --nol-diff-gutter: max(1.5rem, var(--nol-pointer-target));
+
+  display: grid;
+  grid-template-columns: var(--nol-diff-gutter) auto auto auto minmax(max-content, 1fr);
+  padding-block: max(0px, (var(--nol-pointer-target) - 1lh) / 2);
+  overflow-x: auto;
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  line-height: var(--nol-line-code);
+}
+
+.nol-diff-view-side-by-side .nol-diff-hunk-lines {
+  grid-template-columns: var(--nol-diff-gutter) auto auto minmax(max-content, 1fr) var(--nol-diff-gutter) auto auto minmax(max-content, 1fr);
+}
+
+.nol-diff-view-wrapped .nol-diff-hunk-lines {
+  grid-template-columns: var(--nol-diff-gutter) auto auto auto minmax(0, 1fr);
+}
+
+.nol-diff-view-wrapped.nol-diff-view-side-by-side .nol-diff-hunk-lines {
+  grid-template-columns: var(--nol-diff-gutter) auto auto minmax(0, 1fr) var(--nol-diff-gutter) auto auto minmax(0, 1fr);
+}
+
+.nol-diff-pair {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.nol-diff-cell {
+  position: relative;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.nol-diff-pair > .nol-diff-cell,
+.nol-diff-filler {
+  grid-column: span 4;
+}
+
+.nol-diff-cell-added {
+  background-color: var(--nol-added-background);
+}
+
+.nol-diff-cell-removed {
+  background-color: var(--nol-removed-background);
+}
+
+.nol-diff-number {
+  min-width: 2ch;
+  padding-inline: var(--nol-space-2) var(--nol-space-1);
+  color: var(--nol-text-muted);
+  text-align: end;
+  user-select: none;
+}
+
+.nol-diff-view-opens-files .nol-diff-number:not(:empty) {
+  cursor: pointer;
+}
+
+.nol-diff-sign {
+  padding-inline-end: var(--nol-space-1);
+  white-space: pre;
+  user-select: none;
+}
+
+.nol-diff-cell-added .nol-diff-sign {
+  color: var(--nol-added);
+}
+
+.nol-diff-cell-removed .nol-diff-sign {
+  color: var(--nol-removed);
+}
+
+.nol-diff-text {
+  padding-inline-end: var(--nol-space-3);
+  white-space: pre;
+}
+
+.nol-diff-view-wrapped .nol-diff-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.nol-diff-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.nol-diff-comment {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--nol-pointer-target);
+  margin-block: calc((1lh - var(--nol-pointer-target)) / 2);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--nol-button-text);
+  font-size: var(--nol-text-code);
+  line-height: var(--nol-line-code);
+  cursor: pointer;
+  visibility: hidden;
+  user-select: none;
+}
+
+.nol-diff-comment::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 1lh;
+  height: 1lh;
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-button);
+}
+
+.nol-diff-comment > span {
+  grid-area: 1 / 1;
+}
+
+.nol-diff-cell:is(:hover, [data-nol-state="Hover"], :focus-visible, [data-nol-state="Focus"]) > .nol-diff-comment {
+  visibility: visible;
+}
+
+.nol-diff-code::highlight(nol-code-comment) {
+  color: var(--nol-code-comment);
+}
+
+.nol-diff-code::highlight(nol-code-keyword) {
+  color: var(--nol-code-keyword);
+}
+
+.nol-diff-code::highlight(nol-code-control) {
+  color: var(--nol-code-control);
+}
+
+.nol-diff-code::highlight(nol-code-string) {
+  color: var(--nol-code-string);
+}
+
+.nol-diff-code::highlight(nol-code-number) {
+  color: var(--nol-code-number);
+}
+
+.nol-diff-code::highlight(nol-code-type) {
+  color: var(--nol-code-type);
+}
+
+.nol-diff-code::highlight(nol-code-function) {
+  color: var(--nol-code-function);
+}
+
+.nol-diff-code::highlight(nol-code-variable) {
+  color: var(--nol-code-variable);
+}
+
+.nol-diff-code::highlight(nol-code-regex) {
+  color: var(--nol-code-regex);
+}
+
+.nol-diff-code::highlight(nol-code-meta) {
+  color: var(--nol-code-meta);
+}
+
+.nol-diff-code::highlight(nol-diff-added-change) {
+  background-color: var(--nol-added-change);
+}
+
+.nol-diff-code::highlight(nol-diff-removed-change) {
+  background-color: var(--nol-removed-change);
+}
+
+@media (forced-colors: active) {
+  .nol-diff-cell-added,
+  .nol-diff-cell-removed {
+    background-color: Canvas;
+  }
+
+  .nol-diff-code {
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .nol-diff-code::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  .nol-diff-code::highlight(nol-code-comment),
+  .nol-diff-code::highlight(nol-code-keyword),
+  .nol-diff-code::highlight(nol-code-control),
+  .nol-diff-code::highlight(nol-code-string),
+  .nol-diff-code::highlight(nol-code-number),
+  .nol-diff-code::highlight(nol-code-type),
+  .nol-diff-code::highlight(nol-code-function),
+  .nol-diff-code::highlight(nol-code-variable),
+  .nol-diff-code::highlight(nol-code-regex),
+  .nol-diff-code::highlight(nol-code-meta) {
+    color: CanvasText;
+  }
+
+  .nol-diff-code::highlight(nol-diff-added-change),
+  .nol-diff-code::highlight(nol-diff-removed-change) {
+    background-color: Canvas;
+    text-decoration: underline solid 2px Highlight;
+  }
+}

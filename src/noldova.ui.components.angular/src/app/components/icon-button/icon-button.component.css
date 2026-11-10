@@ -1,0 +1,261 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: var(--nol-icon-button-target);
+  min-height: var(--nol-icon-button-target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--nol-icon-color);
+  outline: none;
+}
+
+:host(.nol-icon-button-danger) {
+  color: var(--nol-error);
+}
+
+:host::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: var(--nol-icon-button);
+  height: var(--nol-icon-button);
+  border-radius: var(--nol-radius-small);
+}
+
+:host(:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before,
+:host([aria-pressed="true"])::before {
+  background-color: var(--nol-toolbar-hover);
+}
+
+@media (forced-colors: active) {
+  :host(:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+:host([aria-pressed="true"]) {
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}
+
+@media (forced-colors: active) {
+  :host([aria-pressed="true"]:is(:disabled, [aria-disabled="true"])) {
+    --nol-text: GrayText;
+    --nol-text-muted: GrayText;
+    --nol-menu-text: GrayText;
+    --nol-icon-color: GrayText;
+    --nol-list-highlight: GrayText;
+    --nol-list-active-text: GrayText;
+
+    color: GrayText;
+  }
+
+  :host([aria-pressed="true"]:is(:disabled, [aria-disabled="true"]))::before {
+    background-color: Canvas;
+  }
+
+  :host([aria-pressed="true"]:is(:disabled, [aria-disabled="true"]):not(:focus-visible, [data-nol-state="Focus"]))::before {
+    outline: var(--nol-border-width) solid GrayText;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+:host(:is(:focus-visible, [data-nol-state="Focus"]))::before {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+}
+
+@media (forced-colors: active) {
+  :host(:is(:focus-visible, [data-nol-state="Focus"]))::before {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+:host(:is(:disabled, [aria-disabled="true"])) {
+  opacity: 0.5;
+  cursor: default;
+
+  @media (forced-colors: active) {
+    color: GrayText;
+  }
+}
+
+.nol-icon-button-glyph {
+  grid-area: 1 / 1;
+  font-size: var(--nol-icon);
+}
+
+:host(.nol-icon-button-filled) {
+  min-width: max(var(--nol-icon-button-target), var(--nol-button-height));
+  min-height: max(var(--nol-icon-button-target), var(--nol-button-height));
+  color: var(--nol-button-text);
+}
+
+:host(.nol-icon-button-filled)::before {
+  box-sizing: border-box;
+  width: var(--nol-button-height);
+  height: var(--nol-button-height);
+  border: var(--nol-border-width) solid transparent;
+  border-radius: 50%;
+  background-color: var(--nol-button);
+}
+
+:host(.nol-icon-button-filled:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before {
+  background-color: var(--nol-button);
+}
+
+:host(.nol-icon-button-filled:is(:focus-visible, [data-nol-state="Focus"]))::before {
+  outline-offset: calc(var(--nol-border-width) * 2);
+}
+
+:host(.nol-icon-button-filled:is(:disabled, [aria-disabled="true"])) {
+  opacity: 1;
+  color: var(--nol-text-muted);
+}
+
+:host(.nol-icon-button-filled:is(:disabled, [aria-disabled="true"]))::before {
+  background-color: var(--nol-widget-border);
+}
+
+@media (forced-colors: active) {
+  :host(.nol-icon-button-filled) {
+    color: ButtonText;
+  }
+
+  :host(.nol-icon-button-filled)::before {
+    border-color: ButtonText;
+  }
+
+  :host(.nol-icon-button-filled:is(:disabled, [aria-disabled="true"])) {
+    color: GrayText;
+  }
+
+  :host(.nol-icon-button-filled:is(:disabled, [aria-disabled="true"]))::before {
+    border-color: GrayText;
+  }
+}
+
+:host(.nol-icon-button-overlay) {
+  color: var(--nol-overlay-text);
+}
+
+:host(.nol-icon-button-overlay)::before {
+  box-sizing: border-box;
+  border: var(--nol-border-width) solid transparent;
+  border-radius: 50%;
+  background-color: var(--nol-overlay);
+}
+
+:host(.nol-icon-button-overlay:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before,
+:host(.nol-icon-button-overlay[aria-pressed="true"])::before {
+  background: linear-gradient(var(--nol-toolbar-hover), var(--nol-toolbar-hover)), var(--nol-overlay);
+}
+
+:host(.nol-icon-button-overlay:is(:focus-visible, [data-nol-state="Focus"]))::before {
+  outline-offset: calc(var(--nol-border-width) * 2);
+}
+
+@media (forced-colors: none) {
+  :host(.nol-icon-button-backdrop) {
+    color: var(--nol-overlay-control-text);
+  }
+
+  :host(.nol-icon-button-backdrop:is(:disabled, [aria-disabled="true"])) {
+    opacity: 0.35;
+  }
+
+  :host(.nol-icon-button-backdrop)::before {
+    background-color: var(--nol-overlay-control);
+  }
+
+  :host(.nol-icon-button-backdrop:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before,
+  :host(.nol-icon-button-backdrop[aria-pressed="true"])::before {
+    background: linear-gradient(var(--nol-overlay-control-hover), var(--nol-overlay-control-hover)), var(--nol-overlay-control);
+  }
+}
+
+:host(.nol-icon-button-tab-action) {
+  min-width: max(var(--nol-pointer-target), var(--nol-tab-action-slot));
+  min-height: max(var(--nol-pointer-target), var(--nol-tab-action-slot));
+}
+
+:host(.nol-icon-button-tab-action)::before {
+  width: var(--nol-tab-close);
+  height: var(--nol-tab-close);
+}
+
+:host(.nol-icon-button-tall) {
+  min-width: max(var(--nol-icon-button-target), var(--nol-button-height));
+  min-height: max(var(--nol-icon-button-target), var(--nol-button-height));
+}
+
+:host(.nol-icon-button-tall)::before {
+  width: var(--nol-button-height);
+  height: var(--nol-button-height);
+}
+
+@media (forced-colors: active) {
+  :host(.nol-icon-button-overlay) {
+    color: ButtonText;
+  }
+
+  :host(.nol-icon-button-overlay)::before {
+    border-color: ButtonText;
+    background-color: ButtonFace;
+  }
+
+  :host(.nol-icon-button-overlay:is(:disabled, [aria-disabled="true"])) {
+    color: GrayText;
+  }
+
+  :host(.nol-icon-button-overlay:is(:disabled, [aria-disabled="true"]))::before {
+    border-color: GrayText;
+  }
+
+  :host(.nol-icon-button-overlay[aria-pressed="true"]:not(:disabled, [aria-disabled="true"])) {
+    color: HighlightText;
+  }
+
+  :host(.nol-icon-button-overlay[aria-pressed="true"])::before {
+    background-color: Highlight;
+  }
+
+  :host(.nol-icon-button-overlay[aria-pressed="true"]:is(:disabled, [aria-disabled="true"]))::before {
+    background: Canvas;
+  }
+}
+
+:host(.nol-icon-button-busy) {
+  --nol-progress: currentColor;
+}
+
+:host(.nol-icon-button-busy) > :not(.nol-icon-button-spinner) {
+  opacity: 0;
+}
+
+.nol-icon-button-spinner {
+  grid-area: 1 / 1;
+}

@@ -1,0 +1,60 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--nol-progress) 25%, transparent);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) solid CanvasText;
+    background: Canvas;
+    forced-color-adjust: none;
+  }
+}
+
+:host(.nol-reveal-pending) {
+  visibility: hidden;
+}
+
+.nol-progress-bar {
+  display: block;
+  width: calc(var(--nol-progress-fraction) * 100%);
+  height: 100%;
+  background: var(--nol-progress);
+
+  @media (forced-colors: active) {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}
+
+:host(.nol-progress-indeterminate) .nol-progress-bar {
+  width: 40%;
+  animation: nol-progress-slide 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.nol-progress-indeterminate) .nol-progress-bar {
+    margin-inline-start: 30%;
+    animation: none;
+  }
+}
+
+@keyframes nol-progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}

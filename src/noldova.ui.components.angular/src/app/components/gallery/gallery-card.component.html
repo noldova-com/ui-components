@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.card" noHover noFocus>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-card class="nol-gallery-content-card"><strong>{{ text.cardTitle }}</strong><p class="nol-gallery-content-paragraph">{{ text.cardBody }}</p></nol-card>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-card class="nol-gallery-narrow">{{ text.cardLong }}</nol-card>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

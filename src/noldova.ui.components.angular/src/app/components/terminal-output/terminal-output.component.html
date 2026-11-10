@@ -1,0 +1,10 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<pre #body class="nol-terminal-output-body" [style.max-height.rem]="maxHeight()" (scroll)="see(body)">@for (segment of segments(); track $index) {<span [style]="segment.style">{{ segment.text }}</span>}</pre>
+<span #sample class="nol-terminal-output-sample" aria-hidden="true"><span #glyphs>{{ partResources.terminalOutputRowSample }}</span></span>

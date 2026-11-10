@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (icon(); as glyph) {
+  <span class="nol-toolbar-button-glyph material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
+}
+@if (icon() === null || isShowingLabel()) {
+  <span class="nol-toolbar-button-label" data-truncates>{{ label() }}</span>
+}
+@if (hasMenu()) {
+  <span class="nol-toolbar-button-chevron material-symbols-rounded" aria-hidden="true">{{ partResources.toolbarChevronGlyph }}</span>
+}
+@if (busy()) {
+  <nol-spinner class="nol-toolbar-button-spinner" [isDelayed]="false" />
+}

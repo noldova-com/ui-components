@@ -1,0 +1,19 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.inlineCode" noHover noFocus>
+  <nol-gallery-cell [caption]="text.inlinePanelCaption">
+    <p class="nol-gallery-content-paragraph">{{ text.inlineBefore }}<code nol-inline-code>{{ text.inlineName }}</code>{{ text.inlineAfter }}</p>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.inlineMessageCaption">
+    <p class="nol-gallery-content-paragraph nol-gallery-content-message">{{ text.inlineBefore }}<code nol-inline-code>{{ text.inlineName }}</code>{{ text.inlineAfter }}</p>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <p class="nol-gallery-content-paragraph nol-gallery-narrow">{{ text.inlineBefore }}<code nol-inline-code>{{ text.inlineLongName }}</code>{{ text.inlineAfter }}</p>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

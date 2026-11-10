@@ -1,0 +1,15 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-dialog title="Changes since yesterday" [size]="sizes.Large" (dismissed)="finished.emit()">
+  <ul class="nol-docs-dialog-changes">
+    @for (change of changes; track change) {
+      <li>{{ change }}</li>
+    }
+  </ul>
+</nol-dialog>

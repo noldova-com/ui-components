@@ -1,0 +1,19 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<button type="button" nol-icon-button icon="more_vert" label="Tab actions" [nolMenuTriggerFor]="actions"></button>
+<span>Chosen: {{ chosen() }}</span>
+<ng-template #actions>
+  <nol-menu aria-label="Tab actions">
+    <button type="button" nol-menu-item label="Close" (triggered)="chosen.set('Close')"></button>
+    <button type="button" nol-menu-item label="Close others" (triggered)="chosen.set('Close others')"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Split right" (triggered)="chosen.set('Split right')"></button>
+    <button type="button" nol-menu-item label="Split down" (triggered)="chosen.set('Split down')"></button>
+  </nol-menu>
+</ng-template>

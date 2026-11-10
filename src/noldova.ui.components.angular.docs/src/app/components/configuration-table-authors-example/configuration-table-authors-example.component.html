@@ -1,0 +1,33 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-table-holder">
+  <nol-configuration-table heading="Note authors" explanation="Authors can edit every note in this notebook.">
+    <button type="button" nol-button nolConfigurationTableAction [variant]="variants.Secondary" (click)="add()">Add</button>
+    <table nolConfigurationTable>
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" nolConfigurationTableFill>About</th>
+          <th scope="col" nolConfigurationTableRowActions="Actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (author of authors(); track author[0]) {
+          <tr>
+            <td>{{ author[0] }}</td>
+            <td nolConfigurationTableFill>{{ author[1] }}</td>
+            <td nolConfigurationTableRowActions>
+              <button type="button" nol-icon-button icon="close" [danger]="true" [label]="'Remove ' + author[0]" (click)="remove(author[0])"></button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </nol-configuration-table>
+</div>

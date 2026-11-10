@@ -1,0 +1,50 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { ArgumentException } from "@noldova/context.exceptions";
+
+import { QuickInputItem } from "../../../src/app/models/quick-input-item";
+import { TitleSegment } from "../../../src/app/models/title-segment";
+
+describe("QuickInputItem", () => {
+  it("holds a choice's id, title, icon, detail, key label and section, which is none by default", () => {
+    const item = new QuickInputItem("desktop.closeTab", "Close the tab", "close", "TaskRun", "Ctrl+W");
+
+    expect([item.id, item.title, item.icon, item.detail, item.keyLabel, item.matches, item.detailMatches, item.section])
+      .toEqual(["desktop.closeTab", "Close the tab", "close", "TaskRun", "Ctrl+W", [], [], null]);
+    expect(new QuickInputItem("desktop.closeTab", "Close the tab", null, null, null, [], [], "recently used").section).toBe("recently used");
+    expect([item.segments, item.detailSegments]).toEqual([[new TitleSegment("Close the tab", false)], [new TitleSegment("TaskRun", false)]]);
+  });
+
+  it("splits its title into runs of matched and unmatched characters", () => {
+    const item = new QuickInputItem("desktop.closeTab", "Close the tab", null, null, null, [0, 1, 6, 10, 11]);
+
+    expect(item.segments).toEqual([
+      new TitleSegment("Cl", true), new TitleSegment("ose ", false), new TitleSegment("t", true), new TitleSegment("he ", false), new TitleSegment("ta", true),
+      new TitleSegment("b", false)
+    ]);
+  });
+
+  it("splits its detail into runs of matched and unmatched characters, and has none without a detail", () => {
+    const item = new QuickInputItem("desktop.closeTab", "Close the tab", null, "TaskRun", null, [], [4, 5, 6]);
+
+    expect(item.detailSegments).toEqual([new TitleSegment("Task", false), new TitleSegment("Run", true)]);
+    expect(new QuickInputItem("notes.sync", "Sync", null, null, null).detailSegments).toEqual([]);
+  });
+
+  it("refuses an empty id, title or section and a match outside the title or the detail", () => {
+    expect(() => new QuickInputItem("a.b", "Close", null, null, null, [], [], " ")).toThrow(ArgumentException);
+    expect(() => new QuickInputItem(" ", "Close", null, null, null)).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "", null, null, null)).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "Close", null, null, null, [5])).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "Close", null, null, null, [1.5])).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "Close", null, null, null, [-1])).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "Close", null, "Notes", null, [], [5])).toThrow(ArgumentException);
+    expect(() => new QuickInputItem("a.b", "Close", null, null, null, [], [0])).toThrow(ArgumentException);
+  });
+});

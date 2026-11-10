@@ -1,0 +1,131 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-diff-view-bar" nolToolbar [nolToolbarLabel]="partResources.diffViewActionsLabel">
+  <button type="button" nol-icon-button nolToolbarItem class="nol-diff-view-layout" data-nol-resizes-row [icon]="partResources.diffSideBySideGlyph" [label]="partResources.diffSideBySideLabel" [pressed]="isSideBySide()"
+    [nolTooltip]="partResources.diffSideBySideLabel" (click)="toggleLayout()"></button>
+  <button type="button" nol-icon-button nolToolbarItem class="nol-diff-view-wrap" data-nol-resizes-row [icon]="resources.wordWrapGlyph" [label]="resources.wordWrapLabel" [pressed]="wrapped()"
+    [nolTooltip]="resources.wordWrapLabel" (click)="toggleWrap()"></button>
+</div>
+@for (file of files(); track file.id; let fileIndex = $index) {
+  @let isOpen = !collapsed().has(file.id);
+  @let fileState = fileStateOf(file);
+  <section class="nol-diff-file" [attr.aria-labelledby]="id + '-file-' + fileIndex">
+    <div class="nol-diff-file-header">
+      <button type="button" class="nol-diff-file-toggle" data-nol-resizes-row [id]="id + '-file-' + fileIndex" [attr.aria-expanded]="isOpen" (click)="toggleFile(file)">
+        <span class="nol-diff-file-twistie material-symbols-rounded" aria-hidden="true">{{ resources.twistieGlyph }}</span>
+        <span class="nol-diff-file-path" data-truncates>{{ file.oldPath === null ? file.path : partResources.formatDiffRename(file.oldPath, file.path) }}</span>
+        <span class="nol-diff-file-status">{{ partResources.diffStatusTexts[file.status] }}</span>
+        <span class="nol-diff-file-counts" aria-hidden="true">
+          <nol-chip [kind]="chipKinds.Added" [count]="file.additions" />
+          <nol-chip [kind]="chipKinds.Removed" [count]="file.deletions" />
+        </span>
+        <span class="nol-diff-hidden">{{ partResources.formatDiffCounts(file.additions, file.deletions) }}</span>
+      </button>
+      @if (fileState !== undecided) {
+        <span class="nol-diff-review">{{ partResources.formatDiffReviewText(fileState) }}</span>
+      }
+      @if (canOpenFiles()) {
+        <button type="button" nol-icon-button class="nol-diff-file-open" [icon]="partResources.diffOpenFileGlyph" [label]="partResources.diffOpenFileLabel" [nolTooltip]="partResources.diffOpenFileLabel"
+          (click)="openFile(file)"></button>
+      }
+      @if (!readOnly()) {
+        <ng-container *ngTemplateOutlet="reviewActions; context: { $implicit: file, hunk: null, subject: file.path }"></ng-container>
+      }
+    </div>
+    @if (isOpen) {
+      <div class="nol-diff-file-body">
+        @if (file.content.stateText; as text) {
+          <p class="nol-diff-note" [class.nol-diff-note-pending]="file.content.isPending">{{ text }}</p>
+        }
+        @if (isHeld(file)) {
+          <div class="nol-diff-held">
+            <p class="nol-diff-note">{{ partResources.diffHeldText }}</p>
+            <button type="button" nol-button class="nol-diff-load" data-nol-resizes-row [variant]="secondary" (click)="reveal(file)">{{ partResources.diffLoadLabel }}</button>
+          </div>
+        } @else {
+          @for (hunk of file.content.hunks; track hunk.id; let hunkIndex = $index, isLast = $last) {
+            @let hunkLabel = partResources.formatDiffHunkLabel(hunkIndex + 1, file.content.hunks.length);
+            @let hunkState = reviewOf(file).hunkState(hunk.id);
+            <div class="nol-diff-hunk" role="group" [attr.aria-label]="hunkLabel">
+              <div class="nol-diff-hunk-header">
+                <button type="button" nol-icon-button class="nol-diff-expand" data-nol-resizes-row [icon]="partResources.diffExpandGlyphs[directions.Up]" [label]="partResources.diffExpandLabels[directions.Up]"
+                  [nolTooltip]="partResources.diffExpandLabels[directions.Up]" (click)="expand(file, hunk, directions.Up)"></button>
+                <span class="nol-diff-hunk-range" aria-hidden="true">{{ partResources.formatDiffHunkRange(hunk.oldStart, hunk.oldLength, hunk.newStart, hunk.newLength) }} {{ hunk.section }}</span>
+                @if (hunkState !== undecided) {
+                  <span class="nol-diff-review">{{ partResources.diffReviewTexts[hunkState] }}</span>
+                }
+                @if (!readOnly()) {
+                  <ng-container *ngTemplateOutlet="reviewActions; context: { $implicit: file, hunk, subject: hunkLabel }"></ng-container>
+                }
+              </div>
+              <div class="nol-diff-hunk-lines" #lines [attr.aria-keyshortcuts]="lineKeys()">
+                @if (isSideBySide()) {
+                  @for (pair of pairsOf(hunk); track $index) {
+                    <div class="nol-diff-pair">
+                      @if (pair.oldLine; as line) {
+                        <ng-container *ngTemplateOutlet="cell; context: { $implicit: line, side: sides.Old, file, hunk, lines }"></ng-container>
+                      } @else {
+                        <div class="nol-diff-filler"></div>
+                      }
+                      @if (pair.newLine; as line) {
+                        <ng-container *ngTemplateOutlet="cell; context: { $implicit: line, side: sides.New, file, hunk, lines }"></ng-container>
+                      } @else {
+                        <div class="nol-diff-filler"></div>
+                      }
+                    </div>
+                  }
+                } @else {
+                  @for (line of hunk.lines; track $index) {
+                    <ng-container *ngTemplateOutlet="cell; context: { $implicit: line, side: line.side, file, hunk, lines }"></ng-container>
+                  }
+                }
+              </div>
+              @if (isLast) {
+                <button type="button" nol-icon-button class="nol-diff-expand nol-diff-expand-down" data-nol-resizes-row [icon]="partResources.diffExpandGlyphs[directions.Down]"
+                  [label]="partResources.diffExpandLabels[directions.Down]" [nolTooltip]="partResources.diffExpandLabels[directions.Down]" (click)="expand(file, hunk, directions.Down)"></button>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  </section>
+} @empty {
+  <p class="nol-diff-note nol-diff-empty">{{ partResources.diffEmptyText }}</p>
+}
+
+<ng-template #reviewActions let-file let-hunk="hunk" let-subject="subject">
+  <div class="nol-diff-actions" nolToolbar [nolToolbarLabel]="partResources.formatDiffActionsLabel(subject)">
+    <button type="button" nol-toolbar-button nolToolbarItem class="nol-diff-action" [label]="partResources.diffAcceptLabel" [icon]="partResources.diffAcceptGlyph" [isShowingLabel]="true"
+      (click)="review(file, hunk, states.Accepted)"></button>
+    <button type="button" nol-toolbar-button nolToolbarItem class="nol-diff-action" [label]="partResources.diffRejectLabel" [icon]="partResources.diffRejectGlyph" [isShowingLabel]="true"
+      (click)="review(file, hunk, states.Rejected)"></button>
+  </div>
+</ng-template>
+
+<ng-template #cell let-line let-side="side" let-file="file" let-hunk="hunk" let-lines="lines">
+  <div class="nol-diff-cell" [class]="kindClassOf(line)" [class.nol-diff-cell-changed]="line.kind !== contextKind"
+    (focusin)="activate($event, lines)" (keydown)="handleCellKey($event, lines, file, line, side)">
+    <button type="button" class="nol-diff-comment material-symbols-rounded" tabindex="-1" aria-hidden="true" [nolTooltip]="partResources.diffCommentLabel"
+      (click)="comment(file, line, side)"><span>{{ partResources.diffCommentGlyph }}</span></button>
+    @if (isSideBySide()) {
+      <span class="nol-diff-number" aria-hidden="true" (click)="openLine(file, line, side)">{{ line.numberOn(side) }}</span>
+    } @else {
+      @for (numberSide of numberSides; track numberSide) {
+        @if (line.hasNumberOn(numberSide)) {
+          <span class="nol-diff-number" aria-hidden="true" (click)="openLine(file, line, numberSide)">{{ line.numberOn(numberSide) }}</span>
+        } @else {
+          <span class="nol-diff-number" aria-hidden="true"></span>
+        }
+      }
+    }
+    <span class="nol-diff-sign" aria-hidden="true">{{ signOf(line) }}</span>
+    <span class="nol-diff-text"><span class="nol-diff-hidden">{{ nameOf(line, side) }} </span><span class="nol-diff-code" [nolDiffCode]="tokensOf(line, side)" [nolDiffCodeText]="line.text" [nolDiffCodeChanges]="changesOf(hunk, line)"></span></span>
+  </div>
+</ng-template>

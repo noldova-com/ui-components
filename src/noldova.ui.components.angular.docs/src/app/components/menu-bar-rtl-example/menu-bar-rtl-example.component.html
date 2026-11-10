@@ -1,0 +1,27 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div dir="rtl">
+  <nol-menu-bar label="Editor menu">
+    <button type="button" nol-menu-bar-item label="Format" [nolMenuTriggerFor]="format"></button>
+    <button type="button" nol-menu-bar-item label="Insert" [nolMenuTriggerFor]="insert"></button>
+  </nol-menu-bar>
+</div>
+<span>Ran: {{ ran() }}</span>
+<ng-template #format>
+  <nol-menu aria-label="Format">
+    <button type="button" nol-menu-item label="Bold" shortcut="Ctrl+B" (triggered)="ran.set('Bold')"></button>
+    <button type="button" nol-menu-item label="Italic" shortcut="Ctrl+I" (triggered)="ran.set('Italic')"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #insert>
+  <nol-menu aria-label="Insert">
+    <button type="button" nol-menu-item label="Link" shortcut="Ctrl+K" (triggered)="ran.set('Link')"></button>
+    <button type="button" nol-menu-item label="Table" (triggered)="ran.set('Table')"></button>
+  </nol-menu>
+</ng-template>

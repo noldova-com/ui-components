@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.tooltip" noHover noFocus>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-tooltip [text]="text.tooltipText" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.triggerCaption">
+    <button type="button" nol-button [variant]="variants.Secondary" [nolTooltip]="text.tooltipText" [nolTooltipSide]="below">{{ text.tooltipTrigger }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tooltipDescribedCaption"><nol-tooltip [text]="text.tooltipTitle" [description]="text.tooltipDescription" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-tooltip class="nol-gallery-narrow" [text]="text.tooltipLong" /></nol-gallery-cell>
+</nol-gallery-specimen>

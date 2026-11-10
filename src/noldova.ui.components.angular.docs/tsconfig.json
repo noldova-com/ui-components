@@ -1,0 +1,29 @@
+{
+  "extends": "../noldova.ui.components.angular/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@docs-generated/*": [
+        "../../_build/docs-generated/*"
+      ],
+      "@noldova/ui.components.angular": [
+        "../noldova.ui.components.angular/src/api/index.ts"
+      ],
+      "@noldova/ui.components.angular/code-highlighting": [
+        "../noldova.ui.components.angular/src/api/code-highlighting.ts"
+      ],
+      "@noldova/ui.components.angular/code-highlighting/worker": [
+        "../noldova.ui.components.angular/src/api/code-highlighting-worker.ts"
+      ],
+      "@noldova/ui.components.angular/gallery": [
+        "../noldova.ui.components.angular/src/api/gallery.ts"
+      ],
+      "@noldova/ui.components.angular/markdown": [
+        "../noldova.ui.components.angular/src/api/markdown.ts"
+      ],
+      "@noldova/ui.components.angular/testing": [
+        "../noldova.ui.components.angular/src/api/testing.ts"
+      ]
+    }
+  },
+  "files": []
+}

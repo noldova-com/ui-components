@@ -1,0 +1,25 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<ng-template #text>
+  <span class="nol-choice-row-text">
+    <span class="nol-choice-row-label">{{ label() }}</span>
+    @if (description(); as text) {
+      <span class="nol-choice-row-description">{{ text }}</span>
+    }
+  </span>
+</ng-template>
+@if (type() === types.Checkbox) {
+  <nol-checkbox class="nol-choice-row-control" [checked]="checked()" [disabled]="disabled()" (checkedChange)="checkedChange.emit($event)">
+    <ng-container *ngTemplateOutlet="text" />
+  </nol-checkbox>
+} @else {
+  <nol-radio class="nol-choice-row-control" [value]="value()" [checked]="checked()" [disabled]="disabled()" (checkedChange)="checkedChange.emit($event)">
+    <ng-container *ngTemplateOutlet="text" />
+  </nol-radio>
+}

@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.panelCard" noHover noFocus>
+  <nol-gallery-cell [caption]="text.panelShellCaption"><nol-panel-card class="nol-gallery-card" [surface]="surfaces.Shell">{{ text.panelShell }}</nol-panel-card></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.panelPanelCaption"><nol-panel-card class="nol-gallery-card">{{ text.panelPanel }}</nol-panel-card></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-panel-card class="nol-gallery-card nol-gallery-narrow">{{ text.panelLong }}</nol-panel-card></nol-gallery-cell>
+</nol-gallery-specimen>

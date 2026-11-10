@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div role="group" aria-labelledby="nol-docs-choice-row-checks">
+  <span id="nol-docs-choice-row-checks">Checks before a merge</span>
+  <nol-choice-row label="Tests" description="Every target's suite." [type]="types.Checkbox" [checked]="runsTests()" (checkedChange)="runsTests.set($event)" />
+  <nol-choice-row label="Static checks" description="Types, style and licenses." [type]="types.Checkbox" [checked]="runsLint()" (checkedChange)="runsLint.set($event)" />
+</div>

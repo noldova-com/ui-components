@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu aria-label="Layout" [minWidth]="14">
+  <nol-menu-group label="Panel position">
+    @for (side of sides; track side) {
+      <button type="button" nol-menu-item [label]="side" [checked]="side === position()" (triggered)="position.set(side)"></button>
+    }
+  </nol-menu-group>
+  <nol-menu-separator />
+  <button type="button" nol-menu-item label="Reset the layout" icon="restart_alt" (triggered)="position.set('Left')"></button>
+</nol-menu>
+<span>Panel: {{ position() }}</span>

@@ -1,0 +1,117 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div #header class="nol-tool-call-header">
+  @if (isStatic()) {
+    <span class="nol-tool-call-toggle" tabindex="-1" [id]="id + '-toggle'" [attr.aria-describedby]="id + '-state'" [nolTooltip]="call().title" [nolTooltipTruncated]="true" [nolTooltipDisabled]="titleTooltip() === null"
+      [nolTooltipSide]="titleSide()" [nolTooltipBeside]="titleBeside()">
+      <ng-container [ngTemplateOutlet]="heading" />
+    </span>
+  } @else {
+    <button type="button" class="nol-tool-call-toggle" data-nol-resizes-row [id]="id + '-toggle'" [attr.aria-expanded]="isExpanded()" [attr.aria-controls]="id + '-body'" [attr.aria-describedby]="id + '-state'"
+      [nolTooltip]="call().title" [nolTooltipTruncated]="true" [nolTooltipDisabled]="titleTooltip() === null" [nolTooltipSide]="titleSide()"
+      [nolTooltipBeside]="titleBeside()" (click)="toggle()">
+      <ng-container [ngTemplateOutlet]="heading" />
+    </button>
+  }
+  <ng-template #heading>
+    <span class="nol-tool-call-twistie material-symbols-rounded" aria-hidden="true">{{ resources.twistieGlyph }}</span>
+    <span class="nol-tool-call-kind material-symbols-rounded" aria-hidden="true">{{ partResources.toolCallKindGlyphs[call().kind] }}</span>
+    <span #title class="nol-tool-call-title" data-truncates>{{ shownTitle() }}</span>
+  </ng-template>
+  @if (target(); as target) {
+    <button type="button" class="nol-tool-call-target" [attr.aria-label]="partResources.formatToolCallOpenTarget(target.text)" [nolTooltip]="target.text" [nolTooltipTruncated]="true"
+      (click)="openTarget.emit(call())"><span class="nol-tool-call-target-head" data-truncates>{{ target.head }}</span><span class="nol-tool-call-target-tail">{{ target.tail }}</span></button>
+  }
+  <span class="nol-tool-call-state" [class]="partResources.toolCallStatusClasses[call().status]" [id]="id + '-state'">
+    @if (isRunning()) {
+      <nol-spinner class="nol-tool-call-spinner" />
+    } @else {
+      <span class="nol-tool-call-status-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.toolCallStatusGlyphs[call().status] }}</span>
+    }
+    <span class="nol-tool-call-status">{{ partResources.toolCallStatusLabels[call().status] }}</span>
+    @if (durationText(); as duration) {
+      <span class="nol-tool-call-duration">{{ duration }}</span>
+    }
+    @if (showsDepth()) {
+      <span class="nol-tool-call-depth">{{ partResources.formatToolCallDepth(depth) }}</span>
+    }
+    @if (!isExpanded() && call().children.length > 0) {
+      <span class="nol-tool-call-nested">{{ partResources.formatToolCallNested(call().children.length) }}</span>
+    }
+  </span>
+  @if (call().isCancellable) {
+    <button type="button" nol-icon-button class="nol-tool-call-cancel" [icon]="partResources.toolCallCancelGlyph" [label]="partResources.formatToolCallCancel(cancelLabel(), call().title)"
+      [nolTooltip]="cancelLabel()" (click)="cancel.emit(call())"></button>
+  }
+</div>
+<div class="nol-tool-call-body" role="region" [id]="id + '-body'" [attr.aria-labelledby]="id + '-toggle'" [hidden]="!isExpanded() || !hasBody()">
+  @if (isExpanded()) {
+    @if (call().error; as error) {
+      <p class="nol-tool-call-error"><span class="nol-tool-call-error-glyph material-symbols-rounded" aria-hidden="true">{{ partResources.toolCallErrorGlyph }}</span><span>{{ error }}</span></p>
+    }
+    @if (call().input; as input) {
+      <div class="nol-tool-call-section nol-tool-call-input">
+        <div class="nol-tool-call-section-header">
+          <span class="nol-tool-call-section-label">{{ partResources.toolCallInputLabel }}</span>
+          @if (input.fields.length > 0) {
+            <button type="button" nol-icon-button class="nol-tool-call-copy" [class.nol-tool-call-copied]="inputCopy() === copyStates.Copied" [icon]="resources.copyGlyphs[inputCopy()]"
+              [label]="partResources.toolCallCopyInputLabels[inputCopy()]" [nolTooltip]="partResources.toolCallCopyInputLabels[inputCopy()]" (click)="copy(input.text, inputCopy)"></button>
+          }
+        </div>
+        @if (input.fields.length > 0) {
+          <dl class="nol-tool-call-fields">
+            @for (field of input.fields; track $index) {
+              <div class="nol-tool-call-field"><dt>{{ field.key }}</dt><dd>{{ field.value }}</dd></div>
+            }
+          </dl>
+        } @else {
+          <nol-code-block [code]="input.text" [language]="input.language" />
+        }
+      </div>
+    }
+    @if (hasOutput()) {
+      <div class="nol-tool-call-section nol-tool-call-result">
+        <div class="nol-tool-call-section-header">
+          <span class="nol-tool-call-section-label">{{ partResources.toolCallOutputLabel }}</span>
+          @if (call().output; as text) {
+            <button type="button" nol-icon-button class="nol-tool-call-copy" [class.nol-tool-call-copied]="outputCopy() === copyStates.Copied" [icon]="resources.copyGlyphs[outputCopy()]"
+              [label]="partResources.toolCallCopyOutputLabels[outputCopy()]" [nolTooltip]="partResources.toolCallCopyOutputLabels[outputCopy()]" (click)="copy(text, outputCopy)"></button>
+          }
+        </div>
+        @if (control(); as template) {
+          <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: call() }" />
+        } @else if (lines().length > 0) {
+          <pre #output class="nol-tool-call-output" [class.nol-tool-call-output-scrolls]="isScrolling()" [attr.tabindex]="isScrolling() ? 0 : null" [attr.role]="isScrolling() ? 'region' : null"
+            [attr.aria-label]="isScrolling() ? partResources.toolCallOutputLabel : null" (scroll)="follow(output)" (keydown)="keepKey($event)">{{ shownOutput() }}</pre>
+          @if (isCut()) {
+            <button type="button" class="nol-tool-call-more" data-nol-resizes-row (click)="showAllLines()">{{ partResources.formatToolCallShowAllLines(lines().length) }}</button>
+          }
+        } @else if (call().outputState === states.Loading) {
+          <div class="nol-tool-call-loading"><nol-spinner /><span>{{ partResources.toolCallOutputLoading }}</span></div>
+        } @else {
+          <div class="nol-tool-call-load-failed">
+            <span>{{ partResources.toolCallOutputFailed }}</span>
+            <button #retryButton type="button" class="nol-tool-call-more" data-nol-resizes-row (click)="retry(retryButton)">{{ partResources.toolCallRetryLabel }}</button>
+          </div>
+        }
+      </div>
+    }
+    @if (call().children.length > 0) {
+      <div #children class="nol-tool-call-children" [class.nol-tool-call-children-flat]="isFlat()" role="group" [attr.aria-label]="partResources.formatToolCallChildren(call().title)">
+        @for (child of shownChildren(); track child.id) {
+          <nol-tool-call [call]="child" [(views)]="views" [outputLines]="outputLines()" [childrenStep]="childrenStep()" [shownTitles]="shownTitles()" [titleTooltip]="titleTooltip()" [cancelLabel]="cancelLabel()" (cancel)="cancel.emit($event)"
+            (openTarget)="openTarget.emit($event)" (outputRequest)="outputRequest.emit($event)" />
+        }
+        @if (moreChildren() > 0) {
+          <button type="button" class="nol-tool-call-more" data-nol-resizes-row (click)="showMore()">{{ partResources.formatToolCallShowMore(moreChildren()) }}</button>
+        }
+      </div>
+    }
+  }
+</div>

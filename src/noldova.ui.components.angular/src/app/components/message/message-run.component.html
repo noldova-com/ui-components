@@ -1,0 +1,29 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<span class="nol-message-run-limit" aria-hidden="true"><span class="nol-message-run-limit-height" #limit></span></span>
+<div class="nol-message-run-body" #body [id]="bodyId" [class.nol-message-collapsed]="isCollapsed()" [class.nol-message-clipped]="isCollapsed() && canCollapse()"
+  (focusin)="reveal($event)">
+  <div class="nol-message-run-content" #content>
+    @for (block of blocks(); track $index) {
+      @if (isText(block)) {
+        <nol-markdown-view [class.nol-message-interim]="block.interim" [text]="block.text" [streaming]="streaming() && $last && !block.interim" [paced]="streaming()" [entering]="entering().has(block)"
+          [mentions]="mentions()" [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns() && !streaming()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"
+          (fileActivate)="fileActivate.emit($event)" (shellRun)="shellRun.emit($event)" />
+      } @else if (isCode(block)) {
+        <nol-code-block #codeBlock [code]="block.code" [language]="block.language" [maxHeight]="partResources.messageCodeHeight" [streaming]="streaming() && $last"
+          [runnable]="shellRuns() && !streaming()" (run)="shellRun.emit($event)" />
+        <nol-shell-run-output [codeBlock]="codeBlock" [area]="content" />
+      }
+    }
+  </div>
+</div>
+@if (canCollapse()) {
+  <button type="button" nol-button class="nol-message-more" data-nol-resizes-row [variant]="variants.Secondary" [attr.aria-expanded]="isExpanded()" [attr.aria-controls]="bodyId"
+    (click)="toggle()">{{ isExpanded() ? resources.messageShowLessLabel : resources.messageShowMoreLabel }}</button>
+}

@@ -1,0 +1,41 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.groupHeader" [size]="sizes.Wide">
+  <nol-gallery-cell [caption]="text.defaultState">
+    <div class="nol-gallery-sections">
+      <nol-group-header [label]="text.sectionRecent" [count]="recentRows.length" [level]="4" [controls]="groupRowsId + '-recent'" [(expanded)]="isRecentOpen">
+        <button type="button" nol-icon-button [icon]="text.glyphAdd" [label]="text.groupAdd"></button>
+      </nol-group-header>
+      <div [id]="groupRowsId + '-recent'">
+        @if (isRecentOpen()) {
+          <nol-tree [label]="text.sectionRecent" [nodes]="recentRows" />
+        }
+      </div>
+      <nol-group-header [label]="text.sectionOlder" [count]="olderRows.length" [level]="4" [controls]="groupRowsId + '-older'" [(expanded)]="isOlderOpen" />
+      <div [id]="groupRowsId + '-older'">
+        @if (isOlderOpen()) {
+          <nol-tree [label]="text.sectionOlder" [nodes]="olderRows" />
+        }
+      </div>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <div class="nol-gallery-sections"><nol-group-header nolGalleryHover [label]="text.sectionRecent" [count]="recentRows.length" [level]="4" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div class="nol-gallery-sections"><nol-group-header nolGalleryFocus="button" [label]="text.sectionRecent" [count]="recentRows.length" [level]="4" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-narrow">
+      <nol-group-header [label]="text.sectionLong" [count]="recentRows.length" [level]="4">
+        <button type="button" nol-icon-button [icon]="text.glyphAdd" [label]="text.groupAdd"></button>
+      </nol-group-header>
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

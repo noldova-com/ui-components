@@ -1,0 +1,200 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-code-block {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-code);
+  color: var(--nol-text);
+}
+
+.nol-code-block-header {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: var(--nol-code-header-height);
+  padding-inline: var(--nol-space-3) calc(var(--nol-space-3) - (var(--nol-icon-button-target) - var(--nol-icon)) / 2);
+  border-bottom: var(--nol-border-width) solid var(--nol-card-border);
+  background-color: var(--nol-code-header);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+}
+
+.nol-code-block-actions {
+  display: flex;
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.nol-code-block-copied .nol-icon-button-glyph {
+  color: var(--nol-added);
+  animation: nol-copied-pop 200ms ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.nol-code-block-body {
+  margin: 0;
+  overflow-x: auto;
+  container-type: scroll-state;
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  line-height: var(--nol-line-code);
+  white-space: pre;
+}
+
+.nol-code-block-body > code {
+  --nol-code-block-padding: 0.875rem;
+
+  display: block;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 100%;
+  padding: var(--nol-code-block-padding);
+  font: inherit;
+  letter-spacing: calc((var(--nol-code-advance-ratio, 1) - 1) * 1ch);
+  overflow: clip;
+  text-box: trim-both text;
+}
+
+.nol-code-block-body > code > .nol-code-line {
+  display: block;
+  width: max-content;
+}
+
+.nol-code-block-advance {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  white-space: pre;
+  user-select: none;
+  pointer-events: none;
+
+  & > span {
+    display: inline-block;
+  }
+
+  & > span::before {
+    content: attr(data-sample);
+  }
+}
+
+@container scroll-state(scrollable: inline) {
+  .nol-code-block-body > code {
+    padding-bottom: max(0px, var(--nol-code-block-padding) - var(--nol-scrollbar-size));
+  }
+}
+
+.nol-code-block-body > code::highlight(nol-code-comment),
+.nol-code-line > .nol-code-comment {
+  color: var(--nol-code-comment);
+}
+
+.nol-code-block-body > code::highlight(nol-code-keyword),
+.nol-code-line > .nol-code-keyword {
+  color: var(--nol-code-keyword);
+}
+
+.nol-code-block-body > code::highlight(nol-code-control),
+.nol-code-line > .nol-code-control {
+  color: var(--nol-code-control);
+}
+
+.nol-code-block-body > code::highlight(nol-code-string),
+.nol-code-line > .nol-code-string {
+  color: var(--nol-code-string);
+}
+
+.nol-code-block-body > code::highlight(nol-code-number),
+.nol-code-line > .nol-code-number {
+  color: var(--nol-code-number);
+}
+
+.nol-code-block-body > code::highlight(nol-code-type),
+.nol-code-line > .nol-code-type {
+  color: var(--nol-code-type);
+}
+
+.nol-code-block-body > code::highlight(nol-code-function),
+.nol-code-line > .nol-code-function {
+  color: var(--nol-code-function);
+}
+
+.nol-code-block-body > code::highlight(nol-code-variable),
+.nol-code-line > .nol-code-variable {
+  color: var(--nol-code-variable);
+}
+
+.nol-code-block-body > code::highlight(nol-code-regex),
+.nol-code-line > .nol-code-regex {
+  color: var(--nol-code-regex);
+}
+
+.nol-code-block-body > code::highlight(nol-code-meta),
+.nol-code-line > .nol-code-meta {
+  color: var(--nol-code-meta);
+}
+
+@media (forced-colors: active) {
+  .nol-code-block-body > code::highlight(nol-code-comment),
+  .nol-code-line > .nol-code-comment,
+  .nol-code-block-body > code::highlight(nol-code-keyword),
+  .nol-code-line > .nol-code-keyword,
+  .nol-code-block-body > code::highlight(nol-code-control),
+  .nol-code-line > .nol-code-control,
+  .nol-code-block-body > code::highlight(nol-code-string),
+  .nol-code-line > .nol-code-string,
+  .nol-code-block-body > code::highlight(nol-code-number),
+  .nol-code-line > .nol-code-number,
+  .nol-code-block-body > code::highlight(nol-code-type),
+  .nol-code-line > .nol-code-type,
+  .nol-code-block-body > code::highlight(nol-code-function),
+  .nol-code-line > .nol-code-function,
+  .nol-code-block-body > code::highlight(nol-code-variable),
+  .nol-code-line > .nol-code-variable,
+  .nol-code-block-body > code::highlight(nol-code-regex),
+  .nol-code-line > .nol-code-regex,
+  .nol-code-block-body > code::highlight(nol-code-meta),
+  .nol-code-line > .nol-code-meta {
+    color: CanvasText;
+  }
+}
+
+.nol-code-block-wrapped .nol-code-block-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.nol-code-block-wrapped .nol-code-block-body > code,
+.nol-code-block-wrapped .nol-code-block-body > code > .nol-code-line {
+  width: auto;
+}
+
+.nol-shell-run-output {
+  display: contents;
+}
+
+.nol-shell-run-output-shown {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+}

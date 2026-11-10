@@ -1,0 +1,47 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.dialog" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <ng-container [ngTemplateOutlet]="dialog" [ngTemplateOutletInjector]="dialogInjector" />
+  </nol-gallery-cell>
+  <ng-template #dialog>
+    <nol-dialog class="nol-gallery-fit" [title]="text.dialogTitle">
+      <span nolDialogDescription>{{ text.dialogBody }}</span>
+      <button type="button" nol-button nolDialogAction [variant]="variants.Secondary">{{ text.dialogCancel }}</button>
+      <button type="button" nol-button nolDialogAction [danger]="true">{{ text.dialogConfirm }}</button>
+    </nol-dialog>
+  </ng-template>
+  <nol-gallery-cell [caption]="text.largeCaption">
+    <ng-container [ngTemplateOutlet]="largeDialog" [ngTemplateOutletInjector]="largeDialogInjector" />
+  </nol-gallery-cell>
+  <ng-template #largeDialog>
+    <nol-dialog class="nol-gallery-fit nol-gallery-large-dialog" [title]="text.largeDialogTitle" [size]="dialogSizes.Large">
+      <p class="nol-gallery-large-dialog-body">{{ text.largeDialogBody }}</p>
+    </nol-dialog>
+  </ng-template>
+  <nol-gallery-cell [caption]="text.focus">
+    <ng-container [ngTemplateOutlet]="focusDialog" [ngTemplateOutletInjector]="focusDialogInjector" />
+  </nol-gallery-cell>
+  <ng-template #focusDialog>
+    <nol-dialog class="nol-gallery-fit" [title]="text.dialogTitle">
+      {{ text.dialogBody }}
+      <button type="button" nol-button nolDialogAction nolGalleryFocus [variant]="variants.Secondary">{{ text.dialogCancel }}</button>
+      <button type="button" nol-button nolDialogAction [danger]="true">{{ text.dialogConfirm }}</button>
+    </nol-dialog>
+  </ng-template>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <ng-container [ngTemplateOutlet]="longDialog" [ngTemplateOutletInjector]="longDialogInjector" />
+  </nol-gallery-cell>
+  <ng-template #longDialog>
+    <nol-dialog class="nol-gallery-fit nol-gallery-narrow" [title]="text.dialogLongTitle">
+      {{ text.dialogBody }}
+      <button type="button" nol-button nolDialogAction [danger]="true">{{ text.dialogConfirm }}</button>
+    </nol-dialog>
+  </ng-template>
+</nol-gallery-specimen>
