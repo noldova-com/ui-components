@@ -1,0 +1,15 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu aria-label="Panel" [minWidth]="14">
+  <button type="button" nol-menu-item label="Open to the side" icon="vertical_split" (triggered)="chosen.set('Open to the side')"></button>
+  <button type="button" nol-menu-item label="Copy the path" icon="content_copy" (triggered)="chosen.set('Copy the path')"></button>
+  <nol-menu-separator />
+  <button type="button" nol-menu-item label="Show hidden files" [checkbox]="true" [checked]="showsHidden()" (triggered)="showsHidden.set(!showsHidden())"></button>
+</nol-menu>
+<span>Chosen: {{ chosen() }}</span>

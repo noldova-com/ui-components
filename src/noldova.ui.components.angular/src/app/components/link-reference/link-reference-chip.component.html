@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (reference().mark; as mark) {
+  <nol-link-reference-image class="nol-link-reference-chip-mark" [image]="mark" />
+}
+@else if (reference().isMarkPending) {
+  <span class="nol-link-reference-chip-slot" aria-hidden="true"></span>
+}
+<nol-link-reference-image class="nol-link-reference-chip-icon" [image]="reference().icon" />
+<span class="nol-link-reference-chip-text">{{ text() }}</span>

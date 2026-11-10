@@ -1,0 +1,18 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+}
+
+.nol-docs-table-holder {
+  box-sizing: border-box;
+  margin-block: calc(var(--nol-space-1) * -1);
+  padding: var(--nol-space-1) var(--nol-space-2);
+  overflow-x: auto;
+}

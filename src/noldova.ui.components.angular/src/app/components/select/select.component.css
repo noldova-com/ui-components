@@ -1,0 +1,200 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  width: var(--nol-select-width);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.nol-select-button {
+  display: flex;
+  flex: auto;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: var(--nol-field-height);
+  margin: 0;
+  padding: 0 var(--nol-field-padding);
+  border: var(--nol-border-width) solid var(--nol-dropdown-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-dropdown);
+  color: var(--nol-input-text);
+  font: inherit;
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  text-align: start;
+  cursor: pointer;
+}
+
+.nol-select-button:is(:focus-visible, [data-nol-state="Focus"]),
+.nol-select-button[aria-expanded="true"] {
+  border-color: var(--nol-accent);
+  outline: none;
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-select-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nol-select-value {
+  flex: auto;
+}
+
+.nol-select-arrow {
+  flex: none;
+  color: var(--nol-text);
+  font-size: var(--nol-icon);
+}
+
+.nol-select-list {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-width: calc(100cqw - var(--nol-space-4));
+  max-height: calc((var(--nol-dropdown-row-height) + var(--nol-row-gap)) * 10.5 + var(--nol-dropdown-padding) * 2 + var(--nol-border-width) * 2);
+  padding: var(--nol-dropdown-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: var(--nol-border-width) solid var(--nol-dropdown-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-dropdown-list);
+  box-shadow: 0 0.125rem 0.5rem var(--nol-widget-shadow);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  outline: none;
+}
+
+.nol-select-list:focus-visible:not(:has(.cdk-option-active)) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-select-section {
+  display: contents;
+}
+
+.nol-select-section[role="group"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.nol-select-group-label {
+  padding: var(--nol-menu-label-padding);
+  padding-inline: var(--nol-dropdown-row-padding);
+  color: var(--nol-text-muted);
+}
+
+.nol-select-option {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: calc(var(--nol-dropdown-row-height) + var(--nol-row-gap));
+  padding: var(--nol-tab-inset) var(--nol-dropdown-row-padding);
+  color: var(--nol-input-text);
+  cursor: pointer;
+}
+
+.nol-select-option::before {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--nol-tab-inset);
+  inset-inline: 0;
+  border-radius: var(--nol-radius-small);
+  content: "";
+}
+
+.nol-select-option:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-select-option-tag {
+  flex: none;
+  max-width: calc(100% - var(--nol-space-2));
+}
+
+.nol-select-option[aria-selected="true"],
+.nol-select-option.cdk-option-active {
+  --nol-text-muted: var(--nol-list-active-text);
+
+  color: var(--nol-list-active-text);
+
+  &::before {
+    background-color: var(--nol-list-active);
+  }
+
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}
+
+.nol-select-option[aria-disabled="true"] {
+  cursor: default;
+}
+
+.nol-select-option[aria-disabled="true"] > * {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) {
+  .nol-select-option[aria-disabled="true"],
+  .nol-select-option[aria-disabled="true"] * {
+    color: GrayText;
+  }
+
+  .nol-select-option[aria-disabled="true"]:is([aria-selected="true"], .cdk-option-active) {
+    --nol-text: GrayText;
+    --nol-text-muted: GrayText;
+    --nol-menu-text: GrayText;
+    --nol-icon-color: GrayText;
+    --nol-list-highlight: GrayText;
+    --nol-list-active-text: GrayText;
+  }
+
+  .nol-select-option[aria-disabled="true"]:is([aria-selected="true"], .cdk-option-active)::before {
+    background-color: Canvas;
+    outline: var(--nol-border-width) solid GrayText;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+
+  .nol-select-option[aria-disabled="true"].cdk-option-active::before {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}

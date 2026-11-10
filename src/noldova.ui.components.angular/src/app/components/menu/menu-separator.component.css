@@ -1,0 +1,19 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  grid-column: 1 / -1;
+  height: var(--nol-border-width);
+  margin-block: var(--nol-menu-separator-spacing);
+  background-color: var(--nol-menu-separator);
+
+  @media (forced-colors: active) {
+    background-color: CanvasText;
+  }
+}

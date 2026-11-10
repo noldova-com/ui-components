@@ -1,0 +1,32 @@
+# @license
+# Copyright (c) Noldova.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Build and test
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-and-test:
+    name: Build and test
+    uses: noldova-com/.github/.github/workflows/build-and-test.yml@26ff41562ad2e9d3a3514bceee20c2a02f45273c # v2.15.0
+    permissions:
+      contents: read
+      packages: read
+    with:
+      targets: linux-x64 linux-arm64 windows-x64 windows-arm64 macos-x64 macos-arm64
+      publishes: true

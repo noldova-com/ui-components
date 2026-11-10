@@ -1,0 +1,95 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: var(--nol-sash);
+  cursor: row-resize;
+  outline: none;
+  touch-action: none;
+}
+
+:host(.nol-sash-vertical) {
+  width: var(--nol-sash);
+  height: auto;
+  cursor: col-resize;
+}
+
+:host::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--nol-sash) * -1) 0;
+}
+
+:host(.nol-sash-vertical)::before {
+  inset: 0 calc(var(--nol-sash) * -1);
+}
+
+:host(:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-sash-bar {
+  position: absolute;
+  inset: 0;
+  background-color: var(--nol-sash-active);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms linear;
+
+  @media (forced-colors: active) {
+    background-color: Highlight;
+  }
+}
+
+:host(.nol-sash-active) .nol-sash-bar,
+:host(:is(:focus-visible, [data-nol-state="Focus"])) .nol-sash-bar {
+  opacity: 1;
+}
+
+.nol-sash-grip {
+  display: flex;
+  gap: var(--nol-sash-grip-spacing);
+  transition: opacity 150ms linear;
+}
+
+:host(.nol-sash-active) .nol-sash-grip,
+:host(:is(:focus-visible, [data-nol-state="Focus"])) .nol-sash-grip {
+  opacity: 0;
+}
+
+:host(.nol-sash-vertical) .nol-sash-grip {
+  flex-direction: column;
+}
+
+.nol-sash-dot {
+  width: var(--nol-sash-grip);
+  height: var(--nol-sash-grip);
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--nol-text) 30%, transparent);
+
+  @media (forced-colors: active) {
+    background-color: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nol-sash-bar,
+  .nol-sash-grip {
+    transition: none;
+  }
+}

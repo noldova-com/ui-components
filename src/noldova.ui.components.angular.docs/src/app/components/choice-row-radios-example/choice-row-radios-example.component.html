@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-radio-group label="Start the branch from" [(value)]="base">
+  <nol-choice-row value="main" label="The main branch" description="The latest merged work." />
+  <nol-choice-row value="current" label="The current branch" description="Carries its unmerged commits along." />
+  <nol-choice-row value="tag" label="A release tag" description="The last published version." [disabled]="true" />
+</nol-radio-group>

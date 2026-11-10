@@ -1,0 +1,269 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-quick-input-gap);
+  box-sizing: border-box;
+  width: min(var(--nol-quick-input-width), calc(100cqw - var(--nol-space-4)));
+  max-height: calc(100% - var(--nol-quick-input-margin));
+  min-height: 0;
+  margin-top: var(--nol-quick-input-margin);
+  border: var(--nol-border-width) solid var(--nol-menu-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-quick-input);
+  box-shadow: var(--nol-shadow-xlarge);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-quick-input-box {
+  display: grid;
+  flex: none;
+  padding: var(--nol-quick-input-padding);
+  padding-bottom: 0;
+}
+
+.nol-quick-input-field {
+  grid-area: 1 / 1;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: var(--nol-quick-input-field-height);
+  margin: 0;
+  padding: 0 var(--nol-quick-input-field-padding);
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-input);
+  color: var(--nol-input-text);
+  font: inherit;
+  outline: none;
+}
+
+.nol-quick-input-field::placeholder {
+  color: var(--nol-placeholder);
+}
+
+.nol-quick-input-field:is(:focus, [data-nol-state="Focus"]) {
+  border-color: var(--nol-accent);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-quick-input-glyph {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: start;
+  width: var(--nol-quick-input-glyph);
+  margin-inline: calc(var(--nol-border-width) + var(--nol-quick-input-field-padding));
+  color: var(--nol-text-muted);
+  font-size: var(--nol-quick-input-glyph);
+  pointer-events: none;
+}
+
+:host(.nol-quick-input-has-icon) .nol-quick-input-field {
+  padding-inline-start: calc(var(--nol-quick-input-field-padding) * 2 + var(--nol-quick-input-glyph));
+}
+
+.nol-quick-input-filters-area,
+.nol-quick-input-footer-area {
+  flex: none;
+  padding: var(--nol-quick-input-padding);
+}
+
+.nol-quick-input-filters-area {
+  padding-block: 0;
+}
+
+.nol-quick-input-footer-area {
+  padding-top: 0;
+}
+
+.nol-quick-input-filters-area:not(:has(> .nol-quick-input-filters > *)),
+.nol-quick-input-footer-area:not(:has(> .nol-quick-input-footer > *)) {
+  display: none;
+}
+
+.nol-quick-input-filters,
+.nol-quick-input-footer {
+  display: flex;
+  align-items: center;
+}
+
+.nol-quick-input-filters {
+  gap: var(--nol-space-1);
+  padding-inline: calc(var(--nol-space-1) / 2);
+}
+
+.nol-quick-input-footer {
+  gap: var(--nol-space-4);
+  padding: calc(var(--nol-space-1) / 2) var(--nol-quick-input-row-padding);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  line-height: var(--nol-quick-input-label-line);
+}
+
+.nol-quick-input-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: max(var(--nol-quick-input-list-height), calc(var(--nol-quick-input-row-height) * 10));
+  padding: var(--nol-quick-input-padding);
+  padding-top: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.nol-quick-input-list-hidden {
+  display: none;
+}
+
+.nol-quick-input-empty-area {
+  flex: none;
+  padding: var(--nol-quick-input-padding);
+  padding-top: 0;
+}
+
+.nol-quick-input-empty {
+  display: flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--nol-quick-input-row-height);
+  margin: 0;
+  padding-inline: calc(var(--nol-border-width) + var(--nol-quick-input-field-padding));
+  color: var(--nol-text-muted);
+  overflow-wrap: anywhere;
+}
+
+:host(.nol-quick-input-has-icon) .nol-quick-input-empty {
+  padding-inline-start: calc(var(--nol-border-width) + var(--nol-quick-input-field-padding) * 2 + var(--nol-quick-input-glyph));
+}
+
+.nol-quick-input-group {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+}
+
+.nol-quick-input-group + .nol-quick-input-group {
+  margin-top: var(--nol-quick-input-gap);
+}
+
+.nol-quick-input-heading {
+  padding: var(--nol-space-2) var(--nol-quick-input-row-padding) var(--nol-space-1);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  font-weight: var(--nol-weight-strong);
+  line-height: var(--nol-quick-input-label-line);
+}
+
+.nol-quick-input-option {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-quick-input-row-padding);
+  box-sizing: border-box;
+  min-height: var(--nol-quick-input-row-height);
+  padding-inline: var(--nol-quick-input-row-padding);
+  color: var(--nol-menu-text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.nol-quick-input-option::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: var(--nol-radius-small);
+  content: "";
+}
+
+.nol-quick-input-option:is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-quick-input-option[aria-selected="true"] {
+  --nol-text-muted: var(--nol-menu-text);
+
+  &::before {
+    background-color: var(--nol-selected);
+  }
+
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+    --nol-accent: HighlightText;
+    --nol-quick-input-key-border: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}
+
+.nol-quick-input-icon {
+  flex: none;
+  width: var(--nol-icon);
+  font-size: var(--nol-icon);
+}
+
+.nol-quick-input-match {
+  background: none;
+  color: var(--nol-accent);
+  font-weight: var(--nol-weight-strong);
+}
+
+.nol-quick-input-detail,
+.nol-quick-input-key {
+  flex: none;
+  color: var(--nol-text-muted);
+}
+
+.nol-quick-input-detail {
+  flex: 1 1 0;
+  max-width: max-content;
+  margin-inline-end: auto;
+  font-size: var(--nol-text-small);
+}
+
+.nol-quick-input-key {
+  margin-inline-start: auto;
+  padding: calc(var(--nol-space-1) / 4) calc(var(--nol-space-1) + var(--nol-space-1) / 4);
+  border: var(--nol-border-width) solid var(--nol-quick-input-key-border);
+  border-radius: var(--nol-radius-hover);
+  font-size: var(--nol-quick-input-key-text);
+  line-height: var(--nol-quick-input-label-line);
+}
+
+.nol-quick-input-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

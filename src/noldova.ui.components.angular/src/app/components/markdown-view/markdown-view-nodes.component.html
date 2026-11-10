@@ -1,0 +1,127 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<ng-content />
+@if (runs(); as shownRuns) {
+  @for (run of shownRuns; track $index) {
+    @if (top()) {<div class="nol-markdown-block-run" nol-markdown-nodes [nodes]="run" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></div>}
+    @else {<span class="nol-markdown-run" nol-markdown-nodes [nodes]="run" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></span>}
+  }
+}
+@else {
+  @for (node of nodes(); track $index) {
+    @if (node.kind === kinds.Image && image(); as template) {
+      <span class="nol-markdown-image"><ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ src: node.href, alt: node.text, title: node.title }" /></span>
+    }
+    @else if (textKinds.has(node.kind) && mentions().marksNames) {
+      @for (part of mentions().partsOf(node); track $index) {
+        @if (part.mention; as mention) {<span class="nol-markdown-mention" [class.nol-markdown-mention-unavailable]="mention.unavailable">{{ part.text }}</span>}
+        @else {{{ part.text }}}
+      }
+    }
+    @else if (textKinds.has(node.kind)) {{{ node.text }}}
+    @else if (inlineKinds.has(node.kind)) {
+      @switch (node.kind) {
+        @case (kinds.SoftBreak) {<br>}
+        @case (kinds.HardBreak) {<br>}
+        @case (kinds.Emphasis) {<em nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></em>}
+        @case (kinds.Strong) {<strong nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></strong>}
+        @case (kinds.Strikethrough) {<s nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></s>}
+        @case (kinds.InlineCode) {<code nol-inline-code>{{ node.text }}</code>}
+        @case (kinds.Math) {<span [nol-markdown-math]="node"></span>}
+        @case (kinds.MathDisplay) {<span [nol-markdown-math]="node"></span>}
+        @case (kinds.Link) {
+          @if (mentionIdOf(node); as id) {
+            @if (mentionOf(id); as mention) {<span class="nol-markdown-mention" [class.nol-markdown-mention-unavailable]="mention.unavailable">{{ textOf(node) }}</span>}
+            @else {{{ textOf(node) }}}
+          }
+          @else if (referenceOf(node); as reference) {
+            <a class="nol-markdown-link" nol-link-reference-chip [reference]="reference" [href]="node.href" draggable="false" (click)="activate($event, node.href)"
+              (auxclick)="activateAuxiliary($event, node.href)" (keydown)="activateKey($event, node.href)" (contextmenu)="openMenu($event, node.href)" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></a>
+            @if (reference.workItemState; as workItemState) {
+              {{ ' ' }}<nol-link-reference-work-item-state [state]="workItemState" />
+            }
+          }
+          @else if (pathOf(node); as path) {
+            <a class="nol-markdown-link nol-markdown-file-link" [href]="node.href" draggable="false" (click)="activate($event, node.href)" (auxclick)="activateAuxiliary($event, node.href)"
+              (keydown)="activateKey($event, node.href)" (contextmenu)="openMenu($event, node.href)"><span class="nol-markdown-file-mark"><nol-file-badge [fileName]="fileNameOf(node)" [isFolder]="folderLinks().has(path)" /></span><span class="nol-markdown-file-text" nol-markdown-nodes
+              [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></span></a>
+          }
+          @else if (isShownAsLink(node)) {
+            <a class="nol-markdown-link" nol-markdown-nodes [nodes]="node.children" [href]="node.href" draggable="false" (click)="activate($event, node.href)"
+              (auxclick)="activateAuxiliary($event, node.href)" (keydown)="activateKey($event, node.href)" (contextmenu)="openMenu($event, node.href)" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></a>
+          }
+          @else {<span nol-markdown-nodes [nodes]="node.children"></span>}
+        }
+      }
+    }
+    @else if (tableKinds.has(node.kind)) {
+      @switch (node.kind) {
+        @case (kinds.Table) {
+          <div class="nol-markdown-table"><table nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></table></div>
+        }
+        @case (kinds.TableHead) {
+          <thead nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></thead>
+        }
+        @case (kinds.TableBody) {
+          <tbody nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></tbody>
+        }
+        @case (kinds.TableRow) {
+          <tr nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></tr>
+        }
+        @case (kinds.TableHeaderCell) {
+          <th [style.text-align]="node.align" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></th>
+        }
+        @case (kinds.TableCell) {
+          <td [style.text-align]="node.align" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></td>
+        }
+      }
+    }
+    @else {
+      @switch (node.kind) {
+        @case (kinds.Paragraph) {
+          <p class="nol-markdown-paragraph" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></p>
+        }
+        @case (kinds.Heading) {
+          <p class="nol-markdown-heading" role="heading" [attr.aria-level]="node.value" [attr.data-level]="node.value" nol-markdown-nodes [nodes]="node.children"
+            (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></p>
+        }
+        @case (kinds.Quote) {
+          <blockquote class="nol-markdown-quote" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></blockquote>
+        }
+        @case (kinds.BulletList) {
+          <ul class="nol-markdown-list" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></ul>
+        }
+        @case (kinds.OrderedList) {
+          <ol class="nol-markdown-list" [start]="node.value" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></ol>
+        }
+        @case (kinds.ListItem) {
+          <li class="nol-markdown-item" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"></li>
+        }
+        @case (kinds.TaskItem) {
+          <li class="nol-markdown-item nol-markdown-task" nol-markdown-nodes [nodes]="node.children" (linkActivate)="linkActivate.emit($event)" (linkMenu)="linkMenu.emit($event)"><span class="nol-markdown-task-mark"
+            role="img" [class.nol-markdown-task-done]="node.value === 1" [attr.aria-label]="taskLabels[node.value]">@if (node.value === 1) {<svg viewBox="0 0 16 16" aria-hidden="true"
+            focusable="false"><mask [attr.id]="checkId + $index"><circle cx="8" cy="8" r="8" fill="white" /><path d="M4.75 8.25 7 10.5 11.25 6" fill="none" stroke="black"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></mask><circle cx="8" cy="8" r="8" [attr.mask]="'url(#' + checkId + $index + ')'" /></svg>} @else {<svg
+            viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="7.25" pathLength="16" /></svg>}</span></li>
+        }
+        @case (kinds.Code) {
+          <nol-code-block #codeBlock class="nol-markdown-code" [code]="node.text" [language]="node.language" [maxHeight]="codeHeight" [streaming]="streaming() && node.value === 1"
+            [runnable]="shellRunner.isOn() && node.value === 0" (run)="shellRunner.run($event)" />
+          <nol-shell-run-output [codeBlock]="codeBlock" [area]="shellRunner.area" />
+        }
+        @case (kinds.Rule) {
+          <hr class="nol-markdown-rule">
+        }
+        @case (kinds.Plain) {
+          <p class="nol-markdown-plain">{{ node.text }}</p>
+        }
+      }
+    }
+  }
+}

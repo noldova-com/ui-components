@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div nolToolbar nolToolbarLabel="Note actions">
+  <button type="button" nol-toolbar-button nolToolbarItem icon="add" label="New note" nolTooltip="New note" (click)="count.set(count() + 1)"></button>
+  <button type="button" nol-toolbar-button nolToolbarItem icon="wrap_text" label="Wrap lines" nolTooltip="Wrap lines" [pressed]="isWrapped()" (click)="isWrapped.set(!isWrapped())"></button>
+  <button type="button" nol-toolbar-button nolToolbarItem icon="share" label="Share" [isShowingLabel]="true" [isUnavailable]="count() === 0" (click)="share()"></button>
+</div>
+<span>Notes: {{ count() }} · Wrapped: {{ isWrapped() ? "Yes" : "No" }} · Shared: {{ shared() }}</span>

@@ -1,0 +1,9 @@
+node_modules/
+/_build/
+/_packages/
+.angular/
+*.log
+.env
+.DS_Store
+Thumbs.db
+/.vitest/

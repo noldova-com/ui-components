@@ -1,0 +1,75 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.nol-choice-pills-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nol-choice-pill-gap);
+  min-width: 0;
+}
+
+.nol-choice-pill {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: var(--nol-choice-pill);
+  margin: 0;
+  padding: 0 var(--nol-pill-padding);
+  border: 0;
+  border-radius: var(--nol-radius-small);
+  background: none;
+  color: var(--nol-text);
+  font: inherit;
+  font-size: var(--nol-text-panel);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-panel);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.nol-choice-pill:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-toolbar-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-choice-pill.nol-choice-pill-selected {
+  --nol-text-muted: var(--nol-text);
+  background-color: var(--nol-selected);
+
+  @media (forced-colors: active) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+.nol-choice-pill:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: calc(var(--nol-border-width) * 2);
+  }
+}

@@ -1,0 +1,28 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-auto-rows: min-content;
+  align-content: start;
+  box-sizing: border-box;
+  min-height: 0;
+  max-width: calc(100cqw - var(--nol-space-4));
+  padding-block: var(--nol-menu-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: var(--nol-border-width) solid var(--nol-menu-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-menu);
+  box-shadow: var(--nol-shadow-large);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  outline: none;
+}

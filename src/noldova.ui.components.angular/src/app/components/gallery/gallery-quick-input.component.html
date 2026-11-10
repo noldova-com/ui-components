@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.quickInput" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-quick-input class="nol-gallery-fit" [items]="items" [label]="text.quickInputLabel" [query]="text.quickInputQuery" [isFocusing]="false" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-quick-input class="nol-gallery-fit" nolGalleryFocus=".nol-quick-input-field" [items]="items" [label]="text.quickInputLabel" [query]="text.quickInputQuery" [isFocusing]="false" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.quickInputSearch">
+    <nol-quick-input class="nol-gallery-fit" [items]="items" [label]="text.quickInputLabel" [query]="text.quickInputQuery" [icon]="text.glyphSearch" [isFocusing]="false" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.quickInputNothing">
+    <nol-quick-input class="nol-gallery-fit" [items]="noItems" [label]="text.quickInputLabel" [query]="text.quickInputQuery" [icon]="text.glyphSearch" [emptyText]="text.quickInputEmpty"
+      [isFocusing]="false" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-quick-input class="nol-gallery-fit nol-gallery-narrow" [items]="longItems" [label]="text.quickInputLabel" [query]="text.quickInputQuery" [isFocusing]="false" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

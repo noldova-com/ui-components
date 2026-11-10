@@ -1,0 +1,186 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  min-height: 0;
+}
+
+.nol-virtual-list-viewport {
+  grid-area: 1 / 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+}
+
+.nol-virtual-list-rows {
+  position: relative;
+}
+
+.nol-virtual-list-slot {
+  box-sizing: border-box;
+  padding-block-end: var(--nol-space-1);
+}
+
+.nol-virtual-list-rows[role="listbox"] > .nol-virtual-list-slot {
+  padding-block-end: var(--nol-row-gap);
+}
+
+.nol-virtual-list-slot-hidden {
+  padding-block-end: 0;
+}
+
+.nol-virtual-list-slot-outside {
+  position: absolute;
+  inset-inline: 0;
+}
+
+.nol-virtual-list-rows-held {
+  overflow: clip;
+}
+
+.nol-virtual-list-rows-held > .nol-virtual-list-slot:not(.nol-virtual-list-slot-outside) {
+  position: relative;
+}
+
+.nol-virtual-list-row {
+  min-width: 0;
+}
+
+.nol-virtual-list-viewport[role="feed"],
+.nol-virtual-list-row[role="article"] {
+  outline: none;
+}
+
+.nol-virtual-list-viewport[role="feed"]:is(:focus-visible:not(.nol-virtual-list-pointer-focus), [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-virtual-list-option {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: var(--nol-tree-row-height);
+  padding-inline: var(--nol-space-2);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text);
+  overflow-wrap: anywhere;
+}
+
+.nol-virtual-list-option:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-virtual-list-option-selected,
+.nol-virtual-list-option-selected:is(:hover, [data-nol-state="Hover"]) {
+  --nol-text-muted: var(--nol-text);
+  background-color: var(--nol-selected);
+}
+
+@media (forced-colors: active) {
+  .nol-virtual-list-option-selected,
+  .nol-virtual-list-option-selected:is(:hover, [data-nol-state="Hover"]) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+.nol-virtual-list-status,
+.nol-virtual-list-failure {
+  z-index: 1;
+  grid-area: 1 / 1;
+  align-self: start;
+  background-color: var(--nol-panel);
+}
+
+.nol-virtual-list-edge-end {
+  align-self: end;
+}
+
+.nol-virtual-list-status-shown {
+  padding: var(--nol-space-2);
+  color: var(--nol-text-muted);
+}
+
+.nol-virtual-list-failure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-2);
+  padding: var(--nol-space-2);
+
+  nol-field-message {
+    flex: 1 1 0;
+    margin-top: 0;
+  }
+}
+
+.nol-virtual-list-jump {
+  z-index: 1;
+  grid-area: 1 / 1;
+  align-self: end;
+  justify-self: center;
+  min-width: max(var(--nol-icon-button-target), var(--nol-button-height));
+  min-height: max(var(--nol-icon-button-target), var(--nol-button-height));
+  margin-block-end: var(--nol-space-3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms linear, visibility 0s linear 150ms;
+}
+
+.nol-virtual-list-jump::before {
+  box-sizing: border-box;
+  width: var(--nol-button-height);
+  height: var(--nol-button-height);
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: 50%;
+  background-color: var(--nol-raised);
+}
+
+.nol-virtual-list-jump:not(:disabled):is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-hover);
+}
+
+.nol-virtual-list-jump-start {
+  align-self: start;
+  margin-block: var(--nol-space-3) 0;
+}
+
+.nol-virtual-list-jump-shown {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 150ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nol-virtual-list-jump,
+  .nol-virtual-list-jump-shown {
+    transition: none;
+  }
+}

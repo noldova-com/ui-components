@@ -1,0 +1,34 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-menu-bar label="Application menu">
+  <button type="button" nol-menu-bar-item label="File" [nolMenuTriggerFor]="file"></button>
+  <button type="button" nol-menu-bar-item label="Edit" [nolMenuTriggerFor]="edit"></button>
+  <button type="button" nol-menu-bar-item label="View" [nolMenuTriggerFor]="view"></button>
+</nol-menu-bar>
+<span>Ran: {{ ran() }}</span>
+<ng-template #file>
+  <nol-menu aria-label="File">
+    <button type="button" nol-menu-item label="New note" shortcut="Ctrl+N" (triggered)="ran.set('New note')"></button>
+    <button type="button" nol-menu-item label="Open" shortcut="Ctrl+O" (triggered)="ran.set('Open')"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Save" shortcut="Ctrl+S" (triggered)="ran.set('Save')"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #edit>
+  <nol-menu aria-label="Edit">
+    <button type="button" nol-menu-item label="Undo" shortcut="Ctrl+Z" (triggered)="ran.set('Undo')"></button>
+    <button type="button" nol-menu-item label="Redo" shortcut="Ctrl+Y" (triggered)="ran.set('Redo')"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #view>
+  <nol-menu aria-label="View">
+    <button type="button" nol-menu-item label="Zoom in" shortcut="Ctrl+=" (triggered)="ran.set('Zoom in')"></button>
+    <button type="button" nol-menu-item label="Zoom out" shortcut="Ctrl+-" (triggered)="ran.set('Zoom out')"></button>
+  </nol-menu>
+</ng-template>

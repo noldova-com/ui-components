@@ -1,0 +1,104 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:root {
+  --nol-font-sans: "Noldova Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+  --nol-font-mono: "Noldova Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --nol-text-panel: 0.8125rem;
+  --nol-text-message: 0.8125rem;
+  --nol-text-code: 0.75rem;
+  --nol-text-terminal: 0.8125rem;
+  --nol-text-label: max(12px, calc(var(--nol-text-panel) - 0.0625rem));
+  --nol-text-small: max(12px, 0.75rem);
+  --nol-text-title: calc(var(--nol-text-panel) + 0.125rem);
+  --nol-text-heading: calc(var(--nol-text-panel) * 2);
+  --nol-text-reference-title: var(--nol-text-message);
+  --nol-text-avatar-byline: 0.625rem;
+  --nol-line-panel: max(1.125rem, calc(var(--nol-text-panel) + 0.3125rem));
+  --nol-line-title: calc(var(--nol-text-title) + 0.3125rem);
+  --nol-line-label: calc(var(--nol-text-label) + 0.25rem);
+  --nol-line-tooltip: calc(var(--nol-text-label) + 0.4375rem);
+  --nol-line-heading: calc(var(--nol-text-heading) * 1.25);
+  --nol-line-message: 1.6;
+  --nol-line-code: 1.5;
+  --nol-line-terminal: 1.3;
+  --nol-line-reference-title: 1.45;
+  --nol-weight-emphasis: 500;
+  --nol-weight-strong: 600;
+  --nol-letter-spacing-caps: 0.05em;
+  --nol-pointer-target: 24px;
+}
+
+:root,
+.nol-theme-scope {
+  --nol-icon-button-target: max(var(--nol-pointer-target), var(--nol-icon-button));
+  --nol-inline-code: color-mix(in srgb, var(--nol-text) 12%, transparent);
+  --nol-text-tab: var(--nol-text-muted);
+  --nol-text-placeholder: var(--nol-text-muted);
+  --nol-added-background: color-mix(in srgb, var(--nol-added) 10%, transparent);
+  --nol-removed-background: color-mix(in srgb, var(--nol-removed) 10%, transparent);
+  --nol-added-change: light-dark(color-mix(in srgb, var(--nol-added) 22%, var(--nol-code)), color-mix(in srgb, var(--nol-added) 30%, var(--nol-code)));
+  --nol-removed-change: light-dark(color-mix(in srgb, var(--nol-removed) 22%, var(--nol-code)), color-mix(in srgb, var(--nol-removed) 30%, var(--nol-code)));
+  --nol-button-danger-hover: color-mix(in srgb, var(--nol-error) 90%, var(--nol-button-danger-text));
+}
+
+:where([data-truncates]) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body {
+  margin: 0;
+  background-color: var(--nol-window);
+  color: var(--nol-text);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  font-weight: 400;
+  line-height: var(--nol-line-panel);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  line-height: 1.25;
+}
+
+:where(h1) {
+  font-size: var(--nol-text-heading);
+  line-height: var(--nol-line-heading);
+}
+
+.material-symbols-rounded {
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  font-size: var(--nol-icon);
+  line-height: 1;
+}
+
+:where(button, a, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="treeitem"]):not(:disabled, [aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+:where(button, a, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="treeitem"], [role="separator"]):is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+@keyframes nol-copied-pop {
+  from {
+    opacity: 0.4;
+    transform: scale(0.6);
+  }
+}

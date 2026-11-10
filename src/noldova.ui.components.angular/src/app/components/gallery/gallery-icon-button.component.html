@@ -1,0 +1,29 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.iconButton" noLongText>
+  <nol-gallery-cell [caption]="text.defaultState"><button type="button" nol-icon-button [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><button type="button" nol-icon-button nolGalleryHover [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.pressed">
+    <button type="button" nol-icon-button [icon]="text.iconGlyph" [label]="text.pressed" [pressed]="isPressed()" (click)="isPressed.set(!isPressed())"></button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><button type="button" nol-icon-button [icon]="text.iconGlyph" [label]="text.disabled" disabled></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><button type="button" nol-icon-button nolGalleryFocus [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.busy"><button type="button" nol-icon-button [busy]="true" [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabAction"><button type="button" nol-icon-button [tabAction]="true" [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.tabActionHover"><button type="button" nol-icon-button nolGalleryHover [tabAction]="true" [icon]="text.iconGlyph" [label]="text.iconLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerLook"><button type="button" nol-icon-button [danger]="true" [icon]="text.glyphDelete" [label]="text.deleteLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerHover"><button type="button" nol-icon-button nolGalleryHover [danger]="true" [icon]="text.glyphDelete" [label]="text.deleteLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.filled"><button type="button" nol-icon-button [filled]="true" [icon]="text.glyphSend" [label]="text.sendLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.filledDisabled"><button type="button" nol-icon-button [filled]="true" [icon]="text.glyphSend" [label]="text.filledDisabled" disabled></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.filledFocus"><button type="button" nol-icon-button nolGalleryFocus [filled]="true" [icon]="text.glyphSend" [label]="text.sendLabel"></button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlay"><span class="nol-gallery-picture"><button type="button" class="nol-gallery-picture-action" nol-icon-button [overlay]="true" [icon]="text.glyphClose" [label]="text.removeLabel"></button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayHover"><span class="nol-gallery-picture"><button type="button" class="nol-gallery-picture-action" nol-icon-button nolGalleryHover [overlay]="true" [icon]="text.glyphClose" [label]="text.removeLabel"></button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayDisabled"><span class="nol-gallery-picture"><button type="button" class="nol-gallery-picture-action" nol-icon-button [overlay]="true" [icon]="text.glyphClose" [label]="text.overlayDisabled" disabled></button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayFocus"><span class="nol-gallery-picture"><button type="button" class="nol-gallery-picture-action" nol-icon-button nolGalleryFocus [overlay]="true" [icon]="text.glyphClose" [label]="text.removeLabel"></button></span></nol-gallery-cell>
+</nol-gallery-specimen>

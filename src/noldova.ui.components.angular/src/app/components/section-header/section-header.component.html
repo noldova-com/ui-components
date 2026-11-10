@@ -1,0 +1,21 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (collapsible()) {
+  <button type="button" class="nol-section-header-toggle" [attr.aria-expanded]="expanded()" [attr.aria-controls]="controls()" (click)="toggle()">
+    @if (icon(); as glyph) {
+      <span class="nol-section-header-icon material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
+    }
+    <span class="nol-section-header-label">{{ label() }}</span>
+    <span class="nol-section-header-caret material-symbols-rounded" aria-hidden="true">{{ partResources.sectionHeaderCaretGlyph }}</span>
+  </button>
+} @else if (icon(); as glyph) {
+  <span class="nol-section-header-icon material-symbols-rounded" aria-hidden="true">{{ glyph }}</span><span class="nol-section-header-label">{{ label() }}</span>
+} @else {
+  <ng-container>{{ label() }}</ng-container>
+}

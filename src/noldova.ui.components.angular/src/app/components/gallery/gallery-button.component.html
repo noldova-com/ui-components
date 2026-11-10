@@ -1,0 +1,70 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.button">
+  <nol-gallery-cell [caption]="text.primary"><button type="button" nol-button>{{ text.primary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><button type="button" nol-button nolGalleryHover>{{ text.primary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.secondary"><button type="button" nol-button [variant]="variants.Secondary">{{ text.secondary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.secondaryHover"><button type="button" nol-button nolGalleryHover [variant]="variants.Secondary">{{ text.secondary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><button type="button" nol-button disabled>{{ text.primary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.secondaryDisabled"><button type="button" nol-button [variant]="variants.Secondary" disabled>{{ text.secondary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><button type="button" nol-button nolGalleryFocus>{{ text.primary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textButton"><button type="button" nol-button [variant]="variants.Text">{{ text.textButton }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textHover"><button type="button" nol-button nolGalleryHover [variant]="variants.Text">{{ text.textButton }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textDisabled"><button type="button" nol-button [variant]="variants.Text" disabled>{{ text.textButton }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.textFocus"><button type="button" nol-button nolGalleryFocus [variant]="variants.Text">{{ text.textButton }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerLook"><button type="button" nol-button [danger]="true">{{ text.deleteLabel }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerHover"><button type="button" nol-button nolGalleryHover [danger]="true">{{ text.deleteLabel }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerDisabled"><button type="button" nol-button [danger]="true" disabled>{{ text.deleteLabel }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dangerFocus"><button type="button" nol-button nolGalleryFocus [danger]="true">{{ text.deleteLabel }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.busy"><button type="button" nol-button [busy]="true">{{ text.primary }}</button></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlay"><span class="nol-gallery-picture nol-gallery-picture-tools"><button type="button" nol-button [variant]="variants.Text" [overlay]="true">{{ text.zoomPercent }}</button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayHover"><span class="nol-gallery-picture nol-gallery-picture-tools"><button type="button" nol-button nolGalleryHover [variant]="variants.Text" [overlay]="true">{{ text.zoomPercent }}</button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayDisabled"><span class="nol-gallery-picture nol-gallery-picture-tools"><button type="button" nol-button [variant]="variants.Text" [overlay]="true" disabled>{{ text.zoomPercent }}</button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayFocus"><span class="nol-gallery-picture nol-gallery-picture-tools"><button type="button" nol-button nolGalleryFocus [variant]="variants.Text" [overlay]="true">{{ text.zoomPercent }}</button></span></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayRow">
+    <span class="nol-gallery-picture nol-gallery-picture-tools nol-gallery-picture-wide">
+      <span class="nol-gallery-picture-row">
+        <button type="button" nol-icon-button [overlay]="true" [buttonHeight]="true" [icon]="text.glyphZoomOut" [label]="text.zoomOutLabel"></button>
+        <button type="button" nol-button [variant]="variants.Text" [overlay]="true">{{ text.zoomPercent }}</button>
+        <button type="button" nol-icon-button [overlay]="true" [buttonHeight]="true" [icon]="text.glyphZoomIn" [label]="text.zoomInLabel"></button>
+      </span>
+    </span>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.overlayBackdrop">
+    <span class="nol-gallery-picture nol-gallery-picture-tools nol-gallery-picture-wide nol-gallery-backdrop">
+      <span class="nol-gallery-picture-row">
+        <button type="button" nol-icon-button [overlay]="true" [backdrop]="true" [buttonHeight]="true" [icon]="text.glyphZoomOut" [label]="text.zoomOutLabel"></button>
+        <button type="button" nol-button [variant]="variants.Text" [overlay]="true" [backdrop]="true">{{ text.zoomPercent }}</button>
+        <button type="button" nol-icon-button nolGalleryHover [overlay]="true" [backdrop]="true" [buttonHeight]="true" [icon]="text.glyphZoomIn" [label]="text.zoomInLabel"></button>
+      </span>
+    </span>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.outlined">
+    <button type="button" nol-button [variant]="variants.Outlined"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphShield }}</span>{{ text.outlinedLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.outlinedDisabled">
+    <button type="button" nol-button [variant]="variants.Outlined" disabled><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphShield }}</span>{{ text.outlinedLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.outlinedFocus">
+    <button type="button" nol-button nolGalleryFocus [variant]="variants.Outlined"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphShield }}</span>{{ text.outlinedLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.compact">
+    <button type="button" nol-button [variant]="variants.Secondary" [size]="buttonSizes.Compact"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphStop }}</span>{{ text.stopLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.compactFocus">
+    <button type="button" nol-button nolGalleryFocus [variant]="variants.Secondary" [size]="buttonSizes.Compact"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphStop }}</span>{{ text.stopLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.compactRow">
+    <span class="nol-gallery-compact-row">
+      <button type="button" nol-icon-button [icon]="text.glyphCopy" [label]="text.copyLabel"></button>
+      <button type="button" nol-button [variant]="variants.Secondary" [size]="buttonSizes.Compact"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphStop }}</span>{{ text.stopLabel }}</button>
+    </span>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><button type="button" nol-button class="nol-gallery-narrow" [nolTooltip]="text.longText" [nolTooltipTruncated]="true">{{ text.longText }}</button></nol-gallery-cell>
+</nol-gallery-specimen>

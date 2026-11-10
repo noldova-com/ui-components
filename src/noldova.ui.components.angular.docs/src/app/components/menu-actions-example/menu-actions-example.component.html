@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<button type="button" nol-button [variant]="variants.Secondary" [nolMenuTriggerFor]="actions">Note actions</button>
+<span>Chosen: {{ chosen() }}</span>
+<ng-template #actions>
+  <nol-menu aria-label="Note actions">
+    <button type="button" nol-menu-item label="Rename" icon="edit" shortcut="F2" (triggered)="chosen.set('Rename')"></button>
+    <button type="button" nol-menu-item label="Duplicate" icon="content_copy" (triggered)="chosen.set('Duplicate')"></button>
+    <nol-menu-separator />
+    <button type="button" nol-menu-item label="Delete" icon="delete" [danger]="true" (triggered)="chosen.set('Delete')"></button>
+  </nol-menu>
+</ng-template>

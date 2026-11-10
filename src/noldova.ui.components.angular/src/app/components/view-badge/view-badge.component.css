@@ -1,0 +1,38 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: var(--nol-view-badge);
+  height: var(--nol-view-badge);
+  padding-inline: var(--nol-view-badge-padding);
+  border-radius: calc(var(--nol-view-badge) / 2);
+  background-color: var(--nol-button);
+  color: var(--nol-button-text);
+  font-size: var(--nol-view-badge-text);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+
+  @media (forced-colors: active) {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
+:host(.nol-view-badge-dot) {
+  min-width: var(--nol-view-badge-dot);
+  width: var(--nol-view-badge-dot);
+  height: var(--nol-view-badge-dot);
+  padding: 0;
+}

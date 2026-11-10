@@ -1,0 +1,25 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-code-block-header">
+  @if (language(); as language) {
+    <span class="nol-code-block-language" data-truncates>{{ language }}</span>
+  }
+  <div class="nol-code-block-actions" nolToolbar [nolToolbarLabel]="partResources.codeBlockActionsLabel">
+    <button type="button" nol-icon-button nolToolbarItem class="nol-code-block-wrap" data-nol-resizes-row [icon]="resources.wordWrapGlyph" [label]="resources.wordWrapLabel" [pressed]="wrapped()"
+      [nolTooltip]="resources.wordWrapLabel" (click)="toggleWrap()"></button>
+    @if (runLanguage(); as language) {
+      <button type="button" nol-icon-button nolToolbarItem class="nol-code-block-run" [icon]="partResources.shellRunGlyph" [label]="runLabel(language)" [busy]="shownRunState() === runStates.Running"
+        [busyPressable]="true" [nolTooltip]="runLabel(language)" (click)="runCode(language)"></button>
+    }
+    <button type="button" nol-icon-button nolToolbarItem class="nol-code-block-copy" [class.nol-code-block-copied]="isCopied()" [icon]="copyGlyph()" [label]="copyLabel()"
+      [nolTooltip]="copyLabel()" (click)="copy()"></button>
+  </div>
+</div>
+<pre #body class="nol-code-block-body" [style.max-height.rem]="maxHeight()" (scroll)="follow(body)"><code #text></code></pre>
+<span class="nol-code-block-advance" aria-hidden="true"><span #advanceOne [attr.data-sample]="partResources.codeAdvanceCharacter"></span><span #advanceRun [attr.data-sample]="partResources.codeAdvanceSample"></span></span>

@@ -1,0 +1,15 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.checkbox" noHover>
+  <nol-gallery-cell [caption]="text.checked"><nol-checkbox [checked]="isChecked()" (checkedChange)="isChecked.set($event)">{{ text.checked }}</nol-checkbox></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.unchecked"><nol-checkbox>{{ text.unchecked }}</nol-checkbox></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><nol-checkbox [checked]="true" [disabled]="true">{{ text.disabled }}</nol-checkbox></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-checkbox [nolGalleryFocus]="focusedCheckbox">{{ text.unchecked }}</nol-checkbox></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-checkbox class="nol-gallery-narrow">{{ text.longText }}</nol-checkbox></nol-gallery-cell>
+</nol-gallery-specimen>

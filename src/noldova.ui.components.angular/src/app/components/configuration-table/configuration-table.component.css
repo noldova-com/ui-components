@@ -1,0 +1,193 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-configuration-table {
+  --nol-configuration-table-focus-room: calc(var(--nol-border-width) * 3);
+  --nol-configuration-table-row-room: var(--nol-space-2);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-3);
+  min-width: 0;
+}
+
+.nol-configuration-table-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-2) var(--nol-space-4);
+}
+
+.nol-configuration-table-header-explained {
+  align-items: baseline;
+}
+
+.nol-configuration-table-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+  overflow-wrap: anywhere;
+}
+
+.nol-configuration-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nol-space-2);
+  margin-inline-start: auto;
+}
+
+.nol-configuration-table-explanation {
+  margin: 0;
+  color: var(--nol-text);
+}
+
+.nol-configuration-table-header > .nol-configuration-table-explanation {
+  flex: 1 1 var(--nol-text-field-width);
+  min-width: 0;
+}
+
+.nol-configuration-table-body {
+  width: fit-content;
+  min-width: 100%;
+  margin: calc(var(--nol-configuration-table-focus-room) * -1) calc(var(--nol-configuration-table-row-room) * -1);
+  padding: var(--nol-configuration-table-focus-room) var(--nol-configuration-table-row-room);
+}
+
+.nol-configuration-table-body:has(> .nol-configuration-table-shared) {
+  width: auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.nol-configuration-table-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nol-configuration-table-grid > tbody > tr > :is(th, td):is(:first-child, :last-child) {
+  position: relative;
+}
+
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td),
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):first-child::before,
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):last-child::after {
+  background-color: var(--nol-hover);
+}
+
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):first-child::before,
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):last-child::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  width: var(--nol-configuration-table-row-room);
+}
+
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):first-child::before {
+  inset-inline-end: 100%;
+}
+
+.nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):last-child::after {
+  inset-inline-start: 100%;
+}
+
+@media (forced-colors: active) {
+  .nol-configuration-table-grid > tbody > tr {
+    position: relative;
+  }
+
+  .nol-configuration-table-grid > tbody > tr > :is(th, td):is(:first-child, :last-child) {
+    position: static;
+  }
+
+  .nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td) {
+    background-color: transparent;
+  }
+
+  .nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):first-child::before {
+    inset-inline: calc(var(--nol-configuration-table-row-room) * -1);
+    width: auto;
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+    background-color: transparent;
+    pointer-events: none;
+  }
+
+  .nol-configuration-table-grid > tbody > tr:is(:hover, [data-nol-state="Hover"]) > :is(th, td):last-child::after {
+    content: none;
+  }
+}
+
+.nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  padding: var(--nol-space-2);
+  border-bottom: var(--nol-border-width) solid var(--nol-card-border);
+  text-align: start;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > :is(th, td):first-child {
+  padding-inline-start: 0;
+}
+
+.nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > .nol-configuration-table-fill {
+  width: 100%;
+  min-width: var(--nol-configuration-table-fill-min-width, var(--nol-text-field-width));
+  white-space: normal;
+}
+
+.nol-configuration-table-grid.nol-configuration-table-shared > :is(thead, tbody, tfoot) > tr > .nol-configuration-table-fill {
+  width: auto;
+  min-width: 0;
+}
+
+.nol-configuration-table-grid.nol-configuration-table-narrow > :is(thead, tbody, tfoot) > tr > :is(th, td):not(.nol-configuration-table-row-actions) {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.nol-configuration-table-grid.nol-configuration-table-narrow > :is(thead, tbody, tfoot) > tr > :is(th, td).nol-configuration-table-fill {
+  width: auto;
+}
+
+.nol-configuration-table-grid.nol-configuration-table-narrow.nol-configuration-table-fill-anywhere > :is(thead, tbody, tfoot) > tr > :is(th, td).nol-configuration-table-fill {
+  overflow-wrap: anywhere;
+}
+
+.nol-configuration-table-grid.nol-configuration-table-narrowest > :is(thead, tbody, tfoot) > tr > :is(th, td):not(.nol-configuration-table-row-actions) {
+  overflow-wrap: anywhere;
+}
+
+.nol-configuration-table-grid > thead > tr > th {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}
+
+.nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > .nol-configuration-table-row-actions {
+  text-align: end;
+}
+
+.nol-configuration-table-row-actions > * {
+  vertical-align: middle;
+}
+
+.nol-configuration-table-row-actions > * + * {
+  margin-inline-start: var(--nol-space-2);
+}
+
+.nol-configuration-table-row-actions > .nol-icon-button + .nol-icon-button {
+  margin-inline-start: 0;
+}
+
+.nol-configuration-table-row-actions > .nol-button.nol-button-text {
+  min-width: 4rem;
+}

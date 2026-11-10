@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-dialog-header" (pointerdown)="startDrag($event)">
+  <h2 class="nol-dialog-title" [id]="titleId" [attr.data-truncates]="isLarge() ? '' : null">{{ title() }}</h2>
+  <div class="nol-dialog-controls">
+    @if (isLarge()) {
+      <ng-content select="[nolDialogControl]" />
+      <button type="button" nol-icon-button class="nol-dialog-maximize" [icon]="isMaximized() ? partResources.dialogRestoreGlyph : partResources.dialogMaximizeGlyph"
+        [label]="maximizeLabel()" [nolTooltip]="maximizeLabel()" (click)="toggleMaximized()"></button>
+    }
+    <button type="button" nol-icon-button class="nol-dialog-close" [icon]="resources.closeGlyph" [label]="partResources.dialogCloseLabel" [nolTooltip]="partResources.dialogCloseLabel"
+      (click)="dismissed.emit()"></button>
+  </div>
+</div>
+<div class="nol-dialog-body">
+  <ng-content />
+</div>
+<div class="nol-dialog-actions">
+  <ng-content select="[nolDialogAction]" />
+</div>

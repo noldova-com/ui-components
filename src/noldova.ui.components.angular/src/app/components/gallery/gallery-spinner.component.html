@@ -1,0 +1,12 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.spinner" noHover noFocus noLongText>
+  <nol-gallery-cell [caption]="text.working"><nol-spinner [label]="text.spinnerWorking" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.delayed"><nol-spinner [label]="text.spinnerDelayed" [isDelayed]="true" /></nol-gallery-cell>
+</nol-gallery-specimen>

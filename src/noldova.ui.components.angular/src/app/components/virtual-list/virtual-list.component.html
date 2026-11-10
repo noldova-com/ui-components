@@ -1,0 +1,47 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div #viewport class="nol-virtual-list-viewport" [class.nol-virtual-list-pointer-focus]="isPointerFocused()" [attr.role]="isFeed() ? 'feed' : null"
+  [attr.aria-label]="isFeed() ? label() : null" [attr.aria-busy]="isFeed() ? isBusy() : null" [attr.tabindex]="isFeed() ? 0 : null" (scroll)="onScroll()" (scrollend)="endScroll()"
+  (pointerdown)="point($event)" (focusin)="enterFeed($event)" (keydown)="pressInFeed($event)">
+  <div #list class="nol-virtual-list-rows" [attr.role]="isFeed() ? null : 'listbox'" [attr.aria-label]="isFeed() ? null : label()" [attr.aria-busy]="isFeed() ? null : isBusy()"
+    [class.nol-virtual-list-rows-held]="heldHeight() !== null" [style.height.px]="heldHeight()"
+    [style.padding-bottom.px]="heldHeight() === null ? range().bottom : 0" (focusout)="leave($event)">
+    @for (row of rows(); track row.track) {
+      <div #slot class="nol-virtual-list-slot" [attr.data-nol-row]="row.index" [class.nol-virtual-list-slot-outside]="row.top !== null" [class.nol-virtual-list-slot-hidden]="row.isHidden" [style.top.px]="row.top === null ? heldTop() : row.top - shift()"
+        [style.height.px]="row.context || row.isHidden ? null : row.height">
+        <div class="nol-virtual-list-row" [class.nol-virtual-list-option]="!isFeed()" [class.nol-virtual-list-option-selected]="!isFeed() && row.isSelected"
+          [attr.role]="row.isHidden ? null : isFeed() ? 'article' : 'option'" [attr.aria-selected]="isFeed() ? null : row.isSelected"
+          [attr.aria-labelledby]="isFeed() && row.context ? row.labelId : null" [attr.aria-describedby]="isFeed() && row.context && rowTemplate().described() ? row.descriptionId : null"
+          [attr.aria-posinset]="row.index + 1" [attr.aria-setsize]="state().source.length()" [attr.aria-hidden]="row.context || row.isStop ? null : true"
+          [attr.tabindex]="row.isStop && !isFeed() ? 0 : row.context ? -1 : null" (focusin)="enter(row.index)" (keydown)="press($event, row.index)"
+          (click)="choose(row.index, $event.target)">
+          @if (row.context; as context) {
+            <ng-container *ngTemplateOutlet="rowTemplate().template; context: context" />
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+<div class="nol-virtual-list-status" [class.nol-virtual-list-edge-end]="gap()?.isAtStart === false" [class.nol-virtual-list-status-shown]="gap()?.isFailed === false && gap()?.isSlow">
+  @if (gap()?.isFailed === false && gap()?.isSlow) {
+    {{ partResources.virtualListLoading }}
+  }
+</div>
+@if (gap()?.isFailed) {
+  <div class="nol-virtual-list-failure" [class.nol-virtual-list-edge-end]="gap()?.isAtStart === false">
+    <nol-field-message>{{ partResources.virtualListFailed }}</nol-field-message>
+    <button type="button" nol-button [variant]="variants.Secondary" (click)="retry()">{{ partResources.virtualListRetry }}</button>
+  </div>
+}
+@if (isFeed()) {
+  <button type="button" nol-icon-button class="nol-virtual-list-jump" [class.nol-virtual-list-jump-shown]="!isFollowing() && !isJumpHeld()" [class.nol-virtual-list-jump-start]="isLatestAtStart()"
+    [icon]="isLatestAtStart() ? partResources.virtualListJumpStartGlyph : partResources.virtualListJumpGlyph"
+    [label]="partResources.virtualListJumpLabel" [nolTooltip]="partResources.virtualListJumpLabel" (click)="jump($event)"></button>
+}

@@ -1,0 +1,49 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-tab />
+
+<nol-gallery-view-badge />
+
+<nol-gallery-tree />
+
+<nol-gallery-virtual-list />
+
+<nol-gallery-feed />
+
+<nol-gallery-section-header />
+
+<nol-gallery-group-header />
+
+<nol-gallery-specimen [name]="text.toolbar" [size]="sizes.Wide" noHover>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <div nolToolbar [nolToolbarLabel]="text.toolbarLabel" class="nol-gallery-toolbar">
+      <button type="button" nol-icon-button nolToolbarItem [icon]="text.glyphAdd" [label]="text.button"></button>
+      <button type="button" nol-icon-button nolToolbarItem [icon]="text.glyphSave" [label]="text.pressed" [pressed]="true"></button>
+      <button type="button" nol-icon-button nolToolbarItem [icon]="text.iconGlyph" [label]="text.disabled" aria-disabled="true"></button>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div nolToolbar [nolToolbarLabel]="text.toolbarLabel" class="nol-gallery-toolbar" nolGalleryFocus="button">
+      <button type="button" nol-icon-button nolToolbarItem [icon]="text.glyphAdd" [label]="text.button"></button>
+      <button type="button" nol-icon-button nolToolbarItem [icon]="text.glyphSave" [label]="text.pressed" [pressed]="true"></button>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div nolToolbar [nolToolbarLabel]="text.toolbarLabel" class="nol-gallery-toolbar nol-gallery-narrow">
+      <button type="button" nol-toolbar-button nolToolbarItem [icon]="text.glyphSave" [label]="text.longText" [isShowingLabel]="true" [nolTooltip]="text.longText"
+        [nolTooltipTruncated]="true"></button>
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-toolbar-button />
+
+<nol-gallery-sash />
+
+<nol-gallery-panel-card />

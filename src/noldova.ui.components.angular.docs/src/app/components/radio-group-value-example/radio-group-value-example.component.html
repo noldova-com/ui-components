@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-radio-group label="Merge method" [(value)]="method">
+  <nol-radio value="merge">Merge commit</nol-radio>
+  <nol-radio value="squash">Squash</nol-radio>
+  <nol-radio value="rebase">Rebase</nol-radio>
+</nol-radio-group>
+<span>Chosen: {{ method() }}</span>

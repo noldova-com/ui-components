@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.configurationTable" [size]="sizes.Full" noFocus>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: wideTable }" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: narrowTable }" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.noHeadingCaption">
+    <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: unheadedTable }" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.configurationSharedCaption">
+    <ng-container [ngTemplateOutlet]="sharedTable" [ngTemplateOutletContext]="{ $implicit: false }" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <ng-container [ngTemplateOutlet]="sharedTable" [ngTemplateOutletContext]="{ $implicit: true }" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<ng-template #sharedTable let-hover>
+  <div class="nol-gallery-table-holder">
+    <nol-configuration-table class="nol-gallery-table" [level]="4" [label]="text.configurationSharedCaption" [nolGalleryHover]="hover ? 'tbody > tr' : undefined">
+      <table nolConfigurationTable>
+        <thead>
+          <tr>
+            <th scope="col" [nolConfigurationTableShare]="2">{{ text.configurationName }}</th>
+            <th scope="col" [nolConfigurationTableShare]="4" nolConfigurationTableFill>{{ text.configurationValue }}</th>
+            <th scope="col" [nolConfigurationTableShare]="2">{{ text.configurationScope }}</th>
+            <th scope="col" [nolConfigurationTableShare]="2" [nolConfigurationTableRowActions]="text.configurationActions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of text.configurationRows.slice(0, 2); track row.name) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td nolConfigurationTableFill>{{ row.value }}</td>
+              <td>{{ row.scope }}</td>
+              <td nolConfigurationTableRowActions>
+                <button type="button" nol-icon-button [icon]="text.glyphEdit" [label]="row.edit"></button>
+                <button type="button" nol-icon-button [danger]="true" [icon]="text.glyphClose" [label]="row.remove"></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </nol-configuration-table>
+  </div>
+</ng-template>
+
+<ng-template #configurationTable let-table>
+  <div class="nol-gallery-table-holder" [class.nol-gallery-narrow]="table.isNarrow">
+    <nol-configuration-table class="nol-gallery-table" [heading]="table.heading" [level]="4" [label]="table.label" [explanation]="table.explanation">
+      @if (table.hasAdd) {
+        <button type="button" nol-button nolConfigurationTableAction [variant]="variants.Secondary">{{ text.configurationAdd }}</button>
+      }
+      <table nolConfigurationTable>
+        <thead>
+          <tr>
+            <th scope="col">{{ text.configurationName }}</th>
+            <th scope="col" nolConfigurationTableFill>{{ text.configurationValue }}</th>
+            <th scope="col">{{ text.configurationScope }}</th>
+            <th scope="col" [attr.aria-label]="text.configurationActions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of text.configurationRows.slice(0, table.rowCount); track row.name) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td nolConfigurationTableFill>{{ row.value }}</td>
+              <td>{{ row.scope }}</td>
+              <td>
+                <span class="nol-gallery-table-actions">
+                  <button type="button" nol-button [variant]="variants.Secondary" [attr.aria-label]="row.edit">{{ text.configurationEdit }}</button>
+                  <button type="button" nol-button [variant]="variants.Secondary" [attr.aria-label]="row.remove">{{ text.configurationRemove }}</button>
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </nol-configuration-table>
+  </div>
+</ng-template>

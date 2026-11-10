@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-message-menu" [nolContextMenuTriggerFor]="actions">
+  <nol-message [author]="guide" [time]="time" [blocks]="blocks" (contextMenuRequest)="openMenu($event)" />
+</div>
+<p>Chosen: {{ chosen() }}</p>
+<ng-template #actions>
+  <nol-menu aria-label="Message menu">
+    <button type="button" nol-menu-item label="Quote" icon="format_quote" (triggered)="chosen.set('Quote')"></button>
+    <button type="button" nol-menu-item label="Copy link" icon="link" (triggered)="chosen.set('Copy link')"></button>
+  </nol-menu>
+</ng-template>

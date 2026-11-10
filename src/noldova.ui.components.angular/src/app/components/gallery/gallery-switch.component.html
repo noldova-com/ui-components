@@ -1,0 +1,17 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.switch" noHover>
+  <nol-gallery-cell [caption]="text.switchOn"><nol-switch [checked]="isSwitchOn()" (checkedChange)="isSwitchOn.set($event)">{{ text.switchLabel }}</nol-switch></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.switchOff"><nol-switch>{{ text.switchLabel }}</nol-switch></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.switchNamed"><nol-switch [checked]="true" [label]="text.switchLabel" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled"><nol-switch [checked]="true" [disabled]="true">{{ text.disabled }}</nol-switch></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.switchReasoned"><nol-switch [checked]="true" [disabled]="true" [disabledReason]="text.switchReason">{{ text.switchUpdates }}</nol-switch></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-switch [nolGalleryFocus]="focusedSwitch">{{ text.switchLabel }}</nol-switch></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-switch class="nol-gallery-narrow">{{ text.longText }}</nol-switch></nol-gallery-cell>
+</nol-gallery-specimen>

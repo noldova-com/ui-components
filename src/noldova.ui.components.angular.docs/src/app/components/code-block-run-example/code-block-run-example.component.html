@@ -1,0 +1,10 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-code-block language="bash" code="git status --short" [runnable]="true" [runState]="state()" (run)="start($event)" />
+<p>{{ result() }}</p>

@@ -1,0 +1,28 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.codeBlock" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-code-block [language]="text.codeLanguage" [code]="text.codeSample" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeWrappedCaption"><nol-code-block [language]="text.codeLanguage" [code]="text.codeSample" [wrapped]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeNoLanguageCaption"><nol-code-block [code]="text.codeCommand" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeRunCaption"><nol-code-block [language]="text.codeShell" [code]="text.codeCommand" [runnable]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeRunningCaption">
+    <nol-code-block [language]="text.codeShell" [code]="text.codeCommand" [runnable]="true" [runState]="runStates.Running" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeOutputCaption">
+    <nol-markdown-view class="nol-gallery-content-run" [text]="text.codeOutputFence" [shellRuns]="true" [shellRunStates]="endedRun" [shellRunOutputs]="runOutputs">
+      <ng-template nolShellRunOutput><p>{{ text.codeOutputSample }}</p></ng-template>
+    </nol-markdown-view>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeEndedCaption"><nol-code-block [language]="text.codeShell" [code]="text.codeCommand" [runnable]="true" [runState]="runStates.Ended" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.codeRefusedCaption"><nol-code-block nolGalleryRefusingClipboard [language]="text.codeShell" [code]="text.codeCommand" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-code-block nolGalleryFocus=".nol-code-block-copy" [language]="text.codeShell" [code]="text.codeCommand" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-code-block class="nol-gallery-narrow" [language]="text.codeLongLanguage" [code]="text.codeLongLine" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

@@ -1,0 +1,73 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:where(.nol-drop-line-before, .nol-drop-line-after) {
+  position: relative;
+}
+
+.nol-drop-line,
+.nol-drop-line-before::after,
+.nol-drop-line-after::after {
+  --nol-drop-line-thickness: calc(2 * var(--nol-border-width));
+  --nol-drop-line-length: var(--nol-toolbar-button);
+
+  width: var(--nol-drop-line-thickness);
+  height: var(--nol-drop-line-length);
+  background-color: var(--nol-accent);
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .nol-drop-line,
+  .nol-drop-line-before::after,
+  .nol-drop-line-after::after {
+    background-color: Highlight;
+  }
+}
+
+.nol-drop-line {
+  translate: -50% -50%;
+}
+
+.nol-drop-line-row {
+  height: var(--nol-drop-line-thickness);
+  translate: 0 -50%;
+}
+
+.nol-drop-line-before::after,
+.nol-drop-line-after::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  margin-block: auto;
+}
+
+.nol-drop-line-before::after {
+  inset-inline-start: calc(var(--nol-drop-line-thickness) / -2);
+}
+
+.nol-drop-line-after::after {
+  inset-inline-end: calc(var(--nol-drop-line-thickness) / -2);
+}
+
+.nol-drop-line-vertical:is(.nol-drop-line-before, .nol-drop-line-after)::after {
+  inset-block: auto;
+  inset-inline: 0;
+  width: var(--nol-drop-line-length);
+  height: var(--nol-drop-line-thickness);
+  margin-block: 0;
+  margin-inline: auto;
+}
+
+.nol-drop-line-vertical.nol-drop-line-before::after {
+  inset-block-start: calc(var(--nol-drop-line-thickness) / -2);
+}
+
+.nol-drop-line-vertical.nol-drop-line-after::after {
+  inset-block-end: calc(var(--nol-drop-line-thickness) / -2);
+}

@@ -1,0 +1,84 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  vertical-align: middle;
+}
+
+:host::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: var(--nol-icon-button);
+  translate: 0 -50%;
+  border-radius: var(--nol-radius-small);
+  pointer-events: none;
+}
+
+.nol-split-button-main::before,
+.nol-split-button-arrow::before {
+  width: 100%;
+}
+
+.nol-split-button-main::before {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.nol-split-button-arrow::before {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.nol-split-button-arrow::after {
+  content: "";
+  grid-area: 1 / 1;
+  justify-self: start;
+  width: var(--nol-border-width);
+  height: var(--nol-icon-button);
+  visibility: hidden;
+  background-color: var(--nol-widget-border);
+}
+
+:host(:is(:hover, :has([data-nol-state="Hover"], .nol-split-button-arrow[aria-expanded="true"])))::before {
+  outline: var(--nol-border-width) solid var(--nol-widget-border);
+}
+
+:host(:is(:hover, :has([data-nol-state="Hover"], .nol-split-button-arrow[aria-expanded="true"]))) .nol-split-button-arrow::after {
+  visibility: visible;
+}
+
+.nol-split-button-arrow[aria-expanded="true"]::before {
+  background-color: var(--nol-toolbar-hover);
+}
+
+@media (forced-colors: active) {
+  :host(:is(:hover, :has([data-nol-state="Hover"], .nol-split-button-arrow[aria-expanded="true"])))::before {
+    outline-color: ButtonText;
+  }
+
+  .nol-split-button-arrow::after {
+    background-color: ButtonText;
+  }
+
+  .nol-split-button-arrow[aria-expanded="true"] {
+    --nol-icon-color: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+
+    &::before {
+      background-color: Highlight;
+    }
+  }
+}

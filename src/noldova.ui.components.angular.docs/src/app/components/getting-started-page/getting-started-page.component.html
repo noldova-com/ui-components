@@ -1,0 +1,39 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<article class="nol-docs-page">
+  <h1 class="nol-docs-page-title">{{ resources.gettingStartedTitle }}</h1>
+  <p class="nol-docs-text">{{ partResources.lead }}</p>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-install">
+    <h2 id="nol-docs-install" class="nol-docs-section-title">{{ partResources.installTitle }}</h2>
+    <p class="nol-docs-text">{{ partResources.installText }}</p>
+    @defer (on immediate) {
+      <nol-code-block [code]="partResources.installCommand" [language]="partResources.shellLanguage" />
+    } @placeholder {
+      <pre class="nol-docs-code">{{ partResources.installCommand }}</pre>
+    }
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-styles">
+    <h2 id="nol-docs-styles" class="nol-docs-section-title">{{ partResources.stylesTitle }}</h2>
+    <p class="nol-docs-text">{{ partResources.stylesText }}</p>
+    @defer (on immediate) {
+      <nol-code-block [code]="partResources.stylesCode" [language]="partResources.jsonLanguage" />
+    } @placeholder {
+      <pre class="nol-docs-code">{{ partResources.stylesCode }}</pre>
+    }
+  </section>
+  <section class="nol-docs-section" aria-labelledby="nol-docs-use">
+    <h2 id="nol-docs-use" class="nol-docs-section-title">{{ partResources.useTitle }}</h2>
+    <p class="nol-docs-text">{{ partResources.useText }}</p>
+    @defer (on immediate) {
+      <nol-code-block [code]="partResources.useCode" [language]="partResources.typescriptLanguage" />
+    } @placeholder {
+      <pre class="nol-docs-code">{{ partResources.useCode }}</pre>
+    }
+  </section>
+</article>

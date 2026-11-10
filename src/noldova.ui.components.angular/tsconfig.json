@@ -1,0 +1,51 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compileOnSave": false,
+  "compilerOptions": {
+    "verbatimModuleSyntax": false,
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "paths": {
+      "@noldova/ui.components.angular": [
+        "./src/api/index.ts"
+      ],
+      "@noldova/ui.components.angular/code-highlighting": [
+        "./src/api/code-highlighting.ts"
+      ],
+      "@noldova/ui.components.angular/code-highlighting/worker": [
+        "./src/api/code-highlighting-worker.ts"
+      ],
+      "@noldova/ui.components.angular/gallery": [
+        "./src/api/gallery.ts"
+      ],
+      "@noldova/ui.components.angular/markdown": [
+        "./src/api/markdown.ts"
+      ],
+      "@noldova/ui.components.angular/testing": [
+        "./src/api/testing.ts"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

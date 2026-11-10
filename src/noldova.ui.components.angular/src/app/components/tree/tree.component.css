@@ -1,0 +1,130 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  display: block;
+}
+
+.nol-tree {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-row-gap);
+}
+
+.nol-tree-row {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: var(--nol-tree-row-height);
+  padding-inline: calc(var(--nol-space-2) + var(--nol-tree-level) * var(--nol-tree-indent)) var(--nol-space-2);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text);
+}
+
+.nol-tree-row:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-tree-row-current,
+.nol-tree-row-current:is(:hover, [data-nol-state="Hover"]) {
+  --nol-text-muted: var(--nol-text);
+  background-color: var(--nol-selected);
+}
+
+@media (forced-colors: active) {
+  .nol-tree-row-current,
+  .nol-tree-row-current:is(:hover, [data-nol-state="Hover"]) {
+    --nol-text: HighlightText;
+    --nol-text-muted: HighlightText;
+    --nol-menu-text: HighlightText;
+    --nol-icon-color: HighlightText;
+    --nol-list-highlight: HighlightText;
+    --nol-list-active-text: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+}
+
+.nol-tree-twistie,
+.nol-tree-icon {
+  flex: none;
+  color: var(--nol-icon-color);
+}
+
+.nol-tree-twistie {
+  --nol-tree-bearing: 0.361em;
+
+  margin-inline: calc(var(--nol-tree-bearing) * -1) var(--nol-tree-bearing);
+}
+
+.nol-tree-twistie:dir(rtl) {
+  margin-inline: var(--nol-tree-bearing) calc(var(--nol-tree-bearing) * -1);
+}
+
+.nol-tree-twistie-open {
+  --nol-tree-bearing: 0.265em;
+
+  rotate: 90deg;
+}
+
+:dir(rtl) .nol-tree-twistie:not(.nol-tree-twistie-open) {
+  rotate: 180deg;
+}
+
+.nol-tree-label {
+  flex: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+:host(.nol-tree-movable) .nol-tree-row {
+  user-select: none;
+}
+
+.nol-tree-row-dragging {
+  opacity: 0.5;
+}
+
+.nol-tree-row-drop {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(-1 * var(--nol-border-width));
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-tree-drop-line {
+  position: absolute;
+}
+
+.nol-tree-ghost {
+  position: fixed;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  box-sizing: border-box;
+  min-height: var(--nol-tree-row-height);
+  padding-inline: var(--nol-space-2);
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-window);
+  box-shadow: var(--nol-shadow-large);
+  color: var(--nol-text);
+  pointer-events: none;
+}

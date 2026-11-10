@@ -1,0 +1,90 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-6);
+}
+
+.nol-gallery-menu {
+  width: 16rem;
+}
+
+.nol-gallery-fit {
+  max-width: 100%;
+}
+
+.nol-gallery-narrow {
+  max-width: 12rem;
+}
+
+.nol-gallery-large-dialog {
+  --nol-dialog-large-width: 36rem;
+  --nol-dialog-large-height: 14rem;
+  --nol-dialog-large-min-height: 14rem;
+}
+
+.nol-gallery-large-dialog-body {
+  margin: 0;
+  padding: var(--nol-dialog-body-padding);
+  padding-block: var(--nol-space-3);
+}
+
+.nol-gallery-context {
+  padding: var(--nol-space-2) var(--nol-space-3);
+  border: var(--nol-border-width) dashed var(--nol-border);
+  border-radius: var(--nol-radius-medium);
+}
+
+.nol-gallery-popover-title {
+  margin: 0;
+  font-size: inherit;
+  font-weight: var(--nol-weight-emphasis);
+  line-height: inherit;
+}
+
+.nol-gallery-popover-text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.nol-gallery-mention-box {
+  position: relative;
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-input);
+}
+
+.nol-gallery-mention-field {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(var(--nol-field-height) * 2);
+  margin: 0;
+  padding: var(--nol-space-1) var(--nol-field-padding);
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-input-text);
+  font: inherit;
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  resize: none;
+}
+
+.nol-gallery-mention-field::placeholder {
+  color: var(--nol-placeholder);
+  opacity: 1;
+}
+
+.nol-gallery-mention-field:focus {
+  border-color: var(--nol-accent);
+  outline: none;
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}

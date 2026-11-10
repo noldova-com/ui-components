@@ -1,0 +1,67 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+@property --nol-scroll-thumb {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@layer nol-scroll {
+  :where(*) {
+    transition: --nol-scroll-thumb 150ms linear;
+  }
+}
+
+:where(:is(:hover, [data-nol-state="Hover"]), [data-nol-scrolling]) {
+  --nol-scroll-thumb: var(--nol-scrollbar);
+}
+
+@media (forced-colors: none) {
+  ::-webkit-scrollbar {
+    width: var(--nol-scrollbar-size);
+    height: var(--nol-scrollbar-size);
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    --nol-scroll-thumb: inherit;
+    border-radius: var(--nol-scrollbar-size);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 var(--nol-scrollbar-size) var(--nol-scroll-thumb);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    box-shadow: inset 0 0 0 var(--nol-scrollbar-size) var(--nol-scrollbar-active);
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  @media (forced-colors: none) {
+    :where(*) {
+      scrollbar-width: thin;
+      scrollbar-color: var(--nol-scroll-thumb, transparent) transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(*) {
+    transition: none;
+  }
+}

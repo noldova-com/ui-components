@@ -1,0 +1,68 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-menu />
+
+<nol-gallery-specimen [name]="text.mentionField" [size]="sizes.Wide" noFocus>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-mention-list class="nol-gallery-menu" [choices]="mentions" [active]="0" [listId]="mentionListId" [label]="text.mentionLabel" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <nol-mention-list class="nol-gallery-menu" [nolGalleryHover]="hoveredMention" [choices]="mentions" [active]="0" [listId]="hoveredMentionListId" [label]="text.mentionLabel" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.mentionFieldCaption">
+    <div class="nol-gallery-mention-box"><textarea class="nol-gallery-mention-field" [nolMentionField]="mentions" [attr.aria-label]="text.mentionFieldLabel" [placeholder]="text.mentionPlaceholder"></textarea></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-mention-list class="nol-gallery-menu nol-gallery-narrow" [choices]="longMentions" [active]="0" [listId]="longMentionListId" [label]="text.mentionLabel" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
+
+<nol-gallery-specimen [name]="text.popover" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.openCaption">
+    <div nolPopover class="nol-gallery-popover" [label]="text.popoverLabel">
+      <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
+      <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
+      <p class="nol-gallery-popover-text">{{ text.popoverLong }}</p>
+      <button type="button" nol-button [variant]="variants.Secondary">{{ text.popoverClose }}</button>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.triggerCaption">
+    <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="popover">{{ text.popoverTrigger }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <div nolPopover class="nol-gallery-popover" nolGalleryFocus="button" [label]="text.popoverLabel">
+      <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
+      <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
+      <button type="button" nol-button [variant]="variants.Secondary">{{ text.popoverClose }}</button>
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div nolPopover class="nol-gallery-popover nol-gallery-narrow" [label]="text.popoverLabel">
+      <p class="nol-gallery-popover-text">{{ text.popoverLong }}</p>
+    </div>
+  </nol-gallery-cell>
+  <ng-template #popover>
+    <div nolPopover [label]="text.popoverLabel">
+      <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
+      <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
+    </div>
+  </ng-template>
+</nol-gallery-specimen>
+
+<nol-gallery-tooltip />
+
+<nol-gallery-dialog />
+
+<nol-gallery-quick-input />
+
+<nol-gallery-specimen [name]="text.docking" noHover noFocus noLongText>
+  <nol-gallery-cell [caption]="text.dockingGuideCaption"><nol-docking-guide [direction]="directions.Left" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dockingChosenCaption"><nol-docking-guide [direction]="directions.Right" [chosen]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.dockingPlateCaption"><nol-docking-plate [chosen]="directions.Center" /></nol-gallery-cell>
+</nol-gallery-specimen>

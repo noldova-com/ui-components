@@ -1,0 +1,96 @@
+{
+  "name": "@noldova/ui.components.angular",
+  "version": "__VERSION__",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noldova-com/ui-components.git",
+    "directory": "src/noldova.ui.components.angular"
+  },
+  "homepage": "https://github.com/noldova-com/ui-components#readme",
+  "bugs": {
+    "url": "https://github.com/noldova-com/ui-components/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./api/index.d.ts",
+      "default": "./api/index.js"
+    },
+    "./code-highlighting": {
+      "types": "./api/code-highlighting.d.ts",
+      "default": "./api/code-highlighting.js"
+    },
+    "./code-highlighting/worker": {
+      "types": "./api/code-highlighting-worker.d.ts",
+      "default": "./api/code-highlighting-worker.js"
+    },
+    "./gallery": {
+      "types": "./api/gallery.d.ts",
+      "default": "./api/gallery.js"
+    },
+    "./markdown": {
+      "types": "./api/markdown.d.ts",
+      "default": "./api/markdown.js"
+    },
+    "./testing": {
+      "types": "./api/testing.d.ts",
+      "default": "./api/testing.js"
+    },
+    "./styles/*": "./styles/*",
+    "./fonts/*": "./fonts/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.js.map",
+    "**/*.d.ts",
+    "styles/",
+    "fonts/"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "test": "node scripts/test.ts"
+  },
+  "dependencies": {
+    "@angular/cdk": "22.2.5",
+    "@shikijs/engine-javascript": "4.5.0",
+    "@shikijs/langs": "4.5.0",
+    "@shikijs/primitive": "4.5.0",
+    "katex": "0.19.0",
+    "markdown-it": "15.0.2",
+    "material-symbols": "0.47.5"
+  },
+  "peerDependencies": {
+    "@angular/common": "22.2.5",
+    "@angular/core": "22.2.5",
+    "@angular/forms": "22.2.5",
+    "@angular/platform-browser": "22.2.5",
+    "@noldova/context.core": ">=0.0.2 <0.1.0",
+    "@noldova/context.exceptions": ">=0.0.2 <0.1.0",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.5",
+    "@angular/cli": "22.2.5",
+    "@angular/common": "22.2.5",
+    "@angular/compiler": "22.2.5",
+    "@angular/compiler-cli": "22.2.5",
+    "@angular/core": "22.2.5",
+    "@angular/forms": "22.2.5",
+    "@angular/platform-browser": "22.2.5",
+    "@noldova/context.core": "0.0.2",
+    "@noldova/context.exceptions": "0.0.2",
+    "@vitest/browser-playwright": "5.0.3",
+    "@vitest/coverage-v8": "5.0.3",
+    "playwright": "1.63.0",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1",
+    "vitest": "5.0.3"
+  }
+}

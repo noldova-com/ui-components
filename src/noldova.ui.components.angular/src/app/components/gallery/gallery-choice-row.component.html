@@ -1,0 +1,37 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.choiceRow">
+  <nol-gallery-cell long [caption]="text.choiceRowRadiosCaption">
+    <nol-radio-group class="nol-gallery-narrow" [label]="text.choiceRowQuestion" [(value)]="branch">
+      @for (option of text.choiceRowOptions; track option.value) {
+        <nol-choice-row [value]="option.value" [label]="option.label" [description]="option.description" />
+      }
+    </nol-radio-group>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.choiceRowCheckboxesCaption">
+    <div class="nol-gallery-narrow" role="group" [attr.aria-label]="text.choiceRowChecks">
+      @for (option of text.choiceRowCheckOptions; track option.label) {
+        <nol-choice-row [type]="choiceTypes.Checkbox" [label]="option.label" [description]="option.description" [checked]="checks().includes(option.label)"
+          (checkedChange)="toggleCheck(option.label, $event)" />
+      }
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <nol-choice-row nolGalleryHover [type]="choiceTypes.Checkbox" [label]="text.choiceRowHover" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-choice-row [nolGalleryFocus]="focusedRadio" [value]="text.choiceRowFocus" [label]="text.choiceRowFocus" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.choiceRowDisabled">
+    <nol-choice-row [type]="choiceTypes.Checkbox" [label]="text.choiceRowDisabled" [checked]="true" [disabled]="true" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-choice-row class="nol-gallery-narrow" [type]="choiceTypes.Checkbox" [label]="text.longText" [description]="text.longValue" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

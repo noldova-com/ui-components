@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../../../_build/angular/kit-bundles-tsc",
+    "paths": {}
+  },
+  "files": []
+}

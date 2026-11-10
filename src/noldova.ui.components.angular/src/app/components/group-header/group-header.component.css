@@ -1,0 +1,109 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--nol-section-header-height);
+  border-radius: var(--nol-radius-small);
+}
+
+:host(:not(:first-child)) {
+  margin-block-start: var(--nol-space-3);
+}
+
+:host(:is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-hover);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+}
+
+.nol-group-header-heading {
+  display: flex;
+  flex: 1 1 0;
+  min-width: calc-size(min-content, min(size, 100%));
+  align-self: stretch;
+}
+
+.nol-group-header-toggle {
+  display: flex;
+  flex: auto;
+  align-items: center;
+  gap: var(--nol-space-1);
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: var(--nol-section-header-height);
+  padding-block: 0;
+  padding-inline: var(--nol-space-2);
+  border: 0;
+  border-radius: var(--nol-radius-small);
+  background: none;
+  color: var(--nol-text-strong);
+  font: inherit;
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+  text-align: start;
+}
+
+.nol-group-header-twistie {
+  --nol-group-header-bearing: 0.361em;
+
+  flex: none;
+  margin-inline: calc(var(--nol-group-header-bearing) * -1) var(--nol-group-header-bearing);
+  color: var(--nol-icon-color);
+  font-size: var(--nol-icon);
+}
+
+.nol-group-header-twistie:dir(rtl) {
+  margin-inline: var(--nol-group-header-bearing) calc(var(--nol-group-header-bearing) * -1);
+}
+
+:host(.nol-group-header-expanded) .nol-group-header-twistie {
+  --nol-group-header-bearing: 0.265em;
+
+  rotate: 90deg;
+}
+
+:host(:not(.nol-group-header-expanded)) .nol-group-header-twistie:dir(rtl) {
+  rotate: 180deg;
+}
+
+.nol-group-header-title {
+  flex: 1 1 auto;
+  width: calc-size(max-content, min(size, 4rem));
+  min-width: 0;
+  max-width: max-content;
+  overflow: hidden;
+  font-weight: var(--nol-weight-emphasis);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nol-group-header-count {
+  flex: none;
+  margin-inline-start: calc(var(--nol-space-2) - var(--nol-space-1));
+  color: var(--nol-text-muted);
+}
+
+.nol-group-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-inline-start: auto;
+  gap: var(--nol-space-1);
+  padding-inline-end: var(--nol-space-1);
+}
+
+.nol-group-header-actions:empty {
+  display: none;
+}

@@ -1,0 +1,26 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.nol-docs-token-value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+}
+
+.nol-docs-token-swatch {
+  flex: none;
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-small);
+
+  @media (forced-colors: active) {
+    border-color: CanvasText;
+    forced-color-adjust: none;
+  }
+}

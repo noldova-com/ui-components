@@ -1,0 +1,56 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.nol-docs-search-field {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.nol-docs-search-results {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(100% + var(--nol-space-1));
+  inset-inline: 0;
+  display: grid;
+  margin: 0;
+  padding: var(--nol-space-1);
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-panel);
+  box-shadow: var(--nol-shadow-large);
+  list-style: none;
+}
+
+.nol-docs-search-result,
+.nol-docs-search-empty {
+  display: block;
+  padding: var(--nol-space-1) var(--nol-space-2);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.nol-docs-search-empty {
+  color: var(--nol-text-muted);
+}
+
+.nol-docs-search-result:hover {
+  background-color: var(--nol-hover);
+}
+
+.nol-docs-search-result:focus-visible {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+}
