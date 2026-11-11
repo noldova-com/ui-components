@@ -129,19 +129,30 @@ describe("ToolCallComponent", () => {
       await expect.poll(async () => {
         await new Promise(resolve => requestAnimationFrame(resolve));
         const top = output().scrollTop;
-        seen.push(Math.round(top));
+        seen.push(top);
         const isSettled = top !== before && top === previous;
         previous = top;
         return isSettled;
       }, { timeout: 3000 }).toBe(true);
     }
     catch (error) {
-      const focused = document.activeElement;
-      throw new Error(`${key} didn't scroll the output from ${Math.round(before)} and settle: it read ${seen.length} frames, ${seen.slice(0, 8).join(" ")}${seen.length > 8 ? ` … ${seen.slice(-4).join(" ")}` : ""}; `
-        + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${focused === output() ? "on the output" : `on ${focused?.tagName ?? "nothing"}.${focused?.className ?? ""}`}, `
-        + `and the output scrolls ${output().scrollHeight} over ${output().clientHeight}, the page ${document.hidden ? "hidden" : "shown"}.`, { cause: error });
+      throw new Error(scrollFailure(key, before, seen), { cause: error });
     }
     return output().scrollTop - before;
+  }
+
+  function scrollFailure(key: string, before: number, seen: readonly number[]): string {
+    const pixels = (values: readonly number[]): string => values.map(value => String(Math.round(value * 100) / 100)).join(" ");
+    const read = seen.length > 12 ? `${pixels(seen.slice(0, 8))} … ${pixels(seen.slice(-4))}` : pixels(seen);
+    const frames = seen.length === 0 ? "no frames" : `${seen.length} frames, ${read}`;
+    const shown = DomFixture.maybe(DomFixture.host(fixture), ".nol-tool-call-output");
+    const focused = document.activeElement;
+    const classes = focused?.getAttribute("class")?.trim() ?? "";
+    const element = focused === null ? "nothing" : classes === "" ? focused.tagName : `${focused.tagName}.${classes.split(/\s+/).join(".")}`;
+    const where = shown !== null && focused === shown ? "on the output" : `on ${element}`;
+    const scrolls = shown === null ? "the output is gone" : `the output scrolls ${shown.scrollHeight} over ${shown.clientHeight}`;
+    return `${key} didn't scroll the output from ${pixels([before])} and settle: it read ${frames}; `
+      + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${where}, and ${scrolls}, the page ${document.hidden ? "hidden" : "shown"}.`;
   }
 
   async function pressAsync(element: HTMLElement): Promise<void> {
