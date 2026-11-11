@@ -704,6 +704,31 @@ describe("PermissionCardComponent", () => {
     expect([code().textContent, find(".nol-permission-card-more").textContent]).toEqual([linesOf(12), "Show all 13 lines"]);
   });
 
+  it("keeps details past 12 lines as high when Show all is pressed as when they were cut, at as many lines as its owner asks for, and scrolls the rest", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(30) }));
+    host.detailLines.set(20);
+    await fixture.whenStable();
+    const code = (): HTMLElement => find(".nol-permission-card-code");
+    const lineHeight = Number.parseFloat(getComputedStyle(code()).lineHeight);
+    const cut = box(code()).height;
+
+    expect(Math.abs(cut - 20 * lineHeight)).toBeLessThanOrEqual(1);
+
+    await clickAsync(find(".nol-permission-card-more"));
+
+    expect(Math.abs(box(code()).height - cut)).toBeLessThanOrEqual(1);
+    expect(code().scrollHeight).toBeGreaterThan(code().clientHeight);
+  });
+
+  it.each([[0, 1], [-1, 1], [2.5, 2], [Number.NaN, 3], [Number.POSITIVE_INFINITY, 3]])("takes %s detail lines as %s", async (asked, shown) => {
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(5) }));
+    host.detailLines.set(asked);
+    await fixture.whenStable();
+
+    expect([find(".nol-permission-card-code").textContent, find(".nol-permission-card-more").textContent]).toEqual([linesOf(shown), "Show all 5 lines"]);
+  });
+
   it("shows every line of long details when its owner kept them expanded", async () => {
     fixture = TestBed.createComponent(PermissionCardHostComponent);
     fixture.componentInstance.expanded.set(true);

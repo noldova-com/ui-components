@@ -11,7 +11,7 @@ import type { DialogRef } from "@angular/cdk/dialog";
 import { CdkMenuItem, CdkMenuTrigger, CdkMenuTriggerBase } from "@angular/cdk/menu";
 import type { OverlayRef } from "@angular/cdk/overlay";
 import type { ComponentPortal, ComponentType, TemplatePortal } from "@angular/cdk/portal";
-import type { ComponentRef, EmbeddedViewRef, EnvironmentProviders, InjectionToken, Injector, InputSignal, ModelSignal, OutputEmitterRef, OutputRef, Signal, TemplateRef } from "@angular/core";
+import type { ComponentRef, EmbeddedViewRef, EnvironmentProviders, InjectionToken, Injector, InputSignal, InputSignalWithTransform, ModelSignal, OutputEmitterRef, OutputRef, Signal, TemplateRef } from "@angular/core";
 import { Exception } from "@noldova/context.exceptions";
 import type { Observable } from "rxjs";
 
@@ -9040,9 +9040,12 @@ export declare class PermissionCardComponent {
 
   /**
    * How many lines of details show before the Show all button; details with
-   * that many lines or fewer show whole. 3 when not bound.
+   * that many lines or fewer show whole. Once Show all is pressed, the details
+   * scroll inside a block as high as the larger of 12 lines and this count.
+   * A value is rounded down to a whole number of at least 1, and one that
+   * isn't a finite number counts as 3. 3 when not bound.
    */
-  public readonly detailLines: InputSignal<number>;
+  public readonly detailLines: InputSignalWithTransform<number, number>;
 
   /**
    * Emits the id of the option the person chose, once they confirmed it

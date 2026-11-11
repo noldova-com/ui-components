@@ -30,7 +30,7 @@ LICENSE file in the root directory of this source tree.
 }
 @if (lines().length > 0) {
   <div class="nol-permission-card-details">
-    <pre class="nol-permission-card-code" [id]="id + '-details'" [class.nol-permission-card-code-scrolls]="isCut() && detailsExpanded()"
+    <pre class="nol-permission-card-code" [id]="id + '-details'" [class.nol-permission-card-code-scrolls]="isCut() && detailsExpanded()" [style.--nol-permission-card-scroll-lines]="scrollLines()"
       [attr.tabindex]="isCut() && detailsExpanded() ? 0 : null" [attr.role]="isCut() && detailsExpanded() ? 'region' : null"
       [attr.aria-label]="isCut() && detailsExpanded() ? partResources.permissionDetailsLabel : null">{{ shownDetails() }}</pre>
     @if (isCut()) {
