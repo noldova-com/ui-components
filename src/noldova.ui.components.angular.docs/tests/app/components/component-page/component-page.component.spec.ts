@@ -1017,7 +1017,7 @@ describe("ComponentPageComponent", () => {
       const name = DocsFixture.one(dialog, "#nol-docs-teammate-name");
       await vi.waitFor(() => expect(document.activeElement).toBe(name));
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-      expect(Math.abs(DocsFixture.one(document, "nol-dialog").getBoundingClientRect().width - 40 * rem)).toBeLessThan(0.5);
+      expect(Math.abs(DocsFixture.one(document, ".cdk-overlay-container nol-dialog").getBoundingClientRect().width - 40 * rem)).toBeLessThan(0.5);
       expect(dialog.querySelector("button.nol-dialog-maximize")).toBeNull();
 
       await userEvent.clear(name);
