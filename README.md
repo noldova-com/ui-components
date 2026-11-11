@@ -221,13 +221,14 @@ Each push to `main` moves `latest` to the image it built, so the sandbox follows
 Staging and production are deployed by hand, on a version tag:
 
 ```bash
-gh workflow run deploy.yml --ref v0.0.1 -f environment=staging
+gh workflow run deploy.yml --ref v<version> -f environment=staging
 ```
 
 The "Deploy" workflow, `.github/workflows/deploy.yml`, finds the image tagged with that tag's commit and moves the environment's label to it, without building anything; if there is no such image, it fails and moves nothing.
 Its summary records the tag, the commit, the digest and the environment.
-`staging` runs in the `deploy-staging` environment and `production` in `deploy-production`, which needs the Owner's approval; both accept version tags only.
+Once it has found the image, the run waits in the `deploy-staging` or `deploy-production` environment, and `deploy-production` needs a maintainer's approval; both accept version tags only.
 To undo a deploy, run the same command on an older tag.
+A run uses the workflow file at its tag, so a tag from before this workflow, such as `v0.0.1`, can't be deployed.
 
 ## License
 

@@ -32,7 +32,6 @@ jobs:
     name: Find the tag's image
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    environment: deploy-${{ inputs.environment }}
     permissions:
       packages: read
     outputs:
@@ -79,9 +78,23 @@ jobs:
           fi
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
+  approve:
+    name: Approve the deploy
+    needs: find
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: deploy-${{ inputs.environment }}
+    permissions: {}
+    steps:
+      - name: Name what was approved
+        env:
+          DIGEST: ${{ needs.find.outputs.digest }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: echo "Approved $GITHUB_REF_NAME, $DIGEST, for $ENVIRONMENT."
+
   move:
     name: Move the environment's label
-    needs: find
+    needs: [find, approve]
     uses: noldova-com/.github/.github/workflows/move-image-label.yml@1946b810610c1e2863778316c88595b912cd88ec # v2.16.0
     permissions:
       packages: write
