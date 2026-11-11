@@ -356,23 +356,25 @@ describe("kit styles in forced colors", () => {
     return width;
   }
 
-  const filledSections: readonly { name: string; section: Type<unknown>; filled: readonly (readonly [string, string | null])[]; labels: readonly string[] }[] = [
-    { name: "forms", section: GalleryFormsComponent, filled: [[".nol-choice-pill-selected", null], ["button[nol-icon-button][aria-pressed=\"true\"]", "::before"]], labels: [] },
+  const filledSections: readonly { name: string; parts: string; section: Type<unknown>; filled: readonly (readonly [string, string | null])[]; labels: readonly string[] }[] = [
+    { name: "forms", parts: "checked pill and pressed icon button", section: GalleryFormsComponent, filled: [[".nol-choice-pill-selected", null], ["button[nol-icon-button][aria-pressed=\"true\"]", "::before"]], labels: [] },
     {
       name: "navigation",
+      parts: "selected tab, current tree row, pressed toolbar button and badge",
       section: GalleryNavigationComponent,
       filled: [[".nol-tab.nol-tab-selected .nol-tab-pill", null], [".nol-tree-row-current", null], ["button[nol-toolbar-button][aria-pressed=\"true\"]", null], ["nol-view-badge", null]],
       labels: [".nol-tree-row-current .nol-tree-label", ".nol-tab.nol-tab-selected .nol-tab-label"]
     },
     {
       name: "overlays",
+      parts: "active result and chosen guide",
       section: GalleryOverlaysComponent,
       filled: [[".nol-quick-input-option[aria-selected=\"true\"]", "::before"], [".nol-docking-guide-chosen", null]],
       labels: [".nol-quick-input-option[aria-selected=\"true\"] .nol-quick-input-detail"]
     }
   ];
 
-  it.each(filledSections)("fills the $name section's selected tab, current tree row, checked pill, active result, pressed buttons, chosen guide and badge with the highlight, their text and icons in the highlighted text without the backplate the system draws behind text", async ({ section, filled, labels }) => {
+  it.each(filledSections)("fills the $name section's $parts with the highlight, their text and icons in the highlighted text without the backplate the system draws behind text", async ({ section, filled, labels }) => {
     await showFrameAsync(section);
     const highlight = ForcedColorsFixture.resolve("Highlight");
     const text = ForcedColorsFixture.resolve("HighlightText");
