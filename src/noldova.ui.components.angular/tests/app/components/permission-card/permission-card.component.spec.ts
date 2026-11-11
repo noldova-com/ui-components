@@ -64,7 +64,7 @@ class TimeSettings {
   template: `
     <div class="frame" style="width: 30rem" (keydown)="heard.push($event.key)">
       @for (request of requests(); track request.id) {
-        <nol-permission-card [request]="request" [(detailsExpanded)]="expanded" (decide)="decided.push(request.id + ':' + $event)" />
+        <nol-permission-card [request]="request" [(detailsExpanded)]="expanded" [detailLines]="detailLines()" (decide)="decided.push(request.id + ':' + $event)" />
       }
     </div>
   `
@@ -72,6 +72,7 @@ class TimeSettings {
 class PermissionCardHostComponent {
   public readonly requests: WritableSignal<readonly PermissionRequest[]> = signal([]);
   public readonly expanded: WritableSignal<boolean> = signal(false);
+  public readonly detailLines: WritableSignal<number> = signal(3);
   public readonly decided: string[] = [];
   public readonly heard: string[] = [];
 }
@@ -688,6 +689,19 @@ describe("PermissionCardComponent", () => {
     await clickAsync(more());
 
     expect([host.expanded(), code().textContent, code().getAttribute("role")]).toEqual([false, linesOf(3), null]);
+  });
+
+  it("shows details whole up to as many lines as its owner asks for, and cuts them at that count past it", async () => {
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(12) }));
+    host.detailLines.set(12);
+    await fixture.whenStable();
+    const code = (): HTMLElement => find(".nol-permission-card-code");
+
+    expect([code().textContent, code().getAttribute("role"), DomFixture.maybe(DomFixture.host(fixture), ".nol-permission-card-more")]).toEqual([linesOf(12), null, null]);
+
+    await showAsync(requestOf(PermissionRisk.Low, { details: linesOf(13) }));
+
+    expect([code().textContent, find(".nol-permission-card-more").textContent]).toEqual([linesOf(12), "Show all 13 lines"]);
   });
 
   it("shows every line of long details when its owner kept them expanded", async () => {

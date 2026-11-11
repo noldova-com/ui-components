@@ -8991,10 +8991,12 @@ export declare class PanelCardComponent {
  * none when the request leaves it unknown, and the minutes left before the
  * request expires, updated each minute and formatted for `LOCALE_ID`. The
  * description and the details follow, the details as plain code in the mono
- * font. Details longer than 3 lines show their first 3 lines and a Show all
- * button, and then scroll inside the card. The requester's line, its name
- * and kind, or its name alone when it has no kind, isn't shown, since the
- * card sits in the requester's message, but is in the card's description.
+ * font. Details longer than {@link PermissionCardComponent.detailLines},
+ * 3 lines by default, show that many lines and a Show all button, and then
+ * scroll inside the card; details as long or shorter show whole. The
+ * requester's line, its name and kind, or its name alone when it has no
+ * kind, isn't shown, since the card sits in the requester's message, but is
+ * in the card's description.
  *
  * The options are equal secondary buttons at the end of the card, a kit
  * toolbar, one tab stop whose arrow keys move
@@ -9035,6 +9037,12 @@ export declare class PermissionCardComponent {
    * looks as it did. False when not bound.
    */
   public readonly detailsExpanded: ModelSignal<boolean>;
+
+  /**
+   * How many lines of details show before the Show all button; details with
+   * that many lines or fewer show whole. 3 when not bound.
+   */
+  public readonly detailLines: InputSignal<number>;
 
   /**
    * Emits the id of the option the person chose, once they confirmed it
