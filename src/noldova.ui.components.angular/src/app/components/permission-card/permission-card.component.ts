@@ -110,13 +110,15 @@ export class PermissionCardComponent {
     const minutes = Math.max(1, Math.ceil((expiresAt - this.clock.now()) / PermissionCardResources.permissionMinute));
     return PermissionCardResources.formatPermissionExpiry(this.minutes.format(minutes));
   });
-  protected readonly detailLines: Signal<readonly string[]> = computed(() => this.request().details?.split(Resources.permissionLineBreak) ?? []);
-  protected readonly isCut: Signal<boolean> = computed(() => this.detailLines().length > PermissionCardResources.permissionDetailsLines);
+  protected readonly lines: Signal<readonly string[]> = computed(() => this.request().details?.split(Resources.permissionLineBreak) ?? []);
+  protected readonly isCut: Signal<boolean> = computed(() => this.lines().length > this.detailLines());
+  protected readonly scrollLines: Signal<number> = computed(() => Math.max(PermissionCardResources.permissionScrollLines, this.detailLines()));
   protected readonly shownDetails: Signal<string> = computed(() =>
-    (this.isCut() && !this.detailsExpanded() ? this.detailLines().slice(0, PermissionCardResources.permissionDetailsLines) : this.detailLines()).join(Resources.permissionLineBreak));
+    (this.isCut() && !this.detailsExpanded() ? this.lines().slice(0, this.detailLines()) : this.lines()).join(Resources.permissionLineBreak));
 
   public readonly request = input.required<PermissionRequest>();
   public readonly detailsExpanded = model<boolean>(false);
+  public readonly detailLines = input<number, number>(PermissionCardResources.permissionDetailsLines, { transform: PermissionCardResources.toPermissionDetailsLines });
   public readonly decide = output<string>();
 
   public constructor() {
