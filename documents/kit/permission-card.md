@@ -6,7 +6,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 ## Default geometry
 
-Fills its container's width; padded 0.75rem, its parts 0.5rem apart; the head's icon, title, risk and expiry 0.5rem apart on one row, centered on the title, wrapping with 0.25rem between lines; options 0.5rem apart at the end, wrapping; details unpadded, with no border or fill, at most 12 lines high once all their lines show; medium radius; 1px border.
+Fills its container's width; padded 0.75rem, its parts 0.5rem apart; the head's icon, title, risk and expiry 0.5rem apart on one row, centered on the title, wrapping with 0.25rem between lines; options 0.5rem apart at the end, wrapping; details unpadded, with no border or fill, at most as high as the larger of 12 lines and `detailLines` once all their lines show; medium radius; 1px border.
 
 ## Text role
 
@@ -17,7 +17,7 @@ Panel; the head's kind, risk and expiry and who decided in the label role, muted
 The kit's inline permission request for an agent's message, a named group described by the risk, the requester and the description, never a dialog, and kept in the history once answered.
 A head row: the approval icon in the accent color; the heading, with the request's kind under it when the app gives one, the requester's own name for the request as it gave it; then, at the row's end, the risk's icon and text (Low, Medium or High risk), the high-risk icon in the error color and its text emphasized, never by color alone, and "Expires in N min", updated each minute from the kit's shared clock in the app's locale.
 The requester's line isn't shown, since the card sits in the requester's own message: it is in the card's description, after the risk, for assistive technology, as its name and kind, such as "Build agent, Agent", or as its name alone when the app gives no kind, such as "Files · Build agent · This computer".
-Then the description and the details, as plain code in the mono font, left to right, with no label; details longer than 3 lines show their first 3, then Show all N lines, after which they scroll inside the card, a region named Details in the Tab order.
+Then the description and the details, as plain code in the mono font, left to right, with no label; details longer than the card's `detailLines`, 3 by default, a whole number of at least 1 to which a fraction rounds down and anything but a finite number counts as 3, show that many lines, then Show all N lines, after which they scroll inside the card, a region named Details in the Tab order; details that long or shorter show whole.
 The options are equal secondary buttons at the row's end, in a kit toolbar, one tab stop on the default option; Enter, Space or a click chooses.
 The default is never an allow at high risk; without a deny there is none and the card itself takes focus, where Enter chooses nothing.
 At high risk an option that always allows, the kit's or the app's, turns the row into "Always allow this high-risk request?" with Confirm and Cancel, and an allow without a scope, which may last, into "Allow this high-risk request?"; a request whose risk is unknown shows no risk and is guarded as at high risk, its questions without "high-risk", such as "Allow this request?", Confirm and Cancel secondary at the end like the options, Cancel focused when focus was in the card; Cancel brings the options back.

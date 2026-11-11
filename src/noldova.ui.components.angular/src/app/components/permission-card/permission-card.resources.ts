@@ -14,6 +14,7 @@ export class PermissionCardResources {
   public static readonly permissionCardIdPrefix: string = "nol-permission-card-";
   public static readonly permissionAnnouncementKeyPrefix: string = "nol-permission-request-";
   public static readonly permissionDetailsLines: number = 3;
+  public static readonly permissionScrollLines: number = 12;
   public static readonly permissionMinute: number = 60_000;
   public static readonly permissionRiskLabels: Readonly<Record<PermissionRisk, string>> = {
     [PermissionRisk.Low]: "Low risk",
@@ -57,6 +58,9 @@ export class PermissionCardResources {
   public static readonly permissionRetryLabel: string = "Retry";
   public static readonly permissionDetailsLabel: string = "Details";
   public static readonly permissionShowFewerLines: string = "Show fewer lines";
+  public static toPermissionDetailsLines(value: number): number {
+    return Number.isFinite(value) ? Math.max(1, Math.floor(value)) : PermissionCardResources.permissionDetailsLines;
+  }
   public static formatPermissionRequester(name: string, kind: string | null): string {
     return Object.isNull(kind) ? name : `${name}, ${kind}`;
   }
