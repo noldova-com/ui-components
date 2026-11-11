@@ -599,6 +599,7 @@ export class GalleryResources {
     dialogConfirm: "Delete",
     dialogLongTitle: "A dialog title that is far too long to fit the width its dialog gives it",
     largeDialogTitle: "Notes",
+    mediumCaption: "Medium",
     largeCaption: "Large",
     largeDialogBody: "A view or document shown large keeps its own layout inside the dialog's body.",
     quickInput: "Quick input",

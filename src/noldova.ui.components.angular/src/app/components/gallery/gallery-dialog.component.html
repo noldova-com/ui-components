@@ -17,6 +17,16 @@ LICENSE file in the root directory of this source tree.
       <button type="button" nol-button nolDialogAction [danger]="true">{{ text.dialogConfirm }}</button>
     </nol-dialog>
   </ng-template>
+  <nol-gallery-cell [caption]="text.mediumCaption">
+    <ng-container [ngTemplateOutlet]="mediumDialog" [ngTemplateOutletInjector]="mediumDialogInjector" />
+  </nol-gallery-cell>
+  <ng-template #mediumDialog>
+    <nol-dialog class="nol-gallery-fit" [title]="text.dialogTitle" [size]="dialogSizes.Medium">
+      <span nolDialogDescription>{{ text.dialogBody }}</span>
+      <button type="button" nol-button nolDialogAction [variant]="variants.Secondary">{{ text.dialogCancel }}</button>
+      <button type="button" nol-button nolDialogAction [danger]="true">{{ text.dialogConfirm }}</button>
+    </nol-dialog>
+  </ng-template>
   <nol-gallery-cell [caption]="text.largeCaption">
     <ng-container [ngTemplateOutlet]="largeDialog" [ngTemplateOutletInjector]="largeDialogInjector" />
   </nol-gallery-cell>

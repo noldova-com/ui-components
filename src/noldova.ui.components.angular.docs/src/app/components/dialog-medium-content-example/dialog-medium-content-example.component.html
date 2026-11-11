@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-dialog title="Add a teammate" [size]="sizes.Medium" (dismissed)="answered.emit(null)">
+  <div class="nol-docs-dialog-form">
+    <label for="nol-docs-teammate-name">Name</label>
+    <input #name id="nol-docs-teammate-name" type="text" nol-text-field value="Reviewer" />
+    <label for="nol-docs-teammate-role">What it does</label>
+    <input id="nol-docs-teammate-role" type="text" nol-text-field value="Reviews each pull request before it merges" />
+    <label for="nol-docs-teammate-folder">Working folder</label>
+    <input id="nol-docs-teammate-folder" type="text" nol-text-field value="~/projects/site" />
+  </div>
+  <button type="button" nol-button nolDialogAction [variant]="variants.Secondary" (click)="answered.emit(null)">Cancel</button>
+  <button type="button" nol-button nolDialogAction (click)="add()">Add</button>
+</nol-dialog>

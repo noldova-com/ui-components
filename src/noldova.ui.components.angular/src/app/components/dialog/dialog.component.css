@@ -24,6 +24,10 @@
   line-height: var(--nol-line-panel);
 }
 
+:host(.nol-dialog-medium) {
+  width: min(var(--nol-dialog-medium-width), var(--nol-dialog-bounds-width));
+}
+
 :host(.nol-dialog-large) {
   width: min(max(var(--nol-dialog-large-width), var(--nol-dialog-large-min-width)), var(--nol-dialog-bounds-width));
   height: min(max(var(--nol-dialog-large-height), var(--nol-dialog-large-min-height)), var(--nol-dialog-bounds-height));

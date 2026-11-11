@@ -23,6 +23,7 @@ import { TooltipDirective } from "../tooltip/tooltip.directive.js";
   styleUrl: "./dialog.component.css",
   imports: [IconButtonComponent, TooltipDirective],
   host: {
+    "[class.nol-dialog-medium]": "isMedium()",
     "[class.nol-dialog-large]": "isLarge()",
     "[class.nol-dialog-maximized]": "isShownMaximized()",
     "[style.translate]": "translation()",
@@ -44,6 +45,7 @@ export class DialogComponent {
   public readonly size = input<DialogSize>(DialogSize.Normal);
   public readonly dismissed = output<void>();
 
+  protected readonly isMedium: Signal<boolean> = computed(() => this.size() === DialogSize.Medium);
   protected readonly isLarge: Signal<boolean> = computed(() => this.size() === DialogSize.Large);
   protected readonly isMaximized: WritableSignal<boolean> = signal(false);
   protected readonly maximizeLabel: Signal<string> = computed(() => this.isMaximized() ? DialogComponentResources.dialogRestoreLabel : DialogComponentResources.dialogMaximizeLabel);

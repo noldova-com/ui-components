@@ -8,5 +8,6 @@
 
 export enum DialogSize {
   Normal = "Normal",
+  Medium = "Medium",
   Large = "Large"
 }

@@ -90,7 +90,7 @@ describe("GalleryOverlaysComponent", () => {
     const fixture = await GalleryFixture.showSectionAsync(GalleryOverlaysComponent);
     const dialogs = [...DomFixture.host(fixture).querySelectorAll<HTMLElement>("nol-dialog:not(.nol-gallery-large-dialog)")];
 
-    expect(dialogs.length).toBe(3);
+    expect(dialogs.length).toBe(4);
     for (const dialog of dialogs) {
       const actions = [...dialog.querySelectorAll<HTMLElement>(".nol-dialog-actions [nolDialogAction]")];
       const confirm = actions.at(-1) as HTMLElement;
@@ -111,7 +111,7 @@ describe("GalleryOverlaysComponent", () => {
     const style = getComputedStyle(title);
     const line = parseFloat(style.lineHeight);
 
-    expect(dialogs.map(t => t.querySelector(".nol-dialog-header > .nol-dialog-controls > .nol-dialog-close:last-child")?.getAttribute("aria-label"))).toEqual(["Close", "Close", "Close", "Close"]);
+    expect(dialogs.map(t => t.querySelector(".nol-dialog-header > .nol-dialog-controls > .nol-dialog-close:last-child")?.getAttribute("aria-label"))).toEqual(["Close", "Close", "Close", "Close", "Close"]);
     expect(title.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)).toBeGreaterThan(line * 1.5);
     AppearanceFixture.expectPixels(close.top + close.height / 2, title.getBoundingClientRect().top + parseFloat(style.paddingTop) + line / 2);
   });
@@ -121,7 +121,7 @@ describe("GalleryOverlaysComponent", () => {
     const fixture = await GalleryFixture.showAsync();
     const ids = [...fixture.nativeElement.querySelectorAll("nol-gallery-overlays .nol-dialog-title")].map(t => (t as HTMLElement).id);
 
-    expect(ids).toHaveLength(GalleryFixture.frames(fixture).length * 4);
+    expect(ids).toHaveLength(GalleryFixture.frames(fixture).length * 5);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.every(t => t.startsWith("nol-gallery-dialog-"))).toBe(true);
   });

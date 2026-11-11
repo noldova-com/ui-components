@@ -246,6 +246,7 @@ export class Resources {
     "dialog-title-padding",
     "dialog-body-padding",
     "dialog-actions-padding",
+    "dialog-medium-width",
     "dialog-large-width",
     "dialog-large-height",
     "dialog-large-min-width",

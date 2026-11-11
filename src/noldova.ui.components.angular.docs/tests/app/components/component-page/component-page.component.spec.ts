@@ -1005,6 +1005,41 @@ describe("ComponentPageComponent", () => {
       await vi.waitFor(() => expect(document.activeElement).toBe(opener));
     });
 
+    it("opens a medium dialog 40rem wide on its Name field, and adds the typed name from Add", async () => {
+      await DocsFixture.viewAsync(DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT);
+      const host = await renderAsync(expectPage("DialogComponent"));
+      const examples = section(host, "Examples");
+      const opener = DocsFixture.byText(examples, "button", "Add a teammate");
+
+      await userEvent.click(opener);
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
+      const dialog = DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]");
+      const name = DocsFixture.one(dialog, "#nol-docs-teammate-name");
+      await vi.waitFor(() => expect(document.activeElement).toBe(name));
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      expect(Math.abs(DocsFixture.one(document, ".cdk-overlay-container nol-dialog").getBoundingClientRect().width - 40 * rem)).toBeLessThan(0.5);
+      expect(dialog.querySelector("button.nol-dialog-maximize")).toBeNull();
+
+      await userEvent.clear(name);
+      await userEvent.type(name, "Release checker");
+      await userEvent.click(DocsFixture.byText(dialog, "button", "Add"));
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      await vi.waitFor(() => expect(document.activeElement).toBe(opener));
+      expect(examples.textContent).toContain("Added: Release checker");
+    });
+
+    it("closes the medium dialog on Cancel and adds no one", async () => {
+      const host = await renderAsync(expectPage("DialogComponent"));
+      const examples = section(host, "Examples");
+
+      await userEvent.click(DocsFixture.byText(examples, "button", "Add a teammate"));
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
+      await userEvent.click(DocsFixture.byText(DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]"), "button", "Cancel"));
+
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      expect(examples.textContent).toContain("Added: No one yet");
+    });
+
     it("answers Deleted once the dialog's Delete is pressed", async () => {
       const host = await renderAsync(expectPage("DialogComponent"));
       const examples = section(host, "Examples");
