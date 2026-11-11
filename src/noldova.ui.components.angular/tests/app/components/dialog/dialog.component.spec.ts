@@ -618,7 +618,7 @@ describe("DialogComponent", () => {
   for (const theme of AppearanceFixture.themes)
     for (const mode of AppearanceFixture.modes)
       for (const isForced of [false, true])
-        for (const [width, height] of [[1280, 800], [480, 400]] as const)
+        for (const [width, height] of [[1280, 800], [560, 400]] as const)
           it(`sizes a medium dialog to the theme's medium width, ${width} by ${height}, shrinking to the overlay bounds when they are narrower, with the ${theme.id} theme in ${mode}${isForced ? " under forced colors" : String.empty}`, async () => {
             await page.viewport(width, height);
             AppearanceFixture.apply(theme, mode);
