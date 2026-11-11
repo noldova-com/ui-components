@@ -1,0 +1,109 @@
+# @license
+# Copyright (c) Noldova.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: The environment whose label moves to the image of the tag this run is started on
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  find:
+    name: Find the tag's image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: deploy-${{ inputs.environment }}
+    permissions:
+      packages: read
+    outputs:
+      digest: ${{ steps.find.outputs.digest }}
+    env:
+      CRANE_VERSION: v0.22.1
+      CRANE_SHA256: 0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0
+    steps:
+      - name: Check that the run is on a version tag
+        run: |
+          if [ "$GITHUB_REF_TYPE" != tag ] || [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::A deploy starts on a version tag, such as v0.0.1, not \"$GITHUB_REF_NAME\"."
+            exit 1
+          fi
+
+      - name: Download crane
+        run: |
+          set -euo pipefail
+          folder="$RUNNER_TEMP/crane"
+          mkdir -p "$folder"
+          curl --fail --silent --show-error --location --retry 3 --proto '=https' --output "$folder/crane.tar.gz" \
+            "https://github.com/google/go-containerregistry/releases/download/$CRANE_VERSION/go-containerregistry_Linux_x86_64.tar.gz"
+          echo "$CRANE_SHA256  $folder/crane.tar.gz" | sha256sum --check --strict
+          tar --extract --gzip --file "$folder/crane.tar.gz" --directory "$folder" crane
+          echo "$folder" >> "$GITHUB_PATH"
+
+      - name: Find the image tagged with the commit
+        id: find
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REGISTRY_TOKEN: ${{ github.token }}
+          DOCS_IMAGE: ui-components-angular-docs
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${OWNER,,}/$DOCS_IMAGE"
+          echo "$REGISTRY_TOKEN" | crane auth login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          if ! digest=$(crane digest "$image:$GITHUB_SHA"); then
+            echo "::error::$image has no image tagged $GITHUB_SHA, the commit of $GITHUB_REF_NAME, so no label moves."
+            exit 1
+          fi
+          if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::The registry gave no digest for $image:$GITHUB_SHA, \"$digest\"."
+            exit 1
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+  move:
+    name: Move the environment's label
+    needs: find
+    uses: noldova-com/.github/.github/workflows/move-image-label.yml@1946b810610c1e2863778316c88595b912cd88ec # v2.16.0
+    permissions:
+      packages: write
+    with:
+      image: ui-components-angular-docs
+      digest: ${{ needs.find.outputs.digest }}
+      label: ${{ inputs.environment }}
+
+  summary:
+    name: Record the deploy
+    needs: [find, move]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Write the summary
+        env:
+          DIGEST: ${{ needs.find.outputs.digest }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          {
+            echo '| Tag | Commit | Digest | Environment |'
+            echo '|---|---|---|---|'
+            echo "| \`$GITHUB_REF_NAME\` | \`$GITHUB_SHA\` | \`$DIGEST\` | $ENVIRONMENT |"
+          } >> "$GITHUB_STEP_SUMMARY"

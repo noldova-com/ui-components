@@ -215,6 +215,21 @@ The release tags the commit `v<version>` first, before it builds or publishes; a
 A release's build also adds Angular's build tools to a fresh install of the kit, as the checks above say, so a release whose Angular is behind Angular's newest patch stops there; the version pull request that moves the kit's Angular comes first.
 After a release, the workflow proposes the version to each public repository that pins the kit, in one pull request each, through a GitHub App whose key the `version-updates` environment holds.
 
+## Deploying the docs site
+
+The docs image has three moving labels, one for each environment that serves it: `latest`, `staging` and `production`.
+Each push to `main` moves `latest` to the image it built, so the sandbox follows `main` by itself.
+Staging and production are deployed by hand, on a version tag:
+
+```bash
+gh workflow run deploy.yml --ref v0.0.1 -f environment=staging
+```
+
+The "Deploy" workflow, `.github/workflows/deploy.yml`, finds the image tagged with that tag's commit and moves the environment's label to it, without building anything; if there is no such image, it fails and moves nothing.
+Its summary records the tag, the commit, the digest and the environment.
+`staging` runs in the `deploy-staging` environment and `production` in `deploy-production`, which needs the Owner's approval; both accept version tags only.
+To undo a deploy, run the same command on an older tag.
+
 ## License
 
 The kit is licensed under the [MIT License](LICENSE).

@@ -71,5 +71,5 @@ A script in the page shell's head sets `data-nol-theme-mode` from that key befor
 
 The build writes static files only.
 On each push to `main`, the "Docs" workflow, `.github/workflows/docs.yml`, calls the organization's shared docs image workflow, which the `.github` repository's README describes under "Building a docs image", pinned to a full commit SHA: it runs `npm ci` and `npm run build`, which builds the kit and then the docs site, on the organization's Linux runner, and pushes `_build/docs/browser` as the nginx image `ghcr.io/noldova-com/ui-components-angular-docs`, tagged with the commit's full hash, with its digest in the run's summary.
-Where the image is served is decided outside this repository, which takes it by that digest; nothing here deploys it.
+The same workflow then moves the image's `latest` label to it, and the "Deploy" workflow moves `staging` or `production`, as the [README](../README.md#deploying-the-docs-site) says; which label each environment serves is decided outside this repository.
 No page carries a `robots` meta tag, so search engines may index the site wherever it is served.

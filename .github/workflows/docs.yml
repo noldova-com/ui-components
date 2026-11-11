@@ -27,3 +27,14 @@ jobs:
       build: npm ci --no-audit --no-fund && npm run build
       output: _build/docs/browser
       image: ui-components-angular-docs
+
+  latest:
+    name: Move the latest label
+    needs: docs
+    uses: noldova-com/.github/.github/workflows/move-image-label.yml@1946b810610c1e2863778316c88595b912cd88ec # v2.16.0
+    permissions:
+      packages: write
+    with:
+      image: ui-components-angular-docs
+      digest: ${{ needs.docs.outputs.digest }}
+      label: latest
