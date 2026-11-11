@@ -379,6 +379,7 @@ describe("DocsShellComponent", () => {
       expect(box.right).toBeLessThanOrEqual(navBox.right);
       expect(current.contains(document.elementFromPoint(box.left + 1, box.top + box.height / 2))).toBe(true);
 
+      await userEvent.keyboard("{Shift}");
       current.focus();
       await vi.waitFor(() => expect(current.matches(":focus-visible")).toBe(true));
       expect(getComputedStyle(current).outlineColor).toBe(ForcedColorsFixture.resolve("HighlightText"));
