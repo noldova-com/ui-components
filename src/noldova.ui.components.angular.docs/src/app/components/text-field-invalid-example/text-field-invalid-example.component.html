@@ -6,6 +6,8 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<input type="text" nol-text-field value="main" aria-label="Base branch" disabled />
-<input type="text" nol-text-field value="feature search" aria-label="New branch" aria-invalid="true" aria-describedby="nol-docs-text-field-error" />
+<label>
+  New branch
+  <input type="text" nol-text-field value="feature search" aria-invalid="true" aria-describedby="nol-docs-text-field-error" />
+</label>
 <nol-field-message id="nol-docs-text-field-error">A branch name can't contain spaces.</nol-field-message>

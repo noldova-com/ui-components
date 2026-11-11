@@ -12,8 +12,12 @@
 }
 
 .nol-docs-virtual-list {
+  box-sizing: border-box;
   max-width: 20rem;
   height: 12rem;
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-window);
 }
 
 p {

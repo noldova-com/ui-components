@@ -10,12 +10,11 @@ import { Component, type WritableSignal, signal } from "@angular/core";
 import { SwitchComponent } from "@noldova/ui.components.angular";
 
 @Component({
-  selector: "nol-docs-switch-bound-example",
+  selector: "nol-docs-switch-text-example",
   imports: [SwitchComponent],
-  templateUrl: "./switch-bound-example.component.html",
-  styleUrl: "./switch-bound-example.component.css"
+  templateUrl: "./switch-text-example.component.html",
+  styleUrl: "./switch-text-example.component.css"
 })
-export class SwitchBoundExampleComponent {
+export class SwitchTextExampleComponent {
   protected readonly savesItself: WritableSignal<boolean> = signal(true);
-  protected readonly playsSounds: WritableSignal<boolean> = signal(false);
 }
