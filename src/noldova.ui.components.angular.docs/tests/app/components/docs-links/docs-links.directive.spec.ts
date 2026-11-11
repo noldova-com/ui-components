@@ -33,6 +33,7 @@ class DocsLinksHostComponent {
     `[button](${Resources.kitDocumentsLink}button.md)`,
     `[states](${Resources.kitDocumentsLink}button.md#states)`,
     `[unlisted](${Resources.kitDocumentsLink}no-such-page.md)`,
+    `[picture](${Resources.kitDocumentsLink}images/button.png)`,
     "[elsewhere](https://example.com/a)"
   ].join(" ");
 }
@@ -43,7 +44,7 @@ describe("DocsLinksDirective", () => {
     const fixture = TestBed.createComponent(DocsLinksHostComponent);
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
-    await vi.waitFor(() => expect(DocsFixture.all(host, "a").length).toBe(4));
+    await vi.waitFor(() => expect(DocsFixture.all(host, "a").length).toBe(5));
     return host;
   };
 
@@ -94,14 +95,15 @@ describe("DocsLinksDirective", () => {
     expect(router().url).toBe("/");
   });
 
-  it("opens a kit document with no page here, and any other address, at that address in a new tab", async () => {
+  it("opens a kit document with no page here, a kit file that is no document, and any other address, at that address in a new tab", async () => {
     const host = await renderAsync();
     const open = opened();
 
     click(DocsFixture.byText(host, "a", "unlisted"));
+    click(DocsFixture.byText(host, "a", "picture"));
     click(DocsFixture.byText(host, "a", "elsewhere"));
 
-    expect(open.mock.calls).toEqual([[`${Resources.kitDocumentsLink}no-such-page.md`, "_blank", "noopener"], ["https://example.com/a", "_blank", "noopener"]]);
+    expect(open.mock.calls).toEqual([[`${Resources.kitDocumentsLink}no-such-page.md`, "_blank", "noopener"], [`${Resources.kitDocumentsLink}images/button.png`, "_blank", "noopener"], ["https://example.com/a", "_blank", "noopener"]]);
     expect(router().url).toBe("/");
   });
 });

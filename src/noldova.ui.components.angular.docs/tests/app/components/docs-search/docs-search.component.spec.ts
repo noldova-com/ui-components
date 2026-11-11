@@ -77,6 +77,8 @@ describe("DocsSearchComponent", () => {
     const last = options(host).length - 1;
 
     expect([selected(host), field(host).getAttribute("aria-activedescendant")]).toEqual([[], null]);
+    await userEvent.keyboard("{ArrowUp}");
+    expect([selected(host), field(host).getAttribute("aria-activedescendant")]).toEqual([[], null]);
     await userEvent.keyboard("{ArrowDown}");
     await vi.waitFor(() => expect(selected(host)).toEqual([0]));
     expect(field(host).getAttribute("aria-activedescendant")).toBe(options(host)[0]?.id);
@@ -101,8 +103,11 @@ describe("DocsSearchComponent", () => {
     expect(field(host).value).toBe("");
   });
 
-  it("leaves the page alone on Enter while no result is active", async () => {
+  it("leaves the page alone on Enter in an empty field and while no result is active", async () => {
     const host = await renderAsync();
+    await userEvent.click(field(host));
+    await userEvent.keyboard("{Enter}");
+    expect(TestBed.inject(Router).url).toBe("/");
     await typedAsync(host, "button");
 
     await userEvent.keyboard("{Enter}");
