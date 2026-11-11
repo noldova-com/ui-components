@@ -124,13 +124,23 @@ describe("ToolCallComponent", () => {
     const before = output().scrollTop;
     await userEvent.keyboard(key);
     let previous = before;
-    await expect.poll(async () => {
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      const top = output().scrollTop;
-      const isSettled = top !== before && top === previous;
-      previous = top;
-      return isSettled;
-    }, { timeout: 3000 }).toBe(true);
+    const seen: number[] = [];
+    try {
+      await expect.poll(async () => {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const top = output().scrollTop;
+        seen.push(Math.round(top));
+        const isSettled = top !== before && top === previous;
+        previous = top;
+        return isSettled;
+      }, { timeout: 3000 }).toBe(true);
+    }
+    catch (error) {
+      const focused = document.activeElement;
+      throw new Error(`${key} didn't scroll the output from ${Math.round(before)} and settle: it read ${seen.length} frames, ${seen.slice(0, 8).join(" ")}${seen.length > 8 ? ` … ${seen.slice(-4).join(" ")}` : ""}; `
+        + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${focused === output() ? "on the output" : `on ${focused?.tagName ?? "nothing"}.${focused?.className ?? ""}`}, `
+        + `and the output scrolls ${output().scrollHeight} over ${output().clientHeight}, the page ${document.hidden ? "hidden" : "shown"}.`, { cause: error });
+    }
     return output().scrollTop - before;
   }
 
