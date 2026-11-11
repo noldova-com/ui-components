@@ -141,7 +141,7 @@ describe("ToolCallComponent", () => {
       }, { timeout: 3000 }).toBe(true);
     } finally {
       const now = performance.now();
-      console.log(`[probe41] ${probe} ${key}: keyboard ${Math.round(pressed - started)} ms, first move ${moved < 0 ? "none" : Math.round(moved - pressed)} ms, settled ${Math.round(now - pressed)} ms, ${trace.length} frames, from ${Math.round(before)}: ${trace.join(" ")}, hidden ${document.hidden}, at ${new Date().toISOString()}`);
+      console.log(`[probe41] ${probe} ${key}: keyboard ${Math.round(pressed - started)} ms, first move ${moved < 0 ? "none" : Math.round(moved - pressed)} ms, settled ${Math.round(now - pressed)} ms, ${trace.length} frames, from ${Math.round(before)}: ${trace.join(" ")}, hidden ${document.hidden}, page focus ${document.hasFocus()}, focus on output ${document.activeElement === output()}, focus ${document.activeElement?.tagName}.${document.activeElement?.className}, scroll ${output().scrollHeight}/${output().clientHeight}, at ${new Date().toISOString()}`);
     }
     return output().scrollTop - before;
   }
