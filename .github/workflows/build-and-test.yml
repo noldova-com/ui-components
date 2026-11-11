@@ -23,10 +23,20 @@ concurrency:
 jobs:
   build-and-test:
     name: Build and test
-    uses: noldova-com/.github/.github/workflows/build-and-test.yml@1946b810610c1e2863778316c88595b912cd88ec # v2.16.0
+    uses: noldova-com/.github/.github/workflows/build-and-test.yml@6f448a9493367b6d1377a717538d694ef18bab07 # .github#97 probe
     permissions:
       contents: read
       packages: read
     with:
       targets: linux-x64 linux-arm64 windows-x64 windows-arm64 macos-x64 macos-arm64
       publishes: true
+
+  separate-test-probe:
+    name: Separate test probe
+    uses: noldova-com/.github/.github/workflows/build-and-test.yml@6f448a9493367b6d1377a717538d694ef18bab07 # .github#97 probe
+    permissions:
+      contents: read
+      packages: read
+    with:
+      targets: linux-x64
+      separate-test: docs
