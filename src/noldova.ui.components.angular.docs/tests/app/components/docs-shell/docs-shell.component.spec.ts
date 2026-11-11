@@ -475,4 +475,70 @@ describe("DocsShellComponent", () => {
 
     expect(heading(fixture)).toBe("Getting started");
   });
+
+  describe.each([
+    ["Light", 1920, 1080, "a 1920 by 1080 window, wider than the 108rem layout"],
+    ["Dark", 1920, 1080, "a 1920 by 1080 window, wider than the 108rem layout"],
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, "a 1280 by 800 window"],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, "a 1280 by 800 window"],
+    ["Light", DocsFixture.DESKTOP_WIDTH / 2, DocsFixture.DESKTOP_HEIGHT / 2, "that window at 200% zoom"],
+    ["Dark", DocsFixture.DESKTOP_WIDTH / 2, DocsFixture.DESKTOP_HEIGHT / 2, "that window at 200% zoom"]
+  ])("in the %s mode at %i by %i CSS pixels, %s", (mode, width, height) => {
+    const pixels = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).fontSize);
+
+    const pageAsync = async (url: string): Promise<HTMLElement> => {
+      DocsFixture.setMode(mode);
+      await DocsFixture.viewAsync(width, height);
+      const host = DocsFixture.host(await renderAsync(url));
+      await vi.waitFor(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, host.querySelector(".nol-docs-states .nol-gallery-specimen") !== null]).toEqual([true, true]));
+      return host;
+    };
+
+    const edges = (host: HTMLElement): { page: DOMRect; start: number; end: number } => {
+      const main = DocsFixture.one(host, "main");
+      const box = main.getBoundingClientRect();
+      const style = getComputedStyle(main);
+      return { page: DocsFixture.one(host, ".nol-docs-page").getBoundingClientRect(), start: box.left + Number.parseFloat(style.paddingInlineStart), end: box.right - Number.parseFloat(style.paddingInlineEnd) };
+    };
+
+    it("draws the site's own text at 16px, its page title at 32px, and the examples and states at the kit's 13px, a button in them at the kit's 12px label size", async () => {
+      const host = await pageAsync("/components/button");
+      const own = [DocsFixture.one(host, "main .nol-docs-text"), DocsFixture.one(host, ".nol-docs-menu-link"), DocsFixture.one(host, ".nol-docs-search-field")];
+      const kit = [DocsFixture.one(host, ".nol-docs-example-preview > *"), DocsFixture.one(host, ".nol-docs-states .nol-gallery-specimen"), DocsFixture.one(host, ".nol-docs-example-preview button")];
+
+      expect(own.map(pixels).map(Math.round)).toEqual([16, 16, 16]);
+      expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(32);
+      expect(kit.map(pixels).map(Math.round)).toEqual([13, 13, 12]);
+      if (width >= DocsFixture.DESKTOP_WIDTH)
+        await vi.waitFor(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(16));
+    });
+
+    it("draws the site's own code blocks at 13px with lines one and a half times as tall, leaving the kit's code block in an example at its 12px and code in the text at the site's code size", async () => {
+      const host = await pageAsync("/components/code-block");
+      const line = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).lineHeight);
+      const source = DocsFixture.one(host, ".nol-docs-example-code .nol-code-block-body");
+      const preview = DocsFixture.one(host, ".nol-docs-example-preview nol-code-block .nol-code-block-body");
+      const text = DocsFixture.one(host, "main .nol-docs-text code");
+
+      expect([pixels(source), line(source)]).toEqual([13, 19.5]);
+      expect([pixels(preview), line(preview)]).toEqual([12, 18]);
+      expect(Math.round(pixels(text) * 100) / 100).toBe(14.77);
+    });
+
+    it("lays the menu, the page and the list across at most 108rem centered in the window, 3.5rem in from its sides from 75rem wide, the page filling the space between them", async () => {
+      const host = await pageAsync("/components/button");
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const body = DocsFixture.one(host, ".nol-docs-body");
+      const box = body.getBoundingClientRect();
+      const style = getComputedStyle(body);
+      const page = edges(host);
+      const inset = width >= 75 * rem ? 3.5 : 0;
+
+      expect(box.width / rem).toBeLessThanOrEqual(108 + 0.01);
+      expect(Math.abs(box.left - (document.documentElement.clientWidth - box.right)) / rem).toBeLessThanOrEqual(0.01);
+      expect([Number.parseFloat(style.paddingInlineStart) / rem, Number.parseFloat(style.paddingInlineEnd) / rem]).toEqual([inset, inset]);
+      expect([Math.abs(page.page.left - page.start) / rem <= 0.01, Math.abs(page.end - page.page.right) / rem <= 0.01]).toEqual([true, true]);
+      expect(DocsFixture.overflowWidth()).toBe(0);
+    });
+  });
 });
