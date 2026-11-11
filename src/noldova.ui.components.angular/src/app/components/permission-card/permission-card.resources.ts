@@ -57,6 +57,9 @@ export class PermissionCardResources {
   public static readonly permissionRetryLabel: string = "Retry";
   public static readonly permissionDetailsLabel: string = "Details";
   public static readonly permissionShowFewerLines: string = "Show fewer lines";
+  public static formatPermissionRequester(name: string, kind: string | null): string {
+    return Object.isNull(kind) ? name : `${name}, ${kind}`;
+  }
   public static formatPermissionAnnouncement(requester: string, heading: string): string {
     return `Permission request from ${requester}: ${heading}`;
   }
