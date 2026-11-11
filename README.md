@@ -207,8 +207,7 @@ The "Flake proof" workflow, `.github/workflows/flake-proof.yml`, runs the organi
 
 ## Releases
 
-The kit is published to npm as `@noldova/ui.components.angular` from `main` by the release workflow, `.github/workflows/release-npm.yml`, with provenance.
-The first publish of a new package uses a one-time token, `NPM_FIRST_PUBLISH_TOKEN`, which a maintainer sets in the `release` environment, since npm's trusted publishing needs each package to exist; every later publish uses trusted publishing, without a stored token.
+The kit is published to npm as `@noldova/ui.components.angular` from `main` by the release workflow, `.github/workflows/release-npm.yml`, with provenance and without a stored token.
 A maintainer starts it with the version and the commit: `gh workflow run release-npm.yml -f version=<version> -f commit=<commit>`.
 Its version is `version.json`'s at the released commit, such as `{ "version": "0.0.1" }`; the pull request that changes it writes that version's section in [CHANGELOG.md](CHANGELOG.md).
 The release tags the commit `v<version>` first, before it builds or publishes; a version whose build or publish then fails keeps its tag, so releasing other changes needs a new version.
