@@ -32,9 +32,11 @@ describe("TokensPageComponent", () => {
 
   const cellText = (row: HTMLElement, selector: string): string => DocsFixture.one(row, selector).textContent?.trim() ?? "";
 
+  const span = (cell: HTMLElement): number => Number(cell.getAttribute("colspan") ?? 1);
+
   const modeValues = (row: HTMLElement): readonly string[] => {
     const light = cellText(row, "td:nth-of-type(1)");
-    return DocsFixture.one(row, "td").colSpan === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
+    return span(DocsFixture.one(row, "td")) === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
   };
 
   const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> =>
@@ -96,7 +98,7 @@ describe("TokensPageComponent", () => {
   it("shows a value the two modes share once, in one cell across both columns, and a value that changes in a cell for each mode", async () => {
     const host = await renderAsync("/tokens");
     const rows = DocsFixture.all(host, "main tbody tr");
-    const shape = (row: HTMLElement): readonly number[] => DocsFixture.all(row, "td").map(t => t.colSpan);
+    const shape = (row: HTMLElement): readonly number[] => DocsFixture.all(row, "td").map(span);
     const shared = rows.filter(t => DocsFixture.all(t, "td").length === 1);
     const changing = rows.filter(t => DocsFixture.all(t, "td").length === 2);
 
