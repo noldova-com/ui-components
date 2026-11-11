@@ -21,6 +21,7 @@ import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { MotionFixture } from "../../../fixtures/motion.fixture";
 
 const picture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAEklEQVR42mPQz3/9HxkzkC4AAEovKIGTGfmDAAAAAElFTkSuQmCC";
 const broken = "data:image/png;base64,AAAA";
@@ -332,4 +333,25 @@ describe("TabComponent's leading parts", () => {
           [ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("GrayText")], ForcedColorsFixture.resolve("Highlight")]);
         expect(ring().borderTopColor).not.toBe(fill);
       });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a working tab's still half ring with both arc sides in HighlightText on the selected Highlight fill, and in Highlight when not selected, under forced colors and reduced motion in ${mode} mode`, async () => {
+      render(t => {
+        t.closable.set(false);
+        t.working.set(true);
+        t.leadingSpinner.set(true);
+      }, mode);
+      await MotionFixture.reduceForTestAsync();
+      await ForcedColorsFixture.activateAsync();
+      const sides = (): readonly string[] => {
+        const ring = getComputedStyle(part(".nol-tab-leading-spinner .nol-spinner-ring"));
+        return [ring.animationName, ring.borderTopColor, ring.borderRightColor, ring.borderBottomColor, ring.borderLeftColor];
+      };
+      const unselected = sides();
+      update(() => host.selected.set(true));
+      const [highlight, text, gray] = ["Highlight", "HighlightText", "GrayText"].map(t => ForcedColorsFixture.resolve(t));
+
+      expect([unselected, sides(), getComputedStyle(part(".nol-tab-pill")).backgroundColor])
+        .toEqual([["none", highlight, highlight, gray, gray], ["none", text, text, gray, gray], highlight]);
+    });
 });

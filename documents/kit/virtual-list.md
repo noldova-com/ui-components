@@ -16,6 +16,7 @@ Panel.
 
 The kit's list for long collections, as a named options list (`listbox`) or feed (`feed`), busy while rows load.
 Options rows take the hover surface and the selected fill on the selected row; the owner's template draws a feed's articles.
+Under forced colors the selected option is filled in `Highlight` with `HighlightText` text, and a [spinner](progress.md) in its template draws its arc in `HighlightText`, so it shows on the fill.
 A feed's owner can hide a loaded row that its source must keep, with `nolVirtualRowHidden`, a function of the row's item: that row draws nothing and takes no space, so the rows around it stand one gap apart, it is no article and is hidden from assistive technology, and its place still counts in the positions of the rows after it; the reading position names the row after it, Tab passes over it, and a reveal of it shows the next row the feed draws, or the feed's end when none follows.
 A feed is its own one Tab stop, and Tab goes on to the controls in its articles; with the keyboard focus it rings its view with a 1px accent outline inside its edges, or 2px `Highlight` under forced colors, a click into it shows no ring, and no article is ever ringed; `--nol-virtual-list-focus-width`, which once centered an article's ring, has no effect.
 A row not yet loaded is blank space at its height until it loads.
