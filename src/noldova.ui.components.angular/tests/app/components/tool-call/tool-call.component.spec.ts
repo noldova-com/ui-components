@@ -124,14 +124,35 @@ describe("ToolCallComponent", () => {
     const before = output().scrollTop;
     await userEvent.keyboard(key);
     let previous = before;
-    await expect.poll(async () => {
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      const top = output().scrollTop;
-      const isSettled = top !== before && top === previous;
-      previous = top;
-      return isSettled;
-    }, { timeout: 3000 }).toBe(true);
+    const seen: number[] = [];
+    try {
+      await expect.poll(async () => {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const top = output().scrollTop;
+        seen.push(top);
+        const isSettled = top !== before && top === previous;
+        previous = top;
+        return isSettled;
+      }, { timeout: 3000 }).toBe(true);
+    }
+    catch (error) {
+      throw new Error(scrollFailure(key, before, seen), { cause: error });
+    }
     return output().scrollTop - before;
+  }
+
+  function scrollFailure(key: string, before: number, seen: readonly number[]): string {
+    const pixels = (values: readonly number[]): string => values.map(value => String(Math.round(value * 100) / 100)).join(" ");
+    const read = seen.length > 12 ? `${pixels(seen.slice(0, 8))} … ${pixels(seen.slice(-4))}` : pixels(seen);
+    const frames = seen.length === 0 ? "no frames" : `${seen.length} frames, ${read}`;
+    const shown = DomFixture.maybe(DomFixture.host(fixture), ".nol-tool-call-output");
+    const focused = document.activeElement;
+    const classes = focused?.getAttribute("class")?.trim() ?? "";
+    const element = focused === null ? "nothing" : classes === "" ? focused.tagName : `${focused.tagName}.${classes.split(/\s+/).join(".")}`;
+    const where = shown !== null && focused === shown ? "on the output" : `on ${element}`;
+    const scrolls = shown === null ? "the output is gone" : `the output scrolls ${shown.scrollHeight} over ${shown.clientHeight}`;
+    return `${key} didn't scroll the output from ${pixels([before])} and settle: it read ${frames}; `
+      + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${where}, and ${scrolls}, the page ${document.hidden ? "hidden" : "shown"}.`;
   }
 
   async function pressAsync(element: HTMLElement): Promise<void> {
