@@ -16,6 +16,7 @@ import { GalleryCellComponent, GalleryComponent, GallerySpecimenComponent } from
 import * as kit from "../../../../src/api/index";
 import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
 import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
+import { GalleryMessageComponent } from "../../../../src/app/components/gallery/gallery-message.component";
 import { GalleryNavigationComponent } from "../../../../src/app/components/gallery/gallery-navigation.component";
 import { GalleryOverlaysComponent } from "../../../../src/app/components/gallery/gallery-overlays.component";
 import { GalleryResources } from "../../../../src/app/components/gallery/gallery-resources";
@@ -109,7 +110,7 @@ describe("GalleryComponent", () => {
   });
 
   it("draws the Markdown of its messages though the app provides no Markdown", async () => {
-    GalleryFixture.standInForTheKitSections(GalleryNavigationComponent);
+    TestBed.overrideProvider(GalleryTokens.kitSections, { useValue: [GalleryMessageComponent] });
     fixture = await GalleryFixture.showScopeAsync();
     await fixture.whenStable();
 
