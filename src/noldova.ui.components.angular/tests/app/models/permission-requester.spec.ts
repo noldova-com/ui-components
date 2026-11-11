@@ -17,6 +17,10 @@ describe("PermissionRequester", () => {
     expect([requester.name, requester.kind]).toEqual(["Build agent", "Extension"]);
   });
 
+  it("holds no kind when it is given none", () => {
+    expect([new PermissionRequester("Files · Build agent").kind, new PermissionRequester("Files · Build agent", null).kind]).toEqual([null, null]);
+  });
+
   it("refuses a blank name or kind", () => {
     expect(() => new PermissionRequester(" ", "Agent")).toThrow(ArgumentException);
     expect(() => new PermissionRequester("Build agent", "")).toThrow(ArgumentException);
