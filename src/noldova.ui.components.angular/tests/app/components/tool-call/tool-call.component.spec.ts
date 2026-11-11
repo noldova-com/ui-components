@@ -120,17 +120,29 @@ describe("ToolCallComponent", () => {
     await fixture.whenStable();
   }
 
-  async function scrollWithAsync(key: string): Promise<number> {
+  async function scrollWithAsync(key: string, probe: string = "normal"): Promise<number> {
     const before = output().scrollTop;
+    const started = performance.now();
     await userEvent.keyboard(key);
+    const pressed = performance.now();
     let previous = before;
-    await expect.poll(async () => {
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      const top = output().scrollTop;
-      const isSettled = top !== before && top === previous;
-      previous = top;
-      return isSettled;
-    }, { timeout: 3000 }).toBe(true);
+    let moved = -1;
+    const trace: number[] = [];
+    try {
+      await expect.poll(async () => {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const top = output().scrollTop;
+        trace.push(Math.round(top));
+        if (moved < 0 && top !== before)
+          moved = performance.now();
+        const isSettled = top !== before && top === previous;
+        previous = top;
+        return isSettled;
+      }, { timeout: 3000 }).toBe(true);
+    } finally {
+      const now = performance.now();
+      console.log(`[probe41] ${probe} ${key}: keyboard ${Math.round(pressed - started)} ms, first move ${moved < 0 ? "none" : Math.round(moved - pressed)} ms, settled ${Math.round(now - pressed)} ms, ${trace.length} frames, from ${Math.round(before)}: ${trace.join(" ")}, hidden ${document.hidden}, at ${new Date().toISOString()}`);
+    }
     return output().scrollTop - before;
   }
 
@@ -700,6 +712,22 @@ describe("ToolCallComponent", () => {
 
     expect(moves.map(Math.sign)).toEqual([1, 1, -1, -1]);
     expect(host.heard).toEqual(["ArrowLeft", "ArrowRight", "Escape", "Home", "Escape"]);
+  });
+
+  it("probe41: scrolls the focused output with reduced motion", async () => {
+    AppearanceFixture.apply();
+    await MotionFixture.reduceAsync();
+    try {
+      await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+      output().focus();
+      const moves: number[] = [];
+      for (const key of ["{ArrowDown}", "{PageDown}", "{PageUp}", "{ArrowUp}"])
+        moves.push(await scrollWithAsync(key, "reduced"));
+
+      expect(moves.map(Math.sign)).toEqual([1, 1, -1, -1]);
+    } finally {
+      await MotionFixture.resetAsync();
+    }
   });
 
   it("shows a spinner and Loading output while its output loads, with no live region of its own", async () => {
