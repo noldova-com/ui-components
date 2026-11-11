@@ -1,6 +1,6 @@
 # The docs site
 
-**Scope:** The docs site's commands, its generated sources, the rules its pages keep, its theme switch and what it leaves to hosting.
+**Scope:** The docs site's commands, its generated sources, the rules its pages keep, its theme and layout switches and what it leaves to hosting.
 
 The docs site shows each component of `@noldova/ui.components.angular` with its description, live examples and their code, its states and its API.
 It is an Angular app in `src/noldova.ui.components.angular.docs`, built against the kit's source, never published as a package, and drawn only with the kit's own components, tokens, fonts and icons, apart from the header's GitHub and X marks, the site's own drawing in its own `--nol-docs-brand-mark` color, #000000 in the Light mode and #FFFFFF in the Dark one.
@@ -32,13 +32,16 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 
 ## Pages
 
-- Every page's header shows the Noldova wordmark, drawn in the text's color and named "Noldova", then "UI Components", linking to the site's root; then the search, the theme switch and links to the kit's GitHub repository and to Noldova on X, which open in the same tab.
+- Every page's header shows the Noldova wordmark, drawn in the text's color and named "Noldova", then "UI Components", linking to the site's root; then the search, the theme switch, from 48rem wide the layout switch, and links to the kit's GitHub repository and to Noldova on X, which open in the same tab.
   Each of the two links shows only its brand's mark, black in the Light look and white in the Dark one, and the link color under forced colors; it is named "GitHub" or "X", with that name as its tooltip.
   The wordmark, `assets/noldova-wordmark.svg`, and the favicons, the Noldova "N" as `favicon.svg` with `favicon-32.png` and the 180px `apple-touch-icon.png`, are in `src/noldova.ui.components.angular.docs/public`, which the build copies to the site's root.
   The wordmark and the favicons are Noldova's trademarks, not under the MIT License, as the README's [Trademarks](../README.md#trademarks) says.
   The two marks are drawn inline by `src/app/components/docs-brand-mark`, their paths unchanged from their sources:
   - The GitHub mark is `icons/mark-github-16.svg` of Primer Octicons at `@primer/octicons@19.42.0` (commit `9a274e212ee25c400ff666ce25a57866b7eacc25`), https://github.com/primer/octicons, under the MIT license, whose text the site serves as `assets/licenses/OCTICONS-LICENSE.txt`; the source file's SHA-256 is `7421820090b50ac79d7c2bf7c951a433d7098a8a9c474809207bdd45f62d9d46`. GitHub is a trademark of GitHub, Inc.
   - The X logo is `logo.svg` from `x-logo.zip` on X's brand toolkit, https://about.x.com/en/who-we-are/brand-toolkit, used under X's Trademark Guidelines; its fill, white in the file, is black or white, the two colors the toolkit ships it in, and it links only to Noldova's X account; the source file's SHA-256 is `10133d36ecdb84d3cd6f36c6727e826340e3621cd8408503c710c5fab62defde`. X is a trademark of X Corp.
+- The site's own text, its pages, menu, search and "On this page" list, is 1rem: `src/styles.css` scales, on `nol-docs-root`, the kit's text sizes, their line heights, its spaces and the heights of the fields, pills, section headers and code headers the site draws by 16 / 13, as a larger panel size would, from copies of the kit's values that it keeps on the root as `--nol-docs-kit-*`.
+  An example's preview and a page's states keep the kit's own values, so they show the components as apps draw them.
+- A page is centered, at most 48rem wide, in the space beside the menu, or, at Full width, fills that space.
 - Getting started is the site's root, and the theme tokens page lives at `tokens/`; both stand in the menu ahead of the component groups.
 - A component page lives at `components/<name>/`, and every address ends in `/`.
 - The header stays at the top of the window while the page scrolls, at every width and in every look, in front of the page and filled, so nothing shows through it; the shell keeps `--nol-docs-header-height` at its height on the root, whose `scroll-padding-block-start` it sets, so a heading reached by a link or an address's anchor lands just below it.
@@ -66,6 +69,12 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 
 The theme switch keeps the reader's choice, `Light` or `Dark`, under the browser storage key `nol-docs-theme`, and `System` removes it.
 A script in the page shell's head sets `data-nol-theme-mode` from that key before the first paint.
+
+## Layout
+
+The layout switch, an experiment until the maintainer picks a layout, offers Centered, the default, and Full width.
+It keeps `Full` under the browser storage key `nol-docs-layout`, and Centered removes it; the head's script sets `data-nol-docs-layout="Full"` from that key before the first paint.
+It shows only from 48rem wide, since a narrower page is under 48rem in either layout.
 
 ## Hosting
 

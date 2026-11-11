@@ -21,6 +21,8 @@ LICENSE file in the root directory of this source tree.
         const mode = localStorage.getItem("nol-docs-theme");
         if (mode === "Light" || mode === "Dark")
           document.documentElement.setAttribute("data-nol-theme-mode", mode);
+        if (localStorage.getItem("nol-docs-layout") === "Full")
+          document.documentElement.setAttribute("data-nol-docs-layout", "Full");
       }
       catch {
       }

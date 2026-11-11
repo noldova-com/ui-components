@@ -62,6 +62,11 @@
   gap: var(--nol-space-3);
 }
 
+.nol-docs-header-end nol-docs-layout-switch {
+  display: none;
+  margin-inline-end: auto;
+}
+
 .nol-docs-header-end nol-docs-theme-switch {
   margin-inline-end: auto;
 }
@@ -170,6 +175,14 @@
 
   .nol-docs-menu-button {
     display: none;
+  }
+
+  .nol-docs-header-end nol-docs-theme-switch {
+    margin-inline-end: 0;
+  }
+
+  .nol-docs-header-end nol-docs-layout-switch {
+    display: block;
   }
 
   .nol-docs-menu {

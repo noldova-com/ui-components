@@ -24,7 +24,7 @@ LICENSE file in the root directory of this source tree.
   <section class="nol-docs-section" aria-labelledby="nol-docs-page-states">
     <h2 id="nol-docs-page-states" class="nol-docs-section-title">{{ resources.statesTitle }}</h2>
     @defer (on immediate) {
-      <ng-container *ngComponentOutlet="page().states" />
+      <div class="nol-docs-states"><ng-container *ngComponentOutlet="page().states" /></div>
     } @placeholder {
       <p class="nol-docs-text">{{ resources.loading }}</p>
     }

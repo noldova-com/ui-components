@@ -16,6 +16,8 @@ export class DocsFixture {
   public static readonly PHONE_HEIGHT: number = 812;
   public static readonly MODE_ATTRIBUTE: string = "data-nol-theme-mode";
   public static readonly STORAGE_KEY: string = "nol-docs-theme";
+  public static readonly LAYOUT_ATTRIBUTE: string = "data-nol-docs-layout";
+  public static readonly LAYOUT_STORAGE_KEY: string = "nol-docs-layout";
 
   public static host(fixture: ComponentFixture<unknown>): HTMLElement {
     const host: unknown = fixture.nativeElement;
@@ -56,6 +58,8 @@ export class DocsFixture {
   public static async resetAsync(): Promise<void> {
     DocsFixture.setMode(null);
     localStorage.removeItem(DocsFixture.STORAGE_KEY);
+    document.documentElement.removeAttribute(DocsFixture.LAYOUT_ATTRIBUTE);
+    localStorage.removeItem(DocsFixture.LAYOUT_STORAGE_KEY);
     await page.viewport(DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT);
   }
 

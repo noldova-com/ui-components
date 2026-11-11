@@ -37,6 +37,12 @@ export class Resources {
   public static readonly themeDark: string = "Dark";
   public static readonly themeStorageKey: string = "nol-docs-theme";
   public static readonly themeModeAttribute: string = "data-nol-theme-mode";
+  public static readonly layoutLabel: string = "Layout";
+  public static readonly layoutCentered: string = "Centered";
+  public static readonly layoutFull: string = "Full";
+  public static readonly layoutFullLabel: string = "Full width";
+  public static readonly layoutStorageKey: string = "nol-docs-layout";
+  public static readonly layoutAttribute: string = "data-nol-docs-layout";
   public static readonly examplesTitle: string = "Examples";
   public static readonly statesTitle: string = "States";
   public static readonly specificationTitle: string = "Specification";

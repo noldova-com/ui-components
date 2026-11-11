@@ -16,13 +16,14 @@ import { DocsCatalog } from "../../models/docs-catalog.js";
 import type { DocsMenuGroup } from "../../models/docs-menu-group.js";
 import type { DocsPage } from "../../models/docs-page.js";
 import { DocsBrandMarkComponent } from "../docs-brand-mark/docs-brand-mark.component.js";
+import { DocsLayoutSwitchComponent } from "../docs-layout-switch/docs-layout-switch.component.js";
 import { DocsOnThisPageComponent } from "../docs-on-this-page/docs-on-this-page.component.js";
 import { DocsSearchComponent } from "../docs-search/docs-search.component.js";
 import { DocsThemeSwitchComponent } from "../docs-theme-switch/docs-theme-switch.component.js";
 
 @Component({
   selector: "nol-docs-root",
-  imports: [DocsBrandMarkComponent, DocsOnThisPageComponent, DocsSearchComponent, DocsThemeSwitchComponent, IconButtonComponent, RouterLink, RouterLinkActive, RouterOutlet, SectionHeaderComponent, TooltipDirective],
+  imports: [DocsBrandMarkComponent, DocsLayoutSwitchComponent, DocsOnThisPageComponent, DocsSearchComponent, DocsThemeSwitchComponent, IconButtonComponent, RouterLink, RouterLinkActive, RouterOutlet, SectionHeaderComponent, TooltipDirective],
   templateUrl: "./docs-shell.component.html",
   styleUrl: "./docs-shell.component.css"
 })

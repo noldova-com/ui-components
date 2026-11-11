@@ -475,4 +475,66 @@ describe("DocsShellComponent", () => {
 
     expect(heading(fixture)).toBe("Getting started");
   });
+
+  describe.each([
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, "a 1280 by 800 window"],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, "a 1280 by 800 window"],
+    ["Light", DocsFixture.DESKTOP_WIDTH / 2, DocsFixture.DESKTOP_HEIGHT / 2, "that window at 200% zoom"],
+    ["Dark", DocsFixture.DESKTOP_WIDTH / 2, DocsFixture.DESKTOP_HEIGHT / 2, "that window at 200% zoom"]
+  ])("in the %s mode at %i by %i CSS pixels, %s", (mode, width, height) => {
+    const pixels = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).fontSize);
+
+    const pageAsync = async (url: string): Promise<HTMLElement> => {
+      DocsFixture.setMode(mode);
+      await DocsFixture.viewAsync(width, height);
+      const host = DocsFixture.host(await renderAsync(url));
+      await vi.waitFor(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, host.querySelector(".nol-docs-states .nol-gallery-specimen") !== null]).toEqual([true, true]));
+      return host;
+    };
+
+    const edges = (host: HTMLElement): { page: DOMRect; start: number; end: number } => {
+      const main = DocsFixture.one(host, "main");
+      const box = main.getBoundingClientRect();
+      const style = getComputedStyle(main);
+      return { page: DocsFixture.one(host, ".nol-docs-page").getBoundingClientRect(), start: box.left + Number.parseFloat(style.paddingInlineStart), end: box.right - Number.parseFloat(style.paddingInlineEnd) };
+    };
+
+    it("draws the site's own text at 16px, its page title at 32px, and the examples and states at the kit's 13px", async () => {
+      const host = await pageAsync("/components/button");
+      const own = [DocsFixture.one(host, "main .nol-docs-text"), DocsFixture.one(host, ".nol-docs-menu-link"), DocsFixture.one(host, ".nol-docs-search-field")];
+      const kit = [DocsFixture.one(host, ".nol-docs-example-preview > *"), DocsFixture.one(host, ".nol-docs-states .nol-gallery-specimen"), DocsFixture.one(host, ".nol-docs-example-preview button")];
+
+      expect(own.map(pixels).map(Math.round)).toEqual([16, 16, 16]);
+      expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(32);
+      expect(kit.map(pixels).map(Math.round)).toEqual([13, 13, 13]);
+      if (width === DocsFixture.DESKTOP_WIDTH)
+        await vi.waitFor(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(16));
+    });
+
+    it("centers the page at most 48rem wide by default, and lays it across the space beside the menu at Full width", async () => {
+      const host = await pageAsync("/components/button");
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const centered = edges(host);
+
+      expect(document.documentElement.hasAttribute(DocsFixture.LAYOUT_ATTRIBUTE)).toBe(false);
+      expect(centered.page.width / rem).toBeLessThanOrEqual(48 + 0.01);
+      expect(Math.abs((centered.page.left - centered.start) - (centered.end - centered.page.right)) / rem).toBeLessThanOrEqual(0.01);
+      if (centered.end - centered.start < 48 * rem)
+        expect([(centered.page.left - centered.start) / rem, (centered.end - centered.page.right) / rem].map(t => Math.abs(t) <= 0.01)).toEqual([true, true]);
+
+      document.documentElement.setAttribute(DocsFixture.LAYOUT_ATTRIBUTE, "Full");
+      await vi.waitFor(() => expect(Math.abs(edges(host).page.left - edges(host).start) / rem).toBeLessThanOrEqual(0.01));
+      const full = edges(host);
+
+      expect(Math.abs(full.end - full.page.right) / rem).toBeLessThanOrEqual(0.01);
+      expect(DocsFixture.overflowWidth()).toBe(0);
+    });
+
+    it("shows the layout switch in the header only where the page can be wider than 48rem", async () => {
+      const host = await pageAsync("/components/button");
+      const switcher = DocsFixture.one(host, "nol-docs-layout-switch");
+
+      expect(getComputedStyle(switcher).display === "none").toBe(width < 48 * 16);
+    });
+  });
 });
