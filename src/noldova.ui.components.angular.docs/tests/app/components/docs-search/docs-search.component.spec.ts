@@ -56,7 +56,9 @@ describe("DocsSearchComponent", () => {
   const selected = (host: HTMLElement): readonly number[] =>
     options(host).flatMap((t, index) => t.getAttribute("aria-selected") === "true" ? [index] : []);
 
+  // The pointer rests on the field, so the list that opens under it never takes the pointer's hover.
   const typedAsync = async (host: HTMLElement, text: string): Promise<void> => {
+    await userEvent.hover(field(host));
     await userEvent.type(field(host), text);
     await vi.waitFor(() => expect(options(host).length).toBeGreaterThan(1));
   };

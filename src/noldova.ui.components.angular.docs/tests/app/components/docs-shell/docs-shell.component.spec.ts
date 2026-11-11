@@ -207,7 +207,7 @@ describe("DocsShellComponent", () => {
       const search = DocsFixture.one(header, "nol-docs-search").getBoundingClientRect();
       const theme = DocsFixture.one(header, "nol-docs-theme-switch").getBoundingClientRect();
       const links = DocsFixture.all(header, ".nol-docs-header-link").map(t => t.getBoundingClientRect());
-      const last = DocsFixture.one(header, ".nol-docs-header-link:last-child").getBoundingClientRect();
+      const last = DocsFixture.one(header, ".nol-docs-header-link:last-child nol-docs-brand-mark").getBoundingClientRect();
       const style = getComputedStyle(header);
       const first = width === DocsFixture.DESKTOP_WIDTH ? brand : DocsFixture.one(header, "button.nol-docs-menu-button").getBoundingClientRect();
 
@@ -503,12 +503,12 @@ describe("DocsShellComponent", () => {
 
     it("draws the site's own text at 14px with paragraph lines one and a half times as tall, its page title at 28px, and the examples and states at the kit's 13px, a button in them at the kit's 12px label size", async () => {
       const host = await pageAsync("/components/button");
-      const text = DocsFixture.one(host, "main .nol-docs-text");
+      const text = DocsFixture.one(host, "main p.nol-docs-text");
       const own = [text, DocsFixture.one(host, ".nol-docs-menu-link"), DocsFixture.one(host, ".nol-docs-search-field")];
       const kit = [DocsFixture.one(host, ".nol-docs-example-preview > *"), DocsFixture.one(host, ".nol-docs-states .nol-gallery-specimen"), DocsFixture.one(host, ".nol-docs-example-preview button")];
 
       expect(own.map(pixels).map(Math.round)).toEqual([14, 14, 14]);
-      expect(Number.parseFloat(getComputedStyle(DocsFixture.one(text, "p")).lineHeight)).toBe(21);
+      expect(Number.parseFloat(getComputedStyle(text).lineHeight)).toBe(21);
       expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(28);
       expect(kit.map(pixels).map(Math.round)).toEqual([13, 13, 12]);
       if (width >= DocsFixture.DESKTOP_WIDTH)
@@ -579,7 +579,7 @@ describe("DocsShellComponent", () => {
       const range = document.createRange();
       range.selectNodeContents(DocsFixture.one(host, ".nol-docs-menu-link"));
       const menuText = range.getBoundingClientRect().left;
-      const marks = DocsFixture.all(host, ".nol-docs-header-link svg");
+      const marks = DocsFixture.all(host, ".nol-docs-header-link nol-docs-brand-mark");
       const lastMark = marks.at(-1)?.getBoundingClientRect().right ?? Number.NaN;
       const list = DocsFixture.one(host, ".nol-docs-outline-list");
 
