@@ -12,6 +12,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router, provideRouter } from "@angular/router";
 import { MarkdownViewComponent, provideMarkdown } from "@noldova/ui.components.angular/markdown";
 import type { MockInstance } from "vitest";
+import { userEvent } from "vitest/browser";
 
 import { DocsLinksDirective } from "../../../../src/app/components/docs-links/docs-links.directive.js";
 import { Resources } from "../../../../src/resources.js";
@@ -83,15 +84,34 @@ describe("DocsLinksDirective", () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it("opens a kit document's page in a new tab on a Ctrl click and a middle click, leaving this tab where it is", async () => {
+  it("opens a kit document's page in a new tab on a Ctrl click, leaving this tab where it is", async () => {
     const host = await renderAsync();
     const open = opened();
-    const link = DocsFixture.byText(host, "a", "button");
 
-    click(link, { ctrlKey: true });
-    link.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button: 1 }));
+    click(DocsFixture.byText(host, "a", "button"), { ctrlKey: true });
 
-    expect(open.mock.calls).toEqual([[external("/components/button"), "_blank", "noopener"], [external("/components/button"), "_blank", "noopener"]]);
+    expect(open.mock.calls).toEqual([[external("/components/button"), "_blank", "noopener"]]);
+    expect(router().url).toBe("/");
+  });
+
+  it("opens a kit document's page in one new tab on a middle click, keeping the browser from opening its own, and leaves this tab where it is", async () => {
+    const host = await renderAsync();
+    const open = opened();
+    const clicks: MouseEvent[] = [];
+    const record = (event: MouseEvent): void => {
+      clicks.push(event);
+    };
+    document.addEventListener("auxclick", record);
+
+    try {
+      await userEvent.click(DocsFixture.byText(host, "a", "button"), { button: "middle" });
+      await vi.waitFor(() => expect(clicks.length).toBe(1));
+    } finally {
+      document.removeEventListener("auxclick", record);
+    }
+
+    expect(open.mock.calls).toEqual([[external("/components/button"), "_blank", "noopener"]]);
+    expect(clicks.map(t => t.defaultPrevented)).toEqual([true]);
     expect(router().url).toBe("/");
   });
 
