@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, type OutputEmitterRef, output } from "@angular/core";
+import { Component, ElementRef, type OutputEmitterRef, type Signal, output, viewChild } from "@angular/core";
 import { ButtonComponent, ButtonVariant, DialogComponent, DialogSize, TextFieldComponent } from "@noldova/ui.components.angular";
 
 @Component({
@@ -20,4 +20,10 @@ export class DialogMediumContentExampleComponent {
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
 
   public readonly answered: OutputEmitterRef<string | null> = output<string | null>();
+
+  private readonly name: Signal<ElementRef<HTMLInputElement>> = viewChild.required("name", { read: ElementRef });
+
+  protected add(): void {
+    this.answered.emit(this.name().nativeElement.value);
+  }
 }

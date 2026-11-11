@@ -16,5 +16,5 @@ LICENSE file in the root directory of this source tree.
     <input id="nol-docs-teammate-folder" type="text" nol-text-field value="~/projects/site" />
   </div>
   <button type="button" nol-button nolDialogAction [variant]="variants.Secondary" (click)="answered.emit(null)">Cancel</button>
-  <button type="button" nol-button nolDialogAction (click)="answered.emit(name.value)">Add</button>
+  <button type="button" nol-button nolDialogAction (click)="add()">Add</button>
 </nol-dialog>
