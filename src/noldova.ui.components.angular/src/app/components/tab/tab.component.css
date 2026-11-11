@@ -72,6 +72,7 @@
     --nol-icon-color: HighlightText;
     --nol-list-highlight: HighlightText;
     --nol-list-active-text: HighlightText;
+    --nol-spinner-forced-arc: HighlightText;
 
     color: HighlightText;
     forced-color-adjust: none;
@@ -87,6 +88,7 @@
     --nol-icon-color: HighlightText;
     --nol-list-highlight: HighlightText;
     --nol-list-active-text: HighlightText;
+    --nol-spinner-forced-arc: HighlightText;
 
     color: HighlightText;
     forced-color-adjust: none;

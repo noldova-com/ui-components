@@ -313,4 +313,23 @@ describe("TabComponent's leading parts", () => {
       expect(pill.height).toBe(pixels(1.5));
       expect(getComputedStyle(part(".nol-tab-status")).color).toBe(text);
     });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const [slot, leading] of [["first", true], ["in the action slot", false]] as const)
+      it(`draws a working tab's spinner ${slot} with its arc in HighlightText on the selected Highlight fill, and in Highlight when not selected, over its GrayText ring, under forced colors in ${mode} mode`, async () => {
+        render(t => {
+          t.closable.set(false);
+          t.working.set(true);
+          t.leadingSpinner.set(leading);
+        }, mode);
+        await ForcedColorsFixture.activateAsync();
+        const ring = (): CSSStyleDeclaration => getComputedStyle(part(`${leading ? ".nol-tab-leading-spinner" : ".nol-tab-spinner"} .nol-spinner-ring`));
+        const unselected = [ring().borderTopColor, ring().borderBottomColor];
+        update(() => host.selected.set(true));
+        const fill = getComputedStyle(part(".nol-tab-pill")).backgroundColor;
+
+        expect([unselected, [ring().borderTopColor, ring().borderBottomColor], fill]).toEqual([[ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("GrayText")],
+          [ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("GrayText")], ForcedColorsFixture.resolve("Highlight")]);
+        expect(ring().borderTopColor).not.toBe(fill);
+      });
 });
