@@ -7,10 +7,14 @@
  */
 
 import { LiveAnnouncer } from "@angular/cdk/a11y";
-import { Component } from "@angular/core";
+import { Component, type Type } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { GalleryContentComponent } from "../../src/app/components/gallery/gallery-content.component";
+import { GalleryFormsComponent } from "../../src/app/components/gallery/gallery-forms.component";
+import { GalleryNavigationComponent } from "../../src/app/components/gallery/gallery-navigation.component";
+import { GalleryOverlaysComponent } from "../../src/app/components/gallery/gallery-overlays.component";
 import { InlineCodeComponent } from "../../src/app/components/inline-code/inline-code.component";
 import { MenuItemComponent } from "../../src/app/components/menu/menu-item.component";
 import { MenuSeparatorComponent } from "../../src/app/components/menu/menu-separator.component";
@@ -324,8 +328,9 @@ describe("kit styles in forced colors", () => {
     AppearanceFixture.reset();
   });
 
-  const showFrameAsync = async (): Promise<void> => {
+  const showFrameAsync = async (section: Type<unknown>): Promise<void> => {
     GalleryFixture.standInForTheCodeHighlighter();
+    GalleryFixture.standInForTheKitSections(section);
     frame = GalleryFixture.frames(await GalleryFixture.showScopeAsync())[0] as HTMLElement;
   };
 
@@ -351,70 +356,76 @@ describe("kit styles in forced colors", () => {
     return width;
   }
 
-  it("fills a selected tab, the current tree row, a checked pill, the active result, pressed buttons, the chosen guide and a badge with the highlight, their text and icons in the highlighted text without the backplate the system draws behind text", async () => {
-    await showFrameAsync();
+  const filledSections: readonly { name: string; section: Type<unknown>; filled: readonly (readonly [string, string | null])[]; labels: readonly string[] }[] = [
+    { name: "forms", section: GalleryFormsComponent, filled: [[".nol-choice-pill-selected", null], ["button[nol-icon-button][aria-pressed=\"true\"]", "::before"]], labels: [] },
+    {
+      name: "navigation",
+      section: GalleryNavigationComponent,
+      filled: [[".nol-tab.nol-tab-selected .nol-tab-pill", null], [".nol-tree-row-current", null], ["button[nol-toolbar-button][aria-pressed=\"true\"]", null], ["nol-view-badge", null]],
+      labels: [".nol-tree-row-current .nol-tree-label", ".nol-tab.nol-tab-selected .nol-tab-label"]
+    },
+    {
+      name: "overlays",
+      section: GalleryOverlaysComponent,
+      filled: [[".nol-quick-input-option[aria-selected=\"true\"]", "::before"], [".nol-docking-guide-chosen", null]],
+      labels: [".nol-quick-input-option[aria-selected=\"true\"] .nol-quick-input-detail"]
+    }
+  ];
+
+  it.each(filledSections)("fills the $name section's selected tab, current tree row, checked pill, active result, pressed buttons, chosen guide and badge with the highlight, their text and icons in the highlighted text without the backplate the system draws behind text", async ({ section, filled, labels }) => {
+    await showFrameAsync(section);
     const highlight = ForcedColorsFixture.resolve("Highlight");
     const text = ForcedColorsFixture.resolve("HighlightText");
-    const filled: readonly (readonly [string, string | null])[] = [
-      [".nol-tab.nol-tab-selected .nol-tab-pill", null],
-      [".nol-tree-row-current", null],
-      [".nol-choice-pill-selected", null],
-      [".nol-quick-input-option[aria-selected=\"true\"]", "::before"],
-      ["button[nol-toolbar-button][aria-pressed=\"true\"]", null],
-      ["button[nol-icon-button][aria-pressed=\"true\"]", "::before"],
-      [".nol-docking-guide-chosen", null],
-      ["nol-view-badge", null]
-    ];
 
     const shown = filled.map(([selector, part]) => [selector, getComputedStyle(one(selector), part).backgroundColor, getComputedStyle(one(selector)).color, getComputedStyle(one(selector)).forcedColorAdjust]);
-    const labels = [".nol-tree-row-current .nol-tree-label", ".nol-tab.nol-tab-selected .nol-tab-label", ".nol-quick-input-option[aria-selected=\"true\"] .nol-quick-input-detail"].map(t => getComputedStyle(one(t)).color);
 
     expect(shown).toEqual(filled.map(([selector]) => [selector, highlight, text, "none"]));
-    expect(labels).toEqual([text, text, text]);
+    expect(labels.map(t => getComputedStyle(one(t)).color)).toEqual(labels.map(() => text));
   });
 
-  it("outlines every hovered control with a dashed highlight, since the hover fill is forced away", async () => {
-    await showFrameAsync();
+  it.each([
+    { name: "forms", section: GalleryFormsComponent, hovered: 14, focused: 18, selected: 1 },
+    { name: "navigation", section: GalleryNavigationComponent, hovered: 6, focused: 12, selected: 1 },
+    { name: "overlays", section: GalleryOverlaysComponent, hovered: 4, focused: 5, selected: 0 },
+    { name: "content", section: GalleryContentComponent, hovered: 2, focused: 4, selected: 0 }
+  ])("outlines every hovered control of the $name section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included", async ({ section, hovered, focused, selected }) => {
+    await showFrameAsync(section);
     const highlight = ForcedColorsFixture.resolve("Highlight");
-    const hovered = [...frame.querySelectorAll<HTMLElement>("[data-nol-state=\"Hover\"]")];
+    const ring = ["solid", highlight, doubled()];
+    const hover = [...frame.querySelectorAll<HTMLElement>("[data-nol-state=\"Hover\"]")];
+    const focus = [...frame.querySelectorAll<HTMLElement>("[data-nol-state=\"Focus\"]")];
 
-    expect(hovered.length).toBeGreaterThan(6);
-    expect(hovered.map(t => [t.className, ...outline(t).slice(0, 2)])).toEqual(hovered.map(t => [t.className, "dashed", highlight]));
+    expect(hover.length).toBeGreaterThanOrEqual(hovered);
+    expect(hover.map(t => [t.className, ...outline(t).slice(0, 2)])).toEqual(hover.map(t => [t.className, "dashed", highlight]));
+    expect(focus.length).toBeGreaterThanOrEqual(focused);
+    expect(focus.filter(t => t.matches(".nol-choice-pill-selected, .nol-tab-selected")).length).toBe(selected);
+    expect(focus.map(t => [t.className, ...outline(t)])).toEqual(focus.map(t => [t.className, ...ring]));
   });
 
-  it("rings every focused control with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included", async () => {
-    await showFrameAsync();
-    const ring = (): readonly string[] => ["solid", ForcedColorsFixture.resolve("Highlight"), doubled()];
-    const focused = [...frame.querySelectorAll<HTMLElement>("[data-nol-state=\"Focus\"]")];
-
-    expect(focused.length).toBeGreaterThan(8);
-    expect(focused.filter(t => t.matches(".nol-choice-pill-selected, .nol-tab-selected")).length).toBe(2);
-    expect(focused.map(t => [t.className, ...outline(t)])).toEqual(focused.map(t => [t.className, ...ring()]));
-  });
-
-  it("draws progress, the spinner's arc, the sash's bar and the drop line in the highlight, the spinner's ring in the system gray, and grips and separators in the text color, where they were drawn with fills alone", async () => {
-    await showFrameAsync();
-    const highlight = ForcedColorsFixture.resolve("Highlight");
-    const canvas = ForcedColorsFixture.resolve("Canvas");
-    const gray = ForcedColorsFixture.resolve("GrayText");
-    const text = ForcedColorsFixture.resolve("CanvasText");
-    const line = document.body.appendChild(document.createElement("div"));
-    line.className = "nol-drop-line";
+  it("draws progress and the spinner's arc in the highlight and the spinner's ring in the system gray, where they were drawn with fills alone", async () => {
+    await showFrameAsync(GalleryFormsComponent);
     const ring = getComputedStyle(one(".nol-spinner-ring"));
 
-    const shown = [
-      getComputedStyle(one(".nol-progress-bar")).backgroundColor,
-      getComputedStyle(one("nol-progress")).backgroundColor,
-      ring.borderTopColor,
-      ring.borderBottomColor,
-      getComputedStyle(one("nol-sash[data-nol-state=\"Focus\"] .nol-sash-bar")).backgroundColor,
-      getComputedStyle(line).backgroundColor,
-      getComputedStyle(one(".nol-sash-dot")).backgroundColor,
-      getComputedStyle(one("nol-menu-separator")).backgroundColor
-    ];
+    const shown = [getComputedStyle(one(".nol-progress-bar")).backgroundColor, getComputedStyle(one("nol-progress")).backgroundColor, ring.borderTopColor, ring.borderBottomColor];
+
+    expect(shown).toEqual(["Highlight", "Canvas", "Highlight", "GrayText"].map(t => ForcedColorsFixture.resolve(t)));
+  });
+
+  it("draws the sash's bar and the drop line in the highlight and grips in the text color, where they were drawn with fills alone", async () => {
+    await showFrameAsync(GalleryNavigationComponent);
+    const line = document.body.appendChild(document.createElement("div"));
+    line.className = "nol-drop-line";
+
+    const shown = [getComputedStyle(one("nol-sash[data-nol-state=\"Focus\"] .nol-sash-bar")).backgroundColor, getComputedStyle(line).backgroundColor, getComputedStyle(one(".nol-sash-dot")).backgroundColor];
     line.remove();
 
-    expect(shown).toEqual([highlight, canvas, highlight, gray, highlight, highlight, text, text]);
+    expect(shown).toEqual(["Highlight", "Highlight", "CanvasText"].map(t => ForcedColorsFixture.resolve(t)));
+  });
+
+  it("draws separators in the text color, where they were drawn with fills alone", async () => {
+    await showFrameAsync(GalleryOverlaysComponent);
+
+    expect(getComputedStyle(one("nol-menu-separator")).backgroundColor).toBe(ForcedColorsFixture.resolve("CanvasText"));
   });
 
   it("gives the terminal the system's colors over a painted theme on the page and in a painted scope inside it, from kit.css without theme.css", () => {
