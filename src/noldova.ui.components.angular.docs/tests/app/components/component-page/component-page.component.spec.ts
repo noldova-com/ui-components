@@ -544,6 +544,15 @@ describe("ComponentPageComponent", () => {
       expect(DocsFixture.all(api, "tbody td:last-child").every(t => (t.textContent ?? "").trim().length > 0)).toBe(true);
     });
 
+    it("shows a type of 24 characters or fewer whole, and splits only a longer union, each later part starting at its |", async () => {
+      const host = await renderAsync(content);
+      const types = DocsFixture.all(section(host, "API"), "tbody td:nth-child(2) > code");
+      const parts = (code: HTMLElement): readonly string[] => DocsFixture.all(code, ".nol-docs-type-part").map(t => t.textContent ?? "");
+      const expected = (type: string): readonly string[] => type.length <= 24 ? [type] : type.split(" | ").map((t, index) => index === 0 ? t : ` | ${t}`);
+
+      expect(types.map(parts)).toEqual(types.map(t => expected(t.textContent ?? "")));
+    });
+
     it("names each two-way input's binding as inline code", async () => {
       const host = await renderAsync(content);
       const notes = DocsFixture.all(section(host, "API"), "table[aria-label=\"Inputs\"] tbody td:last-child p")

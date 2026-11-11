@@ -501,16 +501,18 @@ describe("DocsShellComponent", () => {
       return { page: DocsFixture.one(host, ".nol-docs-page").getBoundingClientRect(), start: box.left + Number.parseFloat(style.paddingInlineStart), end: box.right - Number.parseFloat(style.paddingInlineEnd) };
     };
 
-    it("draws the site's own text at 16px, its page title at 32px, and the examples and states at the kit's 13px, a button in them at the kit's 12px label size", async () => {
+    it("draws the site's own text at 14px with paragraph lines one and a half times as tall, its page title at 28px, and the examples and states at the kit's 13px, a button in them at the kit's 12px label size", async () => {
       const host = await pageAsync("/components/button");
-      const own = [DocsFixture.one(host, "main .nol-docs-text"), DocsFixture.one(host, ".nol-docs-menu-link"), DocsFixture.one(host, ".nol-docs-search-field")];
+      const text = DocsFixture.one(host, "main .nol-docs-text");
+      const own = [text, DocsFixture.one(host, ".nol-docs-menu-link"), DocsFixture.one(host, ".nol-docs-search-field")];
       const kit = [DocsFixture.one(host, ".nol-docs-example-preview > *"), DocsFixture.one(host, ".nol-docs-states .nol-gallery-specimen"), DocsFixture.one(host, ".nol-docs-example-preview button")];
 
-      expect(own.map(pixels).map(Math.round)).toEqual([16, 16, 16]);
-      expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(32);
+      expect(own.map(pixels).map(Math.round)).toEqual([14, 14, 14]);
+      expect(Number.parseFloat(getComputedStyle(DocsFixture.one(text, "p")).lineHeight)).toBe(21);
+      expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(28);
       expect(kit.map(pixels).map(Math.round)).toEqual([13, 13, 12]);
       if (width >= DocsFixture.DESKTOP_WIDTH)
-        await vi.waitFor(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(16));
+        await vi.waitFor(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(14));
     });
 
     it("draws the site's own code blocks at 13px with lines one and a half times as tall, leaving the kit's code block in an example at its 12px and code in the text at the site's code size", async () => {
@@ -522,7 +524,22 @@ describe("DocsShellComponent", () => {
 
       expect([pixels(source), line(source)]).toEqual([13, 19.5]);
       expect([pixels(preview), line(preview)]).toEqual([12, 18]);
-      expect(Math.round(pixels(text) * 100) / 100).toBe(14.77);
+      expect(Math.round(pixels(text) * 100) / 100).toBe(12.92);
+    });
+
+    it("draws the site's own code blocks on a ground lighter than the kit's code block in the Light mode and darker in the Dark one", async () => {
+      const host = await pageAsync("/components/code-block");
+      const ground = (element: HTMLElement): number => {
+        const [red = 0, green = 0, blue = 0] = (getComputedStyle(element).backgroundColor.match(/\d+(\.\d+)?/gu) ?? []).map(Number);
+        return red + green + blue;
+      };
+      const own = ground(DocsFixture.one(host, "nol-code-block.nol-docs-example-code"));
+      const kit = ground(DocsFixture.one(host, ".nol-docs-example-preview nol-code-block"));
+
+      if (mode === "Light")
+        expect(own).toBeGreaterThan(kit);
+      else
+        expect(own).toBeLessThan(kit);
     });
 
     it("lays the menu, the page and the list across at most 108rem centered in the window, 3.5rem in from its sides from 75rem wide, the page filling the space between them", async () => {
@@ -539,6 +556,46 @@ describe("DocsShellComponent", () => {
       expect([Number.parseFloat(style.paddingInlineStart) / rem, Number.parseFloat(style.paddingInlineEnd) / rem]).toEqual([inset, inset]);
       expect([Math.abs(page.page.left - page.start) / rem <= 0.01, Math.abs(page.end - page.page.right) / rem <= 0.01]).toEqual([true, true]);
       expect(DocsFixture.overflowWidth()).toBe(0);
+    });
+  });
+
+  describe.each([
+    ["Light", 1920, 1080],
+    ["Dark", 1920, 1080],
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT]
+  ])("on a desktop in the %s mode at %i by %i CSS pixels", (mode, width, height) => {
+    const deskAsync = async (): Promise<HTMLElement> => {
+      DocsFixture.setMode(mode);
+      await DocsFixture.viewAsync(width, height);
+      const host = DocsFixture.host(await renderAsync("/components/button"));
+      await vi.waitFor(() => expect(host.querySelectorAll(".nol-docs-outline-link").length).toBeGreaterThan(0));
+      return host;
+    };
+
+    it("starts the header's brand where the menu's text starts and ends its last link's mark where the list's links end", async () => {
+      const host = await deskAsync();
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const range = document.createRange();
+      range.selectNodeContents(DocsFixture.one(host, ".nol-docs-menu-link"));
+      const menuText = range.getBoundingClientRect().left;
+      const marks = DocsFixture.all(host, ".nol-docs-header-link svg");
+      const lastMark = marks.at(-1)?.getBoundingClientRect().right ?? Number.NaN;
+      const list = DocsFixture.one(host, ".nol-docs-outline-list");
+
+      expect(Math.abs(DocsFixture.one(host, ".nol-docs-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);
+      expect(Math.abs(lastMark - list.getBoundingClientRect().right) / rem).toBeLessThanOrEqual(0.01);
+    });
+
+    it("scrolls the menu and the list on their own, keeping the list's heading in view and both inside the window", async () => {
+      const host = await deskAsync();
+      const menu = DocsFixture.one(host, ".nol-docs-menu");
+      const list = DocsFixture.one(host, ".nol-docs-outline-list");
+      const title = DocsFixture.one(host, ".nol-docs-outline-title");
+
+      expect([getComputedStyle(menu).overflowY, getComputedStyle(list).overflowY]).toEqual(["auto", "auto"]);
+      expect(list.contains(title)).toBe(false);
+      expect([menu.getBoundingClientRect().bottom <= window.innerHeight, DocsFixture.one(host, "nol-docs-on-this-page").getBoundingClientRect().bottom <= window.innerHeight]).toEqual([true, true]);
     });
   });
 });

@@ -32,8 +32,13 @@ describe("TokensPageComponent", () => {
 
   const cellText = (row: HTMLElement, selector: string): string => DocsFixture.one(row, selector).textContent?.trim() ?? "";
 
+  const modeValues = (row: HTMLElement): readonly string[] => {
+    const light = cellText(row, "td:nth-of-type(1)");
+    return DocsFixture.one(row, "td").colSpan === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
+  };
+
   const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> =>
-    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), [cellText(t, "td:nth-of-type(1)"), cellText(t, "td:nth-of-type(2)")]]));
+    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), modeValues(t)]));
 
   const shownNames = (host: HTMLElement): readonly string[] => DocsFixture.all(host, "main tbody th").map(t => t.textContent?.trim() ?? "");
 
@@ -86,6 +91,20 @@ describe("TokensPageComponent", () => {
 
     expect(base.map(([name]) => name)).toEqual(expect.arrayContaining(["--nol-font-sans", "--nol-text-panel", "--nol-line-panel", "--nol-weight-emphasis", "--nol-text-tab"]));
     expect(base.filter(([name, values]) => values[0] !== values[1] || !kitBaseStyles.includes(`${name}: ${values[0] ?? ""};`)).map(([name]) => name)).toEqual([]);
+  });
+
+  it("shows a value the two modes share once, in one cell across both columns, and a value that changes in a cell for each mode", async () => {
+    const host = await renderAsync("/tokens");
+    const rows = DocsFixture.all(host, "main tbody tr");
+    const shape = (row: HTMLElement): readonly number[] => DocsFixture.all(row, "td").map(t => t.colSpan);
+    const shared = rows.filter(t => DocsFixture.all(t, "td").length === 1);
+    const changing = rows.filter(t => DocsFixture.all(t, "td").length === 2);
+
+    expect(shared.length).toBeGreaterThan(0);
+    expect(changing.length).toBeGreaterThan(0);
+    expect(shared.length + changing.length).toBe(rows.length);
+    expect(new Set(shared.map(t => shape(t).join()))).toEqual(new Set(["2"]));
+    expect(changing.filter(t => cellText(t, "td:nth-of-type(1)") === cellText(t, "td:nth-of-type(2)")).map(t => cellText(t, "th"))).toEqual([]);
   });
 
   it("groups the tokens into tables named by their sections", async () => {
