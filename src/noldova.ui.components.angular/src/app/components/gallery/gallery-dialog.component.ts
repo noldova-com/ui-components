@@ -34,6 +34,7 @@ export class GalleryDialogComponent {
 
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly dialogInjector: Injector = this.createDialogInjector();
+  protected readonly mediumDialogInjector: Injector = this.createDialogInjector();
   protected readonly largeDialogInjector: Injector = this.createDialogInjector();
   protected readonly focusDialogInjector: Injector = this.createDialogInjector();
   protected readonly longDialogInjector: Injector = this.createDialogInjector();

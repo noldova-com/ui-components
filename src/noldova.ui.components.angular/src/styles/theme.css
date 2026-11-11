@@ -235,6 +235,7 @@
   --nol-dialog-title-padding: 1.375rem 2rem 0.75rem 1.25rem;
   --nol-dialog-body-padding: 0 1.25rem;
   --nol-dialog-actions-padding: 1.25rem 1.25rem 0.5rem;
+  --nol-dialog-medium-width: 40rem;
   --nol-dialog-large-width: 80vw;
   --nol-dialog-large-height: 80vh;
   --nol-dialog-large-min-width: 30rem;

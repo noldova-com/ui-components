@@ -7,6 +7,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 ## Default geometry
 
 Preferred width 27.5rem; large radius; title padding 1.375rem 2rem 0.75rem 1.25rem, all but its end, since Close follows the title 0.5rem after it: an icon button with a tooltip, centered on the title's first line; the title, body, actions and the end of Close's × share one content edge 1.25rem from both sides, the body's, while Close's hover box and hit area reach past it: body 0 1.25rem; actions 1.25rem 1.25rem 0.5rem with 0.5rem gaps.
+Medium: preferred width 40rem, and otherwise the default geometry; on a window narrower than that and the overlay bounds' gaps, it shrinks to the overlay bounds' width, as the default size does.
 Large: 80% of the viewport each way, at least 30rem by 20rem unless the overlay bounds are smaller; a title bar padded 0.5rem 1.25rem with a bottom border, so the title starts and Close's × ends 1.25rem from the dialog's edges, the title on one truncated line, then the owner's controls, then the dialog's own controls, Maximize and Close, icon buttons with tooltips, Maximize a single square and Restore two overlapping squares; maximized, the whole overlay bounds until Restore, for as long as the dialog is open; a body without padding; no actions.
 
 ## Text role
