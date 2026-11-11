@@ -12,7 +12,7 @@ export class TokensPageResources {
   public static readonly sectionIdPrefix: string = "nol-docs-tokens-";
 
   public static formatThemeNote(theme: string): string {
-    return `The values are the ${theme} theme's. A value that does not change between modes shows in both columns.`;
+    return `The values are the ${theme} theme's. A value that does not change between modes shows once, across both columns.`;
   }
 
   public static formatSectionId(group: string): string {

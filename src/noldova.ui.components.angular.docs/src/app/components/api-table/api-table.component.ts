@@ -12,21 +12,26 @@ import { MarkdownViewComponent } from "@noldova/ui.components.angular/markdown";
 
 import { Resources } from "../../../resources.js";
 import type { IApiComponent } from "../../interfaces/i-api-component.js";
+import { DocsFitTableDirective } from "../docs-fit-table/docs-fit-table.directive.js";
+import { DocsLinksDirective } from "../docs-links/docs-links.directive.js";
 
 @Component({
   selector: "nol-docs-api-table",
-  imports: [InlineCodeComponent, MarkdownViewComponent],
+  imports: [DocsFitTableDirective, DocsLinksDirective, InlineCodeComponent, MarkdownViewComponent],
   templateUrl: "./api-table.component.html",
   styleUrl: "./api-table.component.css"
 })
 export class ApiTableComponent {
   private static readonly UNION_SEPARATOR: string = " | ";
+  private static readonly SHORT_TYPE_LENGTH: number = 24;
 
   protected readonly resources: typeof Resources = Resources;
 
   public readonly component = input.required<IApiComponent>();
 
   protected typeParts(type: string): readonly string[] {
+    if (type.length <= ApiTableComponent.SHORT_TYPE_LENGTH)
+      return [type];
     return type.split(ApiTableComponent.UNION_SEPARATOR).map((t, index) => index === 0 ? t : `${ApiTableComponent.UNION_SEPARATOR}${t}`);
   }
 }

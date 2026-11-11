@@ -26,7 +26,7 @@ LICENSE file in the root directory of this source tree.
             @for (token of table.tokens; track token.variable) {
               <tr>
                 <th scope="row"><code>{{ token.variable }}</code></th>
-                <td>
+                <td [attr.colspan]="token.light === token.dark ? 2 : null">
                   <span class="nol-docs-token-value">
                     @if (token.isColor) {
                       <span class="nol-docs-token-swatch" aria-hidden="true" [style.background-color]="token.light"></span>
@@ -34,14 +34,16 @@ LICENSE file in the root directory of this source tree.
                     <code>{{ token.light }}</code>
                   </span>
                 </td>
-                <td>
-                  <span class="nol-docs-token-value">
-                    @if (token.isColor) {
-                      <span class="nol-docs-token-swatch" aria-hidden="true" [style.background-color]="token.dark"></span>
-                    }
-                    <code>{{ token.dark }}</code>
-                  </span>
-                </td>
+                @if (token.light !== token.dark) {
+                  <td>
+                    <span class="nol-docs-token-value">
+                      @if (token.isColor) {
+                        <span class="nol-docs-token-swatch" aria-hidden="true" [style.background-color]="token.dark"></span>
+                      }
+                      <code>{{ token.dark }}</code>
+                    </span>
+                  </td>
+                }
               </tr>
             }
           </tbody>
