@@ -140,7 +140,7 @@ export const appConfig: ApplicationConfig = {
 
 `@noldova/ui.components.angular/testing` holds the helpers the kit's own tests use, for an app's tests that run in a browser through Vitest.
 Only this entry uses Vitest, so an app's bundle never takes it.
-A product that uses this entry brings its own Vitest, at the version the kit tests with, 5.0.3.
+A product that uses this entry brings its own Vitest, at the version the kit tests with, 5.0.5.
 The kit doesn't list Vitest as a peer dependency, because GitHub's npm registry drops `peerDependenciesMeta`, so an optional peer would become a required one in each product's lockfile.
 Each helper's type declarations document it.
 
