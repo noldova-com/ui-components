@@ -94,6 +94,10 @@ export class PermissionCardComponent {
     const risk = this.request().risk;
     return Object.isNull(risk) ? null : PermissionCardResources.permissionRiskClasses[risk];
   });
+  protected readonly requesterText: Signal<string> = computed(() => {
+    const { name, kind } = this.request().requester;
+    return PermissionCardResources.formatPermissionRequester(name, kind);
+  });
   protected readonly describedBy: Signal<string> = computed(() => {
     const { description, kind, risk } = this.request();
     return [Object.isNull(risk) ? null : `${this.id}-risk`, `${this.id}-requester`, Object.isNull(kind) ? null : `${this.id}-kind`,
@@ -125,8 +129,9 @@ export class PermissionCardComponent {
       if (Object.isNull(this.pendingId()))
         return;
       const request = untracked(() => this.request());
+      const requester = untracked(() => this.requesterText());
       const politeness = this.pending.count === 0 ? AnnouncementPoliteness.Assertive : AnnouncementPoliteness.Polite;
-      this.announcer.announce(PermissionCardResources.formatPermissionAnnouncement(request.requester.name, request.heading), politeness,
+      this.announcer.announce(PermissionCardResources.formatPermissionAnnouncement(requester, request.heading), politeness,
         { key: `${PermissionCardResources.permissionAnnouncementKeyPrefix}${request.id}` });
       onCleanup(this.pending.add());
     });

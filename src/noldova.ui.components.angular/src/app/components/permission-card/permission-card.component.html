@@ -24,7 +24,7 @@ LICENSE file in the root directory of this source tree.
     <span class="nol-permission-card-expiry">{{ expiry }}</span>
   }
 </div>
-<span class="nol-permission-card-requester" [id]="id + '-requester'">{{ request().requester.name }}, {{ request().requester.kind }}</span>
+<span class="nol-permission-card-requester" [id]="id + '-requester'">{{ requesterText() }}</span>
 @if (request().description; as description) {
   <p class="nol-permission-card-description" [id]="id + '-description'">{{ description }}</p>
 }

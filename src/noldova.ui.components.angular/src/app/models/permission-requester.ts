@@ -10,11 +10,12 @@ import { ArgumentException } from "@noldova/context.exceptions";
 
 export class PermissionRequester {
   public readonly name: string;
-  public readonly kind: string;
+  public readonly kind: string | null;
 
-  public constructor(name: string, kind: string) {
+  public constructor(name: string, kind: string | null = null) {
     ArgumentException.throwIfNullOrWhitespace(name, "name");
-    ArgumentException.throwIfNullOrWhitespace(kind, "kind");
+    if (!Object.isNull(kind))
+      ArgumentException.throwIfNullOrWhitespace(kind, "kind");
 
     this.name = name;
     this.kind = kind;

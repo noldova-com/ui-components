@@ -40,7 +40,7 @@ const NEVER: PermissionOption = new PermissionOption("never", "Never", Permissio
 const ALLOW_SESSION: PermissionOption = new PermissionOption("allow-session", "Allow for this session", PermissionEffect.Allow, null);
 const REJECT_SESSION: PermissionOption = new PermissionOption("reject-session", "Reject for this session", PermissionEffect.Deny, null);
 const DECIDED_AT: Date = new Date("2026-10-13T09:00:00Z");
-const ANNOUNCED: string = "Permission request from Build agent: Delete the build folder";
+const ANNOUNCED: string = "Permission request from Build agent, Agent: Delete the build folder";
 
 function requestOf(risk: PermissionRisk | null = PermissionRisk.Low, options: IPermissionRequestOptions = {}, id: string = "request-1"): PermissionRequest {
   return new PermissionRequest(id, REQUESTER, "Delete the build folder", risk, options);
@@ -288,6 +288,14 @@ describe("PermissionCardComponent", () => {
     component().focus();
 
     expect(document.activeElement).toBe(card());
+  });
+
+  it("describes and announces a requester with no kind by its name alone", async () => {
+    await renderAsync(new PermissionRequest("request-1", new PermissionRequester("Files · Build agent · This computer"), "Delete the build folder", PermissionRisk.Low));
+
+    expect(find(".nol-permission-card-requester").textContent).toBe("Files · Build agent · This computer");
+    expect(card().getAttribute("aria-describedby")?.split(" ")).toContain(find(".nol-permission-card-requester").id);
+    expect(announcements).toEqual([["Permission request from Files · Build agent · This computer: Delete the build folder", "assertive"]]);
   });
 
   it("announces a pending request once, assertively when it shows alone and politely when another card is already pending", async () => {
