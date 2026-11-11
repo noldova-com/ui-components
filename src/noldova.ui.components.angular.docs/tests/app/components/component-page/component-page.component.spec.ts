@@ -638,9 +638,9 @@ describe("ComponentPageComponent", () => {
         const host = await renderAsync(content);
         await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
         await fittedAsync(host);
-        const tables = DocsFixture.all(host, ".nol-docs-section table");
+        const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
 
-        expect(tables.length).toBe(DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table").length);
+        expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
         expect(tables.flatMap(t => {
           const box = t.getBoundingClientRect();
           const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
