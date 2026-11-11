@@ -1028,6 +1028,18 @@ describe("ComponentPageComponent", () => {
       expect(examples.textContent).toContain("Added: Release checker");
     });
 
+    it("closes the medium dialog on Cancel and adds no one", async () => {
+      const host = await renderAsync(expectPage("DialogComponent"));
+      const examples = section(host, "Examples");
+
+      await userEvent.click(DocsFixture.byText(examples, "button", "Add a teammate"));
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
+      await userEvent.click(DocsFixture.byText(DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]"), "button", "Cancel"));
+
+      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      expect(examples.textContent).toContain("Added: No one yet");
+    });
+
     it("answers Deleted once the dialog's Delete is pressed", async () => {
       const host = await renderAsync(expectPage("DialogComponent"));
       const examples = section(host, "Examples");
