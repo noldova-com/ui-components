@@ -90,7 +90,7 @@ describe("GalleryOverlaysComponent", () => {
     const fixture = await GalleryFixture.showSectionAsync(GalleryOverlaysComponent);
     const dialogs = [...DomFixture.host(fixture).querySelectorAll<HTMLElement>("nol-dialog:not(.nol-gallery-large-dialog)")];
 
-    expect(dialogs.length).toBe(3);
+    expect(dialogs.length).toBe(4);
     for (const dialog of dialogs) {
       const actions = [...dialog.querySelectorAll<HTMLElement>(".nol-dialog-actions [nolDialogAction]")];
       const confirm = actions.at(-1) as HTMLElement;

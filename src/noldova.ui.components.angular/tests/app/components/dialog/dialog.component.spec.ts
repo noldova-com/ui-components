@@ -17,6 +17,7 @@ import { DialogComponent } from "../../../../src/app/components/dialog/dialog.co
 import { IconButtonComponent } from "../../../../src/app/components/icon-button/icon-button.component";
 import { ButtonVariant } from "../../../../src/app/enums/button-variant";
 import { DialogSize } from "../../../../src/app/enums/dialog-size";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { OverlayBounds } from "../../../../src/app/models/overlay-bounds";
 import { DialogService } from "../../../../src/app/services/dialog.service";
 import { OverlayBoundsService } from "../../../../src/app/services/overlay-bounds.service";
@@ -59,6 +60,19 @@ class LargeDialogHostComponent {
   public readonly title = signal("Notes");
 
   public dismissals: number = 0;
+}
+
+@Component({
+  imports: [DialogComponent, ButtonComponent],
+  template: `
+    <nol-dialog title="Add a teammate" [size]="medium">
+      <input class="nol-dialog-field" aria-label="Name" />
+      <button nol-button nolDialogAction data-save>Save</button>
+    </nol-dialog>
+  `
+})
+class MediumDialogHostComponent {
+  protected readonly medium: DialogSize = DialogSize.Medium;
 }
 
 @Component({
@@ -109,6 +123,13 @@ describe("DialogComponent", () => {
     const opened = TestBed.inject(DialogService).open(LargeDialogHostComponent, ".nol-dialog-close");
     reference = opened;
     await vi.waitFor(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true));
+    return opened;
+  }
+
+  async function openMediumAsync(): Promise<DialogRef<unknown, MediumDialogHostComponent>> {
+    const opened = TestBed.inject(DialogService).open(MediumDialogHostComponent, "[data-save]");
+    reference = opened;
+    await vi.waitFor(() => expect(document.activeElement?.hasAttribute("data-save")).toBe(true));
     return opened;
   }
 
@@ -593,6 +614,40 @@ describe("DialogComponent", () => {
         AppearanceFixture.expectPixels(rectangle.top - overlay.top, overlay.bottom - rectangle.bottom);
         AppearanceFixture.expectPixels(rectangle.left - overlay.left, overlay.right - rectangle.right);
       });
+
+  for (const theme of AppearanceFixture.themes)
+    for (const mode of AppearanceFixture.modes)
+      for (const isForced of [false, true])
+        for (const [width, height] of [[1280, 800], [480, 400]] as const)
+          it(`sizes a medium dialog to the theme's medium width, ${width} by ${height}, shrinking to the overlay bounds when they are narrower, with the ${theme.id} theme in ${mode}${isForced ? " under forced colors" : String.empty}`, async () => {
+            await page.viewport(width, height);
+            AppearanceFixture.apply(theme, mode);
+            if (isForced)
+              await ForcedColorsFixture.activateAsync();
+            await openMediumAsync();
+            const dialog = DomFixture.one(document, "nol-dialog");
+            const rectangle = dialog.getBoundingClientRect();
+            const overlay = TestBed.inject(OverlayBoundsService).boundsFor(dialog);
+            const medium = pixels(theme.readLook("dialog-medium-width") ?? String.empty, "width");
+            const widest = width - pixels(theme.readLook("space-2") ?? String.empty, "width") * 2;
+
+            AppearanceFixture.expectPixels(rectangle.width, Math.min(medium, widest));
+            AppearanceFixture.expectPixels(rectangle.left - overlay.left, overlay.right - rectangle.right);
+            AppearanceFixture.expectPixels(rectangle.top - overlay.top, overlay.bottom - rectangle.bottom);
+            expect(dialog.querySelector(".nol-dialog-maximize")).toBeNull();
+            AppearanceFixture.expectLook(getComputedStyle(DomFixture.one(dialog, ".nol-dialog-actions")).paddingTop, theme, "dialog-actions-padding", "padding-top", "padding");
+          });
+
+  it("gives the default theme's medium dialog 40rem, wider than the default size and narrower than the large one", async () => {
+    await page.viewport(1280, 800);
+    AppearanceFixture.apply();
+    await openMediumAsync();
+    const width = DomFixture.one(document, "nol-dialog").getBoundingClientRect().width;
+
+    AppearanceFixture.expectPixels(width, AppearanceFixture.toPixels(40));
+    expect(width).toBeGreaterThan(pixels(DefaultTheme.theme.readLook("dialog-width") ?? String.empty, "width"));
+    expect(width).toBeLessThan(pixels(DefaultTheme.theme.readLook("dialog-large-width") ?? String.empty, "width"));
+  });
 
   for (const [width, height] of [[1280, 800], [640, 400], [320, 200]] as const)
     it(`centres a dialog of the default size within the overlay bounds of a ${width} by ${height} window`, async () => {

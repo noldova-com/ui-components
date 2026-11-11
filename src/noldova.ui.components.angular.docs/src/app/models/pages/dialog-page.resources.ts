@@ -12,6 +12,7 @@ export class DialogPageResources {
   public static readonly title: string = "Dialog";
   public static readonly componentName: string = "DialogComponent";
   public static readonly dialogConfirmTitle: string = "Asking before a change that can't be undone";
+  public static readonly dialogMediumTitle: string = "A medium dialog for a short form";
   public static readonly dialogLargeTitle: string = "A large dialog that can fill the window";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves to the dialog's next control, and from its last back to its first: the focus stays in the dialog while it is open."),

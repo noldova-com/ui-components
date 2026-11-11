@@ -247,7 +247,7 @@ export declare enum ChipKind {
 }
 
 /**
- * The size of a {@link DialogComponent}. Either size stays within the window,
+ * The size of a {@link DialogComponent}. Every size stays within the window,
  * below its top row and above its status bar.
  */
 export declare enum DialogSize {
@@ -256,6 +256,13 @@ export declare enum DialogSize {
    * padded title, body and actions; the default.
    */
   Normal = "Normal",
+
+  /**
+   * As wide as the theme's `dialog-medium-width` and otherwise the default
+   * size: as tall as its content, with a padded title, body and actions. A
+   * short form with several fields or a short table fits it.
+   */
+  Medium = "Medium",
 
   /**
    * A fixed size from the theme's `dialog-large-width` and
@@ -3991,9 +3998,10 @@ export declare class DialogComponent {
 
   /**
    * The dialog's size; normal when not bound. A normal dialog takes its
-   * preferred width within the window and scrolls its body; a large one
-   * takes most of the window, with a title bar that ends with its controls,
-   * Maximize and Close, and a body without padding that lays itself out.
+   * preferred width within the window and scrolls its body; a medium one is
+   * the same at the theme's wider medium width; a large one takes most of
+   * the window, with a title bar that ends with its controls, Maximize and
+   * Close, and a body without padding that lays itself out.
    */
   public readonly size: InputSignal<DialogSize>;
 
