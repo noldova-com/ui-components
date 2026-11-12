@@ -21,6 +21,7 @@ import { ToolbarButtonResources } from "./toolbar-button.resources.js";
   host: {
     "class": "nol-toolbar-button",
     "[class.nol-toolbar-button-icon-only]": "icon() !== null && !isShowingLabel()",
+    "[class.nol-toolbar-button-open-pressed]": "hasMenu() && isPressedWhileOpen()",
     "[attr.aria-label]": "label()",
     "[attr.aria-pressed]": "pressed() ?? null",
     "[attr.aria-haspopup]": "hasMenu() ? partResources.menuPopup : null",
@@ -39,6 +40,7 @@ export class ToolbarButtonComponent {
   public readonly pressed = input<boolean>();
   public readonly hasMenu = input<boolean>(false);
   public readonly isUnavailable = input<boolean>(false);
+  public readonly isPressedWhileOpen = input<boolean>(false);
   public readonly busy = input<boolean>(false);
 
   public constructor() {
