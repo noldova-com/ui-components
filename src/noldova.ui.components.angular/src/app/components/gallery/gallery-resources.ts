@@ -373,6 +373,7 @@ export class GalleryResources {
     toolbarWithLabel: "With its label",
     toolbarLarge: "Large",
     toolbarLargeHover: "Large, hover",
+    toolbarLargeKitGlyph: "Large, with the 1rem glyph",
     sash: "Sash",
     sashVertical: "Resize the side",
     sashHorizontal: "Resize the bottom",

@@ -13,7 +13,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 `ToolbarButtonSize.Large`, for a document's own toolbar, such as a page document's.
 
 - It is `toolbar-button-large` square, 1.875rem by default, or at least that wide with the pill padding on each side when it shows a label.
-- Its glyph is `toolbar-button-large-icon`, 1.125rem by default; its chevron stays 1rem.
+- Its glyph is `toolbar-button-large-icon`, 1.125rem by default, or the kit's 1rem `icon` with `iconSize` set to `ToolbarButtonSize.Normal`, such as a row's More on a large square; its chevron stays 1rem.
 - Its radius, hover, pressed, focus, disabled, busy and forced-colors looks are the default size's.
 
 ## Text role

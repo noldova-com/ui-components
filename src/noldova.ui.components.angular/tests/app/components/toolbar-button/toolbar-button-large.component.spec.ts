@@ -25,10 +25,13 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
     <button type="button" class="large" data-testid="large" nol-toolbar-button icon="more_horiz" label="More" [size]="large"></button>
     <button type="button" class="labeled" nol-toolbar-button icon="history" label="Versions" [isShowingLabel]="true" [hasMenu]="true" [size]="large"></button>
     <button type="button" class="pressed" nol-toolbar-button icon="wrap_text" label="Wrap" [pressed]="true" [size]="large"></button>
+    <button type="button" class="kit-glyph" nol-toolbar-button icon="more_horiz" label="More" [size]="large" [iconSize]="normal"></button>
+    <button type="button" class="kit-glyph-labeled" nol-toolbar-button icon="history" label="Versions" [isShowingLabel]="true" [hasMenu]="true" [size]="large" [iconSize]="normal"></button>
   `
 })
 class LargeToolbarButtonHostComponent {
   protected readonly large: ToolbarButtonSize = ToolbarButtonSize.Large;
+  protected readonly normal: ToolbarButtonSize = ToolbarButtonSize.Normal;
 }
 
 describe("ToolbarButtonComponent's large size", () => {
@@ -56,6 +59,29 @@ describe("ToolbarButtonComponent's large size", () => {
     AppearanceFixture.reset();
     await ForcedColorsFixture.resetAsync();
   });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws the kit's 1rem glyph centered on a large square when its glyph size is normal, labeled too, in the ${theme.id} theme in ${mode} mode`, () => {
+        render(theme, mode);
+        const size = AppearanceFixture.measureLook("toolbar-button-large");
+        const box = button("kit-glyph").getBoundingClientRect();
+        const glyph = part("kit-glyph", ".nol-toolbar-button-glyph");
+        const labeled = button("kit-glyph-labeled").getBoundingClientRect();
+        const padding = AppearanceFixture.measureLook("pill-padding");
+
+        AppearanceFixture.expectPixels(box.width, size);
+        AppearanceFixture.expectPixels(box.height, size);
+        AppearanceFixture.expectLook(getComputedStyle(glyph).fontSize, theme, "icon", "font-size");
+        AppearanceFixture.expectPixels(glyph.getBoundingClientRect().width, AppearanceFixture.measureLook("icon"));
+        AppearanceFixture.expectPixels(middleX(glyph.getBoundingClientRect()), middleX(box));
+        AppearanceFixture.expectPixels(middleY(glyph.getBoundingClientRect()), middleY(box));
+        AppearanceFixture.expectPixels(labeled.height, size);
+        AppearanceFixture.expectLook(getComputedStyle(part("kit-glyph-labeled", ".nol-toolbar-button-glyph")).fontSize, theme, "icon", "font-size");
+        AppearanceFixture.expectPixels(part("kit-glyph-labeled", ".nol-toolbar-button-glyph").getBoundingClientRect().left - labeled.left, padding);
+        AppearanceFixture.expectPixels(labeled.right - part("kit-glyph-labeled", ".nol-toolbar-button-chevron").getBoundingClientRect().right, padding);
+        expect(button("large").classList.contains("nol-toolbar-button-large-glyph")).toBe(true);
+      });
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)

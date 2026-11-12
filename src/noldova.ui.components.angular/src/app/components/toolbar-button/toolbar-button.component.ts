@@ -23,6 +23,7 @@ import { ToolbarButtonResources } from "./toolbar-button.resources.js";
     "class": "nol-toolbar-button",
     "[class.nol-toolbar-button-icon-only]": "icon() !== null && !isShowingLabel()",
     "[class.nol-toolbar-button-large]": "size() === sizes.Large",
+    "[class.nol-toolbar-button-large-glyph]": "(iconSize() ?? size()) === sizes.Large",
     "[class.nol-toolbar-button-open-pressed]": "hasMenu() && isPressedWhileOpen()",
     "[attr.aria-label]": "label()",
     "[attr.aria-pressed]": "pressed() ?? null",
@@ -44,6 +45,7 @@ export class ToolbarButtonComponent {
   public readonly hasMenu = input<boolean>(false);
   public readonly isUnavailable = input<boolean>(false);
   public readonly size = input<ToolbarButtonSize>(ToolbarButtonSize.Normal);
+  public readonly iconSize = input<ToolbarButtonSize | null>(null);
   public readonly isPressedWhileOpen = input<boolean>(false);
   public readonly busy = input<boolean>(false);
 

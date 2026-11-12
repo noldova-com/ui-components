@@ -122,7 +122,7 @@
   font-size: var(--nol-icon);
 }
 
-:host(.nol-toolbar-button-large) .nol-toolbar-button-glyph {
+:host(.nol-toolbar-button-large-glyph) .nol-toolbar-button-glyph {
   font-size: var(--nol-toolbar-button-large-icon);
 }
 

@@ -11972,6 +11972,16 @@ export declare class ToolbarButtonComponent {
   public readonly size: InputSignal<ToolbarButtonSize>;
 
   /**
+   * The size of the button's glyph, or null, the default, for the one its
+   * {@link size} draws: the kit's 1rem `icon` at the normal size, and
+   * `toolbar-button-large-icon`, 1.125rem, at the large size.
+   * {@link ToolbarButtonSize.Normal} keeps the 1rem glyph on a large square,
+   * such as a row's More beside a document toolbar's larger glyphs. The
+   * chevron stays 1rem either way.
+   */
+  public readonly iconSize: InputSignal<ToolbarButtonSize | null>;
+
+  /**
    * Whether a button that opens a menu, with {@link hasMenu}, draws its
    * pressed look, the toolbar hover fill or under forced colors `Highlight`,
    * while its menu is open, which the menu trigger marks `aria-expanded`,
