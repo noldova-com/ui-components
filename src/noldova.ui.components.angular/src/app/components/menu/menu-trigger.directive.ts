@@ -24,6 +24,9 @@ import { Resources } from "../../../resources.js";
   selector: "[nolMenuTriggerFor]",
   exportAs: "nolMenuTriggerFor",
   inputs: [{ name: "menuTemplateRef", alias: "nolMenuTriggerFor" }],
+  host: {
+    "[attr.aria-controls]": "isOpen() ? childMenu?.id : null"
+  },
   providers: [{ provide: CdkMenuTrigger, useExisting: forwardRef(() => MenuTriggerDirective) }, { provide: MENU_STACK, useFactory: () => MenuTriggerDirective.stack() },
     ElementDirectionality.provide()]
 })

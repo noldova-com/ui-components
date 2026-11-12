@@ -114,6 +114,52 @@ describe("MenuTriggerDirective", () => {
     expect(panel?.getAttribute("role")).toBe("menu");
   });
 
+  it("names its open menu in aria-controls and names none once the menu closes, by a row, Escape, a click outside or a submenu's row, with aria-expanded beside it", async () => {
+    const controls: string[] = [];
+    const state = (): string => `${trigger().getAttribute("aria-controls") === menu("root")?.id ? "names the menu" : trigger().getAttribute("aria-controls")}, expanded ${trigger().getAttribute("aria-expanded")}`;
+    const openAsync = async (): Promise<void> => {
+      trigger().click();
+      await settledAsync();
+      controls.push(state());
+    };
+    await openAsync();
+    row("alpha").click();
+    await settledAsync();
+    controls.push(state());
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{Escape}");
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.click(fixture.nativeElement.querySelector(".outside"));
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.hover(row("beta"));
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await settledAsync();
+    const beta = row("beta");
+    const betaOpen = [beta.getAttribute("aria-controls") === menu("submenu")?.id, beta.getAttribute("aria-expanded")];
+    await userEvent.click(row("one"));
+    await settledAsync();
+    controls.push(state());
+    const open = "names the menu, expanded true";
+    const closed = "null, expanded false";
+
+    expect([controls, betaOpen, menu("root")]).toEqual([[open, closed, closed, open, closed, open, closed], [true, "true"], null]);
+  });
+
+  it("names no submenu in its row's aria-controls once the submenu closes and its menu stays open", async () => {
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{ArrowDown}{ArrowRight}");
+    await settledAsync();
+    const open = [row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")];
+    await userEvent.keyboard("{ArrowLeft}");
+    await settledAsync();
+
+    expect([open, menu("submenu"), menu("root") === null, row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([[true, "true"], null, false, null, "false"]);
+  });
+
   it("aligns its end with the trigger's end when asked", async () => {
     fixture.componentInstance.left.set(400);
     fixture.componentInstance.alignment.set(OverlayAlignment.End);

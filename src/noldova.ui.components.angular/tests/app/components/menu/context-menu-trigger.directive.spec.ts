@@ -6,8 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { MENU_STACK } from "@angular/cdk/menu";
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
+import { firstValueFrom } from "rxjs";
 import { userEvent } from "vitest/browser";
 
 import { ContextMenuTriggerDirective } from "../../../../src/app/components/menu/context-menu-trigger.directive";
@@ -85,6 +88,20 @@ class RowHostComponent {}
 class LongMenuHostComponent {
   public readonly rows: readonly number[] = Array.from({ length: 60 }, (_, index) => index);
 }
+
+@Component({
+  imports: [ContextMenuTriggerDirective, MenuComponent, MenuItemComponent],
+  template: `
+    <div class="area" tabindex="0" style="position: fixed; top: 100px; left: 100px; width: 200px; height: 100px;" [nolContextMenuTriggerFor]="context"></div>
+    <input class="target" style="position: fixed; top: 400px; left: 50px; width: 120px; height: 24px;">
+    <ng-template #context>
+      <nol-menu class="context">
+        <button nol-menu-item label="Alpha"></button>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class OnPushHostComponent {}
 
 describe("ContextMenuTriggerDirective", () => {
   let fixture: ComponentFixture<ContextHostComponent>;
@@ -284,6 +301,34 @@ describe("ContextMenuTriggerDirective", () => {
     expect(fixture.componentInstance.chosen).toEqual(["alpha"]);
     expect(menu()).toBeNull();
     expect(document.activeElement).toBe(area());
+  });
+
+  it("names its open menu in aria-controls and names none once the menu closes, by Escape, a row or a submenu's row, with no aria-expanded", async () => {
+    const controls: string[] = [];
+    const state = (): string => `${area().getAttribute("aria-controls") === menu()?.id ? "names the menu" : area().getAttribute("aria-controls")}, expanded ${area().getAttribute("aria-expanded")}`;
+    const openAsync = async (): Promise<void> => {
+      key({ key: "ContextMenu" });
+      await settledAsync();
+      controls.push(state());
+    };
+    await openAsync();
+    await userEvent.keyboard("{Escape}");
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.keyboard("{Enter}");
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.keyboard("{End}{ArrowRight}");
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await userEvent.keyboard("{Enter}");
+    await settledAsync();
+    controls.push(state());
+    const open = "names the menu, expanded null";
+    const closed = "null, expanded null";
+
+    expect([controls, menu()]).toEqual([[open, closed, open, closed, open, closed], null]);
   });
 
   it("moves to a new point when opened again and closes another open menu", async () => {
@@ -497,5 +542,64 @@ describe("ContextMenuTriggerDirective with a menu longer than its room", () => {
 
     expect(pane.bottom).toBeLessThanOrEqual(document.documentElement.clientHeight);
     expect([checked.top >= pane.top, checked.bottom <= pane.bottom, first.bottom <= pane.top]).toEqual([true, true, true]);
+  });
+});
+
+describe("ContextMenuTriggerDirective in an OnPush host", () => {
+  let fixture: ComponentFixture<OnPushHostComponent>;
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(OnPushHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  function area(): HTMLElement {
+    return DomFixture.one(DomFixture.host(fixture), ".area");
+  }
+
+  function menu(): HTMLElement | null {
+    return document.querySelector<HTMLElement>(".cdk-overlay-container nol-menu.context");
+  }
+
+  async function openAsync(): Promise<string | null> {
+    area().dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "ContextMenu" }));
+    await fixture.whenStable();
+    return area().getAttribute("aria-controls") === menu()?.id ? "names the menu" : area().getAttribute("aria-controls");
+  }
+
+  async function closedAsync(path: string): Promise<string | null> {
+    await vi.waitFor(() => expect(menu(), `${path}, the page ${document.hasFocus() ? "has" : "doesn't have"} the focus`).toBeNull());
+    await fixture.whenStable();
+    return area().getAttribute("aria-controls");
+  }
+
+  it("names no menu in aria-controls once a click outside, focus leaving or its host moving away closes it, with no change detection from the test", async () => {
+    const controls: (string | null)[] = [];
+    const stack = fixture.debugElement.query(By.directive(ContextMenuTriggerDirective)).injector.get(MENU_STACK);
+    await firstValueFrom(stack.hasFocus);
+    controls.push(await openAsync());
+    document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    controls.push(await closedAsync("a click outside"));
+    controls.push(await openAsync());
+    const target = DomFixture.one(DomFixture.host(fixture), ".target");
+    const row = DomFixture.one(DomFixture.present(menu()), "[role='menuitem']");
+    row.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    await firstValueFrom(stack.hasFocus);
+    target.focus();
+    row.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: target }));
+    controls.push(await closedAsync("focus leaving"));
+    controls.push(await openAsync());
+    area().style.top = "140px";
+    DomFixture.host(fixture).dispatchEvent(new Event("scroll"));
+    controls.push(await closedAsync("its host moving away"));
+
+    expect(controls).toEqual(["names the menu", null, "names the menu", null, "names the menu", null]);
   });
 });
