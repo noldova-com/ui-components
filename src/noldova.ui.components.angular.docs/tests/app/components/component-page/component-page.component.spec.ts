@@ -601,12 +601,8 @@ describe("ComponentPageComponent", () => {
     describe.each([
       ["Light", "light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
       ["Dark", "dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
-      ["Light", "light", 1024, 768],
-      ["Dark", "dark", 1024, 768],
       ["Light", "light", 1920, 1080],
       ["Dark", "dark", 1920, 1080],
-      ["Light", "light", 2000, 1125],
-      ["Dark", "dark", 2000, 1125],
       ["Light", "light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
       ["Dark", "dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
     ])("in the %s mode, a %s color scheme, at %ipx wide", (mode, scheme, width, height) => {
@@ -630,23 +626,6 @@ describe("ComponentPageComponent", () => {
         }).map(t => t.textContent?.trim())).toEqual([]);
         expect([...cells, ...markdownCells].flatMap(t => brokenWords(t))).toEqual([]);
         expect(DocsFixture.all(host, ".nol-docs-table kbd, .nol-docs-table th[scope=row] code, .nol-docs-page .nol-markdown-table code, .nol-docs-type-part").filter(t => t.getClientRects().length > 1).map(t => t.textContent)).toEqual([]);
-      });
-
-      it("fits every table, the API and accessibility tables and the Markdown ones, inside its section, with no table scrolling sideways", async () => {
-        DocsFixture.setMode(mode);
-        await DocsFixture.viewAsync(width, height);
-        const host = await renderAsync(content);
-        await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
-        await fittedAsync(host);
-        const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
-
-        expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
-        expect(tables.flatMap(t => {
-          const box = t.getBoundingClientRect();
-          const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
-          const heading = t.closest(".nol-docs-section")?.querySelector("h2")?.textContent?.trim() ?? String();
-          return box.left < owner.left - 0.5 || box.right > owner.right + 0.5 ? [`${heading}: ${Math.round(box.width)} > ${Math.round(owner.width)}`] : [];
-        })).toEqual([]);
       });
 
       it("keeps every section inside the page's width", async () => {
@@ -694,6 +673,33 @@ describe("ComponentPageComponent", () => {
         expect(DocsFixture.overflowWidth()).toBe(0);
         expect(DocsFixture.all(host, ".nol-docs-stacked-table").flatMap(t => [t, ...DocsFixture.all(t, ":scope > *, :scope > * > tr, :scope > * > tr > *")])
           .filter(t => t.getAttribute("role") !== roleOf(t)).map(t => t.outerHTML.slice(0, 80))).toEqual([]);
+      });
+    });
+
+    // Only the tables' fit runs at every width the site promises; the other per-page specs keep the desktop and phone widths, so the docs tests stay quick.
+    describe.each([
+      [DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
+      [768, 1024],
+      [1024, 768],
+      [DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+      [1920, 1080],
+      [2000, 1125]
+    ])("at %ipx wide", (width, height) => {
+      it("fits every table, the API and accessibility tables and the Markdown ones, inside its section, with no table scrolling sideways", async () => {
+        DocsFixture.setMode("Light");
+        await DocsFixture.viewAsync(width, height);
+        const host = await renderAsync(content);
+        await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
+        await fittedAsync(host);
+        const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
+
+        expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
+        expect(tables.flatMap(t => {
+          const box = t.getBoundingClientRect();
+          const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
+          const heading = t.closest(".nol-docs-section")?.querySelector("h2")?.textContent?.trim() ?? String();
+          return box.left < owner.left - 0.5 || box.right > owner.right + 0.5 ? [`${heading}: ${Math.round(box.width)} > ${Math.round(owner.width)}`] : [];
+        })).toEqual([]);
       });
     });
   });

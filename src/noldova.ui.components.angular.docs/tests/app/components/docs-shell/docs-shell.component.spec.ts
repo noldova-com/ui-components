@@ -54,6 +54,31 @@ describe("DocsShellComponent", () => {
     });
   });
 
+  // Getting started has no table today; the spec keeps any it gains to its section, as the component pages' table-fit spec does.
+  describe.each([
+    [DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
+    [768, 1024],
+    [1024, 768],
+    [DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+    [1920, 1080],
+    [2000, 1125]
+  ])("at %ipx wide", (width, height) => {
+    it.each(["/", "/tokens"])("fits every table on %s inside its section, with no table scrolling sideways", async url => {
+      await DocsFixture.viewAsync(width, height);
+      const host = DocsFixture.host(await renderAsync(url));
+      await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]));
+      const tables = DocsFixture.all(host, "main table");
+
+      expect(DocsFixture.overflowWidth()).toBe(0);
+      expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
+      expect(tables.flatMap(t => {
+        const box = t.getBoundingClientRect();
+        const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
+        return box.left < owner.left - 0.5 || box.right > owner.right + 0.5 ? [`${t.getAttribute("aria-label") ?? String()}: ${Math.round(box.width)} > ${Math.round(owner.width)}`] : [];
+      })).toEqual([]);
+    });
+  });
+
   describe.each([
     ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
     ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],

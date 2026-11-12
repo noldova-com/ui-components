@@ -6,6 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* Stacked, where its columns don't fit, a token's name comes first and each mode's value on its own line below. */
+.nol-docs-token-table.nol-docs-stacked td {
+  flex: 1 0 100%;
+}
+
 .nol-docs-token-value {
   display: inline-flex;
   align-items: center;

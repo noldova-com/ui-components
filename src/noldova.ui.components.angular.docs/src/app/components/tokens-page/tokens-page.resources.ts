@@ -9,6 +9,7 @@
 export class TokensPageResources {
   public static readonly lead: string = "Every token the kit defines: the CSS custom property a style reads, and its value in each mode of the theme the kit ships. A theme changes these values; a product never overrides a component's styles.";
   public static readonly tokenColumn: string = "Token";
+  public static readonly sharedValueLabel: string = "Light and Dark";
   public static readonly sectionIdPrefix: string = "nol-docs-tokens-";
 
   public static formatThemeNote(theme: string): string {
