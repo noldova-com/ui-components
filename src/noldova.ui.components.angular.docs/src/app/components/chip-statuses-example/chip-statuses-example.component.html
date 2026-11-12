@@ -6,8 +6,10 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<nol-chip [kind]="kinds.Key">Ctrl+K</nol-chip>
-<nol-chip [kind]="kinds.Status">Reviewing</nol-chip>
-<nol-chip [kind]="kinds.Warning">Same account as Work</nol-chip>
-<nol-chip [kind]="kinds.Failed">Failed</nol-chip>
-<nol-chip [kind]="kinds.On">Work</nol-chip>
+<ul>
+  <li><nol-chip [kind]="kinds.Key">Ctrl+K</nol-chip><span>Key</span></li>
+  <li><nol-chip [kind]="kinds.Status">Reviewing</nol-chip><span>Status</span></li>
+  <li><nol-chip [kind]="kinds.Warning">Same account as Work</nol-chip><span>Warning</span></li>
+  <li><nol-chip [kind]="kinds.Failed">Failed</nol-chip><span>Failure</span></li>
+  <li><nol-chip [kind]="kinds.On">Work</nol-chip><span>On</span></li>
+</ul>

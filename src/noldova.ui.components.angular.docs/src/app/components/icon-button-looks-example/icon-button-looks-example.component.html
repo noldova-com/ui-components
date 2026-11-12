@@ -6,7 +6,9 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<button type="button" nol-icon-button icon="refresh" label="Refresh"></button>
-<button type="button" nol-icon-button icon="delete" label="Delete" [danger]="true"></button>
-<button type="button" nol-icon-button icon="send" label="Send" [filled]="true"></button>
-<button type="button" nol-icon-button icon="refresh" label="Refresh" disabled></button>
+<ul>
+  <li><button type="button" nol-icon-button icon="refresh" label="Refresh"></button><span>Plain</span></li>
+  <li><button type="button" nol-icon-button icon="delete" label="Delete" [danger]="true"></button><span>Danger</span></li>
+  <li><button type="button" nol-icon-button icon="send" label="Send" [filled]="true"></button><span>Filled</span></li>
+  <li><button type="button" nol-icon-button icon="refresh" label="Refresh" disabled></button><span>Disabled</span></li>
+</ul>

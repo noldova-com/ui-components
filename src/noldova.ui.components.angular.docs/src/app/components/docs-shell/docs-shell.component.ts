@@ -22,6 +22,9 @@ import { DocsThemeSwitchComponent } from "../docs-theme-switch/docs-theme-switch
 
 @Component({
   selector: "nol-docs-root",
+  host: {
+    class: "nol-docs-root"
+  },
   imports: [DocsBrandMarkComponent, DocsOnThisPageComponent, DocsSearchComponent, DocsThemeSwitchComponent, IconButtonComponent, RouterLink, RouterLinkActive, RouterOutlet, SectionHeaderComponent, TooltipDirective],
   templateUrl: "./docs-shell.component.html",
   styleUrl: "./docs-shell.component.css"

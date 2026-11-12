@@ -23,7 +23,9 @@
   inset-block-start: calc(100% + var(--nol-space-1));
   inset-inline: 0;
   display: grid;
+  max-block-size: min(24rem, 60dvh);
   margin: 0;
+  overflow-y: auto;
   padding: var(--nol-space-1);
   border: var(--nol-border-width) solid var(--nol-border);
   border-radius: var(--nol-radius-medium);
@@ -46,11 +48,14 @@
   color: var(--nol-text-muted);
 }
 
-.nol-docs-search-result:hover {
-  background-color: var(--nol-hover);
+.nol-docs-search-option[aria-selected="true"] .nol-docs-search-result {
+  background-color: var(--nol-selected);
 }
 
-.nol-docs-search-result:focus-visible {
-  outline: var(--nol-border-width) solid var(--nol-accent);
-  outline-offset: calc(var(--nol-border-width) * -1);
+@media (forced-colors: active) {
+  .nol-docs-search-option[aria-selected="true"] .nol-docs-search-result {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
 }

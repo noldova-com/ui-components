@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 <article class="nol-docs-page">
   <h1 class="nol-docs-page-title">{{ page().title }}</h1>
   @for (paragraph of api().description; track $index) {
-    <nol-markdown-view class="nol-docs-markdown" [text]="paragraph" />
+    <nol-markdown-view nolDocsLinks class="nol-docs-markdown" [text]="paragraph" />
   }
   <section class="nol-docs-section" aria-labelledby="nol-docs-page-examples">
     <h2 id="nol-docs-page-examples" class="nol-docs-section-title">{{ resources.examplesTitle }}</h2>
@@ -24,7 +24,7 @@ LICENSE file in the root directory of this source tree.
   <section class="nol-docs-section" aria-labelledby="nol-docs-page-states">
     <h2 id="nol-docs-page-states" class="nol-docs-section-title">{{ resources.statesTitle }}</h2>
     @defer (on immediate) {
-      <ng-container *ngComponentOutlet="page().states" />
+      <div class="nol-docs-states"><ng-container *ngComponentOutlet="page().states" /></div>
     } @placeholder {
       <p class="nol-docs-text">{{ resources.loading }}</p>
     }
@@ -37,7 +37,7 @@ LICENSE file in the root directory of this source tree.
     <h2 id="nol-docs-page-accessibility" class="nol-docs-section-title">{{ resources.accessibilityTitle }}</h2>
     @if (page().keys.length > 0) {
       <div class="nol-docs-table-holder">
-        <table class="nol-docs-table nol-docs-stacked-table" role="table" [attr.aria-label]="resources.accessibilityTitle">
+        <table class="nol-docs-table nol-docs-stacked-table" nolDocsFitTable role="table" [attr.aria-label]="resources.accessibilityTitle">
           <thead role="rowgroup">
             <tr role="row">
               <th scope="col" role="columnheader">{{ resources.keyColumn }}</th>
@@ -64,7 +64,7 @@ LICENSE file in the root directory of this source tree.
   <section class="nol-docs-section" aria-labelledby="nol-docs-page-specification">
     <h2 id="nol-docs-page-specification" class="nol-docs-section-title">{{ resources.specificationTitle }}</h2>
     @defer (on immediate) {
-      <nol-markdown-view [text]="page().specification" />
+      <nol-markdown-view nolDocsLinks [text]="specification()" />
     } @placeholder {
       <p class="nol-docs-text">{{ resources.loading }}</p>
     }

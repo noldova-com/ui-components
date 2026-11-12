@@ -11,7 +11,8 @@ import { DocsKey } from "../docs-key.js";
 export class SwitchPageResources {
   public static readonly title: string = "Switch";
   public static readonly componentName: string = "SwitchComponent";
-  public static readonly switchBoundTitle: string = "On and off, bound to its owner, with and without visible text";
+  public static readonly switchTextTitle: string = "With visible text, bound to its owner";
+  public static readonly switchLabelTitle: string = "Without visible text, named by label beside its context";
   public static readonly switchDisabledTitle: string = "Unavailable, with its reason";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus to the switch, or past it; a disabled switch stays in the Tab order."),

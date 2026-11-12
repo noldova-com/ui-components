@@ -11,10 +11,12 @@ import { Component } from "@angular/core";
 import { Resources } from "../../../resources.js";
 import { DocsThemeTokens } from "../../models/docs-theme-tokens.js";
 import type { DocsTokenTable } from "../../models/docs-token-table.js";
+import { DocsFitTableDirective } from "../docs-fit-table/docs-fit-table.directive.js";
 import { TokensPageResources } from "./tokens-page.resources.js";
 
 @Component({
   selector: "nol-docs-tokens-page",
+  imports: [DocsFitTableDirective],
   templateUrl: "./tokens-page.component.html",
   styleUrl: "./tokens-page.component.css"
 })

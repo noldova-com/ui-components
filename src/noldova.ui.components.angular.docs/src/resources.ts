@@ -11,9 +11,11 @@ import { DocsTokenGroup } from "./app/enums/docs-token-group.js";
 
 export class Resources {
   public static readonly siteTitle: string = "Noldova UI Components";
+  public static readonly stackedTableClass: string = "nol-docs-stacked";
   public static readonly wordmarkLabel: string = "Noldova";
   public static readonly siteName: string = "UI Components";
   public static readonly repositoryLink: string = "https://github.com/noldova-com/ui-components";
+  public static readonly kitDocumentsLink: string = "https://github.com/noldova-com/ui-components/blob/main/documents/kit/";
   public static readonly repositoryLabel: string = "GitHub";
   public static readonly xLink: string = "https://x.com/noldova";
   public static readonly xLabel: string = "X";

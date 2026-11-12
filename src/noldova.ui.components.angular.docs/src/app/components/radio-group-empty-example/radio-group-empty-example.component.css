@@ -11,3 +11,8 @@
   gap: var(--nol-space-2);
   max-width: 24rem;
 }
+
+.nol-docs-choice-title {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}

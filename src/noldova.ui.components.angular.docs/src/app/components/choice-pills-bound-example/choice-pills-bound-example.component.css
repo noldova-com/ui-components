@@ -12,3 +12,9 @@
   align-items: center;
   gap: var(--nol-space-2);
 }
+
+.nol-docs-choice-title {
+  flex-basis: 100%;
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+}

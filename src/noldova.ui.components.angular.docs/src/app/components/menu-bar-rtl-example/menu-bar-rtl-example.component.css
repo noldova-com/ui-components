@@ -7,8 +7,10 @@
  */
 
 :host {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
   gap: var(--nol-space-2);
+}
+
+.nol-docs-menu-bar-rtl-region {
+  display: flex;
 }

@@ -6,7 +6,9 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<nol-chip [count]="3" />
-<nol-chip [count]="128" />
-<nol-chip [kind]="kinds.Added" [count]="12" />
-<nol-chip [kind]="kinds.Removed" [count]="4" />
+<ul>
+  <li><nol-chip [count]="3" /><span>Count</span></li>
+  <li><nol-chip [count]="128" /><span>Capped at 99</span></li>
+  <li><nol-chip [kind]="kinds.Added" [count]="12" /><span>Added</span></li>
+  <li><nol-chip [kind]="kinds.Removed" [count]="4" /><span>Removed</span></li>
+</ul>

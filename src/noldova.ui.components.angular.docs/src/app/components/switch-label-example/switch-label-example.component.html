@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div class="nol-docs-switch-sounds">
+  <span class="nol-docs-switch-sounds-title">Sounds</span>
+  <nol-switch label="Sounds" [checked]="playsSounds()" (checkedChange)="playsSounds.set($event)" />
+</div>
+<p class="nol-docs-switch-sounds-detail">A chime for new messages and calls.</p>
