@@ -77,7 +77,7 @@ describe("GalleryFeedComponent", () => {
     expect([hovered, focused].map(t => getComputedStyle(DomFixture.one(DomFixture.present(t), ".nol-message-actions")).opacity)).toEqual(["1", "1"]);
     expect(long?.closest("nol-gallery-cell")?.hasAttribute("long")).toBe(true);
 
-    expect([states().length, textOf(answer, ".nol-message-author"), answer?.querySelectorAll("strong, a, li, nol-code-block").length]).toEqual([24, "Reviewer", 6]);
+    expect([states().length, textOf(answer, ".nol-message-author"), answer?.querySelectorAll("strong, a, li, nol-code-block").length]).toEqual([25, "Reviewer", 6]);
     expect([first?.classList.contains("nol-message-continuation"), continued?.classList.contains("nol-message-continuation"), continued?.querySelector(".nol-message-header")]).toEqual([
       false, true, null
     ]);
