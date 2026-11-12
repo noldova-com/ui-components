@@ -59,20 +59,10 @@ export class NewestContext extends Script {
     const parsed: unknown = output.trim().length === 0 ? [] : JSON.parse(output);
     const listed: readonly unknown[] = Array.isArray(parsed) ? parsed : [parsed];
     const versions = listed.filter((version): version is string => PeerRange.isExact(version));
-    if (versions.length === 0)
+    const newest = PeerRange.newestOf(versions);
+    if (newest === null)
       throw new CommandFailedException(`No published version of ${name} is inside "${range}".`);
-    return versions.reduce((newest, version) => NewestContext.compare(version, newest) > 0 ? version : newest);
-  }
-
-  private static compare(left: string, right: string): number {
-    const leftParts = left.split(".").map(Number);
-    const rightParts = right.split(".").map(Number);
-    for (let index = 0; index < leftParts.length; index++) {
-      const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
-      if (difference !== 0)
-        return difference;
-    }
-    return 0;
+    return newest;
   }
 }
 

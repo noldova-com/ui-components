@@ -11,6 +11,7 @@ import path from "node:path";
 
 import { AngularCoverageReport } from "./angular/angular-coverage-report.ts";
 import { AngularTestReport } from "./angular/angular-test-report.ts";
+import { AngularNewestCheck } from "./checks/angular-newest-check.ts";
 import type { ICheck } from "./checks/interfaces/i-check.ts";
 import { KitBundleCheck } from "./checks/kit-bundle-check.ts";
 import { KitCopiesCheck } from "./checks/kit-copies-check.ts";
@@ -25,11 +26,11 @@ import Script from "./script.ts";
 
 export class Test extends Script {
   private static readonly BLANK_LINE: string = "";
-  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the Kit bundles, the Kit copies and the Kit manifest skipped for a filtered run.";
+  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the Kit bundles, the Kit copies, the Kit manifest and Angular's newest skipped for a filtered run.";
   private static readonly NO_TEST_MATCHED: string = "No test matched the filters.";
   private static readonly KIT_CHECK_PLATFORM: NodeJS.Platform = "linux";
   private static readonly KIT_CHECK_ARCHITECTURE: NodeJS.Architecture = "x64";
-  private static readonly KIT_CHECKS_SKIPPED: string = "The Kit bundles, the Kit copies and the Kit manifest run only on Linux x64; skipped.";
+  private static readonly KIT_CHECKS_SKIPPED: string = "The Kit bundles, the Kit copies, the Kit manifest and Angular's newest run only on Linux x64; skipped.";
   private static readonly OPTION_PREFIX: string = "--";
   private static readonly ACCEPTED_OPTIONS: readonly string[] = ["--skip-test-details", "--skip-coverage-details"];
   private static readonly ROOT: string = path.resolve(Config.ROOT);
@@ -70,6 +71,7 @@ export class Test extends Script {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));
         await this.runCheckAsync(new KitCopiesCheck(Test.ROOT, new ProcessRunner(), new TemporaryFolder()));
         await this.runCheckAsync(new KitManifestCheck(Test.ROOT, new TemporaryFolder()));
+        await this.runCheckAsync(new AngularNewestCheck(Test.ROOT, new ProcessRunner()));
       }
       else {
         await this.writeLogAsync(Test.BLANK_LINE);

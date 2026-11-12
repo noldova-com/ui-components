@@ -27,4 +27,19 @@ export class PeerRange {
   public static lowestOf(version: string): string {
     return PeerRange.RANGE.exec(version)?.[1] ?? version;
   }
+
+  public static compare(left: string, right: string): number {
+    const leftParts = left.split(".").map(Number);
+    const rightParts = right.split(".").map(Number);
+    for (let index = 0; index < leftParts.length; index++) {
+      const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
+      if (difference !== 0)
+        return difference;
+    }
+    return 0;
+  }
+
+  public static newestOf(versions: readonly string[]): string | null {
+    return versions.reduce<string | null>((newest, version) => newest === null || PeerRange.compare(version, newest) > 0 ? version : newest, null);
+  }
 }
