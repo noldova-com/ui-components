@@ -10,5 +10,6 @@ export enum ButtonVariant {
   Primary = "Primary",
   Secondary = "Secondary",
   Text = "Text",
-  Outlined = "Outlined"
+  Outlined = "Outlined",
+  Accent = "Accent"
 }
