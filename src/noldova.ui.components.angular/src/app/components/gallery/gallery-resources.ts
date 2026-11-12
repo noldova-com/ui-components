@@ -545,7 +545,7 @@ export class GalleryResources {
     menuGroupLargeModel: "Large model",
     menuTag: "Recommended",
     menuRefreshLabel: "Refresh models",
-    menuRespondersCaption: "Avatars, descriptions and a value, in a group of at most 3 rows",
+    menuRespondersCaption: "Avatars, descriptions and a value, in a group of at most 3 rows, and a value without its chevron",
     menuGroupResponder: "Responder",
     menuResponderRows: 3,
     menuResponders: [
@@ -556,6 +556,8 @@ export class GalleryResources {
       { name: "Dara, who reviews every change before it merges", description: "Aurela · Lyra 5.5 · High effort · the account that pays for reviews" }
     ],
     menuModelValue: "Orb-6",
+    menuZoom: "Zoom",
+    menuZoomValue: "110%",
     glyphRefresh: "refresh",
     menuMinWidthCaption: "At least 18rem wide",
     menuMinWidth: 18,

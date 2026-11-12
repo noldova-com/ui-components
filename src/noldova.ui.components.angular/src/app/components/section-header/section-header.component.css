@@ -86,8 +86,9 @@
 
 .nol-section-header-caret {
   flex: none;
-  margin-block: calc((var(--nol-line-label) - var(--nol-icon)) / 2);
-  color: var(--nol-icon-color);
+  margin-block: calc((var(--nol-line-label) - var(--nol-section-header-caret)) / 2);
+  color: inherit;
+  font-size: var(--nol-section-header-caret);
   font-weight: normal;
   letter-spacing: normal;
   text-transform: none;
