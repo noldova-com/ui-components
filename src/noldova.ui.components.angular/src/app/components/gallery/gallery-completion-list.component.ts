@@ -29,7 +29,11 @@ export class GalleryCompletionListComponent {
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly hovered: string = GalleryResources.hoveredCompletion;
   protected readonly room: number = GalleryResources.completionRoom;
-  protected readonly listIds: readonly string[] = Array.from({ length: 5 }, () => GalleryCompletionListComponent.nextListId());
+  protected readonly defaultListId: string = GalleryCompletionListComponent.nextListId();
+  protected readonly hoveredListId: string = GalleryCompletionListComponent.nextListId();
+  protected readonly codeListId: string = GalleryCompletionListComponent.nextListId();
+  protected readonly roomListId: string = GalleryCompletionListComponent.nextListId();
+  protected readonly longListId: string = GalleryCompletionListComponent.nextListId();
   protected readonly commands: readonly CompletionChoice[] = [
     new CompletionChoice(GalleryResources.text.completionReview, GalleryResources.text.completionReviewNote),
     new CompletionChoice(GalleryResources.text.completionPlan, GalleryResources.text.completionPlanNote),

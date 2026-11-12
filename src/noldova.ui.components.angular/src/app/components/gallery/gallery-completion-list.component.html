@@ -8,18 +8,18 @@ LICENSE file in the root directory of this source tree.
 
 <nol-gallery-specimen [name]="text.completionList" [size]="sizes.Wide" noFocus>
   <nol-gallery-cell [caption]="text.defaultState">
-    <nol-completion-list class="nol-gallery-menu" [choices]="commands" [active]="0" [listId]="listIds[0]" [label]="text.completionLabel" />
+    <nol-completion-list class="nol-gallery-menu" [choices]="commands" [active]="0" [listId]="defaultListId" [label]="text.completionLabel" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hover">
-    <nol-completion-list class="nol-gallery-menu" [nolGalleryHover]="hovered" [choices]="commands" [active]="0" [listId]="listIds[1]" [label]="text.completionLabel" />
+    <nol-completion-list class="nol-gallery-menu" [nolGalleryHover]="hovered" [choices]="commands" [active]="0" [listId]="hoveredListId" [label]="text.completionLabel" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.completionCode">
-    <nol-completion-list class="nol-gallery-menu" [choices]="code" [active]="1" [listId]="listIds[2]" [label]="text.completionLabel" [isCode]="true" />
+    <nol-completion-list class="nol-gallery-menu" [choices]="code" [active]="1" [listId]="codeListId" [label]="text.completionLabel" [isCode]="true" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.completionRoom">
-    <nol-completion-list class="nol-gallery-menu" [choices]="code" [active]="2" [listId]="listIds[3]" [label]="text.completionLabel" [maxHeight]="room" [isCode]="true" />
+    <nol-completion-list class="nol-gallery-menu" [choices]="code" [active]="2" [listId]="roomListId" [label]="text.completionLabel" [maxHeight]="room" [isCode]="true" />
   </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
-    <nol-completion-list class="nol-gallery-menu nol-gallery-narrow" [choices]="long" [active]="0" [listId]="listIds[4]" [label]="text.completionLabel" />
+    <nol-completion-list class="nol-gallery-menu nol-gallery-narrow" [choices]="long" [active]="0" [listId]="longListId" [label]="text.completionLabel" />
   </nol-gallery-cell>
 </nol-gallery-specimen>
