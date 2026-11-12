@@ -11972,6 +11972,16 @@ export declare class ToolbarButtonComponent {
   public readonly size: InputSignal<ToolbarButtonSize>;
 
   /**
+   * Whether a button that opens a menu, with {@link hasMenu}, draws its
+   * pressed look, the toolbar hover fill or under forced colors `Highlight`,
+   * while its menu is open, which the menu trigger marks `aria-expanded`,
+   * and its idle look once the menu closes; it isn't announced pressed.
+   * Without it, the button looks idle while its menu is open. False when
+   * not bound.
+   */
+  public readonly isPressedWhileOpen: InputSignal<boolean>;
+
+  /**
    * Whether the button's work is under way: the kit's spinner, in the
    * glyph's color, stands centered in place of its glyph, label and chevron,
    * which stay in the layout unseen, so the button keeps its width and
