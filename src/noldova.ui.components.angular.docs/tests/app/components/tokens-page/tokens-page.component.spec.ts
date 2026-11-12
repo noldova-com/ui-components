@@ -32,8 +32,15 @@ describe("TokensPageComponent", () => {
 
   const cellText = (row: HTMLElement, selector: string): string => DocsFixture.one(row, selector).textContent?.trim() ?? "";
 
+  const span = (cell: HTMLElement): number => Number(cell.getAttribute("colspan") ?? 1);
+
+  const modeValues = (row: HTMLElement): readonly string[] => {
+    const light = cellText(row, "td:nth-of-type(1)");
+    return span(DocsFixture.one(row, "td")) === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
+  };
+
   const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> =>
-    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), [cellText(t, "td:nth-of-type(1)"), cellText(t, "td:nth-of-type(2)")]]));
+    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), modeValues(t)]));
 
   const shownNames = (host: HTMLElement): readonly string[] => DocsFixture.all(host, "main tbody th").map(t => t.textContent?.trim() ?? "");
 
@@ -86,6 +93,31 @@ describe("TokensPageComponent", () => {
 
     expect(base.map(([name]) => name)).toEqual(expect.arrayContaining(["--nol-font-sans", "--nol-text-panel", "--nol-line-panel", "--nol-weight-emphasis", "--nol-text-tab"]));
     expect(base.filter(([name, values]) => values[0] !== values[1] || !kitBaseStyles.includes(`${name}: ${values[0] ?? ""};`)).map(([name]) => name)).toEqual([]);
+  });
+
+  it("shows a value the two modes share once, in one cell across both columns, and a value that changes in a cell for each mode", async () => {
+    const host = await renderAsync("/tokens");
+    const rows = DocsFixture.all(host, "main tbody tr");
+    const shape = (row: HTMLElement): readonly number[] => DocsFixture.all(row, "td").map(span);
+    const shared = rows.filter(t => DocsFixture.all(t, "td").length === 1);
+    const changing = rows.filter(t => DocsFixture.all(t, "td").length === 2);
+
+    expect(shared.length).toBeGreaterThan(0);
+    expect(changing.length).toBeGreaterThan(0);
+    expect(shared.length + changing.length).toBe(rows.length);
+    expect(new Set(shared.map(t => shape(t).join()))).toEqual(new Set(["2"]));
+    expect(changing.filter(t => cellText(t, "td:nth-of-type(1)") === cellText(t, "td:nth-of-type(2)")).map(t => cellText(t, "th"))).toEqual([]);
+  });
+
+  it("stacks a token table that doesn't fit a phone, naming each value's mode before it, and a shared value's as both", async () => {
+    await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
+    const host = await renderAsync("/tokens");
+    await vi.waitFor(() => expect(DocsFixture.all(host, "main .nol-docs-stacked").length).toBeGreaterThan(0));
+    const rows = DocsFixture.all(host, "main .nol-docs-stacked tbody tr");
+    const labels = (row: HTMLElement): readonly (string | null)[] => DocsFixture.all(row, "td").map(t => t.getAttribute("data-label"));
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.filter(t => labels(t).join() !== (DocsFixture.all(t, "td").length === 1 ? "Light and Dark" : "Light,Dark")).map(t => cellText(t, "th"))).toEqual([]);
   });
 
   it("groups the tokens into tables named by their sections", async () => {
@@ -144,7 +176,7 @@ describe("TokensPageComponent", () => {
     ["Light", "light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
     ["Dark", "dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
   ])("in the %s mode, a %s color scheme, at %ipx wide", (mode, scheme, width, height) => {
-    it("keeps every token table inside the page's width, scrolling inside its holder", async () => {
+    it("keeps every token table and its holder inside the page's width", async () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = await renderAsync("/tokens");

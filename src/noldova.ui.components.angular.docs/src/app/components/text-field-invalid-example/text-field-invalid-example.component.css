@@ -11,3 +11,8 @@
   gap: var(--nol-space-2);
   max-width: 24rem;
 }
+
+label {
+  display: grid;
+  gap: var(--nol-space-1);
+}

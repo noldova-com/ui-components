@@ -491,6 +491,12 @@ describe("ComponentPageComponent", () => {
 
   const outside = (host: HTMLElement, selector: string): readonly HTMLElement[] => DocsFixture.all(document, selector).filter(t => !host.contains(t));
 
+  const isStacked = (element: Element): boolean => element.closest(".nol-docs-table")?.classList.contains("nol-docs-stacked") === true;
+
+  const fittedAsync = async (host: HTMLElement): Promise<void> => {
+    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]));
+  };
+
   const activeLabel = (): string | undefined => document.activeElement?.querySelector(".nol-menu-item-label")?.textContent?.trim();
 
   afterEach(() => DocsFixture.resetAsync());
@@ -536,6 +542,15 @@ describe("ComponentPageComponent", () => {
       expect(names("Outputs")).toEqual(expectation(content.componentName).outputs);
       expect(DocsFixture.all(api, "tbody td:nth-child(2) > code").map(t => t.textContent)).toEqual([...ApiReference.find(content.componentName).inputs, ...ApiReference.find(content.componentName).outputs].map(t => t.type));
       expect(DocsFixture.all(api, "tbody td:last-child").every(t => (t.textContent ?? "").trim().length > 0)).toBe(true);
+    });
+
+    it("shows a type of 24 characters or fewer whole, and splits only a longer union, each later part starting at its |", async () => {
+      const host = await renderAsync(content);
+      const types = DocsFixture.all(section(host, "API"), "tbody td:nth-child(2) > code");
+      const parts = (code: HTMLElement): readonly string[] => DocsFixture.all(code, ".nol-docs-type-part").map(t => t.textContent ?? "");
+      const expected = (type: string): readonly string[] => type.length <= 24 ? [type] : type.split(" | ").map((t, index) => index === 0 ? t : ` | ${t}`);
+
+      expect(types.map(parts)).toEqual(types.map(t => expected(t.textContent ?? "")));
     });
 
     it("names each two-way input's binding as inline code", async () => {
@@ -586,6 +601,8 @@ describe("ComponentPageComponent", () => {
     describe.each([
       ["Light", "light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
       ["Dark", "dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+      ["Light", "light", 1920, 1080],
+      ["Dark", "dark", 1920, 1080],
       ["Light", "light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
       ["Dark", "dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
     ])("in the %s mode, a %s color scheme, at %ipx wide", (mode, scheme, width, height) => {
@@ -598,14 +615,14 @@ describe("ComponentPageComponent", () => {
         const markdownCells = DocsFixture.all(host, ".nol-markdown-table th, .nol-markdown-table td");
         const api = ApiReference.find(content.componentName);
 
-        const isStacked = width === DocsFixture.PHONE_WIDTH;
-        const lined = isStacked ? [...cells.filter(t => t.closest(".nol-docs-stacked-table") === null), ...DocsFixture.all(host, ".nol-docs-stacked-table tbody tr")] : cells;
+        await fittedAsync(host);
+        const lined = [...cells.filter(t => !isStacked(t)), ...DocsFixture.all(host, ".nol-docs-stacked-table tbody tr").filter(isStacked)];
 
         expect(DocsFixture.all(host, ".nol-docs-table").length).toBe([content.keys, api.inputs, api.outputs].filter(t => t.length > 0).length);
         expect(lined.filter(t => parseFloat(getComputedStyle(t).borderBlockEndWidth) === 0).map(t => t.textContent?.trim())).toEqual([]);
         expect(cells.filter(t => {
           const style = getComputedStyle(t);
-          return (!isStacked || t.closest(".nol-docs-stacked-table") === null) && parseFloat(style.paddingInlineStart) === 0 || style.textAlign !== "start";
+          return !isStacked(t) && parseFloat(style.paddingInlineStart) === 0 || style.textAlign !== "start";
         }).map(t => t.textContent?.trim())).toEqual([]);
         expect([...cells, ...markdownCells].flatMap(t => brokenWords(t))).toEqual([]);
         expect(DocsFixture.all(host, ".nol-docs-table kbd, .nol-docs-table th[scope=row] code, .nol-docs-page .nol-markdown-table code, .nol-docs-type-part").filter(t => t.getClientRects().length > 1).map(t => t.textContent)).toEqual([]);
@@ -624,12 +641,13 @@ describe("ComponentPageComponent", () => {
         expect(DocsFixture.all(host, ".nol-docs-example-preview, .nol-gallery-specimen").every(t => t.getBoundingClientRect().right <= edge)).toBe(true);
       });
 
-      it("keeps each API and accessibility row a table row on a desktop, and stacks it at a phone width with its description below at full width, its table roles explicit", async () => {
+      it("keeps each API and accessibility row a table row where its table's columns fit its section, and otherwise stacks it with its description below at full width, its table roles explicit", async () => {
         DocsFixture.setMode(mode);
         await DocsFixture.viewAsync(width, height);
         const host = await renderAsync(content);
         const rows = DocsFixture.all(host, ".nol-docs-stacked-table tbody tr");
         const misplaced: string[] = [];
+        await fittedAsync(host);
 
         expect(rows.length).toBe(DocsFixture.all(host, ".nol-docs-table tbody tr").length);
         for (const row of rows) {
@@ -641,7 +659,7 @@ describe("ComponentPageComponent", () => {
           const top = cells.slice(0, -1);
           if (cells.some(t => t.left < section.left - 0.5 || t.right > section.right + 0.5))
             misplaced.push(`${name}: outside its section`);
-          if (width === DocsFixture.PHONE_WIDTH) {
+          if (isStacked(row)) {
             if (top.some(t => t.bottom > description.top + 0.5))
               misplaced.push(`${name}: description not below`);
             if (Math.abs(description.width - box.width) > 0.5)
@@ -655,6 +673,33 @@ describe("ComponentPageComponent", () => {
         expect(DocsFixture.overflowWidth()).toBe(0);
         expect(DocsFixture.all(host, ".nol-docs-stacked-table").flatMap(t => [t, ...DocsFixture.all(t, ":scope > *, :scope > * > tr, :scope > * > tr > *")])
           .filter(t => t.getAttribute("role") !== roleOf(t)).map(t => t.outerHTML.slice(0, 80))).toEqual([]);
+      });
+    });
+
+    // Only the tables' fit runs at every width the site promises; the other per-page specs keep the desktop and phone widths, so the docs tests stay quick.
+    describe.each([
+      [DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
+      [768, 1024],
+      [1024, 768],
+      [DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+      [1920, 1080],
+      [2000, 1125]
+    ])("at %ipx wide", (width, height) => {
+      it("fits every table, the API and accessibility tables and the Markdown ones, inside its section, with no table scrolling sideways", async () => {
+        DocsFixture.setMode("Light");
+        await DocsFixture.viewAsync(width, height);
+        const host = await renderAsync(content);
+        await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
+        await fittedAsync(host);
+        const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
+
+        expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
+        expect(tables.flatMap(t => {
+          const box = t.getBoundingClientRect();
+          const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
+          const heading = t.closest(".nol-docs-section")?.querySelector("h2")?.textContent?.trim() ?? String();
+          return box.left < owner.left - 0.5 || box.right > owner.right + 0.5 ? [`${heading}: ${Math.round(box.width)} > ${Math.round(owner.width)}`] : [];
+        })).toEqual([]);
       });
     });
   });

@@ -6,8 +6,10 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<nol-split-button icon="play_arrow" label="Run" menuLabel="Run options" [menu]="options" [disabled]="true" />
-<nol-split-button icon="play_arrow" label="Run" menuLabel="Run options" [menu]="options" [busy]="true" />
+<ul>
+  <li><nol-split-button icon="play_arrow" label="Run" menuLabel="Run options" [menu]="options" [disabled]="true" /><span>Unavailable</span></li>
+  <li><nol-split-button icon="play_arrow" label="Run" menuLabel="Run options" [menu]="options" [busy]="true" /><span>Busy</span></li>
+</ul>
 <ng-template #options>
   <nol-menu aria-label="Run options">
     <button type="button" nol-menu-item label="Run with arguments"></button>

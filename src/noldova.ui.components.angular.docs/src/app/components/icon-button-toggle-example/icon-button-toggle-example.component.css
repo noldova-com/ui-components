@@ -7,8 +7,26 @@
  */
 
 :host {
+  display: block;
+}
+
+ul {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--nol-space-2);
+  gap: var(--nol-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  gap: var(--nol-space-1);
+}
+
+li > span {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
 }

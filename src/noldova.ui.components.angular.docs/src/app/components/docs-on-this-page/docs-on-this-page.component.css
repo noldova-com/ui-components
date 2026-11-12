@@ -61,13 +61,25 @@
 
 @media (min-width: 75rem) {
   :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: sticky;
     inset-block-start: var(--nol-docs-header-height, 0px);
     align-self: start;
+    box-sizing: border-box;
     max-height: calc(100dvh - var(--nol-docs-header-height, 0px));
-    overflow-y: auto;
     padding: var(--nol-space-6) var(--nol-space-4);
+  }
+
+  .nol-docs-outline {
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .nol-docs-outline-list {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 

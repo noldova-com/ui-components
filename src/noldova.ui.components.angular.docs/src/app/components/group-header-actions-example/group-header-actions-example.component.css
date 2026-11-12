@@ -8,7 +8,12 @@
 
 :host {
   display: block;
+  box-sizing: border-box;
   max-width: 20rem;
+  padding: var(--nol-space-1);
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-window);
 }
 
 ul {

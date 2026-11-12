@@ -12,7 +12,8 @@ export class TextFieldPageResources {
   public static readonly title: string = "Text field";
   public static readonly componentName: string = "TextFieldComponent";
   public static readonly textFieldLinesTitle: string = "One line and several, each with its label";
-  public static readonly textFieldInvalidTitle: string = "Disabled, and invalid with its message";
+  public static readonly textFieldDisabledTitle: string = "A disabled field, which keeps its value";
+  public static readonly textFieldInvalidTitle: string = "An invalid entry with its message";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus into the field, or past it; a disabled field is skipped. In the field, the browser's own editing keys apply.")
   ];

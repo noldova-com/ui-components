@@ -60,10 +60,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--nol-space-3);
-}
-
-.nol-docs-header-end nol-docs-theme-switch {
-  margin-inline-end: auto;
+  margin-inline-end: calc((var(--nol-icon) - var(--nol-icon-button-target)) / 2);
 }
 
 .nol-docs-header-link {
@@ -106,6 +103,9 @@
 .nol-docs-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  box-sizing: border-box;
+  max-inline-size: 108rem;
+  margin-inline: auto;
 }
 
 .nol-docs-menu {
@@ -119,6 +119,7 @@
   min-width: 0;
   max-block-size: calc(100dvh - var(--nol-docs-header-height, 0px));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--nol-space-4);
   border-block-end: var(--nol-border-width) solid var(--nol-border);
   background-color: var(--nol-window);
@@ -172,6 +173,14 @@
     display: none;
   }
 
+  .nol-docs-header {
+    padding-inline-end: var(--nol-space-6);
+  }
+
+  .nol-docs-brand {
+    padding-inline-start: var(--nol-space-2);
+  }
+
   .nol-docs-menu {
     z-index: auto;
     display: grid;
@@ -189,5 +198,10 @@
 @media (min-width: 75rem) {
   .nol-docs-body {
     grid-template-columns: 14rem minmax(0, 1fr) 14rem;
+    padding-inline: 3.5rem;
+  }
+
+  .nol-docs-header {
+    padding-inline: calc(max(0px, (100% - 108rem) / 2) + 3.5rem + var(--nol-space-4));
   }
 }
