@@ -112,6 +112,7 @@ The repository's automation, in each package's `scripts/`, has no coverage requi
 
 Since Angular 22, a component without a `changeDetection` uses the OnPush strategy, so a component, an example or a spec here never writes `changeDetection: ChangeDetectionStrategy.OnPush`; it writes a strategy only to choose `Eager`, with the reason.
 The OnPush strategies check, `src/noldova.ui.components.angular/scripts/checks/on-push-check.ts`, reads every TypeScript file, `.ts` and `.mts`, that git tracks under `src`, and fails on each `changeDetection` key whose value isn't `ChangeDetectionStrategy.Eager`, however its line is split, naming the file and line.
+It first tests its own pattern on `ChangeDetectionStrategy.Eager` with and without spaces, which it accepts, and on other values, which it refuses, and fails when that test does.
 
 ### nativeElement assertions
 
