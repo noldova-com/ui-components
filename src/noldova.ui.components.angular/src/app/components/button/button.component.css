@@ -201,6 +201,34 @@
   padding-block: 0;
 }
 
+:host(.nol-button-accent) {
+  min-height: var(--nol-chip);
+  padding: 0 var(--nol-chip-padding);
+  border-color: var(--nol-accent);
+  background-color: transparent;
+  color: var(--nol-accent);
+}
+
+:host(.nol-button-accent:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-toolbar-hover);
+}
+
+@media (forced-colors: active) {
+  :host(.nol-button-accent) {
+    border-color: ButtonText;
+    color: ButtonText;
+  }
+
+  :host(.nol-button-accent:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+    background-color: transparent;
+  }
+
+  :host(.nol-button-accent:is(:disabled, [aria-disabled="true"])) {
+    border-color: GrayText;
+    color: GrayText;
+  }
+}
+
 :host(.nol-button-busy) {
   --nol-progress: currentColor;
 

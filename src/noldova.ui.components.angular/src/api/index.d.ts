@@ -190,7 +190,16 @@ export declare enum ButtonVariant {
    * it keeps no fill under the pointer. Under forced colors its border and
    * text are `ButtonText`, or `GrayText` while disabled.
    */
-  Outlined = "Outlined"
+  Outlined = "Outlined",
+  /**
+   * The accent chip look, for an action that names what is shown, such as a
+   * card's Open while its page is open: the chip's height and side padding,
+   * a one-pixel border and the label in the accent color, and no fill; under
+   * the pointer it takes the toolbar hover fill. It keeps the chip's height
+   * in either size. Under forced colors its border and text are `ButtonText`,
+   * or `GrayText` while disabled.
+   */
+  Accent = "Accent"
 }
 
 /**

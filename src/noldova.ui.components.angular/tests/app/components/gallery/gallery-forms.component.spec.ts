@@ -77,6 +77,17 @@ describe("GalleryFormsComponent", () => {
     expect(filled.map(t => [t.getAttribute("aria-label"), t.disabled])).toEqual([["Send", false], ["Filled, disabled", true], ["Send", false]]);
   });
 
+  it("shows the accent button's own cells, its default, hover, disabled and focus, at the chip's height", async () => {
+    const fixture = await GalleryFixture.showSectionAsync(GalleryFormsComponent);
+    const accent = [...DomFixture.host(fixture).querySelectorAll<HTMLButtonElement>(".nol-button-accent")];
+
+    expect(accent.map(t => [t.closest("nol-gallery-cell")?.getAttribute("aria-label"), t.textContent?.trim(), t.disabled]))
+      .toEqual([["Accent", "Open", false], ["Accent, hover", "Open", false], ["Accent, disabled", "Open", true], ["Accent, focus", "Open", false]]);
+    for (const button of accent)
+      AppearanceFixture.expectPixels(button.getBoundingClientRect().height, AppearanceFixture.measureLook("chip"));
+    expect([accent[1]?.getAttribute("data-nol-state"), accent[3]?.getAttribute("data-nol-state")]).toEqual(["Hover", "Focus"]);
+  });
+
   it("shows the danger button's own cells, its default, hover, disabled and focus, at the primary button's size", async () => {
     const fixture = await GalleryFixture.showSectionAsync(GalleryFormsComponent);
     const forms = DomFixture.host(fixture);
