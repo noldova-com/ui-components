@@ -7281,6 +7281,16 @@ export declare class MenuItemComponent {
   public readonly danger: InputSignal<boolean>;
 
   /**
+   * Whether a row that opens a submenu shows its chevron at its end, true,
+   * the default; false leaves it out, so the row's value or shortcut ends at
+   * the row's end padding, as a Zoom row showing the page's zoom does. The
+   * row still opens its submenu with the pointer, Enter and the arrow key
+   * toward its side, and screen readers still hear that it opens a menu. A
+   * row without a submenu has no chevron either way.
+   */
+  public readonly isShowingChevron: InputSignal<boolean>;
+
+  /**
    * Creates the row, which Angular does for each `button[nol-menu-item]`
    * element.
    *
