@@ -28,13 +28,15 @@ export class CompletionListCommandsExampleComponent {
   protected readonly listId: string = "nol-docs-completion-commands";
   protected readonly query: WritableSignal<string> = signal("/");
   protected readonly active: WritableSignal<number> = signal(0);
-  protected readonly choices: Signal<readonly CompletionChoice[]> = computed(() => this.commands.filter(t => t.label.startsWith(this.query())));
+  protected readonly isOpen: WritableSignal<boolean> = signal(true);
+  protected readonly choices: Signal<readonly CompletionChoice[]> = computed(() => this.isOpen() ? this.commands.filter(t => t.label.startsWith(this.query())) : []);
   protected readonly activeId: Signal<string | null> = computed(() => this.active() < this.choices().length ? CompletionListComponent.optionId(this.listId, this.active()) : null);
   protected readonly chosen: WritableSignal<string> = signal("Nothing yet");
 
   protected type(query: string): void {
     this.query.set(query);
     this.active.set(0);
+    this.isOpen.set(true);
   }
 
   protected move(event: KeyboardEvent): void {
@@ -49,10 +51,13 @@ export class CompletionListCommandsExampleComponent {
         event.preventDefault();
         this.choose(choice);
       }
+    if (event.key === "Escape")
+      this.isOpen.set(false);
   }
 
   protected choose(choice: CompletionChoice): void {
     this.chosen.set(choice.label);
-    this.type(choice.label);
+    this.query.set(choice.label);
+    this.isOpen.set(false);
   }
 }

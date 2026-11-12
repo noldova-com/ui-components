@@ -6,7 +6,7 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<input class="nol-docs-completion-field" #field role="combobox" aria-label="Command" aria-autocomplete="list" [attr.aria-controls]="listId" [attr.aria-expanded]="choices().length > 0"
+<input class="nol-docs-completion-field" #field role="combobox" aria-label="Command" aria-autocomplete="list" [attr.aria-controls]="choices().length > 0 ? listId : null" [attr.aria-expanded]="choices().length > 0"
   [attr.aria-activedescendant]="activeId()" [value]="query()" (input)="type(field.value)" (keydown)="move($event)" />
 @if (choices().length > 0) {
   <nol-completion-list label="Commands" [listId]="listId" [choices]="choices()" [active]="active()" (chosen)="choose($event)" />

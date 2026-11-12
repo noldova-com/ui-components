@@ -1126,11 +1126,13 @@ describe("ComponentPageComponent", () => {
   });
 
   describe("the Completion list page", () => {
-    it("follows the field's arrows, filters as the field is typed in, chooses on Enter and on a click, and keeps the focus in the field", async () => {
+    it("follows the field's arrows, filters as the field is typed in, chooses and closes on Enter and on a click, closes on Escape, and keeps the focus in the field", async () => {
       const host = await renderAsync(expectPage("CompletionListComponent"));
       const examples = section(host, "Examples");
       const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
       const labels = (): readonly (string | undefined)[] => DocsFixture.all(examples, "[aria-label=\"Commands\"] .nol-completion-label").map(t => t.textContent?.trim());
+      const closed = (): readonly unknown[] => [labels(), field.getAttribute("aria-expanded"), field.hasAttribute("aria-controls"), field.hasAttribute("aria-activedescendant")];
+      const shut = [[], "false", false, false];
 
       field.focus();
       await userEvent.keyboard("{ArrowUp}");
@@ -1141,12 +1143,19 @@ describe("ComponentPageComponent", () => {
       await vi.waitFor(() => expect(labels()).toEqual(["/plan"]));
       await userEvent.keyboard("{Enter}");
       await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /plan"));
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
 
       await userEvent.fill(field, "/");
-      await vi.waitFor(() => expect(labels().length).toBe(4));
+      await vi.waitFor(() => expect([labels().length, field.getAttribute("aria-controls")]).toEqual([4, "nol-docs-completion-commands"]));
+      await userEvent.keyboard("{Escape}");
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
+
+      await userEvent.fill(field, "/c");
+      await vi.waitFor(() => expect(labels()).toEqual(["/compact", "/clear"]));
       await userEvent.click(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-label=\"/compact, Shorten the conversation\"]"));
       await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /compact"));
-      expect(document.activeElement).toBe(field);
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
+      expect([document.activeElement, field instanceof HTMLInputElement ? field.value : null]).toEqual([field, "/compact"]);
     });
 
     it("hides the list and reports it closed while nothing matches, and the field's arrows and Enter then choose nothing", async () => {
@@ -1158,7 +1167,7 @@ describe("ComponentPageComponent", () => {
       await vi.waitFor(() => expect(examples.querySelector("[aria-label=\"Commands\"]")).toBeNull());
       await userEvent.keyboard("{ArrowDown}{Enter}");
 
-      expect([field.getAttribute("aria-expanded"), field.hasAttribute("aria-activedescendant")]).toEqual(["false", false]);
+      expect([field.getAttribute("aria-expanded"), field.hasAttribute("aria-controls"), field.hasAttribute("aria-activedescendant")]).toEqual(["false", false, false]);
       expect(examples.textContent).toContain("Chosen: Nothing yet");
     });
   });
