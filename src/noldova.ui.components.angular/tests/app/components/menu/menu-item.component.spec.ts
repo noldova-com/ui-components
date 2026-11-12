@@ -10,6 +10,7 @@ import { CdkMenuItem } from "@angular/cdk/menu";
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
+import { onTestFinished } from "vitest";
 import { page, userEvent } from "vitest/browser";
 
 import { AvatarComponent } from "../../../../src/app/components/avatar/avatar.component";
@@ -23,6 +24,7 @@ import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { ComponentStyleFixture } from "../../../fixtures/component-style.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { FocusRecordFixture } from "../../../fixtures/focus-record.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
 
@@ -584,15 +586,28 @@ describe("MenuItemComponent", () => {
     fixture.componentInstance.label.set(label);
     fixture.detectChanges();
     await fixture.whenStable();
+    const record = new FocusRecordFixture();
     await userEvent.click(row("valued"));
     row("plain").focus();
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
-    row("plain").blur();
-    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again after the blur").toBe(0));
+    const past = document.createElement("span");
+    past.textContent = "Past the menu";
+    DomFixture.host(fixture).after(past);
+    onTestFinished(() => past.remove());
+    await userEvent.click(past);
+    const start = document.createElement("button");
+    start.type = "button";
+    start.textContent = "Before the menu";
+    DomFixture.host(fixture).before(start);
+    onTestFinished(() => start.remove());
+    start.focus();
+    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again once the focus leaves it").toBe(0));
 
+    record.mark("before the Tab");
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(row("plain")));
+    record.mark("after the Tab");
+    await record.expectAsync(() => vi.waitFor(() => expect(document.activeElement).toBe(row("plain"))));
     await vi.waitFor(() => expect(shownTooltip()).toBe(label));
     row("plain").blur();
     await settledAsync();
