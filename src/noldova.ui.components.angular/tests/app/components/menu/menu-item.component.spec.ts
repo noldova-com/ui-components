@@ -10,6 +10,7 @@ import { CdkMenuItem } from "@angular/cdk/menu";
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
+import { onTestFinished } from "vitest";
 import { page, userEvent } from "vitest/browser";
 
 import { AvatarComponent } from "../../../../src/app/components/avatar/avatar.component";
@@ -590,8 +591,13 @@ describe("MenuItemComponent", () => {
     row("plain").focus();
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
-    row("plain").blur();
-    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again after the blur").toBe(0));
+    const start = document.createElement("button");
+    start.type = "button";
+    start.textContent = "Before the menu";
+    DomFixture.host(fixture).before(start);
+    onTestFinished(() => start.remove());
+    start.focus();
+    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again once the focus leaves it").toBe(0));
 
     record.mark("before the Tab");
     await userEvent.keyboard("{Tab}");
