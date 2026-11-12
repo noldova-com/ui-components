@@ -41,6 +41,30 @@
   white-space: nowrap;
 }
 
+.nol-docs-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+}
+
+.nol-docs-version {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-label);
+  line-height: var(--nol-line-label);
+  text-decoration: none;
+  white-space: nowrap;
+  outline: none;
+}
+
+.nol-docs-version:hover {
+  text-decoration: underline;
+}
+
+.nol-docs-version:focus-visible {
+  border-radius: var(--nol-radius-small);
+  outline: var(--nol-border-width) solid var(--nol-accent);
+}
+
 .nol-docs-wordmark {
   flex: none;
   height: 0.75em;

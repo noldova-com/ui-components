@@ -15,6 +15,8 @@ export class Resources {
   public static readonly wordmarkLabel: string = "Noldova";
   public static readonly siteName: string = "UI Components";
   public static readonly repositoryLink: string = "https://github.com/noldova-com/ui-components";
+  public static readonly changelogLink: string = "https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md";
+  public static readonly versionPrefix: string = "v";
   public static readonly kitDocumentsLink: string = "https://github.com/noldova-com/ui-components/blob/main/documents/kit/";
   public static readonly repositoryLabel: string = "GitHub";
   public static readonly xLink: string = "https://x.com/noldova";
