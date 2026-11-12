@@ -21,14 +21,16 @@ export class OnPushCheck implements ICheck {
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
   private static readonly STRATEGY: RegExp = /\bchangeDetection\s*:(?!\s*ChangeDetectionStrategy\.Eager\b)/gu;
   private static readonly ENCODING: BufferEncoding = "utf8";
+  private static readonly KEY: string = "changeDetection";
+  /** The own test's cases: what follows the key, kept apart from it so this file holds no key the check would find. */
   private static readonly OWN_CASES: ReadonlyArray<readonly [string, number]> = [
-    ["changeDetection: ChangeDetectionStrategy.Eager", 0],
-    ["changeDetection:ChangeDetectionStrategy.Eager", 0],
-    ["changeDetection :\n    ChangeDetectionStrategy.Eager", 0],
-    ["changeDetection: ChangeDetectionStrategy.OnPush", 1],
-    ["changeDetection:ChangeDetectionStrategy.OnPush", 1],
-    ["changeDetection: ChangeDetectionStrategy.EagerLater", 1],
-    ["changeDetection: strategy", 1]
+    [": ChangeDetectionStrategy.Eager", 0],
+    [":ChangeDetectionStrategy.Eager", 0],
+    [" :\n    ChangeDetectionStrategy.Eager", 0],
+    [": ChangeDetectionStrategy.OnPush", 1],
+    [":ChangeDetectionStrategy.OnPush", 1],
+    [": ChangeDetectionStrategy.EagerLater", 1],
+    [": strategy", 1]
   ];
 
   private readonly root: string;
@@ -48,7 +50,8 @@ export class OnPushCheck implements ICheck {
       return false;
     }
     const files = listed.output.split("\0").filter(t => OnPushCheck.SOURCE.test(t)).sort();
-    const own = OnPushCheck.OWN_CASES.filter(([text, count]) => OnPushCheck.linesOf(text).length !== count);
+    const own = OnPushCheck.OWN_CASES.map(([value, count]): readonly [string, number] => [OnPushCheck.KEY + value, count])
+      .filter(([text, count]) => OnPushCheck.linesOf(text).length !== count);
     for (const [text, count] of own)
       output.write(`The check's own test: ${JSON.stringify(text)} should give ${count} findings but gave ${OnPushCheck.linesOf(text).length}.\n`);
     const findings: string[] = [];
