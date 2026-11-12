@@ -15,6 +15,7 @@ Accessible name.
 ## Surface and behavior
 
 Toolbar hover; pointer hit region at least 24px.
+Under forced colors hover is a 1px dashed `Highlight` outline drawn three border widths inside the button's edge, clear of an overlay's or filled button's ring, so a hovered button never looks like a resting one.
 An icon button marked aria-disabled, which stays focusable, looks disabled and shows no hover, as a disabled one does.
 Under forced colors a pressed icon button's glyph is `HighlightText` on `Highlight`, and a disabled or aria-disabled one's is `GrayText`; pressed and disabled or aria-disabled, its glyph is `GrayText` on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces.
 
@@ -66,6 +67,6 @@ Under forced colors a pressed icon button's glyph is `HighlightText` on `Highlig
 ## Busy
 
 - With `busy`, while its work is under way, the kit's 1rem spinner, its ring 0.75rem, stands centered in place of the glyph, in the glyph's color, so the button keeps its size to the pixel in every look.
-- Under forced colors the spinner keeps its own look, a 2px `Highlight` arc on a thinner, 1px `GrayText` track, but on a pressed button's `Highlight` fill its arc is `HighlightText`, so it shows; a disabled pressed button's `Canvas` fill keeps the `Highlight` arc.
+- Under forced colors the spinner keeps its own look, a 2px `Highlight` arc on a thinner, 1px `GrayText` track, but on a pressed button's `Highlight` fill its arc and track are `HighlightText`, so they show; a disabled pressed button's `Canvas` fill keeps the `Highlight` arc and `GrayText` track.
 - It is marked `aria-busy` and ignores clicks, middle clicks, Enter and Space, which neither its own handlers nor its parents hear; once it is no longer busy it looks and acts as before.
 - With `busyPressable` as well, as a code block's Run is while its command runs, it keeps the spinner, `aria-busy` and its size but takes clicks, middle clicks, Enter and Space as when not busy; every other busy button still ignores them.

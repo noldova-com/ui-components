@@ -35,7 +35,7 @@
   @media (forced-colors: active) {
     border-width: var(--nol-border-width);
     border-top-width: var(--nol-spinner-stroke);
-    border-color: GrayText;
+    border-color: var(--nol-spinner-forced-ring, GrayText);
     border-top-color: var(--nol-spinner-forced-arc, Highlight);
   }
 }

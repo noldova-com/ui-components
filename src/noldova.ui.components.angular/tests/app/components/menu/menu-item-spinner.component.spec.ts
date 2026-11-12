@@ -54,12 +54,12 @@ describe("MenuItemComponent's current row under forced colors", () => {
   });
 
   for (const mode of AppearanceFixture.modes)
-    it(`draws a lead spinner's arc in HighlightText on the current row's Highlight fill, and in Highlight on a plain row and on an unavailable current row's Canvas fill, in ${mode} mode`, async () => {
+    it(`draws a lead spinner's arc and ring in HighlightText on the current row's Highlight fill, and a Highlight arc over a GrayText ring on a plain row and on an unavailable current row's Canvas fill, in ${mode} mode`, async () => {
       await renderAsync(mode);
       await ForcedColorsFixture.activateAsync();
       const [highlight, text, gray, canvas] = ["Highlight", "HighlightText", "GrayText", "Canvas"].map(t => ForcedColorsFixture.resolve(t));
 
       expect([fill("current"), arc("current"), arc("plain"), fill("unavailable"), arc("unavailable")])
-        .toEqual([highlight, [text, gray], [highlight, gray], canvas, [highlight, gray]]);
+        .toEqual([highlight, [text, text], [highlight, gray], canvas, [highlight, gray]]);
     });
 });

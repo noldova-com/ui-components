@@ -180,7 +180,7 @@ describe("IconButtonComponent", () => {
       });
 
   for (const mode of AppearanceFixture.modes)
-    it(`draws a busy pressed button's spinner arc in HighlightText on its Highlight fill, and in Highlight on Canvas once disabled, over its GrayText ring, under forced colors in ${mode} mode`, async () => {
+    it(`draws a busy pressed button's spinner arc and ring in HighlightText on its Highlight fill, and a Highlight arc over a GrayText ring on Canvas once disabled, under forced colors in ${mode} mode`, async () => {
       AppearanceFixture.apply(undefined, mode);
       fixture.componentInstance.pressed.set(true);
       fixture.componentInstance.busy.set(true);
@@ -196,7 +196,7 @@ describe("IconButtonComponent", () => {
         fixture.detectChanges();
         const [highlight, text, gray, canvas] = ["Highlight", "HighlightText", "GrayText", "Canvas"].map(t => ForcedColorsFixture.resolve(t));
 
-        expect([pressed, look()]).toEqual([[highlight, text, gray], [canvas, highlight, gray]]);
+        expect([pressed, look()]).toEqual([[highlight, text, text], [canvas, highlight, gray]]);
       }
       finally {
         await ForcedColorsFixture.resetAsync();

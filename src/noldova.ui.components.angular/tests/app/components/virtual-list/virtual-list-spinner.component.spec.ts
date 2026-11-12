@@ -61,12 +61,12 @@ describe("VirtualListComponent's selected option under forced colors", () => {
   });
 
   for (const mode of AppearanceFixture.modes)
-    it(`draws a spinner's arc in HighlightText on the selected option's Highlight fill, and in Highlight on the others, over its GrayText ring, in ${mode} mode`, async () => {
+    it(`draws a spinner's arc and ring in HighlightText on the selected option's Highlight fill, and a Highlight arc over a GrayText ring on the others, in ${mode} mode`, async () => {
       await renderAsync(mode);
       await ForcedColorsFixture.activateAsync();
       const [highlight, text, gray] = ["Highlight", "HighlightText", "GrayText"].map(t => ForcedColorsFixture.resolve(t));
 
       expect([option("Test").classList.contains("nol-virtual-list-option-selected"), getComputedStyle(option("Test")).backgroundColor, arc("Test"), arc("Build"), arc("Package")])
-        .toEqual([true, highlight, [text, gray], [highlight, gray], [highlight, gray]]);
+        .toEqual([true, highlight, [text, text], [highlight, gray], [highlight, gray]]);
     });
 });

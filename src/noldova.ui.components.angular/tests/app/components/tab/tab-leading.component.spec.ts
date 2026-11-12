@@ -317,7 +317,7 @@ describe("TabComponent's leading parts", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const [slot, leading] of [["first", true], ["in the action slot", false]] as const)
-      it(`draws a working tab's spinner ${slot} with its arc in HighlightText on the selected Highlight fill, and in Highlight when not selected, over its GrayText ring, under forced colors in ${mode} mode`, async () => {
+      it(`draws a working tab's spinner ${slot} with its arc and ring in HighlightText on the selected Highlight fill, and a Highlight arc over a GrayText ring when not selected, under forced colors in ${mode} mode`, async () => {
         render(t => {
           t.closable.set(false);
           t.working.set(true);
@@ -330,12 +330,12 @@ describe("TabComponent's leading parts", () => {
         const fill = getComputedStyle(part(".nol-tab-pill")).backgroundColor;
 
         expect([unselected, [ring().borderTopColor, ring().borderBottomColor], fill]).toEqual([[ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("GrayText")],
-          [ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("GrayText")], ForcedColorsFixture.resolve("Highlight")]);
+          [ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("HighlightText")], ForcedColorsFixture.resolve("Highlight")]);
         expect(ring().borderTopColor).not.toBe(fill);
       });
 
   for (const mode of AppearanceFixture.modes)
-    it(`draws a working tab's still half ring with both arc sides in HighlightText on the selected Highlight fill, and in Highlight when not selected, under forced colors and reduced motion in ${mode} mode`, async () => {
+    it(`draws a working tab's still half ring with both arc sides and its track in HighlightText on the selected Highlight fill, and its arc sides in Highlight over a GrayText track when not selected, under forced colors and reduced motion in ${mode} mode`, async () => {
       render(t => {
         t.closable.set(false);
         t.working.set(true);
@@ -352,6 +352,6 @@ describe("TabComponent's leading parts", () => {
       const [highlight, text, gray] = ["Highlight", "HighlightText", "GrayText"].map(t => ForcedColorsFixture.resolve(t));
 
       expect([unselected, sides(), getComputedStyle(part(".nol-tab-pill")).backgroundColor])
-        .toEqual([["none", highlight, highlight, gray, gray], ["none", text, text, gray, gray], highlight]);
+        .toEqual([["none", highlight, highlight, gray, gray], ["none", text, text, text, text], highlight]);
     });
 });
