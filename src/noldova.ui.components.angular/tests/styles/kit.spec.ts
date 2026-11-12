@@ -445,8 +445,8 @@ describe("kit styles in forced colors", () => {
     try {
       const shown = [root, scope].map(t => terminal.map(u => getComputedStyle(t).getPropertyValue(u).trim()));
 
-      expect([themeLoaded, terminal.length]).toEqual([false, 21]);
-      expect(shown).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t) ?? "CanvasText")));
+      expect([themeLoaded, terminal.length]).toEqual([false, 42]);
+      expect(shown).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t.replace("-dark-", "-")) ?? "CanvasText")));
     } finally {
       painter.erase(root);
       scope.remove();
