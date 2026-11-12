@@ -355,12 +355,27 @@ describe("SectionHeaderComponent when collapsible", () => {
         AppearanceFixture.expectPixels(text.left - box.left, AppearanceFixture.measureLook("space-2"));
         AppearanceFixture.expectPixels(text.left - box.left, Number.parseFloat(getComputedStyle(plain()).paddingLeft));
         AppearanceFixture.expectPixels(glyph.left - text.right, AppearanceFixture.measureLook("space-1"));
-        AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("icon"));
-        AppearanceFixture.expectPixels(glyph.height, AppearanceFixture.measureLook("icon"));
+        AppearanceFixture.expectLook(`${glyph.width}px`, theme, "section-header-caret", "width");
+        AppearanceFixture.expectLook(`${glyph.height}px`, theme, "section-header-caret", "height");
         AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, text.top + lineHeight() / 2);
         expect([getComputedStyle(caret()).color, getComputedStyle(toggle()).color, getComputedStyle(toggle()).fontWeight, getComputedStyle(header()).backgroundColor])
-          .toEqual([AppearanceFixture.readColor(theme, mode, "icon-color"), AppearanceFixture.readColor(theme, mode, "text-strong"), "500", "rgba(0, 0, 0, 0)"]);
+          .toEqual([AppearanceFixture.readColor(theme, mode, "text-strong"), AppearanceFixture.readColor(theme, mode, "text-strong"), "500", "rgba(0, 0, 0, 0)"]);
       });
+
+  it("draws its caret in the header's text color under forced colors, at the same size and place", async () => {
+    await renderAsync();
+    const before = caret().getBoundingClientRect();
+    try {
+      await ForcedColorsFixture.activateAsync();
+      const after = caret().getBoundingClientRect();
+
+      expect(getComputedStyle(caret()).color).toBe(getComputedStyle(DomFixture.one(header(), ".nol-section-header-label")).color);
+      expect([after.left, after.top, after.width, after.height].map(Math.round)).toEqual([before.left, before.top, before.width, before.height].map(Math.round));
+    }
+    finally {
+      await ForcedColorsFixture.resetAsync();
+    }
+  });
 
   it("points its caret down while open and turns it a quarter to the end while closed, to the left in a right-to-left layout, where it follows the label", async () => {
     await renderAsync();
@@ -500,7 +515,8 @@ describe("SectionHeaderComponent in uppercase", () => {
     expect([getComputedStyle(toggle).textTransform, getComputedStyle(caret).textTransform, getComputedStyle(caret).letterSpacing, caret.textContent, toggle.getAttribute("aria-expanded")])
       .toEqual(["uppercase", "none", "normal", "expand_more", "true"]);
     expect(spacing(toggle)).toBeCloseTo(0.05, 3);
-    AppearanceFixture.expectPixels(box(caret).width, AppearanceFixture.measureLook("icon"));
+    AppearanceFixture.expectPixels(box(caret).width, AppearanceFixture.measureLook("section-header-caret"));
+    expect(getComputedStyle(caret).color).toBe(getComputedStyle(toggle).color);
     AppearanceFixture.expectPixels(box(caret).left - box(part("chats", ".nol-section-header-label")).right, AppearanceFixture.measureLook("space-1"));
     AppearanceFixture.expectPixels(box(header("chats")).height, box(header("plain")).height);
   });

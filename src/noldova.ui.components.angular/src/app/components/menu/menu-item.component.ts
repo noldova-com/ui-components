@@ -58,6 +58,7 @@ export class MenuItemComponent {
   public readonly value = input<string | null>(null);
   public readonly tag = input<string | null>(null);
   public readonly danger = input<boolean>(false);
+  public readonly isShowingChevron = input<boolean>(true);
 
   public constructor() {
     const item = inject(CdkMenuItem, { self: true });

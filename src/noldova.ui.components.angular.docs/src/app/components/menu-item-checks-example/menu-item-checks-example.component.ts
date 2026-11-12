@@ -20,4 +20,5 @@ export class MenuItemChecksExampleComponent {
   protected readonly isWrapped: WritableSignal<boolean> = signal(false);
   protected readonly density: WritableSignal<string> = signal("Compact");
   protected readonly theme: WritableSignal<string> = signal("Dark");
+  protected readonly zoom: WritableSignal<number> = signal(100);
 }

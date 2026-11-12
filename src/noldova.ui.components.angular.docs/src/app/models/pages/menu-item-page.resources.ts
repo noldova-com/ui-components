@@ -12,7 +12,7 @@ export class MenuItemPageResources {
   public static readonly title: string = "Menu item";
   public static readonly componentName: string = "MenuItemComponent";
   public static readonly menuItemRowsTitle: string = "Rows with an icon, a key, a tag, a description, and one that destroys something";
-  public static readonly menuItemChecksTitle: string = "Checkable rows, and a row that opens a submenu";
+  public static readonly menuItemChecksTitle: string = "Checkable rows, and rows that open a submenu, one showing its value without the chevron";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Enter", "Runs the row and closes the whole menu; a checkable row asks its owner to change its checked state."),
     new DocsKey("Space", "Runs the row as Enter does."),

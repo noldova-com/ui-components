@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 -->
 
 <button type="button" nol-button [variant]="variants.Secondary" [nolMenuTriggerFor]="view">View</button>
-<span>Word wrap: {{ isWrapped() ? "On" : "Off" }} · Density: {{ density() }} · Theme: {{ theme() }}</span>
+<span>Word wrap: {{ isWrapped() ? "On" : "Off" }} · Density: {{ density() }} · Theme: {{ theme() }} · Zoom: {{ zoom() }}%</span>
 <ng-template #view>
   <nol-menu aria-label="View">
     <button type="button" nol-menu-item label="Word wrap" shortcut="Alt+Z" [checkbox]="true" [checked]="isWrapped()" (triggered)="isWrapped.set(!isWrapped())"></button>
@@ -16,6 +16,14 @@ LICENSE file in the root directory of this source tree.
     <button type="button" nol-menu-item label="Comfortable" [checked]="density() === 'Comfortable'" (triggered)="density.set('Comfortable')"></button>
     <nol-menu-separator />
     <button type="button" nol-menu-item label="Theme" [value]="theme()" [nolMenuTriggerFor]="themes"></button>
+    <button type="button" nol-menu-item label="Zoom" [value]="zoom() + '%'" [isShowingChevron]="false" [nolMenuTriggerFor]="zooms"></button>
+  </nol-menu>
+</ng-template>
+<ng-template #zooms>
+  <nol-menu aria-label="Zoom">
+    <button type="button" nol-menu-item label="Zoom in" shortcut="Ctrl+=" (triggered)="zoom.set(zoom() + 10)"></button>
+    <button type="button" nol-menu-item label="Zoom out" shortcut="Ctrl+-" (triggered)="zoom.set(zoom() - 10)"></button>
+    <button type="button" nol-menu-item label="Reset" shortcut="Ctrl+0" (triggered)="zoom.set(100)"></button>
   </nol-menu>
 </ng-template>
 <ng-template #themes>

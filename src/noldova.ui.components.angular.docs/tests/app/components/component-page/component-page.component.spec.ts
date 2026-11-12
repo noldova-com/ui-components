@@ -161,7 +161,7 @@ describe("ComponentPageComponent", () => {
       roles: ["button[nol-menu-item][role=\"menuitem\"]", "button[nol-menu-item] .nol-menu-item-icon[aria-hidden=\"true\"]", "button[nol-menu-item].nol-menu-item-danger",
         "button[nol-button][aria-haspopup=\"menu\"][aria-expanded=\"false\"]"],
       keys: ["Enter", "Space", "Arrow Right", "Arrow Left", "Escape"],
-      inputs: ["label", "icon", "checked", "checkbox", "shortcut", "description", "value", "tag", "danger"],
+      inputs: ["label", "icon", "checked", "checkbox", "shortcut", "description", "value", "tag", "danger", "isShowingChevron"],
       outputs: []
     },
     MenuGroupComponent: {

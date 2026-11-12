@@ -39,6 +39,14 @@ describe("GalleryOverlaysComponent", () => {
     AppearanceFixture.expectPixels(wide.getBoundingClientRect().width, AppearanceFixture.toPixels(18));
   });
 
+  it("shows a submenu row with its value and without its chevron beside one with both", async () => {
+    const fixture = await GalleryFixture.showSectionAsync(GalleryOverlaysComponent);
+    const rows = [...DomFixture.host(fixture).querySelectorAll(".nol-gallery-menu-responders [nol-menu-item][aria-haspopup='menu']")];
+    const parts = rows.map(t => [t.querySelector(".nol-menu-item-label")?.textContent, t.querySelector(".nol-menu-item-value")?.textContent, t.querySelector(".nol-menu-item-chevron") !== null]);
+
+    expect(parts).toEqual([["Model", "Orb-6", true], ["Zoom", "110%", false]]);
+  });
+
   it("opens a menu on the row it marks, the model row past its first group with a checked row", async () => {
     const fixture = await GalleryFixture.showSectionAsync(GalleryOverlaysComponent);
     const trigger = DomFixture.one(fixture.nativeElement, ".nol-gallery-opens-on");

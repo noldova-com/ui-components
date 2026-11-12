@@ -49,7 +49,7 @@ LICENSE file in the root directory of this source tree.
     </nol-menu>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.menuRespondersCaption">
-    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu">
+    <nol-menu [attr.aria-label]="text.menuLabel" class="nol-gallery-menu nol-gallery-menu-responders">
       <nol-menu-group [label]="text.menuGroupResponder" [maxRows]="text.menuResponderRows">
         @for (responder of text.menuResponders; track responder.name; let first = $first) {
           <button type="button" nol-menu-item [label]="responder.name" [description]="responder.description" [checked]="first">
@@ -59,6 +59,7 @@ LICENSE file in the root directory of this source tree.
       </nol-menu-group>
       <nol-menu-separator />
       <button type="button" nol-menu-item [label]="text.menuGroupModel" [value]="text.menuModelValue" [nolMenuTriggerFor]="submenu"></button>
+      <button type="button" nol-menu-item [label]="text.menuZoom" [value]="text.menuZoomValue" [isShowingChevron]="false" [nolMenuTriggerFor]="submenu"></button>
     </nol-menu>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.menuMinWidthCaption">
