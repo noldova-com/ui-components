@@ -138,7 +138,7 @@ describe("ToolCallComponent", () => {
       await expect.poll(() => hasEnded, { timeout: 3000 }).toBe(true);
     }
     catch (error) {
-      throw new Error(scrollFailure(key, before, seen), { cause: error });
+      throw new Error(scrollFailure(key, before, area.scrollTop, seen), { cause: error });
     }
     finally {
       area.removeEventListener("scroll", see);
@@ -147,7 +147,7 @@ describe("ToolCallComponent", () => {
     return area.scrollTop - before;
   }
 
-  function scrollFailure(key: string, before: number, seen: readonly number[]): string {
+  function scrollFailure(key: string, before: number, after: number, seen: readonly number[]): string {
     const pixels = (values: readonly number[]): string => values.map(value => String(Math.round(value * 100) / 100)).join(" ");
     const read = seen.length > 12 ? `${pixels(seen.slice(0, 8))} … ${pixels(seen.slice(-4))}` : pixels(seen);
     const events = seen.length === 0 ? "no scroll events" : `${seen.length} scroll events, ${read}`;
@@ -157,7 +157,7 @@ describe("ToolCallComponent", () => {
     const element = focused === null ? "nothing" : classes === "" ? focused.tagName : `${focused.tagName}.${classes.split(/\s+/).join(".")}`;
     const where = shown !== null && focused === shown ? "on the output" : `on ${element}`;
     const scrolls = shown === null ? "the output is gone" : `the output scrolls ${shown.scrollHeight} over ${shown.clientHeight}`;
-    return `${key} didn't scroll the output from ${pixels([before])} to a scroll end: it read ${events}; `
+    return `${key} didn't scroll the output from ${pixels([before])} to a scroll end: it is at ${pixels([after])} and read ${events}; `
       + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${where}, and ${scrolls}, the page ${document.hidden ? "hidden" : "shown"}.`;
   }
 
