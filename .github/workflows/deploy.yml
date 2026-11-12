@@ -95,7 +95,7 @@ jobs:
   move:
     name: Move the environment's label
     needs: [find, approve]
-    uses: noldova-com/.github/.github/workflows/move-image-label.yml@baf523ddbe2ddf524d4c59fcf1f9d876d572fc5e # v2.20.0
+    uses: noldova-com/.github/.github/workflows/move-image-label.yml@ed981f71293a78e2ecc2a85cf868d8606ef853db # v2.21.0
     permissions:
       packages: write
     with:
