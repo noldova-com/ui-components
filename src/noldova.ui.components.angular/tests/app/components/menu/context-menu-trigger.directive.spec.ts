@@ -571,8 +571,8 @@ describe("ContextMenuTriggerDirective in an OnPush host", () => {
     return area().getAttribute("aria-controls") === menu()?.id ? "names the menu" : area().getAttribute("aria-controls");
   }
 
-  async function closedAsync(): Promise<string | null> {
-    await vi.waitFor(() => expect(menu()).toBeNull());
+  async function closedAsync(path: string): Promise<string | null> {
+    await vi.waitFor(() => expect(menu(), `${path}, the page ${document.hasFocus() ? "has" : "doesn't have"} the focus`).toBeNull());
     await fixture.whenStable();
     return area().getAttribute("aria-controls");
   }
@@ -581,14 +581,14 @@ describe("ContextMenuTriggerDirective in an OnPush host", () => {
     const controls: (string | null)[] = [];
     controls.push(await openAsync());
     document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    controls.push(await closedAsync());
+    controls.push(await closedAsync("a click outside"));
     controls.push(await openAsync());
     DomFixture.one(DomFixture.host(fixture), ".target").focus();
-    controls.push(await closedAsync());
+    controls.push(await closedAsync("focus leaving"));
     controls.push(await openAsync());
     area().style.top = "140px";
     DomFixture.host(fixture).dispatchEvent(new Event("scroll"));
-    controls.push(await closedAsync());
+    controls.push(await closedAsync("its host moving away"));
 
     expect(controls).toEqual(["names the menu", null, "names the menu", null, "names the menu", null]);
   });
