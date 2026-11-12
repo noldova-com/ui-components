@@ -6,8 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { MENU_STACK } from "@angular/cdk/menu";
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
+import { firstValueFrom } from "rxjs";
 import { userEvent } from "vitest/browser";
 
 import { ContextMenuTriggerDirective } from "../../../../src/app/components/menu/context-menu-trigger.directive";
@@ -579,11 +582,18 @@ describe("ContextMenuTriggerDirective in an OnPush host", () => {
 
   it("names no menu in aria-controls once a click outside, focus leaving or its host moving away closes it, with no change detection from the test", async () => {
     const controls: (string | null)[] = [];
+    const stack = fixture.debugElement.query(By.directive(ContextMenuTriggerDirective)).injector.get(MENU_STACK);
+    await firstValueFrom(stack.hasFocus);
     controls.push(await openAsync());
     document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     controls.push(await closedAsync("a click outside"));
     controls.push(await openAsync());
-    DomFixture.one(DomFixture.host(fixture), ".target").focus();
+    const target = DomFixture.one(DomFixture.host(fixture), ".target");
+    const row = DomFixture.one(DomFixture.present(menu()), "[role='menuitem']");
+    row.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    await firstValueFrom(stack.hasFocus);
+    target.focus();
+    row.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: target }));
     controls.push(await closedAsync("focus leaving"));
     controls.push(await openAsync());
     area().style.top = "140px";
