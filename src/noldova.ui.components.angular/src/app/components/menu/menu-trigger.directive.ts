@@ -77,7 +77,7 @@ export class MenuTriggerDirective extends CdkMenuTrigger {
   }
 
   private forgetMenu(): void {
-    this.childMenu = undefined;
+    delete this.childMenu;
     this.changes.markForCheck();
   }
 
