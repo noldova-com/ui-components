@@ -1641,6 +1641,12 @@ export interface IToolCallOptions {
   readonly target?: string;
 
   /**
+   * A short note after the title, which reads quieter than it, such as
+   * "waiting for your answer". Not blank.
+   */
+  readonly note?: string;
+
+  /**
    * When the call started.
    */
   readonly startedAt?: Date;
@@ -12113,6 +12119,11 @@ export declare class ToolCall {
   public readonly target: string | null;
 
   /**
+   * The short note the card shows after the title, muted, or null for none.
+   */
+  public readonly note: string | null;
+
+  /**
    * When the call started, or null when unknown.
    */
   public readonly startedAt: Date | null;
@@ -12167,8 +12178,8 @@ export declare class ToolCall {
    * @param kind What kind of work it does.
    * @param status Where it stands.
    * @param options Its optional parts; none when left out.
-   * @throws ArgumentException when the id, the title or a given target is
-   * blank, when an end time is given without a start time or comes before
+   * @throws ArgumentException when the id, the title, a given target or a
+   * given note is blank, when an end time is given without a start time or comes before
    * it, or when the call or any of its descendants shares an id with
    * another of them.
    * @example
