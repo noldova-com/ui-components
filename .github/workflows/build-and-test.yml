@@ -30,3 +30,5 @@ jobs:
     with:
       targets: linux-x64 linux-arm64 windows-x64 windows-arm64 macos-x64 macos-arm64
       publishes: true
+      shards: macos-x64=2 macos-arm64=2
+      separate-test: docs
