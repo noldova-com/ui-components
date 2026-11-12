@@ -1,13 +1,13 @@
 # Button
 
-**Scope:** The kit's button: its default geometry, the text role it uses, its surface and behavior, its danger look, its text variant and its overlay look, its outlined variant, and its compact size.
+**Scope:** The kit's button: its default geometry, the text role it uses, its surface and behavior, its danger look, its text variant and its overlay look, its outlined variant, its accent variant, and its compact size.
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
 ## Default geometry
 
 1.625rem minimum high; 0.5rem side padding; small radius; never wider than its container.
-A primary, secondary, danger or outlined button keeps no minimum width: it is as wide as its label, its icon and its padding.
+A primary, secondary, danger, outlined or accent button keeps no minimum width: it is as wide as its label, its icon and its padding.
 A primary or secondary button's 1px border sits outside its padding; a text button has none.
 No margin of its own: its reset to none weighs nothing, so a rule that places it from outside, such as an actions column's 0.5rem between buttons, holds whatever order the page loaded the stylesheets in.
 
@@ -74,6 +74,19 @@ Under forced colors hover is a 1px dashed `Highlight` outline drawn inside the b
 - Disabled, or marked aria-disabled, it is dimmed as the button is.
 - Under forced colors its border and text are `ButtonText`, or `GrayText` while disabled, at the same size.
 - Its label keeps 4.5:1 on the window and panel surfaces; the theme's contrast spec checks them.
+
+## Accent variant
+
+`ButtonVariant.Accent`, the accent chip look, for an action on a card that names what is shown, such as a page card's Open while its page is open in a tab.
+
+- At rest it has the `selected` fill, no visible border and the small radius, and its label and icon are in `text`, at the button's label size: the kit's text never goes under 12px (KIT.md, Typography).
+- It is the chip's height and side padding: at least `chip` high, 1.25rem by default, its transparent 1px border inside that height, and `chip-padding`, 0.375rem, at its sides, inside its border.
+- It keeps the chip's height in either size: compact leaves it as it is.
+- Under the pointer `toolbar-hover` lies over its `selected` fill.
+- Its keyboard focus is the button's `accent` outline outside its edge.
+- Disabled, or marked aria-disabled, it is dimmed as the button is, keeping its `selected` fill without the hover.
+- Under forced colors its border and text are `ButtonText`, or `GrayText` while disabled, at the same size, and its hover is the button's dashed `Highlight` outline with no hover fill.
+- Its `text` label keeps 4.5:1 on the `selected` fill over the window, panel, raised and dialog surfaces, at rest and under its hover; the theme's contrast spec checks them.
 
 ## Compact size
 

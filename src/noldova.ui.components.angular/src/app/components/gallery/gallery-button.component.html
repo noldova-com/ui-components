@@ -54,6 +54,18 @@ LICENSE file in the root directory of this source tree.
   <nol-gallery-cell [caption]="text.outlinedFocus">
     <button type="button" nol-button nolGalleryFocus [variant]="variants.Outlined"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphShield }}</span>{{ text.outlinedLabel }}</button>
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.accent">
+    <button type="button" nol-button [variant]="variants.Accent">{{ text.accentLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.accentHover">
+    <button type="button" nol-button nolGalleryHover [variant]="variants.Accent">{{ text.accentLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.accentDisabled">
+    <button type="button" nol-button [variant]="variants.Accent" disabled>{{ text.accentLabel }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.accentFocus">
+    <button type="button" nol-button nolGalleryFocus [variant]="variants.Accent">{{ text.accentLabel }}</button>
+  </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.compact">
     <button type="button" nol-button [variant]="variants.Secondary" [size]="buttonSizes.Compact"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ text.glyphStop }}</span>{{ text.stopLabel }}</button>
   </nol-gallery-cell>
