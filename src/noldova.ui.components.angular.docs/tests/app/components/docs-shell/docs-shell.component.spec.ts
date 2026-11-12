@@ -387,6 +387,61 @@ describe("DocsShellComponent", () => {
       expect(getComputedStyle(header).backgroundColor).toBe(ForcedColorsFixture.resolve("Canvas"));
       expect(header.contains(document.elementFromPoint(box.left + box.width / 2, box.bottom - 1))).toBe(true);
     });
+
+    const expectCurrentMarkedAsync = async (nav: HTMLElement): Promise<void> => {
+      const current = DocsFixture.byText(nav, "a", "Radio");
+      const other = DocsFixture.byText(nav, "a", "Checkbox");
+      const box = current.getBoundingClientRect();
+      const navBox = nav.getBoundingClientRect();
+
+      expect(current.getAttribute("aria-current")).toBe("page");
+      expect(getComputedStyle(current).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
+      expect(getComputedStyle(current).color).toBe(ForcedColorsFixture.resolve("HighlightText"));
+      expect(getComputedStyle(other).backgroundColor).not.toBe(ForcedColorsFixture.resolve("Highlight"));
+      expect(getComputedStyle(other).color).not.toBe(ForcedColorsFixture.resolve("HighlightText"));
+      expect(box.width).toBe(other.getBoundingClientRect().width);
+      expect(box.left).toBeGreaterThanOrEqual(navBox.left);
+      expect(box.right).toBeLessThanOrEqual(navBox.right);
+      expect(current.contains(document.elementFromPoint(box.left + 1, box.top + box.height / 2))).toBe(true);
+
+      await userEvent.keyboard("{Shift}");
+      current.focus();
+      await vi.waitFor(() => expect(current.matches(":focus-visible")).toBe(true));
+      expect(getComputedStyle(current).outlineColor).toBe(ForcedColorsFixture.resolve("HighlightText"));
+      expect(getComputedStyle(current).outlineStyle).toBe("solid");
+
+      await userEvent.hover(current);
+      await vi.waitFor(() => expect(current.matches(":hover")).toBe(true));
+      expect(getComputedStyle(current).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
+      expect(getComputedStyle(current).color).toBe(ForcedColorsFixture.resolve("HighlightText"));
+    };
+
+    describe.each([["Light"], ["Dark"]])("in the %s mode", mode => {
+      it("marks the menu's current page with the highlight fill and its text on a desktop, through hover and focus", async () => {
+        DocsFixture.setMode(mode);
+        await ForcedColorsFixture.activateAsync();
+        const host = DocsFixture.host(await renderAsync("/components/radio"));
+        const nav = DocsFixture.one(host, "nav");
+        await vi.waitFor(() => expect(getComputedStyle(nav).display).toBe("grid"));
+
+        await expectCurrentMarkedAsync(nav);
+      });
+
+      it("marks the current page the same way in the phone menu", async () => {
+        DocsFixture.setMode(mode);
+        await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
+        await ForcedColorsFixture.activateAsync();
+        const host = DocsFixture.host(await renderAsync("/components/radio"));
+        const nav = DocsFixture.one(host, "nav");
+        const button = DocsFixture.one(host, "button.nol-docs-menu-button");
+
+        button.focus();
+        await userEvent.keyboard("{Enter}");
+        await vi.waitFor(() => expect(getComputedStyle(nav).display).toBe("grid"));
+
+        await expectCurrentMarkedAsync(nav);
+      });
+    });
   });
 
   describe.each([["Light", "light"], ["Dark", "dark"]])("on a phone in the %s mode, a %s color scheme", (mode, scheme) => {

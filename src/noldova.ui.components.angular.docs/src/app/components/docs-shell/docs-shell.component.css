@@ -159,6 +159,19 @@
   background-color: var(--nol-selected);
 }
 
+@media (forced-colors: active) {
+  .nol-docs-menu-current,
+  .nol-docs-menu-current:hover {
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
+
+  .nol-docs-menu-current:focus-visible {
+    outline-color: HighlightText;
+  }
+}
+
 .nol-docs-main {
   min-width: 0;
   padding: var(--nol-space-4);
