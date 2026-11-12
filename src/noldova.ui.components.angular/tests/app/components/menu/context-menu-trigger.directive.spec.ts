@@ -286,6 +286,31 @@ describe("ContextMenuTriggerDirective", () => {
     expect(document.activeElement).toBe(area());
   });
 
+  it("names its open menu in aria-controls and names none once the menu closes, by Escape, a row or a submenu's row", async () => {
+    const controls: (string | null)[] = [];
+    const openAsync = async (): Promise<void> => {
+      key({ key: "ContextMenu" });
+      await settledAsync();
+      controls.push(area().getAttribute("aria-controls") === menu()?.id ? "names the menu" : area().getAttribute("aria-controls"));
+    };
+    await openAsync();
+    await userEvent.keyboard("{Escape}");
+    await settledAsync();
+    controls.push(area().getAttribute("aria-controls"));
+    await openAsync();
+    await userEvent.keyboard("{Enter}");
+    await settledAsync();
+    controls.push(area().getAttribute("aria-controls"));
+    await openAsync();
+    await userEvent.keyboard("{End}{ArrowRight}");
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await userEvent.keyboard("{Enter}");
+    await settledAsync();
+    controls.push(area().getAttribute("aria-controls"));
+
+    expect([controls, menu()]).toEqual([["names the menu", null, "names the menu", null, "names the menu", null], null]);
+  });
+
   it("moves to a new point when opened again and closes another open menu", async () => {
     const other: HTMLButtonElement = DomFixture.oneOf(DomFixture.host(fixture), ".other", HTMLButtonElement);
     other.click();

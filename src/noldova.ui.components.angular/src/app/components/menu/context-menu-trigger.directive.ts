@@ -26,6 +26,7 @@ import { ContextMenuTriggerResources } from "./context-menu-trigger.resources.js
   inputs: [{ name: "menuTemplateRef", alias: "nolContextMenuTriggerFor" }],
   host: {
     "[attr.data-cdk-menu-stack-id]": "null",
+    "[attr.aria-controls]": "isOpen() ? childMenu?.id : null",
     "(contextmenu)": "openAtPointer($event)",
     "(keydown)": "openFromKeyboard($event)"
   },

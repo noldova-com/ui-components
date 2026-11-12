@@ -114,6 +114,49 @@ describe("MenuTriggerDirective", () => {
     expect(panel?.getAttribute("role")).toBe("menu");
   });
 
+  it("names its open menu in aria-controls and names none once the menu closes, by a row, Escape, a click outside or a submenu's row", async () => {
+    const controls: (string | null)[] = [];
+    const openAsync = async (): Promise<void> => {
+      trigger().click();
+      await settledAsync();
+      controls.push(trigger().getAttribute("aria-controls") === menu("root")?.id ? "names the menu" : trigger().getAttribute("aria-controls"));
+    };
+    await openAsync();
+    row("alpha").click();
+    await settledAsync();
+    controls.push(trigger().getAttribute("aria-controls"));
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{Escape}");
+    await settledAsync();
+    controls.push(trigger().getAttribute("aria-controls"));
+    await openAsync();
+    await userEvent.click(fixture.nativeElement.querySelector(".outside"));
+    await settledAsync();
+    controls.push(trigger().getAttribute("aria-controls"));
+    await openAsync();
+    await userEvent.hover(row("beta"));
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await settledAsync();
+    const beta = row("beta");
+    const betaOpen = beta.getAttribute("aria-controls") === menu("submenu")?.id;
+    await userEvent.click(row("one"));
+    await settledAsync();
+    controls.push(trigger().getAttribute("aria-controls"));
+
+    expect([controls, betaOpen, menu("root")]).toEqual([["names the menu", null, null, "names the menu", null, "names the menu", null], true, null]);
+  });
+
+  it("names no submenu in its row's aria-controls once the submenu closes and its menu stays open", async () => {
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{ArrowDown}{ArrowRight}");
+    await settledAsync();
+    const open = row("beta").getAttribute("aria-controls") === menu("submenu")?.id;
+    await userEvent.keyboard("{ArrowLeft}");
+    await settledAsync();
+
+    expect([open, menu("submenu"), menu("root") === null, row("beta").getAttribute("aria-controls")]).toEqual([true, null, false, null]);
+  });
+
   it("aligns its end with the trigger's end when asked", async () => {
     fixture.componentInstance.left.set(400);
     fixture.componentInstance.alignment.set(OverlayAlignment.End);
