@@ -42,6 +42,7 @@ export class Test extends Script {
   private static readonly ANGULAR_COVERAGE_FILE: string = "../../_build/angular-coverage/coverage-final.json";
   private static readonly COVERAGE_OWNER: string = "The kit's";
   private static readonly ANGULAR_SELECTION_OPTIONS: readonly string[] = ["--no-coverage"];
+  private static readonly ANGULAR_PART_OPTIONS: readonly string[] = ["--configuration=part"];
   private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly WORKSPACE_FOLDER: string = ".";
@@ -120,7 +121,8 @@ export class Test extends Script {
     await fs.rm(this.coverage.path, { force: true });
     await fs.rm(Test.DEPENDENCY_CACHE, { recursive: true, force: true });
     const isWhole = filters.length === 0 && shard === null;
-    const selection = isWhole ? [] : [...Test.ANGULAR_SELECTION_OPTIONS, ...selected.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
+    const options = filters.length > 0 ? Test.ANGULAR_SELECTION_OPTIONS : Test.ANGULAR_PART_OPTIONS;
+    const selection = isWhole ? [] : [...options, ...selected.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
     await this.writeLogAsync(Test.BLANK_LINE);
     await this.runCommandAsync(process.execPath, [Test.ANGULAR_CLI_PATH, ...Test.ANGULAR_TEST_ARGUMENTS, report, ...selection], path.resolve(Test.WORKSPACE_FOLDER));
 
@@ -150,7 +152,7 @@ export class Test extends Script {
   }
 
   private static partRun(part: number, parts: number, specs: number): string {
-    return `Part ${part} of ${parts} ran ${specs} of the kit's spec files, without the coverage gates, which only a run that isn't split measures; the checks before the specs run in part 1 alone.`;
+    return `Part ${part} of ${parts} ran ${specs} of the kit's spec files and kept their coverage, which npm run test:merge gates with the other parts'; the checks before the specs run in part 1 alone.`;
   }
 }
 

@@ -93,6 +93,10 @@ export class JsonFields {
     return new JsonFields(Reflect.get(this.value, name), this.source, [...this.place, name]);
   }
 
+  public toJson(): object {
+    return this.value;
+  }
+
   public has(name: string): boolean {
     return Reflect.has(this.value, name) && Reflect.get(this.value, name) !== null;
   }

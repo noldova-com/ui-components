@@ -17,7 +17,8 @@
     "build:docs": "npm run docs:build --workspaces --if-present --",
     "newest-context": "node src/noldova.ui.components.angular/scripts/newest-context.ts",
     "test": "npm run test --workspaces --if-present --",
-    "test:docs": "npm run docs:test --workspaces --if-present --"
+    "test:docs": "npm run docs:test --workspaces --if-present --",
+    "test:merge": "npm run test:merge --workspace src/noldova.ui.components.angular --"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
