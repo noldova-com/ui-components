@@ -121,37 +121,43 @@ describe("ToolCallComponent", () => {
   }
 
   async function scrollWithAsync(key: string): Promise<number> {
-    const before = output().scrollTop;
-    await userEvent.keyboard(key);
-    let previous = before;
+    const area = output();
+    const before = area.scrollTop;
     const seen: number[] = [];
+    let hasEnded = false;
+    const see = (): void => {
+      seen.push(area.scrollTop);
+    };
+    const end = (): void => {
+      hasEnded = true;
+    };
+    area.addEventListener("scroll", see);
+    area.addEventListener("scrollend", end, { once: true });
     try {
-      await expect.poll(async () => {
-        await new Promise(resolve => requestAnimationFrame(resolve));
-        const top = output().scrollTop;
-        seen.push(top);
-        const isSettled = top !== before && top === previous;
-        previous = top;
-        return isSettled;
-      }, { timeout: 3000 }).toBe(true);
+      await userEvent.keyboard(key);
+      await expect.poll(() => hasEnded, { timeout: 3000 }).toBe(true);
     }
     catch (error) {
-      throw new Error(scrollFailure(key, before, seen), { cause: error });
+      throw new Error(scrollFailure(key, before, area.scrollTop, seen), { cause: error });
     }
-    return output().scrollTop - before;
+    finally {
+      area.removeEventListener("scroll", see);
+      area.removeEventListener("scrollend", end);
+    }
+    return area.scrollTop - before;
   }
 
-  function scrollFailure(key: string, before: number, seen: readonly number[]): string {
+  function scrollFailure(key: string, before: number, after: number, seen: readonly number[]): string {
     const pixels = (values: readonly number[]): string => values.map(value => String(Math.round(value * 100) / 100)).join(" ");
     const read = seen.length > 12 ? `${pixels(seen.slice(0, 8))} … ${pixels(seen.slice(-4))}` : pixels(seen);
-    const frames = seen.length === 0 ? "no frames" : `${seen.length} frames, ${read}`;
+    const events = seen.length === 0 ? "no scroll events" : `${seen.length} scroll events, ${read}`;
     const shown = DomFixture.maybe(DomFixture.host(fixture), ".nol-tool-call-output");
     const focused = document.activeElement;
     const classes = focused?.getAttribute("class")?.trim() ?? "";
     const element = focused === null ? "nothing" : classes === "" ? focused.tagName : `${focused.tagName}.${classes.split(/\s+/).join(".")}`;
     const where = shown !== null && focused === shown ? "on the output" : `on ${element}`;
     const scrolls = shown === null ? "the output is gone" : `the output scrolls ${shown.scrollHeight} over ${shown.clientHeight}`;
-    return `${key} didn't scroll the output from ${pixels([before])} and settle: it read ${frames}; `
+    return `${key} didn't scroll the output from ${pixels([before])} to a scroll end: it is at ${pixels([after])} and read ${events}; `
       + `the page ${document.hasFocus() ? "has" : "doesn't have"} the focus, ${where}, and ${scrolls}, the page ${document.hidden ? "hidden" : "shown"}.`;
   }
 
