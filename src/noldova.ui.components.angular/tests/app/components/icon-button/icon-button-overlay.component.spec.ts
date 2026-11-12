@@ -260,4 +260,19 @@ describe("IconButtonComponent's overlay look", () => {
       button("remove").setAttribute("data-nol-state", "Hover");
       expect(look("lifted")).toEqual(look("remove"));
     });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the hover dashes under forced colors one border width inside the overlay's ring, so a hovered overlay differs from a resting one, in ${mode} mode`, async () => {
+      render(DefaultTheme.theme, mode);
+      await ForcedColorsFixture.activateAsync();
+      const width = AppearanceFixture.measureLook("border-width");
+      const resting = [pad("remove").outlineStyle, pad("remove").borderTopColor];
+      button("remove").setAttribute("data-nol-state", "Hover");
+      const hovered = pad("remove");
+      const gap = -parseFloat(hovered.outlineOffset) - parseFloat(hovered.outlineWidth) - parseFloat(hovered.borderTopWidth);
+
+      expect([resting, hovered.outlineStyle, parseFloat(hovered.outlineWidth), hovered.outlineColor, parseFloat(hovered.borderTopWidth), hovered.borderTopColor])
+        .toEqual([["none", ForcedColorsFixture.resolve("ButtonText")], "dashed", width, ForcedColorsFixture.resolve("Highlight"), width, ForcedColorsFixture.resolve("ButtonText")]);
+      AppearanceFixture.expectPixels(gap, width);
+    });
 });

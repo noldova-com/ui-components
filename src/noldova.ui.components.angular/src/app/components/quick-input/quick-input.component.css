@@ -237,6 +237,12 @@
   font-weight: var(--nol-weight-strong);
 }
 
+@media (forced-colors: active) {
+  .nol-quick-input-option:not([aria-selected="true"]) .nol-quick-input-match {
+    color: CanvasText;
+  }
+}
+
 .nol-quick-input-detail,
 .nol-quick-input-key {
   flex: none;

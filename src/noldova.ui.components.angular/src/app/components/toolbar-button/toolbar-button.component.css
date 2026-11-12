@@ -51,6 +51,8 @@
     --nol-icon-color: HighlightText;
     --nol-list-highlight: HighlightText;
     --nol-list-active-text: HighlightText;
+    --nol-spinner-forced-arc: HighlightText;
+    --nol-spinner-forced-ring: HighlightText;
 
     color: HighlightText;
     forced-color-adjust: none;
@@ -94,6 +96,8 @@
     --nol-icon-color: GrayText;
     --nol-list-highlight: GrayText;
     --nol-list-active-text: GrayText;
+    --nol-spinner-forced-arc: Highlight;
+    --nol-spinner-forced-ring: GrayText;
 
     color: GrayText;
     background-color: Canvas;

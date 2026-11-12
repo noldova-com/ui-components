@@ -305,6 +305,25 @@ describe("ButtonComponent", () => {
       AppearanceFixture.expectPixels(button("danger").getBoundingClientRect().width, button("keep").getBoundingClientRect().width);
     });
 
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the hover dashes under forced colors at least one border width inside the border of every kind of button, so a hovered button differs from a resting one, in ${mode} mode`, async () => {
+      render(DefaultTheme.theme, mode);
+      await ForcedColorsFixture.activateAsync();
+      const width = AppearanceFixture.measureLook("border-width");
+      const gaps = ["primary", "secondary", "danger", "danger-secondary", "text"].map(name => {
+        button(name).setAttribute("data-nol-state", "Hover");
+        const style = getComputedStyle(button(name));
+        const seen = [style.outlineStyle, parseFloat(style.outlineWidth), style.outlineColor, -parseFloat(style.outlineOffset) - parseFloat(style.outlineWidth) - parseFloat(style.borderTopWidth)];
+        button(name).removeAttribute("data-nol-state");
+        return seen;
+      });
+      const highlight = ForcedColorsFixture.resolve("Highlight");
+
+      expect(gaps.map(t => t.slice(0, 3))).toEqual(gaps.map(() => ["dashed", width, highlight]));
+      expect(gaps.every(t => Number(t[3]) >= width)).toBe(true);
+      AppearanceFixture.expectPixels(parseFloat(getComputedStyle(button("primary")).borderTopWidth), width);
+    });
+
   for (const panelSize of AppearanceFixture.panelSizes)
     it(`scales its height and padding with panel size ${panelSize} while its border keeps one pixel`, () => {
       render(DefaultTheme.theme, ThemeMode.Light, panelSize);

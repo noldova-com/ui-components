@@ -19,5 +19,5 @@ Toolbar hover; pressed fills as hover does and exposes its state; a disabled ite
 ## Busy
 
 With `busy`, while its work is under way, the kit's 1rem spinner, its ring 0.75rem, stands centered in the button in its glyph's color, in place of its glyph, label and chevron, which stay in the layout unseen, so the button keeps its width and height to the pixel.
-Under forced colors the spinner keeps its own look, a 2px `Highlight` arc on a thinner, 1px `GrayText` track.
+Under forced colors the spinner keeps its own look, a 2px `Highlight` arc on a thinner, 1px `GrayText` track, but on a pressed button's `Highlight` fill its arc and track are `HighlightText`, so they show; an unavailable pressed button's `Canvas` fill keeps the `Highlight` arc and `GrayText` track.
 It is marked `aria-busy` and ignores clicks, middle clicks, Enter and Space, and, when it opens a menu, the up and down arrows, which neither its own handlers nor its parents hear; once it is no longer busy it looks and acts as before.

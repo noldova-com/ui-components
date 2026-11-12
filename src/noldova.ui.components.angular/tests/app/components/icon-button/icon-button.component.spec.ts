@@ -20,12 +20,13 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 @Component({
   imports: [IconButtonComponent],
   template: `
-    <button type="button" nol-icon-button icon="more_horiz" label="More actions" [pressed]="pressed()" [disabled]="disabled()" (click)="presses = presses + 1">
+    <button type="button" nol-icon-button icon="more_horiz" label="More actions" [pressed]="pressed()" [busy]="busy()" [disabled]="disabled()" (click)="presses = presses + 1">
     </button>
   `
 })
 class IconButtonHostComponent {
   public readonly pressed = signal<boolean | undefined>(undefined);
+  public readonly busy = signal(false);
   public readonly disabled = signal(false);
   public presses: number = 0;
 }
@@ -177,4 +178,28 @@ describe("IconButtonComponent", () => {
         AppearanceFixture.expectPixels(glyphBounds.width, AppearanceFixture.toPixels(1, panelSize));
         AppearanceFixture.expectPixels(glyphBounds.height, AppearanceFixture.toPixels(1, panelSize));
       });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a busy pressed button's spinner arc and ring in HighlightText on its Highlight fill, and a Highlight arc over a GrayText ring on Canvas once disabled, under forced colors in ${mode} mode`, async () => {
+      AppearanceFixture.apply(undefined, mode);
+      fixture.componentInstance.pressed.set(true);
+      fixture.componentInstance.busy.set(true);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const look = (): string[] => {
+          const ring = getComputedStyle(DomFixture.one(button(), ".nol-icon-button-spinner .nol-spinner-ring"));
+          return [pad().backgroundColor, ring.borderTopColor, ring.borderBottomColor];
+        };
+        const pressed = look();
+        fixture.componentInstance.disabled.set(true);
+        fixture.detectChanges();
+        const [highlight, text, gray, canvas] = ["Highlight", "HighlightText", "GrayText", "Canvas"].map(t => ForcedColorsFixture.resolve(t));
+
+        expect([pressed, look()]).toEqual([[highlight, text, text], [canvas, highlight, gray]]);
+      }
+      finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
 });
