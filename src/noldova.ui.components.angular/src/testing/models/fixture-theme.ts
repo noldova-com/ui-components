@@ -376,6 +376,7 @@ export class FixtureTheme {
     ["dialog-title-padding", "1.5rem 2.25rem 1rem 1.5rem"],
     ["dialog-body-padding", "0 1.5rem"],
     ["dialog-actions-padding", "1.5rem 1.5rem 0.75rem"],
+    ["dialog-medium-width", "42rem"],
     ["dialog-large-width", "75vw"],
     ["dialog-large-height", "70vh"],
     ["dialog-large-min-width", "32rem"],

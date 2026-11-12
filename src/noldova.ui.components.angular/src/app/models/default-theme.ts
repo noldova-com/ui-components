@@ -377,6 +377,7 @@ export class DefaultTheme {
       ["dialog-title-padding", "1.375rem 2rem 0.75rem 1.25rem"],
       ["dialog-body-padding", "0 1.25rem"],
       ["dialog-actions-padding", "1.25rem 1.25rem 0.5rem"],
+      ["dialog-medium-width", "40rem"],
       ["dialog-large-width", "80vw"],
       ["dialog-large-height", "80vh"],
       ["dialog-large-min-width", "30rem"],

@@ -121,6 +121,7 @@ describe("DefaultTheme", () => {
       ["dialog-title-padding", "1.375rem 2rem 0.75rem 1.25rem"],
       ["dialog-body-padding", "0 1.25rem"],
       ["dialog-actions-padding", "1.25rem 1.25rem 0.5rem"],
+      ["dialog-medium-width", "40rem"],
       ["checkbox-size", "1.125rem"],
       ["toast-width", "22.5rem"],
       ["spinner", "1rem"],

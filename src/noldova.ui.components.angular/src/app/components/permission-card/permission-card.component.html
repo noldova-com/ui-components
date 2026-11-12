@@ -24,18 +24,18 @@ LICENSE file in the root directory of this source tree.
     <span class="nol-permission-card-expiry">{{ expiry }}</span>
   }
 </div>
-<span class="nol-permission-card-requester" [id]="id + '-requester'">{{ request().requester.name }}, {{ request().requester.kind }}</span>
+<span class="nol-permission-card-requester" [id]="id + '-requester'">{{ requesterText() }}</span>
 @if (request().description; as description) {
   <p class="nol-permission-card-description" [id]="id + '-description'">{{ description }}</p>
 }
-@if (detailLines().length > 0) {
+@if (lines().length > 0) {
   <div class="nol-permission-card-details">
-    <pre class="nol-permission-card-code" [id]="id + '-details'" [class.nol-permission-card-code-scrolls]="isCut() && detailsExpanded()"
+    <pre class="nol-permission-card-code" [id]="id + '-details'" [class.nol-permission-card-code-scrolls]="isCut() && detailsExpanded()" [style.--nol-permission-card-scroll-lines]="scrollLines()"
       [attr.tabindex]="isCut() && detailsExpanded() ? 0 : null" [attr.role]="isCut() && detailsExpanded() ? 'region' : null"
       [attr.aria-label]="isCut() && detailsExpanded() ? partResources.permissionDetailsLabel : null">{{ shownDetails() }}</pre>
     @if (isCut()) {
       <button type="button" class="nol-permission-card-more" data-nol-resizes-row [attr.aria-expanded]="detailsExpanded()" [attr.aria-controls]="id + '-details'" (click)="toggleDetails()">{{
-        detailsExpanded() ? partResources.permissionShowFewerLines : partResources.formatPermissionShowAllLines(detailLines().length) }}</button>
+        detailsExpanded() ? partResources.permissionShowFewerLines : partResources.formatPermissionShowAllLines(lines().length) }}</button>
     }
   </div>
 }
