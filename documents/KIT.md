@@ -108,6 +108,8 @@ The default theme's grays for surfaces, borders, hover, selection and the focuse
 | `--nol-status-ok` | `status-ok` | #1A7F37 | #3FB950 | An app's status dot for a positive state, such as Connected; `CanvasText` in forced colors |
 | `--nol-status-failed` | `status-failed` | #CF222E | #F85149 | An app's status dot for a failed state, such as Sign-in required or Connection error; `CanvasText` in forced colors |
 | `--nol-warning` | `warning` | #8A5800 | #E3A33B | Text and marks for a state near a limit or one to check, such as a Warning chip or a meter's warning tone, with text that names it; `CanvasText` in forced colors |
+| `--nol-warning-background` | `warning-background` | #8A580014 | #E3A33B1F | The fill of a band that warns, such as an offline bar, under `warning` text, which keeps 4.5:1 on it over the window, panel, raised and dialog surfaces; `Canvas` in forced colors |
+| `--nol-error-background` | `error-background` | #A1260D12 | #F487711C | The fill of a band that reports an error, under `error` text, which keeps 4.5:1 on it over the window, panel, raised and dialog surfaces; `Canvas` in forced colors |
 | `--nol-docking-preview` | `docking-preview`, fallback `selected` | #E6E6E6 | #383838 | The area a dragged tab will occupy |
 | `--nol-docking-preview-border` | `docking-preview-border`, fallback `accent` | #005FB8 | #4DAAFC | The border of that area |
 | `--nol-text-selection` | `text-selection` | #ADD6FF | #264F78 | Selected text's fill where the kit paints a selection itself, as in the mention field; the selection foreground stays at least 4.5:1 on it. Forced colors use `Highlight` |
@@ -212,7 +214,7 @@ A terminal draws its own text, which forced colors don't recolor, so in forced c
 These values are in `styles/terminal.css`, which `styles/kit.css` imports, so every page that loads the kit gets them, with or without `styles/theme.css`.
 Since every ANSI color is then `CanvasText`, an app's terminal draws an ANSI cell background (SGR 40 to 47 and 100 to 107) as `--nol-terminal-background` in forced colors, so its text stays `CanvasText` on `Canvas`; the kit has no ANSI background tokens.
 The status dot tokens, `--nol-status-ok` and `--nol-status-failed`, are their own colors, so a diff's added color and the error color don't change with them, and a status dot keeps 3:1 on the window, the panel, a hovered row and a selected row.
-Forced colors have no green or red, so both become `CanvasText`, from `styles/status.css`, which `styles/kit.css` imports, on the page and in every scope a theme is painted on; a dot then stays visible, and the label beside it names the state, since `Highlight` would read as a selection.
+Forced colors have no green or red, so both become `CanvasText`, and the warning and error band fills `Canvas`, from `styles/status.css`, which `styles/kit.css` imports, on the page and in every scope a theme is painted on; a dot then stays visible, and the label beside it names the state, since `Highlight` would read as a selection.
 A dot drawn as a background sets `forced-color-adjust: none`, as the Gallery's Status colors specimen does, since forced colors would otherwise paint its background as `Canvas`.
 
 Muted text inside a selected surface takes that surface's normal text color, and every selected state sets the fill and that color together.

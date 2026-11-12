@@ -169,7 +169,7 @@ describe("ComponentPageComponent", () => {
       controls: "nol-menu-group, button[aria-haspopup=\"menu\"]",
       roles: ["nol-menu-group[role=\"group\"][aria-labelledby]", "nol-menu-group .nol-menu-label[aria-hidden=\"true\"]", "button.nol-icon-button[aria-label=\"View options\"][aria-haspopup=\"menu\"]"],
       keys: ["Arrow Down", "Arrow Up", "Home", "End", "Escape"],
-      inputs: ["label", "maxRows"],
+      inputs: ["label", "maxRows", "uppercase"],
       outputs: []
     },
     MenuSeparatorComponent: {
@@ -230,7 +230,7 @@ describe("ComponentPageComponent", () => {
         "button.nol-toolbar-button[aria-pressed=\"false\"]", "button.nol-toolbar-button[aria-disabled=\"true\"]", "button.nol-toolbar-button[aria-haspopup=\"menu\"][aria-expanded=\"false\"]",
         ".nol-toolbar-button-glyph[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End", "Enter", "Space"],
-      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "busy"],
+      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "isPressedWhileOpen", "busy"],
       outputs: []
     },
     AvatarComponent: {

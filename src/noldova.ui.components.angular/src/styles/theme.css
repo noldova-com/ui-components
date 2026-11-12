@@ -130,6 +130,8 @@
   --nol-status-ok: #1A7F37;
   --nol-status-failed: #CF222E;
   --nol-warning: #8A5800;
+  --nol-warning-background: #8A580014;
+  --nol-error-background: #A1260D12;
   --nol-docking-preview: #E6E6E6;
   --nol-docking-preview-border: #005FB8;
   --nol-author-1: #2F78CA;
@@ -458,6 +460,8 @@
     --nol-status-ok: #3FB950;
     --nol-status-failed: #F85149;
     --nol-warning: #E3A33B;
+    --nol-warning-background: #E3A33B1F;
+    --nol-error-background: #F487711C;
     --nol-docking-preview: #383838;
     --nol-docking-preview-border: #4DAAFC;
     --nol-author-1: #76A7DF;
@@ -621,6 +625,8 @@
   --nol-status-ok: #3FB950;
   --nol-status-failed: #F85149;
   --nol-warning: #E3A33B;
+  --nol-warning-background: #E3A33B1F;
+  --nol-error-background: #F487711C;
   --nol-docking-preview: #383838;
   --nol-docking-preview-border: #4DAAFC;
   --nol-author-1: #76A7DF;
