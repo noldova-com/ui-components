@@ -66,7 +66,7 @@ describe("MenuGroupComponent's uppercase heading", () => {
 
         expect([label("caps").textContent?.trim(), style.textTransform, style.fontWeight, style.color])
           .toEqual(["Versions", "uppercase", "500", AppearanceFixture.readColor(theme, mode, "text-muted")]);
-        AppearanceFixture.expectLook(style.fontSize, theme, "text-small", "font-size");
+        AppearanceFixture.expectPixels(Number.parseFloat(style.fontSize), AppearanceFixture.measureLook("text-small"));
         expect(spacing(label("caps"))).toBeCloseTo(0.05, 3);
         expect([plain.textTransform, plain.letterSpacing]).toEqual(["none", "normal"]);
         AppearanceFixture.expectPixels(caps.height, normal.height);
