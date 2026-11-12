@@ -4,8 +4,11 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
-## 0.0.4
+## 0.0.5
 
+0.0.4 was tagged but never published: its release stopped before the publish, since Angular's newest patch had moved past the kit's. This version holds what 0.0.4 would have, and moves the kit to that patch.
+
+- `@noldova/ui.components.angular`: its Angular peers, `@angular/common`, `@angular/core`, `@angular/forms` and `@angular/platform-browser`, move from 22.2.5 to 22.2.6, Angular's newest patch, and its `@angular/cdk` from 22.2.5 to 22.2.7. Since the kit names them exactly, an app moves its own `@angular/*` packages to 22.2.6 with it, its build tools among them, and its `@angular/cdk` to 22.2.7 if it installs that itself.
 - `@noldova/ui.components.angular`: under forced colors, a spinner on a `Highlight` fill shows its arc: a selected tab, a pressed toolbar or icon button, a selected virtual list option and the current menu row set the spinner's arc and ring to `HighlightText`, and an unavailable one, back on `Canvas`, keeps the `Highlight` arc over the `GrayText` ring. A part sets them by `--nol-spinner-forced-arc` and `--nol-spinner-forced-ring`, `Highlight` and `GrayText` when unset, so a spinner on its own looks as before.
 - `@noldova/ui.components.angular`: under forced colors, a hovered button's and overlay icon button's dashes sit one border width off the border rather than on it, and a quick input result's matched letters are `CanvasText` unless the result is active, where they took `MarkText`, black on a dark `Canvas`.
 

@@ -11,7 +11,7 @@ Its type declarations carry the documentation of every export and public member,
 - TypeScript's `moduleResolution` set to `"bundler"`, `"node16"` or `"nodenext"` in the app's `tsconfig.json`.
   The kit's JavaScript and type declarations name each of the kit's own files with `.js`, such as `../resources.js`, so Node.js's own ES module resolution loads the kit too: code tested without a bundler, such as with `node --test`, imports it once it has imported `@angular/compiler`, which finishes the partially compiled components as they load.
 - A browser no older than Chrome 112, Edge 112, Safari 16.5 or Firefox 117.
-- Angular at the exact version the kit names: `@angular/core`, `@angular/common`, `@angular/forms` and `@angular/platform-browser`, which are its peer dependencies, and `@angular/cdk`, a dependency of the kit at the same version.
+- Angular at the exact version the kit names: `@angular/core`, `@angular/common`, `@angular/forms` and `@angular/platform-browser`, which are its peer dependencies, and `@angular/cdk`, a dependency of the kit at its own exact version, since the CDK publishes its patches apart from Angular's, such as 22.2.7 with Angular 22.2.6.
   The kit doesn't import forms or platform-browser itself, but `@angular/cdk` needs both, and each needs `@angular/common` at its own exact version.
   Without them among the kit's peers, npm picks their newest versions, which need a newer `@angular/common` than the kit's, and the install stops with `ERESOLVE`.
   `@angular/cdk` is a dependency rather than a peer for the same reason: as a peer, npm resolved its own peers before the kit's other peers, so installing the kit alone stopped with that `ERESOLVE`; as a dependency, it's resolved after them, and they satisfy its peers.
@@ -19,7 +19,7 @@ Its type declarations carry the documentation of every export and public member,
   With any other version, npm nests a second copy under the kit, beside the app's, without a warning or an error, even when the kit names it as a peer as well.
   The kit's overlays, focus handling and other services from `@angular/cdk` then run from its copy, and the app's from the other: each copy has its own overlay container, so the app's overlays and the kit's can stack in the wrong order, and focus traps and keyboard handling between them can disagree.
   `npm ls @angular/cdk` lists one copy when the versions match; an app checks it in its build, failing when it lists more than one.
-- Angular's build tools at the kit's Angular version too, such as `npm install --save-dev @angular/build@22.2.5 @angular/cli@22.2.5`.
+- Angular's build tools at the kit's Angular version too, such as `npm install --save-dev @angular/build@22.2.6 @angular/cli@22.2.6`.
   Until 1.0 the kit names exact versions, its Angular peers included, but for its context peers below, and a new kit version moves them to Angular's newest patch.
   When Angular's newest is ahead of the kit's, adding the build tools stops with `ERESOLVE`, even at the kit's version: their optional peers, such as `@angular/service-worker`, `@angular/platform-server` and `@angular/ssr`, resolve to Angular's newest, which needs a newer `@angular/core` than the kit's.
   An app then waits for the kit version that moves to Angular's newest patch.
