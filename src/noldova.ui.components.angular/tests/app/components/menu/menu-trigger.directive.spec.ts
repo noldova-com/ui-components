@@ -52,6 +52,24 @@ class MenuHostComponent {
   public readonly chosen: string[] = [];
 }
 
+@Component({
+  imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
+  template: `
+    <button type="button" class="trigger" style="position: fixed; top: 100px; left: 100px;" [nolMenuTriggerFor]="root">More</button>
+    <ng-template #root>
+      <nol-menu class="root">
+        <button nol-menu-item class="beta" label="Versions" [nolMenuTriggerFor]="submenu"></button>
+      </nol-menu>
+    </ng-template>
+    <ng-template #submenu>
+      <nol-menu class="submenu">
+        <button nol-menu-item class="one" label="One"></button>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class OnPushMenuHostComponent {}
+
 describe("MenuTriggerDirective", () => {
   let fixture: ComponentFixture<MenuHostComponent>;
 
@@ -467,5 +485,48 @@ describe("MenuTriggerDirective", () => {
     const box = OverlayWrapperFixture.narrow(shown.closest(".nol-menu-pane") as Element);
 
     await OverlayWrapperFixture.expectCappedAsync(shown, box);
+  });
+});
+
+describe("MenuTriggerDirective in an OnPush host", () => {
+  let fixture: ComponentFixture<OnPushMenuHostComponent>;
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(OnPushMenuHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  function menu(name: string): HTMLElement | null {
+    return document.querySelector<HTMLElement>(`.cdk-overlay-container nol-menu.${name}`);
+  }
+
+  function state(element: Element, name: string): string {
+    const controls = element.getAttribute("aria-controls");
+    return `${controls !== null && controls === menu(name)?.id ? "names the menu" : controls}, expanded ${element.getAttribute("aria-expanded")}`;
+  }
+
+  it("names its menu and a submenu row its submenu while open, and names none once a submenu's row closes them, with no change detection from the test", async () => {
+    const trigger = DomFixture.one(DomFixture.host(fixture), ".trigger");
+    await userEvent.click(trigger);
+    await vi.waitFor(() => expect(menu("root")).not.toBeNull());
+    await fixture.whenStable();
+    const open = state(trigger, "root");
+    const beta = DomFixture.one(DomFixture.present(menu("root")), ".beta");
+    await userEvent.hover(beta);
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await fixture.whenStable();
+    const betaOpen = state(beta, "submenu");
+    await userEvent.click(DomFixture.one(DomFixture.present(menu("submenu")), ".one"));
+    await vi.waitFor(() => expect(menu("root")).toBeNull());
+    await fixture.whenStable();
+
+    expect([open, betaOpen, state(trigger, "root")]).toEqual(["names the menu, expanded true", "names the menu, expanded true", "null, expanded false"]);
   });
 });
