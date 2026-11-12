@@ -369,8 +369,6 @@ export class DefaultTheme {
       ["menu-trail-gap", "2rem"],
       ["band-gap", "var(--nol-sash)"],
       ["toolbar-button", "1.5rem"],
-      ["toolbar-button-large", "1.875rem"],
-      ["toolbar-button-large-icon", "1.125rem"],
       ["toolbar-gap", "0.5rem"],
       ["toolbar-grip-gap", "0.2rem"],
       ["menu-separator-spacing", "0.3125rem"],

@@ -977,26 +977,6 @@ export declare enum ThemeMode {
 }
 
 /**
- * The size of a {@link ToolbarButtonComponent}, from the theme's
- * `toolbar-button` and `toolbar-button-large` look values.
- */
-export declare enum ToolbarButtonSize {
-  /**
-   * The theme's `toolbar-button`, 1.5rem square by default, with the
-   * `icon` glyph, 1rem; the default.
-   */
-  Normal = "Normal",
-
-  /**
-   * The theme's `toolbar-button-large`, 1.875rem square by default, with
-   * the `toolbar-button-large-icon` glyph, 1.125rem, for a document's own
-   * toolbar; its chevron, hover, pressed, focus and disabled looks are the
-   * normal size's.
-   */
-  Large = "Large"
-}
-
-/**
  * The direction of a {@link ToolbarDirective}'s items, which decides the arrow
  * keys that move focus between them.
  */
@@ -11991,21 +11971,6 @@ export declare class ToolbarButtonComponent {
    * False when not bound.
    */
   public readonly isUnavailable: InputSignal<boolean>;
-
-  /**
-   * The button's size, {@link ToolbarButtonSize.Normal} when not bound.
-   */
-  public readonly size: InputSignal<ToolbarButtonSize>;
-
-  /**
-   * The size of the button's glyph, or null, the default, for the one its
-   * {@link size} draws: the kit's 1rem `icon` at the normal size, and
-   * `toolbar-button-large-icon`, 1.125rem, at the large size.
-   * {@link ToolbarButtonSize.Normal} keeps the 1rem glyph on a large square,
-   * such as a row's More beside a document toolbar's larger glyphs. The
-   * chevron stays 1rem either way.
-   */
-  public readonly iconSize: InputSignal<ToolbarButtonSize | null>;
 
   /**
    * Whether a button that opens a menu, with {@link hasMenu}, draws its

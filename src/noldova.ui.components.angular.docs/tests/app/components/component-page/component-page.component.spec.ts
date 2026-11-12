@@ -230,7 +230,7 @@ describe("ComponentPageComponent", () => {
         "button.nol-toolbar-button[aria-pressed=\"false\"]", "button.nol-toolbar-button[aria-disabled=\"true\"]", "button.nol-toolbar-button[aria-haspopup=\"menu\"][aria-expanded=\"false\"]",
         ".nol-toolbar-button-glyph[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End", "Enter", "Space"],
-      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "size", "iconSize", "isPressedWhileOpen", "busy"],
+      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "isPressedWhileOpen", "busy"],
       outputs: []
     },
     AvatarComponent: {

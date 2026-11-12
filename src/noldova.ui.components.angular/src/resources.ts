@@ -236,8 +236,6 @@ export class Resources {
     "menu-trail-gap",
     "band-gap",
     "toolbar-button",
-    "toolbar-button-large",
-    "toolbar-button-large-icon",
     "toolbar-gap",
     "toolbar-grip-gap",
     "menu-separator-spacing",

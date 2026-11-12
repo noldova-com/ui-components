@@ -31,11 +31,6 @@
   padding: 0;
 }
 
-:host(.nol-toolbar-button-large) {
-  min-width: var(--nol-toolbar-button-large);
-  height: var(--nol-toolbar-button-large);
-}
-
 :host(:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])),
 :host([aria-pressed="true"]),
 :host(.nol-toolbar-button-open-pressed[aria-expanded="true"]) {
@@ -120,10 +115,6 @@
 .nol-toolbar-button-chevron {
   flex: none;
   font-size: var(--nol-icon);
-}
-
-:host(.nol-toolbar-button-large-glyph) .nol-toolbar-button-glyph {
-  font-size: var(--nol-toolbar-button-large-icon);
 }
 
 .nol-toolbar-button-label {

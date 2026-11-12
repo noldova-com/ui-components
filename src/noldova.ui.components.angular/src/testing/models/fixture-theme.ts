@@ -368,8 +368,6 @@ export class FixtureTheme {
     ["menu-trail-gap", "2.25rem"],
     ["band-gap", "0.375rem"],
     ["toolbar-button", "2rem"],
-    ["toolbar-button-large", "2.5rem"],
-    ["toolbar-button-large-icon", "1.5rem"],
     ["toolbar-gap", "0.75rem"],
     ["toolbar-grip-gap", "0.25rem"],
     ["menu-separator-spacing", "0.375rem"],

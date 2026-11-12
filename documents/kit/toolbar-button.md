@@ -1,20 +1,12 @@
 # Toolbar button
 
-**Scope:** The kit's toolbar button: its default geometry, its large size, the text role it uses, and its surface and behavior.
+**Scope:** The kit's toolbar button: its default geometry, the text role it uses, and its surface and behavior.
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
 ## Default geometry
 
 1.5rem square, as high as a tab's pill, or at least 1.5rem wide with the pill padding on each side when it shows a label; a 1rem glyph; small radius; a 1rem chevron 0.125rem after the label of a dropdown.
-
-## Large size
-
-`ToolbarButtonSize.Large`, for a document's own toolbar, such as a page document's.
-
-- It is `toolbar-button-large` square, 1.875rem by default, or at least that wide with the pill padding on each side when it shows a label.
-- Its glyph is `toolbar-button-large-icon`, 1.125rem by default, or the kit's 1rem `icon` with `iconSize` set to `ToolbarButtonSize.Normal`, such as a row's More on a large square; its chevron stays 1rem.
-- Its radius, hover, pressed, focus, disabled, busy and forced-colors looks are the default size's.
 
 ## Text role
 
