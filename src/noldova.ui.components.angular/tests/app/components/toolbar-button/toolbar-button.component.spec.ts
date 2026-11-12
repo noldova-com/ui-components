@@ -20,7 +20,7 @@ import { OpacityFixture } from "../../../fixtures/opacity.fixture";
   imports: [ToolbarButtonComponent],
   template: `
     <button type="button" nol-toolbar-button [label]="label()" [icon]="icon()" [isShowingLabel]="isShowingLabel()" [hasMenu]="hasMenu()" [pressed]="pressed()"
-      [isUnavailable]="isUnavailable()"></button>
+      [isUnavailable]="isUnavailable()" [busy]="busy()"></button>
     @for (direction of directions; track direction) {
       <div class="row" [attr.dir]="direction" [attr.data-direction]="direction" style="display: flex; width: 8rem">
         <button type="button" nol-toolbar-button class="long" icon="save" [isShowingLabel]="true" [hasMenu]="true" label="A label far too long to fit the row its toolbar is given"></button>
@@ -42,6 +42,7 @@ class ToolbarButtonHostComponent {
   public readonly hasMenu = signal(false);
   public readonly pressed = signal<boolean | undefined>(undefined);
   public readonly isUnavailable = signal(false);
+  public readonly busy = signal(false);
 }
 
 describe("ToolbarButtonComponent", () => {
@@ -243,4 +244,28 @@ describe("ToolbarButtonComponent", () => {
       await ForcedColorsFixture.resetAsync();
     }
   });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a busy pressed button's spinner arc and ring in HighlightText on its Highlight fill, and a Highlight arc over a GrayText ring on Canvas once unavailable, under forced colors in ${mode} mode`, async () => {
+      AppearanceFixture.apply(undefined, mode);
+      set(t => {
+        t.pressed.set(true);
+        t.busy.set(true);
+      });
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const look = (): string[] => {
+          const ring = getComputedStyle(DomFixture.one(button(), ".nol-toolbar-button-spinner .nol-spinner-ring"));
+          return [getComputedStyle(button()).backgroundColor, ring.borderTopColor, ring.borderBottomColor];
+        };
+        const pressed = look();
+        set(t => t.isUnavailable.set(true));
+        const [highlight, text, gray, canvas] = ["Highlight", "HighlightText", "GrayText", "Canvas"].map(t => ForcedColorsFixture.resolve(t));
+
+        expect([pressed, look()]).toEqual([[highlight, text, text], [canvas, highlight, gray]]);
+      }
+      finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
 });

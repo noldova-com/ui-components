@@ -109,6 +109,17 @@ describe("TokensPageComponent", () => {
     expect(changing.filter(t => cellText(t, "td:nth-of-type(1)") === cellText(t, "td:nth-of-type(2)")).map(t => cellText(t, "th"))).toEqual([]);
   });
 
+  it("stacks a token table that doesn't fit a phone, naming each value's mode before it, and a shared value's as both", async () => {
+    await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
+    const host = await renderAsync("/tokens");
+    await vi.waitFor(() => expect(DocsFixture.all(host, "main .nol-docs-stacked").length).toBeGreaterThan(0));
+    const rows = DocsFixture.all(host, "main .nol-docs-stacked tbody tr");
+    const labels = (row: HTMLElement): readonly (string | null)[] => DocsFixture.all(row, "td").map(t => t.getAttribute("data-label"));
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.filter(t => labels(t).join() !== (DocsFixture.all(t, "td").length === 1 ? "Light and Dark" : "Light,Dark")).map(t => cellText(t, "th"))).toEqual([]);
+  });
+
   it("groups the tokens into tables named by their sections", async () => {
     const host = await renderAsync("/tokens");
     const sections = DocsFixture.all(host, "main .nol-docs-section");
@@ -165,7 +176,7 @@ describe("TokensPageComponent", () => {
     ["Light", "light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
     ["Dark", "dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
   ])("in the %s mode, a %s color scheme, at %ipx wide", (mode, scheme, width, height) => {
-    it("keeps every token table inside the page's width, scrolling inside its holder", async () => {
+    it("keeps every token table and its holder inside the page's width", async () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = await renderAsync("/tokens");

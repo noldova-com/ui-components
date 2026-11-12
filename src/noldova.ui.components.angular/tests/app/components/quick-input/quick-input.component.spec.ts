@@ -634,6 +634,27 @@ describe("QuickInputComponent", () => {
       });
 
   for (const mode of AppearanceFixture.modes)
+    it(`marks the matched characters in CanvasText under forced colors on a row that isn't active, so they show on the Canvas, and in HighlightText on the active row, in ${mode} mode`, async () => {
+      AppearanceFixture.apply(DefaultTheme.theme, mode);
+      host.items.set([new QuickInputItem("notes.open", "Open a note", null, null, null, [0]), new QuickInputItem("notes.show", "Show the outline", null, null, null, [1])]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const [active, other] = [DomFixture.at(options(), 0), DomFixture.at(options(), 1)];
+        const mark = (row: Element): string => getComputedStyle(DomFixture.oneOf(row, "mark", Element)).color;
+        const canvas = ForcedColorsFixture.resolve("Canvas");
+
+        expect([active.getAttribute("aria-selected"), mark(active), other.getAttribute("aria-selected"), mark(other)])
+          .toEqual(["true", ForcedColorsFixture.resolve("HighlightText"), "false", ForcedColorsFixture.resolve("CanvasText")]);
+        expect(AppearanceFixture.contrast(mark(other), canvas)).toBeGreaterThanOrEqual(4.5);
+      }
+      finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
       it(`keeps each option a row high with its title and key whole, its detail a gap apart from both, and a long detail cut instead of the title, in the ${theme.id} theme in ${mode} mode`, async () => {
         AppearanceFixture.apply(theme, mode);

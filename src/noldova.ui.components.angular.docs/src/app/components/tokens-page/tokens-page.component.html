@@ -14,19 +14,19 @@ LICENSE file in the root directory of this source tree.
     <section class="nol-docs-section" [attr.aria-labelledby]="partResources.formatSectionId(table.group)">
       <h2 class="nol-docs-section-title" [id]="partResources.formatSectionId(table.group)">{{ table.label }}</h2>
       <div class="nol-docs-table-holder">
-        <table class="nol-docs-table" [attr.aria-label]="table.label">
-          <thead>
-            <tr>
-              <th scope="col">{{ partResources.tokenColumn }}</th>
-              <th scope="col">{{ resources.themeLight }}</th>
-              <th scope="col">{{ resources.themeDark }}</th>
+        <table class="nol-docs-table nol-docs-stacked-table nol-docs-token-table" nolDocsFitTable role="table" [attr.aria-label]="table.label">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">{{ partResources.tokenColumn }}</th>
+              <th scope="col" role="columnheader">{{ resources.themeLight }}</th>
+              <th scope="col" role="columnheader">{{ resources.themeDark }}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             @for (token of table.tokens; track token.variable) {
-              <tr>
-                <th scope="row"><code>{{ token.variable }}</code></th>
-                <td [attr.colspan]="token.light === token.dark ? 2 : null">
+              <tr role="row">
+                <th scope="row" role="rowheader"><code>{{ token.variable }}</code></th>
+                <td role="cell" [attr.colspan]="token.light === token.dark ? 2 : null" [attr.data-label]="token.light === token.dark ? partResources.sharedValueLabel : resources.themeLight">
                   <span class="nol-docs-token-value">
                     @if (token.isColor) {
                       <span class="nol-docs-token-swatch" aria-hidden="true" [style.background-color]="token.light"></span>
@@ -35,7 +35,7 @@ LICENSE file in the root directory of this source tree.
                   </span>
                 </td>
                 @if (token.light !== token.dark) {
-                  <td>
+                  <td role="cell" [attr.data-label]="resources.themeDark">
                     <span class="nol-docs-token-value">
                       @if (token.isColor) {
                         <span class="nol-docs-token-swatch" aria-hidden="true" [style.background-color]="token.dark"></span>

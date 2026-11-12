@@ -40,7 +40,7 @@ const NEVER: PermissionOption = new PermissionOption("never", "Never", Permissio
 const ALLOW_SESSION: PermissionOption = new PermissionOption("allow-session", "Allow for this session", PermissionEffect.Allow, null);
 const REJECT_SESSION: PermissionOption = new PermissionOption("reject-session", "Reject for this session", PermissionEffect.Deny, null);
 const DECIDED_AT: Date = new Date("2026-10-13T09:00:00Z");
-const ANNOUNCED: string = "Permission request from Build agent: Delete the build folder";
+const ANNOUNCED: string = "Permission request from Build agent, Agent: Delete the build folder";
 
 function requestOf(risk: PermissionRisk | null = PermissionRisk.Low, options: IPermissionRequestOptions = {}, id: string = "request-1"): PermissionRequest {
   return new PermissionRequest(id, REQUESTER, "Delete the build folder", risk, options);
@@ -64,7 +64,7 @@ class TimeSettings {
   template: `
     <div class="frame" style="width: 30rem" (keydown)="heard.push($event.key)">
       @for (request of requests(); track request.id) {
-        <nol-permission-card [request]="request" [(detailsExpanded)]="expanded" (decide)="decided.push(request.id + ':' + $event)" />
+        <nol-permission-card [request]="request" [(detailsExpanded)]="expanded" [detailLines]="detailLines()" (decide)="decided.push(request.id + ':' + $event)" />
       }
     </div>
   `
@@ -72,6 +72,7 @@ class TimeSettings {
 class PermissionCardHostComponent {
   public readonly requests: WritableSignal<readonly PermissionRequest[]> = signal([]);
   public readonly expanded: WritableSignal<boolean> = signal(false);
+  public readonly detailLines: WritableSignal<number> = signal(3);
   public readonly decided: string[] = [];
   public readonly heard: string[] = [];
 }
@@ -288,6 +289,14 @@ describe("PermissionCardComponent", () => {
     component().focus();
 
     expect(document.activeElement).toBe(card());
+  });
+
+  it("describes and announces a requester with no kind by its name alone", async () => {
+    await renderAsync(new PermissionRequest("request-1", new PermissionRequester("Files · Build agent · This computer"), "Delete the build folder", PermissionRisk.Low));
+
+    expect(find(".nol-permission-card-requester").textContent).toBe("Files · Build agent · This computer");
+    expect(card().getAttribute("aria-describedby")?.split(" ")).toContain(find(".nol-permission-card-requester").id);
+    expect(announcements).toEqual([["Permission request from Files · Build agent · This computer: Delete the build folder", "assertive"]]);
   });
 
   it("announces a pending request once, assertively when it shows alone and politely when another card is already pending", async () => {
@@ -680,6 +689,44 @@ describe("PermissionCardComponent", () => {
     await clickAsync(more());
 
     expect([host.expanded(), code().textContent, code().getAttribute("role")]).toEqual([false, linesOf(3), null]);
+  });
+
+  it("shows details whole up to as many lines as its owner asks for, and cuts them at that count past it", async () => {
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(12) }));
+    host.detailLines.set(12);
+    await fixture.whenStable();
+    const code = (): HTMLElement => find(".nol-permission-card-code");
+
+    expect([code().textContent, code().getAttribute("role"), DomFixture.maybe(DomFixture.host(fixture), ".nol-permission-card-more")]).toEqual([linesOf(12), null, null]);
+
+    await showAsync(requestOf(PermissionRisk.Low, { details: linesOf(13) }));
+
+    expect([code().textContent, find(".nol-permission-card-more").textContent]).toEqual([linesOf(12), "Show all 13 lines"]);
+  });
+
+  it("keeps details past 12 lines as high when Show all is pressed as when they were cut, at as many lines as its owner asks for, and scrolls the rest", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(30) }));
+    host.detailLines.set(20);
+    await fixture.whenStable();
+    const code = (): HTMLElement => find(".nol-permission-card-code");
+    const lineHeight = Number.parseFloat(getComputedStyle(code()).lineHeight);
+    const cut = box(code()).height;
+
+    expect(Math.abs(cut - 20 * lineHeight)).toBeLessThanOrEqual(1);
+
+    await clickAsync(find(".nol-permission-card-more"));
+
+    expect(Math.abs(box(code()).height - cut)).toBeLessThanOrEqual(1);
+    expect(code().scrollHeight).toBeGreaterThan(code().clientHeight);
+  });
+
+  it.each([[0, 1], [-1, 1], [2.5, 2], [Number.NaN, 3], [Number.POSITIVE_INFINITY, 3]])("takes %s detail lines as %s", async (asked, shown) => {
+    await renderAsync(requestOf(PermissionRisk.Low, { details: linesOf(5) }));
+    host.detailLines.set(asked);
+    await fixture.whenStable();
+
+    expect([find(".nol-permission-card-code").textContent, find(".nol-permission-card-more").textContent]).toEqual([linesOf(shown), "Show all 5 lines"]);
   });
 
   it("shows every line of long details when its owner kept them expanded", async () => {

@@ -11,10 +11,13 @@ import { exampleFiles as dialogConfirmContentFiles } from "@docs-generated/examp
 import { exampleFiles as dialogConfirmFiles } from "@docs-generated/examples/dialog-confirm-example.js";
 import { exampleFiles as dialogLargeContentFiles } from "@docs-generated/examples/dialog-large-content-example.js";
 import { exampleFiles as dialogLargeFiles } from "@docs-generated/examples/dialog-large-example.js";
+import { exampleFiles as dialogMediumContentFiles } from "@docs-generated/examples/dialog-medium-content-example.js";
+import { exampleFiles as dialogMediumFiles } from "@docs-generated/examples/dialog-medium-example.js";
 
 import { GalleryDialogComponent } from "../../../../../noldova.ui.components.angular/src/app/components/gallery/gallery-dialog.component.js";
 import { DialogConfirmExampleComponent } from "../../components/dialog-confirm-example/dialog-confirm-example.component.js";
 import { DialogLargeExampleComponent } from "../../components/dialog-large-example/dialog-large-example.component.js";
+import { DialogMediumExampleComponent } from "../../components/dialog-medium-example/dialog-medium-example.component.js";
 import { DocsComponentPage } from "../docs-component-page.js";
 import { DocsExample } from "../docs-example.js";
 import { DialogPageResources } from "./dialog-page.resources.js";
@@ -22,6 +25,7 @@ import { DialogPageResources } from "./dialog-page.resources.js";
 export class DialogPage {
   public static readonly content: DocsComponentPage = new DocsComponentPage(DialogPageResources.title, DialogPageResources.componentName, [
     new DocsExample(DialogPageResources.dialogConfirmTitle, DialogConfirmExampleComponent, [...dialogConfirmFiles, ...dialogConfirmContentFiles]),
+    new DocsExample(DialogPageResources.dialogMediumTitle, DialogMediumExampleComponent, [...dialogMediumFiles, ...dialogMediumContentFiles]),
     new DocsExample(DialogPageResources.dialogLargeTitle, DialogLargeExampleComponent, [...dialogLargeFiles, ...dialogLargeContentFiles])
   ], GalleryDialogComponent, kitDocument, DialogPageResources.keys, DialogPageResources.roles);
 }

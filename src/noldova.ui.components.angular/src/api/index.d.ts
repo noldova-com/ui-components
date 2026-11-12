@@ -11,7 +11,7 @@ import type { DialogRef } from "@angular/cdk/dialog";
 import { CdkMenuItem, CdkMenuTrigger, CdkMenuTriggerBase } from "@angular/cdk/menu";
 import type { OverlayRef } from "@angular/cdk/overlay";
 import type { ComponentPortal, ComponentType, TemplatePortal } from "@angular/cdk/portal";
-import type { ComponentRef, EmbeddedViewRef, EnvironmentProviders, InjectionToken, Injector, InputSignal, ModelSignal, OutputEmitterRef, OutputRef, Signal, TemplateRef } from "@angular/core";
+import type { ComponentRef, EmbeddedViewRef, EnvironmentProviders, InjectionToken, Injector, InputSignal, InputSignalWithTransform, ModelSignal, OutputEmitterRef, OutputRef, Signal, TemplateRef } from "@angular/core";
 import { Exception } from "@noldova/context.exceptions";
 import type { Observable } from "rxjs";
 
@@ -247,7 +247,7 @@ export declare enum ChipKind {
 }
 
 /**
- * The size of a {@link DialogComponent}. Either size stays within the window,
+ * The size of a {@link DialogComponent}. Every size stays within the window,
  * below its top row and above its status bar.
  */
 export declare enum DialogSize {
@@ -256,6 +256,13 @@ export declare enum DialogSize {
    * padded title, body and actions; the default.
    */
   Normal = "Normal",
+
+  /**
+   * As wide as the theme's `dialog-medium-width` and otherwise the default
+   * size: as tall as its content, with a padded title, body and actions. A
+   * short form with several fields or a short table fits it.
+   */
+  Medium = "Medium",
 
   /**
    * A fixed size from the theme's `dialog-large-width` and
@@ -3991,9 +3998,10 @@ export declare class DialogComponent {
 
   /**
    * The dialog's size; normal when not bound. A normal dialog takes its
-   * preferred width within the window and scrolls its body; a large one
-   * takes most of the window, with a title bar that ends with its controls,
-   * Maximize and Close, and a body without padding that lays itself out.
+   * preferred width within the window and scrolls its body; a medium one is
+   * the same at the theme's wider medium width; a large one takes most of
+   * the window, with a title bar that ends with its controls, Maximize and
+   * Close, and a body without padding that lays itself out.
    */
   public readonly size: InputSignal<DialogSize>;
 
@@ -8991,10 +8999,12 @@ export declare class PanelCardComponent {
  * none when the request leaves it unknown, and the minutes left before the
  * request expires, updated each minute and formatted for `LOCALE_ID`. The
  * description and the details follow, the details as plain code in the mono
- * font. Details longer than 3 lines show their first 3 lines and a Show all
- * button, and then scroll inside the card. The requester's name and kind
- * aren't shown, since the card sits in the requester's message, but are in
- * the card's description.
+ * font. Details longer than {@link PermissionCardComponent.detailLines},
+ * 3 lines by default, show that many lines and a Show all button, and then
+ * scroll inside the card; details as long or shorter show whole. The
+ * requester's line, its name and kind, or its name alone when it has no
+ * kind, isn't shown, since the card sits in the requester's message, but is
+ * in the card's description.
  *
  * The options are equal secondary buttons at the end of the card, a kit
  * toolbar, one tab stop whose arrow keys move
@@ -9018,7 +9028,7 @@ export declare class PanelCardComponent {
  * Once it fails to send, ends or is decided, the outcome replaces the
  * options, and focus that was on them moves to the card. When a pending
  * request first shows, the card announces it through the {@link Announcer},
- * as Permission request from, the requester and the heading: assertively
+ * as Permission request from, the requester's line and the heading: assertively
  * when no other card is pending, and politely when one is. Each card keeps
  * its own state, so several can be pending at once.
  */
@@ -9035,6 +9045,15 @@ export declare class PermissionCardComponent {
    * looks as it did. False when not bound.
    */
   public readonly detailsExpanded: ModelSignal<boolean>;
+
+  /**
+   * How many lines of details show before the Show all button; details with
+   * that many lines or fewer show whole. Once Show all is pressed, the details
+   * scroll inside a block as high as the larger of 12 lines and this count.
+   * A value is rounded down to a whole number of at least 1, and one that
+   * isn't a finite number counts as 3. 3 when not bound.
+   */
+  public readonly detailLines: InputSignalWithTransform<number, number>;
 
   /**
    * Emits the id of the option the person chose, once they confirmed it
@@ -9318,8 +9337,10 @@ export declare class PermissionRequest {
 }
 
 /**
- * Who asks for a {@link PermissionRequest}, which its card shows by name
- * and kind.
+ * Who asks for a {@link PermissionRequest}. Its card describes it as the
+ * name and the kind, such as Build agent, Agent, or as the name alone when
+ * there is no kind, so a requester whose name is already the whole line,
+ * in the app's own words, gives no kind.
  */
 export declare class PermissionRequester {
   /**
@@ -9329,24 +9350,26 @@ export declare class PermissionRequester {
 
   /**
    * What kind of requester it is, in the app's own words, such as Agent or
-   * Extension.
+   * Extension, or null for none.
    */
-  public readonly kind: string;
+  public readonly kind: string | null;
 
   /**
    * Creates the requester.
    *
    * @param name The display name. Not blank.
-   * @param kind What kind of requester it is. Not blank.
-   * @throws ArgumentException when the name or the kind is blank.
+   * @param kind What kind of requester it is, or null for none, the
+   * default. Not blank.
+   * @throws ArgumentException when the name, or a given kind, is blank.
    * @example
    * ```ts
    * import { PermissionRequester } from "@noldova/ui.components.angular";
    *
-   * export const requester: PermissionRequester = new PermissionRequester("Build agent", "Agent");
+   * export const agent: PermissionRequester = new PermissionRequester("Build agent", "Agent");
+   * export const module: PermissionRequester = new PermissionRequester("Files · Build agent · This computer");
    * ```
    */
-  public constructor(name: string, kind: string);
+  public constructor(name: string, kind?: string | null);
 }
 
 /**

@@ -45,7 +45,7 @@
 
   @media (forced-colors: active) {
     outline: var(--nol-border-width) dashed Highlight;
-    outline-offset: calc(var(--nol-border-width) * -1);
+    outline-offset: calc(var(--nol-border-width) * -3);
   }
 }
 
