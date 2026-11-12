@@ -279,6 +279,7 @@
   --nol-tree-indent: 1.75rem;
   --nol-row-gap: calc(2 * var(--nol-tab-inset));
   --nol-section-header-height: 1.75rem;
+  --nol-section-header-caret: 0.875rem;
   --nol-content-padding-inline: calc(3 * var(--nol-tab-inset) + var(--nol-pill-padding));
   --nol-document-padding-block: 1rem;
   --nol-view-padding-block: 0.5rem;
