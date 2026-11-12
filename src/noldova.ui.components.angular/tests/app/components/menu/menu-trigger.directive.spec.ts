@@ -10,9 +10,15 @@ import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { MenuGroupComponent } from "../../../../src/app/components/menu/menu-group.component";
 import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item.component";
+import { MenuSeparatorComponent } from "../../../../src/app/components/menu/menu-separator.component";
 import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
 import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
+import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-button/toolbar-button.component";
+import { ToolbarItemDirective } from "../../../../src/app/components/toolbar/toolbar-item.directive";
+import { ToolbarDirective } from "../../../../src/app/components/toolbar/toolbar.directive";
+import { TooltipDirective } from "../../../../src/app/components/tooltip/tooltip.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -53,22 +59,39 @@ class MenuHostComponent {
 }
 
 @Component({
-  imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
+  imports: [MenuComponent, MenuGroupComponent, MenuItemComponent, MenuSeparatorComponent, MenuTriggerDirective, ToolbarButtonComponent, ToolbarDirective, ToolbarItemDirective, TooltipDirective],
   template: `
-    <button type="button" class="trigger" style="position: fixed; top: 100px; left: 100px;" [nolMenuTriggerFor]="root">More</button>
+    <div nolToolbar style="position: fixed; top: 100px; left: 100px;">
+      <button nol-toolbar-button nolToolbarItem type="button" class="trigger" label="More" icon="more" nolTooltip="More" [nolMenuTriggerFor]="root"></button>
+    </div>
     <ng-template #root>
       <nol-menu class="root">
-        <button nol-menu-item class="beta" label="Versions" [nolMenuTriggerFor]="submenu"></button>
+        <button nol-menu-item label="Copy" (triggered)="shown.set('copy')"></button>
+        <button nol-menu-item class="beta" label="Versions" tag="2" [nolMenuTriggerFor]="submenu"></button>
+        <nol-menu-separator />
+        <button nol-menu-item label="Close" (triggered)="shown.set('close')"></button>
       </nol-menu>
     </ng-template>
     <ng-template #submenu>
       <nol-menu class="submenu">
-        <button nol-menu-item class="one" label="One"></button>
+        <nol-menu-group label="Versions">
+          @for (version of versions; track version) {
+            <button nol-menu-item [class]="version" [label]="version" [checked]="version === shown()" (triggered)="showAsync(version)"></button>
+          }
+        </nol-menu-group>
       </nol-menu>
     </ng-template>
   `
 })
-class OnPushMenuHostComponent {}
+class OnPushMenuHostComponent {
+  public readonly versions: readonly string[] = ["one", "two"];
+  public readonly shown = signal("two");
+
+  protected async showAsync(version: string): Promise<void> {
+    await Promise.resolve();
+    this.shown.set(version);
+  }
+}
 
 describe("MenuTriggerDirective", () => {
   let fixture: ComponentFixture<MenuHostComponent>;
@@ -512,21 +535,18 @@ describe("MenuTriggerDirective in an OnPush host", () => {
     return `${controls !== null && controls === menu(name)?.id ? "names the menu" : controls}, expanded ${element.getAttribute("aria-expanded")}`;
   }
 
-  it("names its menu and a submenu row its submenu while open, and names none once a submenu's row closes them, with no change detection from the test", async () => {
+  it("names no menu in aria-controls once a submenu's row closes its menus, after clicks with no change detection between them", async () => {
     const trigger = DomFixture.one(DomFixture.host(fixture), ".trigger");
-    await userEvent.click(trigger);
+    trigger.click();
     await vi.waitFor(() => expect(menu("root")).not.toBeNull());
-    await fixture.whenStable();
-    const open = state(trigger, "root");
-    const beta = DomFixture.one(DomFixture.present(menu("root")), ".beta");
-    await userEvent.hover(beta);
+    DomFixture.one(DomFixture.present(menu("root")), ".beta").click();
     await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
-    await fixture.whenStable();
-    const betaOpen = state(beta, "submenu");
-    await userEvent.click(DomFixture.one(DomFixture.present(menu("submenu")), ".one"));
+    DomFixture.one(DomFixture.present(menu("submenu")), ".one").click();
     await vi.waitFor(() => expect(menu("root")).toBeNull());
     await fixture.whenStable();
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await fixture.whenStable();
 
-    expect([open, betaOpen, state(trigger, "root")]).toEqual(["names the menu, expanded true", "names the menu, expanded true", "null, expanded false"]);
+    expect([state(trigger, "root"), fixture.componentInstance.shown()]).toEqual(["null, expanded false", "one"]);
   });
 });

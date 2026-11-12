@@ -8,7 +8,7 @@
 
 import type { FocusOrigin } from "@angular/cdk/a11y";
 import { CDK_MENU, CdkMenuBar, CdkMenuTrigger, MENU_STACK, type Menu, MenuStack } from "@angular/cdk/menu";
-import { DOCUMENT, Directive, ElementRef, Injector, forwardRef, inject, input } from "@angular/core";
+import { ChangeDetectorRef, DOCUMENT, Directive, ElementRef, Injector, forwardRef, inject, input } from "@angular/core";
 import { takeUntil } from "rxjs";
 
 import "@noldova/context.core";
@@ -33,6 +33,7 @@ import { Resources } from "../../../resources.js";
 export class MenuTriggerDirective extends CdkMenuTrigger {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly document: Document = inject(DOCUMENT);
+  private readonly changes: ChangeDetectorRef = inject(ChangeDetectorRef);
   private readonly parent: Menu | null = MenuTriggerDirective.submenuParent(inject(CDK_MENU, { optional: true }));
   private readonly anchored: AnchoredOverlay = new AnchoredOverlay(inject(Injector), Resources.menuPaneClass);
 
@@ -42,6 +43,7 @@ export class MenuTriggerDirective extends CdkMenuTrigger {
     super();
     this.overlayRef = this.anchored.overlayRef;
     this.anchored.originLost.pipe(takeUntil(this.destroyed)).subscribe(() => this.menuStack.closeAll());
+    this.anchored.detachments.pipe(takeUntil(this.destroyed)).subscribe(() => this.forgetMenu());
     if (Object.isNull(this.parent))
       this.closed.pipe(takeUntil(this.destroyed)).subscribe(() => this.takeLostFocus());
   }
@@ -72,6 +74,11 @@ export class MenuTriggerDirective extends CdkMenuTrigger {
   public openFocusing(origin: FocusOrigin): void {
     this.open();
     this.childMenu?.focusFirstItem(origin);
+  }
+
+  private forgetMenu(): void {
+    this.childMenu = undefined;
+    this.changes.markForCheck();
   }
 
   private takeLostFocus(): void {
