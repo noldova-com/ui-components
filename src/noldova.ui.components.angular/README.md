@@ -19,7 +19,7 @@ Its type declarations carry the documentation of every export and public member,
   With any other version, npm nests a second copy under the kit, beside the app's, without a warning or an error, even when the kit names it as a peer as well.
   The kit's overlays, focus handling and other services from `@angular/cdk` then run from its copy, and the app's from the other: each copy has its own overlay container, so the app's overlays and the kit's can stack in the wrong order, and focus traps and keyboard handling between them can disagree.
   `npm ls @angular/cdk` lists one copy when the versions match; an app checks it in its build, failing when it lists more than one.
-- Angular's build tools at the kit's Angular version too, such as `npm install --save-dev @angular/build@22.2.5 @angular/cli@22.2.5`.
+- Angular's build tools at the kit's Angular version too, such as `npm install --save-dev @angular/build@22.2.6 @angular/cli@22.2.6`.
   Until 1.0 the kit names exact versions, its Angular peers included, but for its context peers below, and a new kit version moves them to Angular's newest patch.
   When Angular's newest is ahead of the kit's, adding the build tools stops with `ERESOLVE`, even at the kit's version: their optional peers, such as `@angular/service-worker`, `@angular/platform-server` and `@angular/ssr`, resolve to Angular's newest, which needs a newer `@angular/core` than the kit's.
   An app then waits for the kit version that moves to Angular's newest patch.
