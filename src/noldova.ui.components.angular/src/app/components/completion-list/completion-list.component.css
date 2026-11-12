@@ -1,0 +1,85 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-auto-rows: min-content;
+  align-content: start;
+  box-sizing: border-box;
+  --nol-completion-list-limit: calc(12 * (var(--nol-menu-item-height) + var(--nol-row-gap)) + 2 * (var(--nol-menu-padding) + var(--nol-border-width)));
+
+  max-height: min(var(--nol-completion-list-room, var(--nol-completion-list-limit)), var(--nol-completion-list-limit));
+  padding-block: var(--nol-menu-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: var(--nol-border-width) solid var(--nol-menu-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-menu);
+  box-shadow: var(--nol-shadow-large);
+  color: var(--nol-menu-text);
+  font-family: var(--nol-font-sans);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-completion-option {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: var(--nol-menu-item-padding);
+  align-items: center;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: calc(var(--nol-menu-item-height) + var(--nol-row-gap));
+  padding-block: var(--nol-tab-inset);
+  padding-inline: calc(var(--nol-menu-item-inset) + var(--nol-menu-item-padding));
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.nol-completion-option::before {
+  position: absolute;
+  z-index: -1;
+  inset-block: var(--nol-tab-inset);
+  inset-inline: var(--nol-menu-item-inset);
+  border-radius: var(--nol-radius-medium);
+  content: "";
+}
+
+.nol-completion-option:is(:hover, [data-nol-state="Hover"], [aria-selected="true"])::before {
+  background-color: var(--nol-hover);
+}
+
+@media (forced-colors: active) {
+  .nol-completion-option:is(:hover, [data-nol-state="Hover"], [aria-selected="true"])::before {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
+
+  .nol-completion-option[aria-selected="true"]::before {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-completion-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host(.nol-completion-list-code) .nol-completion-label {
+  font-family: var(--nol-font-mono);
+}
+
+.nol-completion-note {
+  grid-column: 2;
+  color: var(--nol-text-muted);
+}

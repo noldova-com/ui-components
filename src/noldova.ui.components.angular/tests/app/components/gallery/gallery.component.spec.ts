@@ -81,7 +81,7 @@ const kitSectionControls: readonly { readonly section: Type<unknown>; readonly c
   },
   {
     section: GalleryOverlaysComponent,
-    controls: ["ContextMenuTriggerDirective", "DialogComponent", "DialogDescriptionDirective", "DockingGuideComponent", "DockingPlateComponent",
+    controls: ["CompletionListComponent", "ContextMenuTriggerDirective", "DialogComponent", "DialogDescriptionDirective", "DockingGuideComponent", "DockingPlateComponent",
       "KeptOpenMenuItemDirective", "MentionFieldDirective", "MenuBarComponent", "MenuBarItemComponent", "MenuComponent", "MenuGroupActionDirective",
       "MenuGroupComponent", "MenuItemComponent", "MenuOpensOnDirective", "MenuSeparatorComponent", "PopoverDirective", "PopoverTriggerDirective",
       "QuickInputComponent", "TooltipComponent"]
