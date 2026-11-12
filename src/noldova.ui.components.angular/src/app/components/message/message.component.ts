@@ -43,6 +43,7 @@ import type { MessageAuthor } from "../../models/message-author.js";
 import type { MessageBlock } from "../../models/message-block.js";
 import { MessageMenuRequest } from "../../models/message-menu-request.js";
 import { MessagePart } from "../../models/message-part.js";
+import { MessagePartGroup } from "../../models/message-part-group.js";
 import { MessageSlot } from "../../models/message-slot.js";
 import { MessageText } from "../../models/message-text.js";
 import { MessageTime } from "../../models/message-time.js";
@@ -130,7 +131,8 @@ export class MessageComponent {
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
   protected readonly avatarSizes: typeof AvatarSize = AvatarSize;
   protected readonly isStreaming: Signal<boolean> = computed(() => this.status() === MessageStatus.Streaming);
-  protected readonly parts: Signal<readonly MessagePart[]> = computed(() => MessagePart.partsOf(this.blocks()));
+  protected readonly groups: Signal<readonly MessagePartGroup[]> = computed(() => MessagePartGroup.groupsOf(MessagePart.partsOf(this.blocks()),
+    new Set(this.slots().filter(t => t.isAttached()).map(t => t.id()))));
   protected readonly entering: Signal<ReadonlySet<MessageBlock>> = computed(() => new Set(this.blocks().filter(t => t instanceof MessageText).slice(this.firstTextCount)));
   protected readonly isEmpty: Signal<boolean> = computed(() => this.blocks().every(t => t.kind === MessageBlockKind.Text && String.isNullOrWhitespace(t.text)));
   protected readonly isBubble: Signal<boolean> = computed(() => this.layout() === MessageLayout.Bubble || (this.isColumn() && this.author().kind === MessageAuthorKind.Person));

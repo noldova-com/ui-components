@@ -288,6 +288,17 @@
   user-select: text;
 }
 
+.nol-message-group {
+  display: contents;
+}
+
+.nol-message-group-attached {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-1);
+  min-width: 0;
+}
+
 .nol-message-empty {
   margin: 0;
   color: var(--nol-text-muted);

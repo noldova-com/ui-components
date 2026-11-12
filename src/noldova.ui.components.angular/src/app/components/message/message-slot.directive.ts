@@ -12,4 +12,5 @@ import { Directive, TemplateRef, inject, input } from "@angular/core";
 export class MessageSlotDirective {
   public readonly template: TemplateRef<unknown> = inject<TemplateRef<unknown>>(TemplateRef);
   public readonly id = input.required<string>({ alias: "nolMessageSlot" });
+  public readonly isAttached = input<boolean>(false, { alias: "nolMessageSlotAttached" });
 }

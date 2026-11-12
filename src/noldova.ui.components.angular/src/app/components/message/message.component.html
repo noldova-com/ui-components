@@ -71,37 +71,41 @@ LICENSE file in the root directory of this source tree.
         <p class="nol-message-empty">{{ partResources.messageEmptyText }}</p>
       }
     } @else {
-      @for (part of parts(); track part.key) {
-        @if (part.isRun) {
-          <nol-message-run [blocks]="part.blocks" [streaming]="isStreaming()" [collapsible]="!isColumn()" [entering]="entering()" [mentions]="mentions()"
-            [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"
-            (fileActivate)="fileActivate.emit($event)" (shellRun)="shellRun.emit($event)" />
-        } @else {
-          @for (block of part.blocks; track $index) {
-            @if (isAttachment(block) && block.picture; as picture) {
-              <button type="button" class="nol-message-picture" [attr.data-nol-attachment]="block.id" [attr.aria-label]="block.name" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip"
-                [style.--nol-message-picture-width]="picture.width + 'px'" [style.--nol-message-picture-ratio]="picture.ratio" (click)="attachmentOpen.emit(block.id)">
-                <img class="nol-message-picture-image" [src]="picture.source" alt="" [width]="picture.width" [height]="picture.height">
-              </button>
-            } @else if (isAttachment(block)) {
-              <button type="button" class="nol-message-attachment" [attr.data-nol-attachment]="block.id" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip" (click)="attachmentOpen.emit(block.id)">
-                @if (block.preview; as preview) {
-                  <img class="nol-message-attachment-preview" [src]="preview" alt="">
-                } @else {
-                  <span class="nol-message-attachment-mark"><nol-file-badge [fileName]="block.name" /></span>
+      @for (group of groups(); track group.key) {
+        <div class="nol-message-group" [class.nol-message-group-attached]="group.isAttached">
+          @for (part of group.parts; track part.key) {
+            @if (part.isRun) {
+              <nol-message-run [blocks]="part.blocks" [streaming]="isStreaming()" [collapsible]="!isColumn()" [entering]="entering()" [mentions]="mentions()"
+                [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"
+                (fileActivate)="fileActivate.emit($event)" (shellRun)="shellRun.emit($event)" />
+            } @else {
+              @for (block of part.blocks; track $index) {
+                @if (isAttachment(block) && block.picture; as picture) {
+                  <button type="button" class="nol-message-picture" [attr.data-nol-attachment]="block.id" [attr.aria-label]="block.name" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip"
+                    [style.--nol-message-picture-width]="picture.width + 'px'" [style.--nol-message-picture-ratio]="picture.ratio" (click)="attachmentOpen.emit(block.id)">
+                    <img class="nol-message-picture-image" [src]="picture.source" alt="" [width]="picture.width" [height]="picture.height">
+                  </button>
+                } @else if (isAttachment(block)) {
+                  <button type="button" class="nol-message-attachment" [attr.data-nol-attachment]="block.id" [nolTooltip]="block.tooltip ?? ''" [nolTooltipDisabled]="!block.tooltip" (click)="attachmentOpen.emit(block.id)">
+                    @if (block.preview; as preview) {
+                      <img class="nol-message-attachment-preview" [src]="preview" alt="">
+                    } @else {
+                      <span class="nol-message-attachment-mark"><nol-file-badge [fileName]="block.name" /></span>
+                    }
+                    <span class="nol-message-attachment-text">
+                      <span class="nol-message-attachment-name" data-truncates>{{ block.name }}</span>
+                      <span class="nol-message-attachment-size">{{ sizeOf(block) }}</span>
+                    </span>
+                  </button>
+                } @else if (isSlot(block)) {
+                  @if (slotOf(block.id); as slot) {
+                    <ng-container *ngTemplateOutlet="slot" />
+                  }
                 }
-                <span class="nol-message-attachment-text">
-                  <span class="nol-message-attachment-name" data-truncates>{{ block.name }}</span>
-                  <span class="nol-message-attachment-size">{{ sizeOf(block) }}</span>
-                </span>
-              </button>
-            } @else if (isSlot(block)) {
-              @if (slotOf(block.id); as slot) {
-                <ng-container *ngTemplateOutlet="slot" />
               }
             }
           }
-        }
+        </div>
       }
     }
   </div>
