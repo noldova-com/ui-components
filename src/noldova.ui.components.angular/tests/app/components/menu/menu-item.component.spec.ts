@@ -591,6 +591,11 @@ describe("MenuItemComponent", () => {
     row("plain").focus();
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
+    const past = document.createElement("span");
+    past.textContent = "Past the menu";
+    DomFixture.host(fixture).after(past);
+    onTestFinished(() => past.remove());
+    await userEvent.click(past);
     const start = document.createElement("button");
     start.type = "button";
     start.textContent = "Before the menu";
