@@ -33,7 +33,7 @@ export class AngularNewestCheck implements ICheck {
   private static readonly NPM_PATH_VARIABLE: string = "npm_execpath";
   private static readonly TIMEOUT: number = 60_000;
   private static readonly RULE: string = "Checked that no newer Angular is out, in the kit's major, than the version the kit names for each Angular package it names, or than its @angular/core for each Angular package its build tools take as an optional peer, since an app's install of the kit with the build tools at the kit's version resolves those to Angular's newest, as README.md, Checks, says.";
-  private static readonly FIX: string = "Move every @angular/* the kit names to Angular's newest and relock, in a pull request before the next release, as README.md, Releases, says.";
+  private static readonly FIX: string = "The fix is a version pull request that moves the kit's @angular/* pins to Angular's newest and relocks, as README.md, Releases, says.";
   private static readonly STOOD_IN: ReadonlyMap<string, string> = new Map([["@angular/core", "22.2.5"], ["@angular/cdk", "22.2.7"]]);
   private static readonly OPTIONAL_PEER: string = "@angular/service-worker";
 
@@ -132,7 +132,12 @@ export class AngularNewestCheck implements ICheck {
     const result = await this.runner.captureAsync(process.execPath, [npm, "view", spec, field, "--json"], this.root, AngularNewestCheck.TIMEOUT);
     if (!result.isSuccessful)
       return { value: null, failure: `npm view ${spec} ${field} failed with exit code ${String(result.exitCode)}: ${result.text}` };
-    const value: unknown = result.output.trim().length === 0 ? [] : JSON.parse(result.output);
-    return { value, failure: null };
+    try {
+      const value: unknown = result.output.trim().length === 0 ? [] : JSON.parse(result.output);
+      return { value, failure: null };
+    }
+    catch {
+      return { value: null, failure: `npm view ${spec} ${field} wrote no JSON: ${result.text}` };
+    }
   }
 }

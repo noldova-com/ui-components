@@ -162,7 +162,8 @@ Like the Kit bundles and the Kit copies checks, it runs on Linux x64 only.
 The Angular's newest check, `src/noldova.ui.components.angular/scripts/checks/angular-newest-check.ts`, asks npm for the newest version, in the kit's major, of each `@angular/*` package the kit's `package.json` names, and of each `@angular/*` package that `@angular/build` at the kit's version takes as a peer, such as `@angular/service-worker`, `@angular/platform-server` and `@angular/ssr`.
 It fails when any is ahead of the kit: a package the kit names against the version the kit names, and one it doesn't against the kit's `@angular/core`, naming each package with both versions.
 An app's install of the kit with the build tools at the kit's version takes those peers at their newest, which need the newer `@angular/core`, so it stops with `ERESOLVE`, as a release's build does; this check says so on every pull request and in the nightly run, before a release tags a version.
-A newer Angular can so turn every pull request red with no change here; the fix is the pull request that moves every `@angular/*` the kit names to Angular's newest and relocks, which the next release then carries.
+A newer Angular can so turn every pull request red with no change here; the failure names each package ahead and its newest version, and the fix is a version pull request that moves the kit's `@angular/*` pins to Angular's newest and relocks, as [Releases](#releases) says.
+When npm can't answer, as when the registry can't be reached, the check fails with npm's own error rather than as a package ahead.
 It also checks its own comparison with npm's answers stood in: the kit at Angular's newest, and ahead of what npm says, passes, and a peer the kit doesn't name ahead of the kit's `@angular/core` fails, naming that peer alone.
 Like the Kit bundles, the Kit copies and the Kit manifest checks, it runs on Linux x64 only, and the nightly "Newest context" run, whose `npm test` runs it too, opens or comments on its issue when it fails.
 
@@ -220,7 +221,7 @@ The kit is published to npm as `@noldova/ui.components.angular` from `main` by t
 A maintainer starts it with the version and the commit: `gh workflow run release-npm.yml -f version=<version> -f commit=<commit>`.
 Its version is `version.json`'s at the released commit, such as `{ "version": "0.0.1" }`; the pull request that changes it writes that version's section in [CHANGELOG.md](CHANGELOG.md).
 The release tags the commit `v<version>` first, before it builds or publishes; a version whose build or publish then fails keeps its tag, so releasing other changes needs a new version.
-A release's build also adds Angular's build tools to a fresh install of the kit, as the checks above say, so a release whose Angular is behind Angular's newest stops there; the Angular's newest check fails pull requests and the nightly run first, and the pull request that moves the kit's Angular comes before the version pull request.
+A release's build also adds Angular's build tools to a fresh install of the kit, as the checks above say, so a release whose Angular is behind Angular's newest stops there; the Angular's newest check fails pull requests and the nightly run first, and the next version pull request moves the kit's `@angular/*` pins to Angular's newest and relocks, as the 0.0.5 one did.
 After a release, the workflow proposes the version to each public repository that pins the kit, in one pull request each, through a GitHub App whose key the `version-updates` environment holds.
 
 ## Deploying the docs site
