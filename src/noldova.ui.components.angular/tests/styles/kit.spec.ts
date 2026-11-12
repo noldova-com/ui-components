@@ -470,6 +470,23 @@ describe("kit styles in forced colors", () => {
     }
   });
 
+  it("gives the warning and error band fills Canvas over a painted theme on the page and in a painted scope inside it, from kit.css without theme.css", () => {
+    const root = document.documentElement;
+    const scope = document.body.appendChild(document.createElement("div"));
+    const painter = new ThemePainter(DefaultTheme.theme);
+    const bands = ["--nol-warning-background", "--nol-error-background"];
+    painter.paint(root, DefaultTheme.theme, ThemeMode.Dark);
+    painter.paint(scope, DefaultTheme.theme, ThemeMode.Light);
+    try {
+      const shown = [root, scope].map(t => bands.map(u => getComputedStyle(t).getPropertyValue(u).trim()));
+
+      expect(shown).toEqual([["Canvas", "Canvas"], ["Canvas", "Canvas"]]);
+    } finally {
+      painter.erase(root);
+      scope.remove();
+    }
+  });
+
   it("gives scroll areas the system's scrollbars, since the thin thumb is drawn with a shadow that forced colors drop", async () => {
     AppearanceFixture.apply();
     const area = document.body.appendChild(document.createElement("div"));

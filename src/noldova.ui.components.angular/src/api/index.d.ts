@@ -7161,6 +7161,15 @@ export declare class MenuGroupComponent {
    * ```
    */
   public readonly maxRows: InputSignal<number | null>;
+
+  /**
+   * Whether the label shows in the uppercase heading look, as an uppercase
+   * section header's: the small text size, the emphasis weight and the caps
+   * letter spacing, in capitals, on the label's own line and in its muted
+   * color; the group's accessible name stays the label as written. False
+   * when not bound.
+   */
+  public readonly uppercase: InputSignal<boolean>;
 }
 
 /**
@@ -11962,6 +11971,16 @@ export declare class ToolbarButtonComponent {
    * False when not bound.
    */
   public readonly isUnavailable: InputSignal<boolean>;
+
+  /**
+   * Whether a button that opens a menu, with {@link hasMenu}, draws its
+   * pressed look, the toolbar hover fill or under forced colors `Highlight`,
+   * while its menu is open, which the menu trigger marks `aria-expanded`,
+   * and its idle look once the menu closes; it isn't announced pressed.
+   * Without it, the button looks idle while its menu is open. False when
+   * not bound.
+   */
+  public readonly isPressedWhileOpen: InputSignal<boolean>;
 
   /**
    * Whether the button's work is under way: the kit's spinner, in the
