@@ -32,7 +32,8 @@
 }
 
 :host(:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])),
-:host([aria-pressed="true"]) {
+:host([aria-pressed="true"]),
+:host(.nol-toolbar-button-open-pressed[aria-expanded="true"]) {
   background-color: var(--nol-toolbar-hover);
 }
 
@@ -43,7 +44,8 @@
   }
 }
 
-:host([aria-pressed="true"]) {
+:host([aria-pressed="true"]),
+:host(.nol-toolbar-button-open-pressed[aria-expanded="true"]) {
   @media (forced-colors: active) {
     --nol-text: HighlightText;
     --nol-text-muted: HighlightText;

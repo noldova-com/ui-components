@@ -16,6 +16,13 @@
   grid-row: 1;
 }
 
+:host(.nol-menu-group-uppercase) .nol-menu-label {
+  font-size: var(--nol-text-small);
+  font-weight: var(--nol-weight-emphasis);
+  letter-spacing: var(--nol-letter-spacing-caps);
+  text-transform: uppercase;
+}
+
 :host(:has(> .nol-menu-group-action)) .nol-menu-label {
   padding-inline-end: calc(var(--nol-menu-item-inset) + var(--nol-menu-item-padding) + var(--nol-icon-button) + var(--nol-space-2));
 }

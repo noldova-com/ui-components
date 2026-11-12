@@ -139,6 +139,8 @@ export class Resources {
     new ColorToken("--nol-status-ok", "status-ok"),
     new ColorToken("--nol-status-failed", "status-failed"),
     new ColorToken("--nol-warning", "warning"),
+    new ColorToken("--nol-warning-background", "warning-background"),
+    new ColorToken("--nol-error-background", "error-background"),
     new ColorToken("--nol-docking-preview", "docking-preview", "selected"),
     new ColorToken("--nol-docking-preview-border", "docking-preview-border", "accent"),
     new ColorToken("--nol-author-1", "author-1", "accent"),

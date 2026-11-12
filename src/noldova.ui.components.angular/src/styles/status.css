@@ -12,5 +12,7 @@
     --nol-status-ok: CanvasText !important;
     --nol-status-failed: CanvasText !important;
     --nol-warning: CanvasText !important;
+    --nol-warning-background: Canvas !important;
+    --nol-error-background: Canvas !important;
   }
 }

@@ -159,4 +159,29 @@ describe("theme stylesheet", () => {
       scope.remove();
     }
   });
+
+  it("gives the warning and error band fills Canvas in forced colors, over a painted theme on the page and in a painted scope inside it, and the theme's own fills otherwise", async () => {
+    const root = document.documentElement;
+    const scope = document.createElement("div");
+    const painter = new ThemePainter(DefaultTheme.theme);
+    const bands = ["--nol-warning-background", "--nol-error-background"];
+    const read = (element: Element): string[] => bands.map(t => getComputedStyle(element).getPropertyValue(t).trim());
+    document.body.append(scope);
+    painter.paint(root, DefaultTheme.theme, ThemeMode.Dark);
+    painter.paint(scope, DefaultTheme.theme, ThemeMode.Light);
+    try {
+      const themed = [read(root), read(scope)];
+      await ForcedColorsFixture.activateAsync();
+      const forced = [read(root), read(scope)];
+      await ForcedColorsFixture.resetAsync();
+
+      expect(themed).toEqual([["#E3A33B1F", "#F487711C"], ["#8A580014", "#A1260D12"]]);
+      expect(forced).toEqual([["Canvas", "Canvas"], ["Canvas", "Canvas"]]);
+      expect([read(root), read(scope)]).toEqual(themed);
+    } finally {
+      await ForcedColorsFixture.resetAsync();
+      painter.erase(root);
+      scope.remove();
+    }
+  });
 });
