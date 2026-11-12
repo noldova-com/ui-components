@@ -24,6 +24,7 @@ import { SpinnerComponent } from "../spinner/spinner.component.js";
     "[class.nol-button-secondary]": "isSecondary()",
     "[class.nol-button-text]": "isText()",
     "[class.nol-button-outlined]": "isOutlined()",
+    "[class.nol-button-accent]": "isAccent()",
     "[class.nol-button-overlay]": "isOverlay()",
     "[class.nol-button-backdrop]": "isOverlay() && backdrop()",
     "[class.nol-button-danger]": "isDanger()",
@@ -37,6 +38,7 @@ export class ButtonComponent {
   protected readonly isSecondary: Signal<boolean> = computed(() => this.variant() === ButtonVariant.Secondary);
   protected readonly isText: Signal<boolean> = computed(() => this.variant() === ButtonVariant.Text);
   protected readonly isOutlined: Signal<boolean> = computed(() => this.variant() === ButtonVariant.Outlined);
+  protected readonly isAccent: Signal<boolean> = computed(() => this.variant() === ButtonVariant.Accent);
   protected readonly isOverlay: Signal<boolean> = computed(() => this.overlay() && this.isText());
   protected readonly isDanger: Signal<boolean> = computed(() => this.danger() && this.variant() === ButtonVariant.Primary);
   protected readonly isCompact: Signal<boolean> = computed(() => this.size() === ButtonSize.Compact);
