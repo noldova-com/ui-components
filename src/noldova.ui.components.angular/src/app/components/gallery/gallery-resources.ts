@@ -712,6 +712,7 @@ export class GalleryResources {
     terminalOutput: "Terminal output",
     terminalOutputStylesCaption: "Every style, then the color cube, the grays and RGB colors",
     terminalOutputCappedCaption: "Capped at 8rem, scrolling inside",
+    terminalOutputDarkCaption: "In a dark terminal scope, dark in both modes",
     statusColors: "Status colors",
     statusWindowCaption: "Status dots on the window color",
     statusPanelCaption: "Status dots on the panel color",

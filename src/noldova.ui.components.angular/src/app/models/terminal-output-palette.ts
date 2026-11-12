@@ -22,6 +22,14 @@ export class TerminalOutputPalette {
     this.ansi = ansi;
   }
 
+  private get key(): string {
+    return [this.background, this.foreground, ...this.ansi].map(t => t.toCss()).join(" ");
+  }
+
+  public static same(first: TerminalOutputPalette | null, second: TerminalOutputPalette | null): boolean {
+    return Object.isNull(first) || Object.isNull(second) ? first === second : first.key === second.key;
+  }
+
   public static read(element: HTMLElement): TerminalOutputPalette | null {
     const probe = element.appendChild(element.ownerDocument.createElement("span"));
     probe.hidden = true;

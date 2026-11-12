@@ -33,7 +33,7 @@ export class TerminalOutputComponent {
   private readonly body: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("body");
   private readonly sample: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("sample");
   private readonly glyphs: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("glyphs");
-  private readonly palette: WritableSignal<TerminalOutputPalette | null> = signal(null);
+  private readonly palette: WritableSignal<TerminalOutputPalette | null> = signal(null, { equal: TerminalOutputPalette.same });
   private readonly follower: ScrollEndFollower = new ScrollEndFollower(TerminalOutputResources.terminalOutputFollowDistance);
 
   protected readonly partResources: typeof TerminalOutputResources = TerminalOutputResources;
@@ -47,18 +47,25 @@ export class TerminalOutputComponent {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const forced = matchMedia(Resources.forcedColorsQuery);
-      const restyle = (): void => {
+      const repaint = (): void => {
         this.palette.set(forced.matches ? null : TerminalOutputPalette.read(this.host));
+      };
+      const restyle = (): void => {
+        repaint();
         this.row.set(`${String(this.measureRow())}px`);
       };
       const sizes = new ResizeObserver(restyle);
       sizes.observe(this.sample().nativeElement, { box: TerminalOutputResources.terminalOutputSampleBox });
       const themes = new MutationObserver(restyle);
       themes.observe(this.host.ownerDocument.documentElement, { attributeFilter: [...TerminalOutputResources.terminalOutputThemeAttributes] });
+      const scopes = new MutationObserver(repaint);
+      for (let element = this.host.parentElement; !Object.isNull(element) && element !== this.host.ownerDocument.documentElement; element = element.parentElement)
+        scopes.observe(element, { attributeFilter: [...TerminalOutputResources.terminalOutputThemeAttributes] });
       forced.addEventListener(Resources.changeEvent, restyle);
       destroyRef.onDestroy(() => {
         sizes.disconnect();
         themes.disconnect();
+        scopes.disconnect();
         forced.removeEventListener(Resources.changeEvent, restyle);
       });
     });
