@@ -17,6 +17,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
@@ -76,11 +77,13 @@ describe("MenuGroupComponent's uppercase heading", () => {
         AppearanceFixture.expectPixels(row("second").getBoundingClientRect().top - caps.bottom, row("low").getBoundingClientRect().top - normal.bottom);
       });
 
-  it("keeps the group's name as its label is written, not in capitals", async () => {
+  it("keeps the group's name as its label is written, not in capitals, in the browser's accessibility tree", async () => {
     await renderAsync();
     const group = DomFixture.one(DomFixture.host(fixture), "nol-menu-group.caps");
+    const names = await AccessibilityFixture.namesAsync("group");
 
-    expect([group.getAttribute("role"), document.getElementById(group.getAttribute("aria-labelledby") ?? "")?.textContent?.trim()]).toEqual(["group", "Versions"]);
+    expect([group.getAttribute("role"), group.getAttribute("aria-label"), group.getAttribute("aria-labelledby")]).toEqual(["group", "Versions", null]);
+    expect(names).toEqual(["Effort", "Versions"]);
     expect(page.getByRole("group", { name: "Versions", exact: true }).element()).toBe(group);
   });
 
