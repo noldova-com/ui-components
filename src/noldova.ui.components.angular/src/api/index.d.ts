@@ -10973,8 +10973,9 @@ export declare class TabComponent {
   public readonly status: InputSignal<TabStatus | null>;
 
   /**
-   * Whether a working tab shows its spinner before the title, 0.75rem with
-   * a 1.5px stroke, in place of its image, status or icon, and keeps its
+   * Whether a working tab shows its spinner before the title, a 0.75rem
+   * ring with a 1.5px stroke centred in the icon's 1rem box, so the title
+   * stays in place, in place of its image, status or icon, and keeps its
    * close button at the end, as it is when not working; false when not
    * bound, which keeps the spinner at the end. The waiting hand still wins.
    */

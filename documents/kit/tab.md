@@ -10,7 +10,7 @@ Shape `pill`: 2rem minimum high; up to 16rem wide; 1.5rem pill; 0.125rem side in
 
 A tab may lead with more than its icon, in this order, each 0.375rem, `tab-part-gap`, before the next part, where the icon keeps its 0.25rem:
 - a marker glyph, 0.875rem, `tab-image`;
-- then one of: the leading spinner, 0.75rem, `tab-spinner`, with a 0.09375rem stroke, `tab-spinner-stroke`; a status glyph, 0.875rem; an image, 0.875rem square, rounded 0.1875rem, `tab-image-radius`, fitted whole, with its glyph, 0.875rem, in its place until it loads; or the icon.
+- then one of: the leading spinner, in the icon's 1rem box and 0.25rem before the label as the icon is, so the label stays in place, its ring 0.75rem, `tab-spinner`, with a 0.09375rem stroke, `tab-spinner-stroke`; a status glyph, 0.875rem; an image, 0.875rem square, rounded 0.1875rem, `tab-image-radius`, fitted whole, with its glyph, 0.875rem, in its place until it loads; or the icon.
 
 An underlined tab carries a 0.125rem line, `tab-underline`, inside the pill's bottom edge.
 

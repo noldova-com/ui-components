@@ -7,6 +7,7 @@ Each version's section is written by the pull request that changes the version, 
 ## 0.0.7
 
 - `@noldova/ui.components.angular`: `ButtonVariant.Accent`, the accent chip look for `nol-button`, for an action on a card that names what is shown, such as a page card's Open while its page is open: the chip's height and side padding, the `selected` fill with a `text` label and no visible border, the toolbar hover over that fill under the pointer, the button's focus outline and disabled look, and under forced colors a `ButtonText` border and label, or `GrayText` while disabled. It keeps the chip's height at the compact size.
+- `@noldova/ui.components.angular`: a working tab's leading spinner takes the icon's 1rem box and its 0.25rem gap, so the label no longer moves left while the tab works; the ring stays 0.75rem, centred in the box.
 
 ## 0.0.6
 
