@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.9
+
+- `@noldova/ui.components.angular`: a menu trigger no longer keeps `aria-controls` naming its menu once that menu has closed, as it did after a submenu's row closed the menus with no change detection while they were open, such as in a spec that clicks the trigger, the submenu's row and its row in turn. The trigger now forgets its menu whenever the menu's overlay closes.
+
 ## 0.0.8
 
 - `@noldova/ui.components.angular`: a menu trigger, a context menu's host and a submenu's row name their menu in `aria-controls` only while it is open; before, they kept naming a menu that had closed and was no longer in the document.
