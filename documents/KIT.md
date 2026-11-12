@@ -249,7 +249,7 @@ Each control's specification is a file of its own in [kit/](kit/), which gives i
 Widths are preferred maxima unless marked as minimums, and the text roles are the kit's text tokens, `--nol-text-<role>`.
 Where a specification says the owner does something, the control leaves it to the code that uses it.
 An overlay anchored to a control, such as a menu, a select list, a popover, a tooltip or a mention list, is placed for the size it has in the frame it first paints, and placed again before the next paint whenever a render changes its size.
-A list that fills a row while it is hovered, active, chosen or current keeps two neighboring fills `--nol-row-gap` apart, twice the tab's side inset `--nol-tab-inset`, so 0.25rem, as two tabs' pills stand: the tree's rows and a virtual list's options have the gap between rows, and menu items and select, quick input and mention options are each that much taller, with their fill inset by the tab's side inset above and below, so the rows meet.
+A list that fills a row while it is hovered, active, chosen or current keeps two neighboring fills `--nol-row-gap` apart, twice the tab's side inset `--nol-tab-inset`, so 0.25rem, as two tabs' pills stand: the tree's rows and a virtual list's options have the gap between rows, and menu items and select, quick input, mention and completion options are each that much taller, with their fill inset by the tab's side inset above and below, so the rows meet.
 
 - [Avatar](kit/avatar.md)
 - [Badge (counts, +1 −0), key and status chips](kit/badge.md)
@@ -259,6 +259,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [Choice pills (toggle group)](kit/choice-pills.md)
 - [Choice row](kit/choice-row.md)
 - [Code block](kit/code-block.md)
+- [Completion list](kit/completion-list.md)
 - [Configuration table](kit/configuration-table.md)
 - [Copy](kit/copy.md)
 - [Dialog](kit/dialog.md)

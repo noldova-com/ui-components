@@ -1,0 +1,24 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-2);
+  max-width: 24rem;
+}
+
+.nol-docs-completion-field {
+  box-sizing: border-box;
+  height: 1.75rem;
+  padding-inline: var(--nol-space-2);
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-input);
+  color: var(--nol-input-text);
+  font: inherit;
+}

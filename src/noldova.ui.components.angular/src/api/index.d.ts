@@ -9856,6 +9856,139 @@ export declare class QueryMatcher {
 }
 
 /**
+ * A completion list, `nol-completion-list`: the choices a field offers for
+ * what the person is typing, such as commands after a slash or names in
+ * code, each a label with an optional note at the row's end. The owner keeps
+ * the focus in its field, filters the choices, moves the active one with the
+ * keys and points the field's `aria-activedescendant` at
+ * {@link CompletionListComponent.optionId}; the list shows the choices, marks
+ * and scrolls to the active one and reports the one clicked. A press on the
+ * list never takes the focus from the field.
+ *
+ * The host element is the listbox: it has the `listbox` role, its id is
+ * {@link CompletionListComponent.listId} and its accessible name is
+ * {@link CompletionListComponent.label}, so the field's `aria-controls`
+ * names it. Each choice is an `option` whose accessible name is its label,
+ * then a comma and its note when it has one; the note is plain text with no
+ * role of its own.
+ *
+ * The host carries the menu's box, its border, corner, fill and shadow, and
+ * the menu item's rows, with the active row filled as a hovered menu item
+ * is. The kit sets no position, z-index or width: the owner places the list,
+ * such as in an overlay above its field, and sizes it. Its height is at most
+ * twelve rows, or {@link CompletionListComponent.maxHeight} when that is
+ * less, and the rows scroll inside it.
+ */
+export declare class CompletionListComponent {
+  /**
+   * The choices in the order shown.
+   */
+  public readonly choices: InputSignal<readonly CompletionChoice[]>;
+
+  /**
+   * The index of the active choice, marked `aria-selected` and scrolled into
+   * view, or -1, or any index past the end, for none.
+   */
+  public readonly active: InputSignal<number>;
+
+  /**
+   * The id of the host, unique in the page; each option's id is made from it
+   * by {@link CompletionListComponent.optionId}.
+   */
+  public readonly listId: InputSignal<string>;
+
+  /**
+   * The list's accessible name.
+   */
+  public readonly label: InputSignal<string>;
+
+  /**
+   * Whether the labels are code, shown in the code font; false when not bound.
+   */
+  public readonly isCode: InputSignal<boolean>;
+
+  /**
+   * The most the list's height may be, in CSS pixels, such as the room
+   * between its field and the window's edge, or null, the default, for twelve
+   * rows. The list is never taller than twelve rows.
+   */
+  public readonly maxHeight: InputSignal<number | null>;
+
+  /**
+   * Emits the choice the person clicked, the same instance the owner gave in
+   * {@link CompletionListComponent.choices}.
+   */
+  public readonly chosen: OutputEmitterRef<CompletionChoice>;
+
+  /**
+   * Creates the component, which Angular does for each `nol-completion-list`
+   * element.
+   *
+   * @example
+   * ```ts
+   * import { Component, type Signal, type WritableSignal, computed, signal } from "@angular/core";
+   * import { CompletionChoice, CompletionListComponent } from "@noldova/ui.components.angular";
+   *
+   * @Component({
+   *   selector: "nol-command-field",
+   *   imports: [CompletionListComponent],
+   *   template: `
+   *     <input aria-label="Command" role="combobox" aria-controls="nol-commands" [attr.aria-activedescendant]="activeId()"
+   *       [value]="query()" (input)="query.set($any($event.target).value)" />
+   *     <nol-completion-list listId="nol-commands" label="Commands" [choices]="choices()" [active]="0" (chosen)="query.set($event.label)" />
+   *   `
+   * })
+   * export class CommandFieldComponent {
+   *   private readonly all: readonly CompletionChoice[] = [new CompletionChoice("/review", "Review the changes"), new CompletionChoice("/clear")];
+   *
+   *   protected readonly query: WritableSignal<string> = signal("/");
+   *   protected readonly choices: Signal<readonly CompletionChoice[]> = computed(() => this.all.filter(t => t.label.startsWith(this.query())));
+   *   protected readonly activeId: Signal<string | null> = computed(() =>
+   *     this.choices().length > 0 ? CompletionListComponent.optionId("nol-commands", 0) : null);
+   * }
+   * ```
+   */
+  public constructor();
+
+  /**
+   * The id of the option at an index in the list with an id, `<listId>-option-<index>`,
+   * for the field's `aria-activedescendant`.
+   *
+   * @param listId The list's {@link CompletionListComponent.listId}.
+   * @param index The option's index in {@link CompletionListComponent.choices}.
+   * @returns The option's id.
+   */
+  public static optionId(listId: string, index: number): string;
+}
+
+/**
+ * A row of {@link CompletionListComponent}: a label and an optional note,
+ * such as a command and what it does, or a name and its kind.
+ */
+export declare class CompletionChoice {
+  /**
+   * The label, which the row shows first, truncated with an ellipsis when it
+   * does not fit.
+   */
+  public readonly label: string;
+
+  /**
+   * The note shown muted at the row's end, or null when it has none.
+   */
+  public readonly note: string | null;
+
+  /**
+   * Creates a choice.
+   *
+   * @param label The label, not blank.
+   * @param note The note, not blank when given; null, the default, for none.
+   * @throws ArgumentException synchronously when the label is blank, or the
+   * note is given and blank.
+   */
+  public constructor(label: string, note?: string | null);
+}
+
+/**
  * A search field over a list of results, the kind command search shows. The
  * owner filters and orders the items for the query; the component shows them,
  * keeps one active and reports the one chosen. The arrow keys, Home, End,

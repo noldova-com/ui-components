@@ -20,6 +20,7 @@ import { MentionListComponent } from "../mention-field/mention-list.component.js
 import { PopoverDirective } from "../popover/popover.directive.js";
 import { PopoverTriggerDirective } from "../popover/popover-trigger.directive.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
+import { GalleryCompletionListComponent } from "./gallery-completion-list.component.js";
 import { GalleryDialogComponent } from "./gallery-dialog.component.js";
 import { GalleryMenuComponent } from "./gallery-menu.component.js";
 import { GalleryQuickInputComponent } from "./gallery-quick-input.component.js";
@@ -31,7 +32,7 @@ import { GalleryTooltipComponent } from "./gallery-tooltip.component.js";
 @Component({
   selector: "nol-gallery-overlays",
   imports: [
-    ButtonComponent, DockingGuideComponent, DockingPlateComponent, GalleryCellComponent, GalleryDialogComponent, GalleryMenuComponent, GalleryQuickInputComponent, GallerySpecimenComponent,
+    ButtonComponent, DockingGuideComponent, DockingPlateComponent, GalleryCellComponent, GalleryCompletionListComponent, GalleryDialogComponent, GalleryMenuComponent, GalleryQuickInputComponent, GallerySpecimenComponent,
     GalleryStateDirective, GalleryTooltipComponent, MentionFieldDirective, MentionListComponent, PopoverDirective, PopoverTriggerDirective
   ],
   templateUrl: "./gallery-overlays.component.html",

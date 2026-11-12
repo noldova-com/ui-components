@@ -23,6 +23,7 @@ import { ChipPage } from "./pages/chip-page.js";
 import { ChoicePillsPage } from "./pages/choice-pills-page.js";
 import { ChoiceRowPage } from "./pages/choice-row-page.js";
 import { CodeBlockPage } from "./pages/code-block-page.js";
+import { CompletionListPage } from "./pages/completion-list-page.js";
 import { ConfigurationTablePage } from "./pages/configuration-table-page.js";
 import { DialogPage } from "./pages/dialog-page.js";
 import { FieldMessagePage } from "./pages/field-message-page.js";
@@ -86,6 +87,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(DialogPage.content, "dialog", DocsGroup.Overlays),
     DocsCatalog.componentPage(TooltipPage.content, "tooltip", DocsGroup.Overlays),
     DocsCatalog.componentPage(QuickInputPage.content, "quick-input", DocsGroup.Overlays),
+    DocsCatalog.componentPage(CompletionListPage.content, "completion-list", DocsGroup.Overlays),
     DocsCatalog.componentPage(ToolbarButtonPage.content, "toolbar-button", DocsGroup.Inputs),
     DocsCatalog.componentPage(AvatarPage.content, "avatar", DocsGroup.Content),
     DocsCatalog.componentPage(CardPage.content, "card", DocsGroup.Content),

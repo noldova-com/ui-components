@@ -1,0 +1,16 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@for (choice of choices(); track $index) {
+  <div class="nol-completion-option" role="option" [id]="ids()[$index]" [attr.aria-selected]="$index === active()" [attr.aria-label]="names()[$index]" (click)="chosen.emit(choice)">
+    <span class="nol-completion-label" data-truncates>{{ choice.label }}</span>
+    @if (choice.note; as note) {
+      <span class="nol-completion-note">{{ note }}</span>
+    }
+  </div>
+}

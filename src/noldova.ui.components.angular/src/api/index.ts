@@ -16,6 +16,7 @@ export { ChoicePillsComponent } from "../app/components/choice-pills/choice-pill
 export { ChoiceRowComponent } from "../app/components/choice-row/choice-row.component.js";
 export { CodeBlockComponent } from "../app/components/code-block/code-block.component.js";
 export { ShellRunOutputDirective } from "../app/components/code-block/shell-run-output.directive.js";
+export { CompletionListComponent } from "../app/components/completion-list/completion-list.component.js";
 export { ConfigurationTableActionDirective } from "../app/components/configuration-table/configuration-table-action.directive.js";
 export { ConfigurationTableFillDirective } from "../app/components/configuration-table/configuration-table-fill.directive.js";
 export { ConfigurationTableRowActionsDirective } from "../app/components/configuration-table/configuration-table-row-actions.directive.js";
@@ -146,6 +147,7 @@ export type { IVirtualListObserver } from "../app/interfaces/i-virtual-list-obse
 export type { IVirtualRowContext } from "../app/interfaces/i-virtual-row-context.js";
 export { ArrayVirtualListSource } from "../app/models/array-virtual-list-source.js";
 export { ColorToken } from "../app/models/color-token.js";
+export { CompletionChoice } from "../app/models/completion-choice.js";
 export { DialogTokens } from "../app/models/dialog-tokens.js";
 export { DiffAddedLine } from "../app/models/diff-added-line.js";
 export { DiffBinary } from "../app/models/diff-binary.js";
