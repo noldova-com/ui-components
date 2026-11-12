@@ -371,6 +371,8 @@ export class GalleryResources {
     toolbarButtons: "Toolbar button",
     toolbarButtonsLabel: "Gallery toolbar buttons",
     toolbarWithLabel: "With its label",
+    toolbarLarge: "Large",
+    toolbarLargeHover: "Large, hover",
     sash: "Sash",
     sashVertical: "Resize the side",
     sashHorizontal: "Resize the bottom",

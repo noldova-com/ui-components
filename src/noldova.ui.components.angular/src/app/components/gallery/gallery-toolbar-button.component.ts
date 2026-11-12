@@ -8,6 +8,7 @@
 
 import { Component } from "@angular/core";
 
+import { ToolbarButtonSize } from "../../enums/toolbar-button-size.js";
 import { ToolbarButtonComponent } from "../toolbar-button/toolbar-button.component.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
@@ -23,4 +24,5 @@ import { GalleryStateDirective } from "./gallery-state.directive.js";
 })
 export class GalleryToolbarButtonComponent {
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
+  protected readonly sizes: typeof ToolbarButtonSize = ToolbarButtonSize;
 }

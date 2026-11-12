@@ -122,6 +122,7 @@ export { ThemeMode } from "../app/enums/theme-mode.js";
 export { ToolCallKind } from "../app/enums/tool-call-kind.js";
 export { ToolCallOutputState } from "../app/enums/tool-call-output-state.js";
 export { ToolCallStatus } from "../app/enums/tool-call-status.js";
+export { ToolbarButtonSize } from "../app/enums/toolbar-button-size.js";
 export { ToolbarOrientation } from "../app/enums/toolbar-orientation.js";
 export { TypographySizing } from "../app/enums/typography-sizing.js";
 export { VirtualListAlign } from "../app/enums/virtual-list-align.js";

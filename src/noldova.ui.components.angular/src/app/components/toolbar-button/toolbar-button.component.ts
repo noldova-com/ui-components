@@ -8,6 +8,7 @@
 
 import { Component, ElementRef, inject, input } from "@angular/core";
 
+import { ToolbarButtonSize } from "../../enums/toolbar-button-size.js";
 import { BusyGuard } from "../../services/busy-guard.js";
 import { Resources } from "../../../resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
@@ -21,6 +22,7 @@ import { ToolbarButtonResources } from "./toolbar-button.resources.js";
   host: {
     "class": "nol-toolbar-button",
     "[class.nol-toolbar-button-icon-only]": "icon() !== null && !isShowingLabel()",
+    "[class.nol-toolbar-button-large]": "size() === sizes.Large",
     "[attr.aria-label]": "label()",
     "[attr.aria-pressed]": "pressed() ?? null",
     "[attr.aria-haspopup]": "hasMenu() ? partResources.menuPopup : null",
@@ -32,6 +34,7 @@ import { ToolbarButtonResources } from "./toolbar-button.resources.js";
 export class ToolbarButtonComponent {
   protected readonly resources: typeof Resources = Resources;
   protected readonly partResources: typeof ToolbarButtonResources = ToolbarButtonResources;
+  protected readonly sizes: typeof ToolbarButtonSize = ToolbarButtonSize;
 
   public readonly label = input.required<string>();
   public readonly icon = input<string | null>(null);
@@ -39,6 +42,7 @@ export class ToolbarButtonComponent {
   public readonly pressed = input<boolean>();
   public readonly hasMenu = input<boolean>(false);
   public readonly isUnavailable = input<boolean>(false);
+  public readonly size = input<ToolbarButtonSize>(ToolbarButtonSize.Normal);
   public readonly busy = input<boolean>(false);
 
   public constructor() {

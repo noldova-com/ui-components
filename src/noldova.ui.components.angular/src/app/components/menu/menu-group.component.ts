@@ -19,7 +19,8 @@ import { MenuGroupResources } from "./menu-group.resources.js";
   styleUrl: "./menu-group.component.css",
   host: {
     "role": "group",
-    "[attr.aria-labelledby]": "labelId"
+    "[attr.aria-labelledby]": "labelId",
+    "[class.nol-menu-group-uppercase]": "uppercase()"
   }
 })
 export class MenuGroupComponent {
@@ -33,6 +34,7 @@ export class MenuGroupComponent {
 
   public readonly label = input.required<string>();
   public readonly maxRows = input<number | null>(null);
+  public readonly uppercase = input<boolean>(false);
 
   public constructor() {
     afterRenderEffect(onCleanup => {

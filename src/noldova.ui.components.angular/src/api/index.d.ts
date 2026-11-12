@@ -967,6 +967,26 @@ export declare enum ThemeMode {
 }
 
 /**
+ * The size of a {@link ToolbarButtonComponent}, from the theme's
+ * `toolbar-button` and `toolbar-button-large` look values.
+ */
+export declare enum ToolbarButtonSize {
+  /**
+   * The theme's `toolbar-button`, 1.5rem square by default, with the
+   * `icon` glyph, 1rem; the default.
+   */
+  Normal = "Normal",
+
+  /**
+   * The theme's `toolbar-button-large`, 1.875rem square by default, with
+   * the `toolbar-button-large-icon` glyph, 1.125rem, for a document's own
+   * toolbar; its chevron, hover, pressed, focus and disabled looks are the
+   * normal size's.
+   */
+  Large = "Large"
+}
+
+/**
  * The direction of a {@link ToolbarDirective}'s items, which decides the arrow
  * keys that move focus between them.
  */
@@ -7145,6 +7165,15 @@ export declare class MenuGroupComponent {
    * ```
    */
   public readonly maxRows: InputSignal<number | null>;
+
+  /**
+   * Whether the label shows in the uppercase heading look, as an uppercase
+   * section header's: the small text size, the emphasis weight and the caps
+   * letter spacing, in capitals, on the label's own line and in its muted
+   * color; the group's accessible name stays the label as written. False
+   * when not bound.
+   */
+  public readonly uppercase: InputSignal<boolean>;
 }
 
 /**
@@ -11936,6 +11965,11 @@ export declare class ToolbarButtonComponent {
    * False when not bound.
    */
   public readonly isUnavailable: InputSignal<boolean>;
+
+  /**
+   * The button's size, {@link ToolbarButtonSize.Normal} when not bound.
+   */
+  public readonly size: InputSignal<ToolbarButtonSize>;
 
   /**
    * Whether the button's work is under way: the kit's spinner, in the
