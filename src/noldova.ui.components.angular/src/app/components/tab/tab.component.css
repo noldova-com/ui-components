@@ -172,9 +172,11 @@
 }
 
 .nol-tab .nol-tab-leading-spinner {
-  --nol-spinner: var(--nol-tab-spinner);
+  --nol-spinner: var(--nol-icon);
   --nol-spinner-ring: var(--nol-tab-spinner);
   --nol-spinner-stroke: var(--nol-tab-spinner-stroke);
+
+  margin-inline-end: var(--nol-space-1);
 }
 
 .nol-tab.nol-tab-underlined .nol-tab-pill {
