@@ -11,7 +11,7 @@ Its type declarations carry the documentation of every export and public member,
 - TypeScript's `moduleResolution` set to `"bundler"`, `"node16"` or `"nodenext"` in the app's `tsconfig.json`.
   The kit's JavaScript and type declarations name each of the kit's own files with `.js`, such as `../resources.js`, so Node.js's own ES module resolution loads the kit too: code tested without a bundler, such as with `node --test`, imports it once it has imported `@angular/compiler`, which finishes the partially compiled components as they load.
 - A browser no older than Chrome 112, Edge 112, Safari 16.5 or Firefox 117.
-- Angular at the exact version the kit names: `@angular/core`, `@angular/common`, `@angular/forms` and `@angular/platform-browser`, which are its peer dependencies, and `@angular/cdk`, a dependency of the kit at the same version.
+- Angular at the exact version the kit names: `@angular/core`, `@angular/common`, `@angular/forms` and `@angular/platform-browser`, which are its peer dependencies, and `@angular/cdk`, a dependency of the kit at its own exact version, since the CDK publishes its patches apart from Angular's, such as 22.2.7 with Angular 22.2.6.
   The kit doesn't import forms or platform-browser itself, but `@angular/cdk` needs both, and each needs `@angular/common` at its own exact version.
   Without them among the kit's peers, npm picks their newest versions, which need a newer `@angular/common` than the kit's, and the install stops with `ERESOLVE`.
   `@angular/cdk` is a dependency rather than a peer for the same reason: as a peer, npm resolved its own peers before the kit's other peers, so installing the kit alone stopped with that `ERESOLVE`; as a dependency, it's resolved after them, and they satisfy its peers.
