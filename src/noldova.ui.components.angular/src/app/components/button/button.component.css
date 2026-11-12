@@ -210,6 +210,7 @@
 }
 
 :host(.nol-button-accent:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
+  background-color: var(--nol-selected);
   background-image: linear-gradient(var(--nol-toolbar-hover), var(--nol-toolbar-hover));
 }
 
