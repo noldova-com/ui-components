@@ -25,6 +25,8 @@ export class GalleryToolCalls {
   public readonly queued: ToolCall;
   public readonly awaiting: ToolCall;
   public readonly answering: ToolCall;
+  public readonly noted: ToolCall;
+  public readonly notedBare: ToolCall;
   public readonly cancelled: ToolCall;
   public readonly denied: ToolCall;
   public readonly nothing: ToolCall;
@@ -56,6 +58,8 @@ export class GalleryToolCalls {
     this.queued = new ToolCall(text.toolCallQueuedCaption, text.toolCallSearchTitle, ToolCallKind.Search, ToolCallStatus.Pending, { input: search });
     this.awaiting = new ToolCall(text.toolCallPermissionCaption, text.toolCallEditTitle, ToolCallKind.Edit, ToolCallStatus.AwaitingPermission, { target: text.toolCallEditTarget });
     this.answering = new ToolCall(text.toolCallAnswerCaption, text.toolCallAskTitle, ToolCallKind.Other, ToolCallStatus.AwaitingAnswer);
+    this.noted = new ToolCall(text.toolCallNoteCaption, text.toolCallClickTitle, ToolCallKind.Browse, ToolCallStatus.AwaitingAnswer, { target: text.toolCallBrowseTarget, note: text.toolCallNote });
+    this.notedBare = new ToolCall(text.toolCallNoteBareCaption, text.toolCallAskTitle, ToolCallKind.Other, ToolCallStatus.AwaitingAnswer, { note: text.toolCallNote });
     this.cancelled = new ToolCall(text.toolCallCancelledCaption, text.toolCallBrowseTitle, ToolCallKind.Browse, ToolCallStatus.Cancelled,
       { target: text.toolCallBrowseTarget, startedAt: started, endedAt: now });
     this.denied = new ToolCall(text.toolCallDeniedCaption, text.toolCallEditTitle, ToolCallKind.Edit, ToolCallStatus.Denied, { target: text.toolCallEditTarget });

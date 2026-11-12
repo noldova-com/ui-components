@@ -24,6 +24,7 @@ export class ToolCall {
   public readonly kind: ToolCallKind;
   public readonly status: ToolCallStatus;
   public readonly target: string | null;
+  public readonly note: string | null;
   public readonly startedAt: Date | null;
   public readonly endedAt: Date | null;
   public readonly input: ToolCallInput | null;
@@ -39,6 +40,8 @@ export class ToolCall {
     ArgumentException.throwIfNullOrWhitespace(title, "title");
     if (!Object.isUndefined(options.target))
       ArgumentException.throwIfNullOrWhitespace(options.target, "target");
+    if (!Object.isUndefined(options.note))
+      ArgumentException.throwIfNullOrWhitespace(options.note, "note");
     if (!Object.isUndefined(options.endedAt) && Object.isUndefined(options.startedAt))
       throw new ArgumentException(ToolCallResources.toolCallEndWithoutStart, "endedAt");
     if (!Object.isUndefined(options.endedAt) && !Object.isUndefined(options.startedAt) && options.endedAt.getTime() < options.startedAt.getTime())
@@ -52,6 +55,7 @@ export class ToolCall {
     this.kind = kind;
     this.status = status;
     this.target = options.target ?? null;
+    this.note = options.note ?? null;
     this.startedAt = Object.isUndefined(options.startedAt) ? null : new Date(options.startedAt.getTime());
     this.endedAt = Object.isUndefined(options.endedAt) ? null : new Date(options.endedAt.getTime());
     this.input = options.input ?? null;

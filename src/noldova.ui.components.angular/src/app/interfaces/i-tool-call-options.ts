@@ -12,6 +12,7 @@ import type { ToolCallInput } from "../models/tool-call-input.js";
 
 export interface IToolCallOptions {
   readonly target?: string;
+  readonly note?: string;
   readonly startedAt?: Date;
   readonly endedAt?: Date;
   readonly input?: ToolCallInput;

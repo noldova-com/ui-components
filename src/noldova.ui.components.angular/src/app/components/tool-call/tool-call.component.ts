@@ -133,6 +133,7 @@ export class ToolCallComponent {
   protected readonly shownChildren: Signal<readonly ToolCall[]> = computed(() => this.call().children.slice(0, this.views().shownChildrenOf(this.call(), this.childrenStep())));
   protected readonly moreChildren: Signal<number> = computed(() => Math.min(this.childrenStep(), this.call().children.length - this.shownChildren().length));
   protected readonly shownTitle: Signal<string> = computed(() => this.shownTitles().get(this.call().id) ?? this.call().title);
+  protected readonly titleTip: Signal<string> = computed(() => ToolCallComponentResources.formatToolCallTitleNote(this.call().title, this.call().note));
   protected readonly titleSide: Signal<OverlaySide> = computed(() => this.titleTooltip() ?? OverlaySide.above);
   protected readonly titleBeside: Signal<string | null> = computed(() => (this.titleTooltip()?.isVertical === false ? ToolCallComponentResources.toolCallHeaderSelector : null));
 

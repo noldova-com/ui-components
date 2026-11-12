@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "@noldova/context.core";
+
 import { CopyState } from "../../enums/copy-state.js";
 import { ToolCallKind } from "../../enums/tool-call-kind.js";
 import { ToolCallStatus } from "../../enums/tool-call-status.js";
@@ -85,6 +87,7 @@ export class ToolCallComponentResources {
   public static readonly toolCallCancelGlyph: string = "stop_circle";
   public static readonly toolCallCancelLabel: string = "Cancel";
   public static readonly toolCallErrorGlyph: string = "error";
+  public static readonly toolCallNoteSeparator: string = " · ";
   public static formatToolCallShowAllLines(count: number): string {
     return `Show all ${count} lines`;
   }
@@ -99,6 +102,9 @@ export class ToolCallComponentResources {
   }
   public static formatToolCallChildren(title: string): string {
     return `Calls in ${title}`;
+  }
+  public static formatToolCallTitleNote(title: string, note: string | null): string {
+    return Object.isNull(note) ? title : `${title}${ToolCallComponentResources.toolCallNoteSeparator}${note}`;
   }
   public static formatToolCallOpenTarget(target: string): string {
     return `Open ${target}`;
