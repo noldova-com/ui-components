@@ -163,6 +163,7 @@ describe("DefaultTheme contrast", () => {
     ...on("setting-title", [["panel"], ["panel", "hover"]], textRatio),
     ...on("link", [["window"], ["panel"], ["dialog"]], textRatio),
     ...on("mention", [["window"], ["panel"], ["dialog"], ["raised"]], textRatio),
+    ...on("text", [["raised", "selected"], ["dialog", "selected"], ["window", "selected", "toolbar-hover"], ["panel", "selected", "toolbar-hover"], ["raised", "selected", "toolbar-hover"], ["dialog", "selected", "toolbar-hover"]], textRatio),
     ...on("list-highlight", [["panel"], ["panel", "hover"], ["quick-input"], ["quick-input", "selected"]], textRatio),
     ...on("input-text", [["input"], ["dropdown"], ["dropdown-list"]], textRatio),
     ...on("placeholder", [["input"]], textRatio),
