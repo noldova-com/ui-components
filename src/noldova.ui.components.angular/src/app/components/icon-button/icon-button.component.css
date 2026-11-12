@@ -39,7 +39,7 @@
 @media (forced-colors: active) {
   :host(:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before {
     outline: var(--nol-border-width) dashed Highlight;
-    outline-offset: calc(var(--nol-border-width) * -1);
+    outline-offset: calc(var(--nol-border-width) * -3);
   }
 }
 
@@ -51,6 +51,8 @@
     --nol-icon-color: HighlightText;
     --nol-list-highlight: HighlightText;
     --nol-list-active-text: HighlightText;
+    --nol-spinner-forced-arc: HighlightText;
+    --nol-spinner-forced-ring: HighlightText;
 
     color: HighlightText;
     forced-color-adjust: none;
@@ -69,6 +71,8 @@
     --nol-icon-color: GrayText;
     --nol-list-highlight: GrayText;
     --nol-list-active-text: GrayText;
+    --nol-spinner-forced-arc: Highlight;
+    --nol-spinner-forced-ring: GrayText;
 
     color: GrayText;
   }

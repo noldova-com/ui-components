@@ -23,6 +23,7 @@ A label too long for the button starts after its start padding or icon and ends 
 A link shown as a button, such as a download, has the same look without an underline.
 A button marked aria-disabled, which stays focusable, looks disabled and shows no hover, as a disabled one does.
 Under forced colors a disabled or aria-disabled button's border and label are `GrayText`, at full opacity in every variant, so the system's own disabled color is not faded.
+Under forced colors hover is a 1px dashed `Highlight` outline drawn inside the border with one border width between them, so a hovered button never looks like a resting one.
 
 ## Danger look
 

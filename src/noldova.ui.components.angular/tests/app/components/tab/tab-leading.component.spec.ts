@@ -21,6 +21,7 @@ import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { MotionFixture } from "../../../fixtures/motion.fixture";
 
 const picture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAEklEQVR42mPQz3/9HxkzkC4AAEovKIGTGfmDAAAAAElFTkSuQmCC";
 const broken = "data:image/png;base64,AAAA";
@@ -312,5 +313,45 @@ describe("TabComponent's leading parts", () => {
       expect([line.height, line.backgroundColor, Number.parseFloat(line.bottom)]).toEqual([`${pixels(0.125)}px`, ForcedColorsFixture.resolve(selected ? "HighlightText" : "Highlight"), 0]);
       expect(pill.height).toBe(pixels(1.5));
       expect(getComputedStyle(part(".nol-tab-status")).color).toBe(text);
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const [slot, leading] of [["first", true], ["in the action slot", false]] as const)
+      it(`draws a working tab's spinner ${slot} with its arc and ring in HighlightText on the selected Highlight fill, and a Highlight arc over a GrayText ring when not selected, under forced colors in ${mode} mode`, async () => {
+        render(t => {
+          t.closable.set(false);
+          t.working.set(true);
+          t.leadingSpinner.set(leading);
+        }, mode);
+        await ForcedColorsFixture.activateAsync();
+        const ring = (): CSSStyleDeclaration => getComputedStyle(part(`${leading ? ".nol-tab-leading-spinner" : ".nol-tab-spinner"} .nol-spinner-ring`));
+        const unselected = [ring().borderTopColor, ring().borderBottomColor];
+        update(() => host.selected.set(true));
+        const fill = getComputedStyle(part(".nol-tab-pill")).backgroundColor;
+
+        expect([unselected, [ring().borderTopColor, ring().borderBottomColor], fill]).toEqual([[ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("GrayText")],
+          [ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("HighlightText")], ForcedColorsFixture.resolve("Highlight")]);
+        expect(ring().borderTopColor).not.toBe(fill);
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a working tab's still half ring with both arc sides and its track in HighlightText on the selected Highlight fill, and its arc sides in Highlight over a GrayText track when not selected, under forced colors and reduced motion in ${mode} mode`, async () => {
+      render(t => {
+        t.closable.set(false);
+        t.working.set(true);
+        t.leadingSpinner.set(true);
+      }, mode);
+      await MotionFixture.reduceForTestAsync();
+      await ForcedColorsFixture.activateAsync();
+      const sides = (): readonly string[] => {
+        const ring = getComputedStyle(part(".nol-tab-leading-spinner .nol-spinner-ring"));
+        return [ring.animationName, ring.borderTopColor, ring.borderRightColor, ring.borderBottomColor, ring.borderLeftColor];
+      };
+      const unselected = sides();
+      update(() => host.selected.set(true));
+      const [highlight, text, gray] = ["Highlight", "HighlightText", "GrayText"].map(t => ForcedColorsFixture.resolve(t));
+
+      expect([unselected, sides(), getComputedStyle(part(".nol-tab-pill")).backgroundColor])
+        .toEqual([["none", highlight, highlight, gray, gray], ["none", text, text, text, text], highlight]);
     });
 });

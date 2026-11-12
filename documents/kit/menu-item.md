@@ -19,7 +19,7 @@ Panel.
 ## Surface and behavior
 
 Hover, keyboard-active and open-submenu rows fill; the current row, which the owner marks with `aria-current="true"`, uses the selected fill; one of a set of choices is a radio row and an on/off setting a checkbox row, each ending with a 1rem check mark while checked and keeping its space while not, so the menu's width doesn't change with the choice; labels don't wrap; a row that runs a command with a key shows the key's label, muted, at the row's end, where every row's key, check mark and chevron end at one edge, at least 2rem after the row's own label, in every menu; disabled rows are dimmed, in `GrayText` under forced colors, focusable and inoperable.
-Under forced colors the current row is `HighlightText` on `Highlight`, and a disabled current row is `GrayText` on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces.
+Under forced colors the current row is `HighlightText` on `Highlight`, and a disabled current row is `GrayText` on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces; a spinner in the lead slot draws its arc and ring in `HighlightText` on the current row, and a `Highlight` arc on a `GrayText` ring on a disabled one, as [progress](progress.md) says.
 A row's description is muted and read with its label.
 A row's value, such as the chosen model on a submenu row, is muted, sits at the row's end before its key, check mark or chevron, is read with its label, and takes the row's text color while the row is current; a label too long for the menu is cut before the value.
 A row's tag is read right after its label; type-ahead matches the label alone.
