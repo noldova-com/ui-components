@@ -187,7 +187,7 @@ describe("TabComponent's leading parts", () => {
       expect(tab().getAttribute("aria-label")).toBe("Plans and pricing, Blocked");
     });
 
-  it("shows a working tab's spinner first, 0.75rem with a 1.5px stroke, and keeps Close at the end, when asked", () => {
+  it("shows a working tab's spinner first in the icon's 1rem box, its ring 0.75rem and centred with a 1.5px stroke, and keeps Close at the end, when asked", () => {
     render(t => {
       t.image.set(picture);
       t.imageGlyph.set("public");
@@ -204,11 +204,34 @@ describe("TabComponent's leading parts", () => {
     const strokeWidth = getComputedStyle(stroke).borderTopWidth;
     stroke.remove();
 
-    expect([box.width, box.height, ring.getBoundingClientRect().width, getComputedStyle(ring).borderTopWidth]).toEqual([pixels(0.75), pixels(0.75), pixels(0.75), strokeWidth]);
-    AppearanceFixture.expectPixels(part(".nol-tab-label").getBoundingClientRect().left - box.right, pixels(0.375));
+    const circle = ring.getBoundingClientRect();
+
+    expect([box.width, box.height, circle.width, circle.height, getComputedStyle(ring).borderTopWidth]).toEqual([pixels(1), pixels(1), pixels(0.75), pixels(0.75), strokeWidth]);
+    AppearanceFixture.expectPixels(circle.left + circle.width / 2, box.left + box.width / 2);
+    AppearanceFixture.expectPixels(middle(ring), middle(spinner));
+    AppearanceFixture.expectPixels(part(".nol-tab-label").getBoundingClientRect().left - box.right, pixels(0.25));
     AppearanceFixture.expectPixels(middle(spinner), middle(part(".nol-tab-label")));
     expect([maybe(".nol-tab-image"), maybe(".nol-tab-action .nol-tab-spinner"), isShown(close), tab().getAttribute("aria-busy")]).toEqual([null, null, true, "true"]);
   });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const forced of [false, true])
+      it(`keeps the label's left edge in place when a working tab's leading spinner stands in for its icon, ${forced ? "under forced colors" : "with no forced colors"}, in ${mode} mode`, async () => {
+        if (forced)
+          await ForcedColorsFixture.activateAsync();
+        render(t => t.icon.set("description"), mode);
+        const icon = part(".nol-tab-icon").getBoundingClientRect();
+        const iconLabel = part(".nol-tab-label").getBoundingClientRect().left;
+        update(() => {
+          host.working.set(true);
+          host.leadingSpinner.set(true);
+        });
+        const spinner = part(".nol-tab-leading-spinner").getBoundingClientRect();
+
+        expect([maybe(".nol-tab-icon"), icon.width, spinner.width]).toEqual([null, pixels(1), pixels(1)]);
+        AppearanceFixture.expectPixels(spinner.left, icon.left);
+        AppearanceFixture.expectPixels(part(".nol-tab-label").getBoundingClientRect().left, iconLabel);
+      });
 
   it("leaves no action slot for a tab that can't close and shows its spinner first", () => {
     render(t => {
