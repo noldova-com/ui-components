@@ -79,14 +79,14 @@ Under forced colors hover is a 1px dashed `Highlight` outline drawn inside the b
 
 `ButtonVariant.Accent`, the accent chip look, for an action on a card that names what is shown, such as a page card's Open while its page is open in a tab.
 
-- At rest it has no fill, a 1px `accent` border and the small radius, and its label and icon are in `accent`.
-- It is the chip's height and side padding: at least `chip` high, 1.25rem by default, its border inside that height, and `chip-padding`, 0.375rem, at its sides, inside its border; its label is the button's.
+- At rest it has the `selected` fill, no visible border and the small radius, and its label and icon are in `text`, at the button's label size: the kit's text never goes under 12px (KIT.md, Typography).
+- It is the chip's height and side padding: at least `chip` high, 1.25rem by default, its transparent 1px border inside that height, and `chip-padding`, 0.375rem, at its sides, inside its border.
 - It keeps the chip's height in either size: compact leaves it as it is.
-- Under the pointer it is filled with `toolbar-hover`, as the text button is.
+- Under the pointer `toolbar-hover` lies over its `selected` fill.
 - Its keyboard focus is the button's `accent` outline outside its edge.
-- Disabled, or marked aria-disabled, it is dimmed as the button is, without the hover fill.
-- Under forced colors its border and text are `ButtonText`, or `GrayText` while disabled, at the same size, and its hover is the button's dashed `Highlight` outline with no fill.
-- Its label keeps 4.5:1 on the window, panel, raised and dialog surfaces, at rest and under its hover fill; the theme's contrast spec checks them.
+- Disabled, or marked aria-disabled, it is dimmed as the button is, keeping its `selected` fill without the hover.
+- Under forced colors its border and text are `ButtonText`, or `GrayText` while disabled, at the same size, and its hover is the button's dashed `Highlight` outline with no hover fill.
+- Its `text` label keeps 4.5:1 on the `selected` fill over the window, panel, raised and dialog surfaces, at rest and under its hover; the theme's contrast spec checks them.
 
 ## Compact size
 

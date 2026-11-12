@@ -60,16 +60,16 @@ describe("ButtonComponent's accent variant", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`shows a chip-high button at the chip's side padding, with no fill, a one-pixel border and its label in the accent color, in the ${theme.id} theme in ${mode} mode`, () => {
+      it(`shows a chip-high button at the chip's side padding, on the selected fill with its label in the text color and no visible border, in the ${theme.id} theme in ${mode} mode`, () => {
         render(theme, mode);
         const style = getComputedStyle(button("accent"));
         const box = button("accent").getBoundingClientRect();
         const text = label("accent");
         const border = AppearanceFixture.measureLook("border-width");
         const padding = AppearanceFixture.measureLook("chip-padding");
-        const accent = AppearanceFixture.readColor(theme, mode, "accent");
 
-        expect([style.backgroundColor, style.borderTopStyle, style.borderTopColor, style.color]).toEqual(["rgba(0, 0, 0, 0)", "solid", accent, accent]);
+        expect([style.backgroundColor, style.backgroundImage, style.borderTopStyle, style.borderTopColor, style.color])
+          .toEqual([AppearanceFixture.readColor(theme, mode, "selected"), "none", "solid", "rgba(0, 0, 0, 0)", AppearanceFixture.readColor(theme, mode, "text")]);
         AppearanceFixture.expectLook(style.borderTopLeftRadius, theme, "radius-small", "border-top-left-radius");
         AppearanceFixture.expectPixels(parseFloat(style.borderTopWidth), border);
         AppearanceFixture.expectPixels(box.height, AppearanceFixture.measureLook("chip"));
@@ -89,41 +89,44 @@ describe("ButtonComponent's accent variant", () => {
   });
 
   for (const mode of AppearanceFixture.modes)
-    it(`fills with the toolbar hover color under the pointer and keeps its accent border and label, in ${mode} mode`, async () => {
+    it(`lays the toolbar hover color over its selected fill under the pointer and keeps its text label, in ${mode} mode`, async () => {
       render(DefaultTheme.theme, mode);
       const hover = toolbarHover();
-      const accent = AppearanceFixture.readColor(DefaultTheme.theme, mode, "accent");
 
       await userEvent.hover(page.getByTestId("accent"));
       const style = getComputedStyle(button("accent"));
 
-      expect([button("accent").matches(":hover"), style.backgroundColor, style.borderTopColor, style.color]).toEqual([true, hover, accent, accent]);
+      expect([button("accent").matches(":hover"), style.backgroundColor, style.backgroundImage, style.borderTopColor, style.color])
+        .toEqual([true, AppearanceFixture.readColor(DefaultTheme.theme, mode, "selected"), `linear-gradient(${hover}, ${hover})`, "rgba(0, 0, 0, 0)", AppearanceFixture.readColor(DefaultTheme.theme, mode, "text")]);
       expect(hover).not.toBe("rgba(0, 0, 0, 0)");
     });
 
-  it("shows keyboard focus as the accent outline outside its border", async () => {
-    render();
+  for (const mode of AppearanceFixture.modes)
+    it(`shows keyboard focus as the accent outline outside its edge, in ${mode} mode`, async () => {
+      render(DefaultTheme.theme, mode);
 
-    button("primary").focus();
-    await userEvent.tab();
-    const style = getComputedStyle(button("accent"));
+      button("primary").focus();
+      await userEvent.tab();
+      const style = getComputedStyle(button("accent"));
 
-    expect(document.activeElement).toBe(button("accent"));
-    expect([style.outlineStyle, style.outlineColor, style.outlineOffset]).toEqual(["solid", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "accent"), "2px"]);
-  });
+      expect(document.activeElement).toBe(button("accent"));
+      expect([style.outlineStyle, style.outlineColor, style.outlineOffset]).toEqual(["solid", AppearanceFixture.readColor(DefaultTheme.theme, mode, "accent"), "2px"]);
+    });
 
-  it("looks disabled without the hover fill while disabled or aria-disabled, the aria-disabled one staying focusable", async () => {
-    render();
+  for (const mode of AppearanceFixture.modes)
+    it(`looks disabled on its selected fill without the hover while disabled or aria-disabled, the aria-disabled one staying focusable, in ${mode} mode`, async () => {
+      render(DefaultTheme.theme, mode);
+      const selected = AppearanceFixture.readColor(DefaultTheme.theme, mode, "selected");
 
-    await userEvent.hover(page.getByTestId("locked"));
-    button("locked").focus();
-    const locked = getComputedStyle(button("locked"));
-    const disabled = getComputedStyle(button("disabled"));
+      await userEvent.hover(page.getByTestId("locked"));
+      button("locked").focus();
+      const locked = getComputedStyle(button("locked"));
+      const disabled = getComputedStyle(button("disabled"));
 
-    expect([button("locked").matches(":hover"), locked.opacity, locked.cursor, locked.backgroundColor]).toEqual([true, "0.5", "default", "rgba(0, 0, 0, 0)"]);
-    expect([disabled.opacity, disabled.cursor, disabled.backgroundColor]).toEqual(["0.5", "default", "rgba(0, 0, 0, 0)"]);
-    expect(document.activeElement).toBe(button("locked"));
-  });
+      expect([button("locked").matches(":hover"), locked.opacity, locked.cursor, locked.backgroundColor, locked.backgroundImage]).toEqual([true, "0.5", "default", selected, "none"]);
+      expect([disabled.opacity, disabled.cursor, disabled.backgroundColor, disabled.backgroundImage]).toEqual(["0.5", "default", selected, "none"]);
+      expect(document.activeElement).toBe(button("locked"));
+    });
 
   for (const mode of AppearanceFixture.modes)
     it(`keeps a ButtonText border and label under forced colors, or GrayText while disabled, at the same size, and shows hover as the dashed Highlight outline, in ${mode} mode`, async () => {
@@ -148,6 +151,6 @@ describe("ButtonComponent's accent variant", () => {
       await userEvent.hover(page.getByTestId("accent"));
       const hovered = getComputedStyle(button("accent"));
 
-      expect([hovered.outlineStyle, hovered.outlineColor]).toEqual(["dashed", ForcedColorsFixture.resolve("Highlight")]);
+      expect([hovered.outlineStyle, hovered.outlineColor, hovered.backgroundImage]).toEqual(["dashed", ForcedColorsFixture.resolve("Highlight"), "none"]);
     });
 });
