@@ -233,6 +233,16 @@ describe("ComponentPageComponent", () => {
       inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "isPressedWhileOpen", "busy"],
       outputs: []
     },
+    CompletionListComponent: {
+      specimen: "Completion list",
+      controls: "nol-completion-list",
+      roles: ["input[role=\"combobox\"][aria-controls=\"nol-docs-completion-commands\"][aria-activedescendant=\"nol-docs-completion-commands-option-0\"]",
+        "nol-completion-list[role=\"listbox\"][id=\"nol-docs-completion-commands\"][aria-label=\"Commands\"] [role=\"option\"][aria-selected=\"true\"][aria-label=\"/review, Review the changes\"]",
+        "[role=\"listbox\"][aria-label=\"Names\"] [role=\"option\"][aria-label=\"ReadableStream, class\"] .nol-completion-note:not([role])"],
+      keys: [],
+      inputs: ["choices", "active", "listId", "label", "isCode", "maxHeight"],
+      outputs: ["chosen"]
+    },
     AvatarComponent: {
       specimen: "Avatar",
       controls: "nol-avatar",
@@ -1112,6 +1122,31 @@ describe("ComponentPageComponent", () => {
       await userEvent.keyboard("{Escape}");
       await vi.waitFor(() => expect(outside(host, "[role=\"tooltip\"]")).toEqual([]));
       expect(document.activeElement).toBe(undo);
+    });
+  });
+
+  describe("the Completion list page", () => {
+    it("follows the field's arrows, filters as the field is typed in, chooses on Enter and on a click, and keeps the focus in the field", async () => {
+      const host = await renderAsync(expectPage("CompletionListComponent"));
+      const examples = section(host, "Examples");
+      const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
+      const labels = (): readonly (string | undefined)[] => DocsFixture.all(examples, "[aria-label=\"Commands\"] .nol-completion-label").map(t => t.textContent?.trim());
+
+      field.focus();
+      await userEvent.keyboard("{ArrowUp}");
+      await vi.waitFor(() => expect(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").getAttribute("aria-label")).toBe("/clear"));
+      expect(field.getAttribute("aria-activedescendant")).toBe(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").id);
+
+      await userEvent.fill(field, "/p");
+      await vi.waitFor(() => expect(labels()).toEqual(["/plan"]));
+      await userEvent.keyboard("{Enter}");
+      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /plan"));
+
+      await userEvent.fill(field, "/");
+      await vi.waitFor(() => expect(labels().length).toBe(4));
+      await userEvent.click(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-label=\"/compact, Shorten the conversation\"]"));
+      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /compact"));
+      expect(document.activeElement).toBe(field);
     });
   });
 
