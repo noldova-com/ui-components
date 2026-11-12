@@ -363,9 +363,7 @@ describe("ToolCallComponent", () => {
     await renderAsync(new ToolCall("call-1", title, ToolCallKind.Read, ToolCallStatus.Succeeded, { note }), t => t.width.set("16rem"));
     const named = page.getByRole("button", { name: `${title} · ${note}`, exact: true }).element();
     await userEvent.hover(toggle());
-    await fixture.whenStable();
-    for (let frame = 0; frame < 3; frame++)
-      await new Promise(resolve => requestAnimationFrame(resolve));
+    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(`${title} · ${note}`));
     const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
     await userEvent.unhover(toggle());
 
@@ -1090,9 +1088,7 @@ describe("ToolCallComponent", () => {
     });
     const closed = [find(".nol-tool-call-title").textContent, toggle().textContent?.trim().endsWith(shown), find(".nol-tool-call-cancel").getAttribute("aria-label")];
     await userEvent.hover(toggle());
-    await fixture.whenStable();
-    for (let frame = 0; frame < 3; frame++)
-      await new Promise(resolve => requestAnimationFrame(resolve));
+    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(title));
     const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
     await userEvent.unhover(toggle());
     await clickAsync(toggle());
