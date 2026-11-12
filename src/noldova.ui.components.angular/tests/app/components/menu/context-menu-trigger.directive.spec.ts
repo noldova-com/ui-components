@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ChangeDetectionStrategy, Component, signal } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
@@ -87,7 +87,6 @@ class LongMenuHostComponent {
 }
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ContextMenuTriggerDirective, MenuComponent, MenuItemComponent],
   template: `
     <div class="area" tabindex="0" style="position: fixed; top: 100px; left: 100px; width: 200px; height: 100px;" [nolContextMenuTriggerFor]="context"></div>
