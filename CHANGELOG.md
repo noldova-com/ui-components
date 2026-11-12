@@ -12,6 +12,7 @@ Each version's section is written by the pull request that changes the version, 
 - `@noldova/ui.components.angular`: `isPressedWhileOpen` on a toolbar button with a menu draws the pressed fill while its menu is open, and its idle look once it closes; it is opt-in, so other toolbar buttons keep their look.
 - `@noldova/ui.components.angular`: two new colors, `warning-background` and `error-background`, for a band under `warning` or `error` text, both `Canvas` under forced colors.
 - `@noldova/ui.components.angular`: `uppercase` on `nol-menu-group` draws its label in capitals in the uppercase section header's look, at the kit's 12px small size; the group's accessible name stays the label as written.
+- `@noldova/ui.components.angular`: a working tab's leading spinner takes the icon's 1rem box and its 0.25rem gap, so the label no longer moves left while the tab works; the ring stays 0.75rem, centred in the box.
 - `@noldova/ui.components.angular`: a menu trigger, a context menu's host and a submenu's row name their menu in `aria-controls` only while it is open; before, they kept naming a menu that had closed and was no longer in the document.
 
 ## 0.0.6
