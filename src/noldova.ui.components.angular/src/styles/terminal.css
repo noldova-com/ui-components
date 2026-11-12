@@ -6,9 +6,34 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+.nol-terminal-dark {
+  --nol-terminal-background: var(--nol-terminal-dark-background);
+  --nol-terminal-foreground: var(--nol-terminal-dark-foreground);
+  --nol-terminal-cursor: var(--nol-terminal-dark-cursor);
+  --nol-terminal-selection: var(--nol-terminal-dark-selection);
+  --nol-terminal-selection-foreground: var(--nol-terminal-dark-selection-foreground);
+  --nol-terminal-ansi-black: var(--nol-terminal-dark-ansi-black);
+  --nol-terminal-ansi-red: var(--nol-terminal-dark-ansi-red);
+  --nol-terminal-ansi-green: var(--nol-terminal-dark-ansi-green);
+  --nol-terminal-ansi-yellow: var(--nol-terminal-dark-ansi-yellow);
+  --nol-terminal-ansi-blue: var(--nol-terminal-dark-ansi-blue);
+  --nol-terminal-ansi-magenta: var(--nol-terminal-dark-ansi-magenta);
+  --nol-terminal-ansi-cyan: var(--nol-terminal-dark-ansi-cyan);
+  --nol-terminal-ansi-white: var(--nol-terminal-dark-ansi-white);
+  --nol-terminal-ansi-bright-black: var(--nol-terminal-dark-ansi-bright-black);
+  --nol-terminal-ansi-bright-red: var(--nol-terminal-dark-ansi-bright-red);
+  --nol-terminal-ansi-bright-green: var(--nol-terminal-dark-ansi-bright-green);
+  --nol-terminal-ansi-bright-yellow: var(--nol-terminal-dark-ansi-bright-yellow);
+  --nol-terminal-ansi-bright-blue: var(--nol-terminal-dark-ansi-bright-blue);
+  --nol-terminal-ansi-bright-magenta: var(--nol-terminal-dark-ansi-bright-magenta);
+  --nol-terminal-ansi-bright-cyan: var(--nol-terminal-dark-ansi-bright-cyan);
+  --nol-terminal-ansi-bright-white: var(--nol-terminal-dark-ansi-bright-white);
+}
+
 @media (forced-colors: active) {
   :root,
-  [style*="--nol-terminal-background"] {
+  [style*="--nol-terminal-background"],
+  .nol-terminal-dark {
     --nol-terminal-background: Canvas !important;
     --nol-terminal-foreground: CanvasText !important;
     --nol-terminal-cursor: CanvasText !important;
@@ -30,5 +55,26 @@
     --nol-terminal-ansi-bright-magenta: CanvasText !important;
     --nol-terminal-ansi-bright-cyan: CanvasText !important;
     --nol-terminal-ansi-bright-white: CanvasText !important;
+    --nol-terminal-dark-background: Canvas !important;
+    --nol-terminal-dark-foreground: CanvasText !important;
+    --nol-terminal-dark-cursor: CanvasText !important;
+    --nol-terminal-dark-selection: Highlight !important;
+    --nol-terminal-dark-selection-foreground: HighlightText !important;
+    --nol-terminal-dark-ansi-black: CanvasText !important;
+    --nol-terminal-dark-ansi-red: CanvasText !important;
+    --nol-terminal-dark-ansi-green: CanvasText !important;
+    --nol-terminal-dark-ansi-yellow: CanvasText !important;
+    --nol-terminal-dark-ansi-blue: CanvasText !important;
+    --nol-terminal-dark-ansi-magenta: CanvasText !important;
+    --nol-terminal-dark-ansi-cyan: CanvasText !important;
+    --nol-terminal-dark-ansi-white: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-black: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-red: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-green: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-yellow: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-blue: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-magenta: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-cyan: CanvasText !important;
+    --nol-terminal-dark-ansi-bright-white: CanvasText !important;
   }
 }

@@ -16,16 +16,17 @@ describe("GalleryToolCalls", () => {
   const calls = new GalleryToolCalls(now);
 
   it("gives a call for each state the Gallery shows, each with an id of its own", () => {
-    const shown = [calls.read, calls.running, calls.queued, calls.awaiting, calls.answering, calls.cancelled, calls.denied, calls.nothing, calls.nested, calls.nestedClosed, calls.longOutput, calls.allLines,
+    const shown = [calls.read, calls.running, calls.queued, calls.awaiting, calls.answering, calls.noted, calls.notedBare, calls.cancelled, calls.denied, calls.nothing, calls.nested, calls.nestedClosed, calls.longOutput, calls.allLines,
       calls.control, calls.loading, calls.failed, calls.loadFailed, calls.long];
 
-    expect(shown.map(t => t.status)).toEqual([ToolCallStatus.Succeeded, ToolCallStatus.Running, ToolCallStatus.Pending, ToolCallStatus.AwaitingPermission, ToolCallStatus.AwaitingAnswer, ToolCallStatus.Cancelled, ToolCallStatus.Denied,
+    expect(shown.map(t => t.status)).toEqual([ToolCallStatus.Succeeded, ToolCallStatus.Running, ToolCallStatus.Pending, ToolCallStatus.AwaitingPermission, ToolCallStatus.AwaitingAnswer, ToolCallStatus.AwaitingAnswer, ToolCallStatus.AwaitingAnswer, ToolCallStatus.Cancelled, ToolCallStatus.Denied,
       ToolCallStatus.Succeeded, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded,
       ToolCallStatus.Failed, ToolCallStatus.Succeeded, ToolCallStatus.Succeeded]);
     expect(new Set(shown.map(t => t.id)).size).toBe(shown.length);
     expect([calls.read.duration, calls.running.startedAt?.getTime(), calls.running.isCancellable]).toEqual([1200, now.getTime() - 4200, true]);
     expect([calls.loading.outputState, calls.loadFailed.outputState, calls.nothing.outputState, calls.control.hasOutputControl])
       .toEqual([ToolCallOutputState.Loading, ToolCallOutputState.Failed, ToolCallOutputState.None, true]);
+    expect([calls.noted.note, calls.noted.target, calls.notedBare.note, calls.notedBare.target]).toEqual(["waiting for your answer", "https://example.com/guide", "waiting for your answer", null]);
   });
 
   it("gives long output of thirty lines, shown whole in the all-lines call", () => {
