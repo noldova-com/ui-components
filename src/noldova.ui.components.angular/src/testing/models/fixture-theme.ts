@@ -426,6 +426,7 @@ export class FixtureTheme {
     ["tree-indent", "2rem"],
     ["row-gap", "calc(var(--nol-tab-inset) * 2)"],
     ["section-header-height", "2.25rem"],
+    ["section-header-caret", "1rem"],
     ["content-padding-inline", "calc(var(--nol-pill-padding) + var(--nol-tab-inset) * 3)"],
     ["document-padding-block", "1.25rem"],
     ["view-padding-block", "0.75rem"],

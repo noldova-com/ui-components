@@ -33,7 +33,7 @@ LICENSE file in the root directory of this source tree.
 @if (checked() !== null) {
   <span class="nol-menu-item-check material-symbols-rounded" aria-hidden="true">{{ partResources.checkedGlyph }}</span>
 }
-@if (hasSubmenu) {
+@if (hasSubmenu && isShowingChevron()) {
   <span class="nol-menu-item-chevron material-symbols-rounded" aria-hidden="true">{{ partResources.submenuGlyph }}</span>
 }
 </span>
