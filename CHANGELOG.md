@@ -4,6 +4,11 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.9
+
+- `@noldova/ui.components.angular`: a menu trigger no longer keeps `aria-controls` naming its menu once that menu has closed, as it did after a submenu's row closed the menus with no change detection while they were open, such as in a spec that clicks the trigger, the submenu's row and its row in turn. The trigger now forgets its menu whenever the menu's overlay closes.
+- `@noldova/ui.components.angular`: `nol-completion-list`, `CompletionListComponent` with `CompletionChoice(label, note)`: a listbox of completion choices for a field that keeps the focus, such as commands after a slash or names in code. The host is the listbox with the owner's id and name, each option is `<listId>-option-<index>` (`CompletionListComponent.optionId`) named by its label and note, and the active one is marked selected and kept in view; a click emits the choice the owner gave, and a press never takes the focus from the field. It draws the menu's box and the menu item's rows, the active row in the hover fill, sets no position, z-index or width, and is at most twelve rows high, or `maxHeight` in CSS pixels when less; `isCode` shows the labels in the code font.
+
 ## 0.0.8
 
 - `@noldova/ui.components.angular`: a menu trigger, a context menu's host and a submenu's row name their menu in `aria-controls` only while it is open; before, they kept naming a menu that had closed and was no longer in the document.
