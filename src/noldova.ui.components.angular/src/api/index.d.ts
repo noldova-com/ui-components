@@ -7290,6 +7290,16 @@ export declare class MenuItemComponent {
   public readonly danger: InputSignal<boolean>;
 
   /**
+   * Whether a row that opens a submenu shows its chevron at its end, true,
+   * the default; false leaves it out, so the row's value or shortcut ends at
+   * the row's end padding, as a Zoom row showing the page's zoom does. The
+   * row still opens its submenu with the pointer, Enter and the arrow key
+   * toward its side, and screen readers still hear that it opens a menu. A
+   * row without a submenu has no chevron either way.
+   */
+  public readonly isShowingChevron: InputSignal<boolean>;
+
+  /**
    * Creates the row, which Angular does for each `button[nol-menu-item]`
    * element.
    *
@@ -10310,8 +10320,8 @@ export declare class SectionHeaderComponent {
    * Whether the person can fold the group, its `collapsible` input: the
    * header then holds one button, the whole header, with the icon and the
    * label where they are without it and a caret 0.25rem after the label at
-   * the icon size in `icon-color`, centered on the label's first line and
-   * hidden from screen readers. The button takes the hover fill and exposes
+   * the `section-header-caret` size, 0.875rem, in the header's text color,
+   * centered on the label's first line and hidden from screen readers. The button takes the hover fill and exposes
    * the open state. False when not bound.
    */
   public readonly collapsible: InputSignal<boolean>;
@@ -10320,8 +10330,8 @@ export declare class SectionHeaderComponent {
    * Whether the label shows as an uppercase group heading, its `uppercase`
    * input: in capitals at `--nol-text-small`, the emphasis weight, the
    * `text` color rather than `text-strong`, and `--nol-letter-spacing-caps`,
-   * with the icon and the caret as they are and the header's height
-   * unchanged. Screen readers still read the label as given. False when not
+   * with the icon as it is, the caret at its size in the label's color, and
+   * the header's height unchanged. Screen readers still read the label as given. False when not
    * bound.
    */
   public readonly uppercase: InputSignal<boolean>;

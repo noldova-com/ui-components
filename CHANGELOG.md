@@ -4,9 +4,14 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
-## 0.0.6
+## 0.0.7
 
 - `@noldova/ui.components.angular`: `ButtonVariant.Accent`, the accent chip look for `nol-button`, for an action on a card that names what is shown, such as a page card's Open while its page is open: the chip's height and side padding, a 1px `accent` border and an `accent` label on no fill, the toolbar hover fill under the pointer, the button's focus outline and disabled look, and under forced colors a `ButtonText` border and label, or `GrayText` while disabled. It keeps the chip's height at the compact size.
+
+## 0.0.6
+
+- `@noldova/ui.components.angular`: `nol-menu-item` takes `isShowingChevron`, true by default; a row that opens a submenu with it false leaves out its chevron, so its value or shortcut ends at the row's end padding, as a Zoom row showing the page's zoom does. The row still opens its submenu by the pointer, Enter and the arrow key toward its side, and still tells screen readers it opens a menu.
+- `@noldova/ui.components.angular`: a collapsible section header's caret is 0.875rem, by the new `--nol-section-header-caret` token, in the header's text color, `text-strong`, or `text` on an uppercase header, rather than 1rem in `icon-color`; under forced colors it takes the label's system color.
 - `@noldova/ui.components.angular`: its development pins of Angular's build tools, `@angular/build` and `@angular/cli`, move from 22.2.6 to 22.2.7, their newest patch, which they published apart from Angular's; the kit's Angular stays at 22.2.6. An app can take the build tools at 22.2.7 with the kit, or keep them at 22.2.6.
 
 ## 0.0.5

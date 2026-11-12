@@ -290,6 +290,7 @@ export class Resources {
     "tree-indent",
     "row-gap",
     "section-header-height",
+    "section-header-caret",
     "content-padding-inline",
     "document-padding-block",
     "view-padding-block",
