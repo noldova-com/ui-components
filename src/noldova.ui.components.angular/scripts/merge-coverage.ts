@@ -67,9 +67,13 @@ export class MergeCoverage extends Script {
     const first = MergeCoverage.report("/a", [0, 1], [1, 0], 1, [1, 0]);
     const second = MergeCoverage.report("/b/c", [1, 0], [0, 1], 0, [0, 1]);
     const secondUnhit = MergeCoverage.report("/b/c", [1, 0], [0, 0], 0, [0, 1]);
+    const unloaded = MergeCoverage.report("/a", [0, 1, 2], [0, 0, 0], 0, [0, 0]);
+    const loaded = MergeCoverage.report("/b/c", [0, 1], [1, 1], 1, [1, 1]);
     return [
       { expectation: "two parts that each reach half of a file, numbered apart and from other folders, reach all of it together", parts: 2, files: { "part-1": first, "part-2": second }, holds: (unhit, failure) => failure === "" && unhit.length === 0 },
       { expectation: "a statement neither part reaches is named by its file, line and column", parts: 2, files: { "part-1": first, "part-2": secondUnhit }, holds: (unhit, failure) => failure === "" && unhit.some(t => t.endsWith(`statement at ${MergeCoverage.SOURCE_FILE}:2:1`)) },
+      { expectation: "a file one part never loaded, whose report maps it otherwise, counts as the part that loaded it reports it", parts: 2, files: { "part-1": unloaded, "part-2": loaded }, holds: (unhit, failure) => failure === "" && unhit.length === 0 },
+      { expectation: "a file no part loaded is named as never reached", parts: 2, files: { "part-1": unloaded, "part-2": unloaded }, holds: (unhit, failure) => failure === "" && unhit.some(t => t.endsWith(`statement at ${MergeCoverage.SOURCE_FILE}:3:1`)) },
       { expectation: "fewer parts than the run had fail, naming how many came", parts: 3, files: { "part-1": first, "part-2": second }, holds: (_, failure) => failure.includes("2 parts, not 3") },
       { expectation: "a part without its report fails, naming the part", parts: 2, files: { "part-1": first, "part-2": null }, holds: (_, failure) => failure.includes("part part-2") },
       { expectation: "a part whose report isn't JSON fails", parts: 2, files: { "part-1": first, "part-2": "{" }, holds: (_, failure) => failure.includes("is not JSON") }
@@ -104,7 +108,7 @@ export class MergeCoverage extends Script {
 
   private static report(root: string, order: readonly number[], statementHits: readonly number[], functionHits: number, branchHits: readonly number[]): string {
     const filePath = `${root}/${MergeCoverage.KIT_FOLDER}/${MergeCoverage.SOURCE_FILE}`;
-    const ranges = [MergeCoverage.range(1), MergeCoverage.range(2)];
+    const ranges = [MergeCoverage.range(1), MergeCoverage.range(2), MergeCoverage.range(3)];
     return JSON.stringify({
       [filePath]: {
         path: filePath,

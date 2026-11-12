@@ -98,7 +98,7 @@ export class CoverageMerge {
     const names = entries.filter(t => t.isDirectory()).map(t => t.name).sort();
     if (names.length !== parts)
       throw new CommandFailedException(CoverageMerge.partsMissing(partsFolder, names, parts));
-    const files: Map<string, FileTally> = new Map();
+    const files: Map<string, JsonFields[]> = new Map();
     for (const name of names) {
       const source = path.join(partsFolder, name, CoverageMerge.COVERAGE_FILE);
       const text = await fs.readFile(source, CoverageMerge.ENCODING).catch(() => null);
@@ -108,13 +108,15 @@ export class CoverageMerge {
       for (const key of report.names()) {
         const data = report.object(key);
         const relative = this.relativeOf(data.text("path"), source);
-        const tally = files.get(relative) ?? new FileTally();
-        files.set(relative, tally);
-        tally.add(data);
+        files.set(relative, [...files.get(relative) ?? [], data]);
       }
     }
-    const merged = Object.fromEntries([...files].map(([relative, tally]) => {
+    const merged = Object.fromEntries([...files].map(([relative, reports]) => {
       const filePath = path.join(this.root, ...relative.split(path.posix.sep));
+      const loaded = reports.filter(t => CoverageMerge.isLoaded(t));
+      const tally = new FileTally();
+      for (const data of loaded.length > 0 ? loaded : reports.slice(0, 1))
+        tally.add(data);
       return [filePath, tally.toJson(filePath)];
     }));
     await fs.mkdir(path.dirname(output), { recursive: true });
@@ -128,6 +130,15 @@ export class CoverageMerge {
     if (index < 0)
       throw new CommandFailedException(CoverageMerge.outsideFolder(source, filePath, this.folder));
     return posixPath.slice(index + path.posix.sep.length);
+  }
+
+  // A part that never loaded a file reports it with every count at 0 and with maps read from its source rather than from the
+  // code that ran, which can differ, so only the parts that loaded it add up; a file no part loaded keeps one part's report.
+  private static isLoaded(data: JsonFields): boolean {
+    const statements = data.object("s");
+    const functions = data.object("f");
+    const branches = data.object("b");
+    return statements.names().some(t => statements.count(t) > 0) || functions.names().some(t => functions.count(t) > 0) || branches.names().some(t => branches.counts(t).some(u => u > 0));
   }
 
   private static partsMissing(folder: string, names: readonly string[], parts: number): string {
