@@ -22,6 +22,7 @@ A color is the terminal's default, a palette index or an RGB color, the numbers 
 Inverse swaps the colors, the defaults too; dim draws the foreground at half its alpha over its background; bold in palette colors 0 to 7 draws in their bright colors, 8 to 15, as xterm does; invisible draws the text transparent, yet it is still selected and copied.
 Each run's text, dim and inverse included, is lifted to at least 4.5:1 against its background, as the terminal pane's minimum contrast ratio lifts it: each channel steps a tenth of the way toward black, or toward white, until the ratio holds.
 The view resolves the theme's colors to lift them, again whenever the root's style or class changes or forced colors turn on or off.
+Inside a `nol-terminal-dark` scope it draws the theme's dark terminal set in both modes, as [KIT.md](../KIT.md) says, and it resolves its colors again when an element around it changes its class or style, such as the scope's class added or removed.
 A line the terminal wrapped joins the one before it, so it wraps again at the view's width.
 The text is one text, each run only a span with no role, so a screen reader reads it whole and a selection copies it with its line breaks; selected text draws in the terminal's selection tokens.
 Under forced colors it draws in CanvasText on Canvas, its runs too, and selection in Highlight, as `terminal.css` sets the terminal tokens.
