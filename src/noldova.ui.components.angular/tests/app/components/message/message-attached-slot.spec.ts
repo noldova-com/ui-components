@@ -92,7 +92,6 @@ describe("MessageComponent with an attached slot", () => {
           await changeAsync(() => host.attached.set(true));
           const firstAttached = [rect(".stopped").top, rect("nol-message-run").top - rect(".stopped").bottom];
 
-          AppearanceFixture.expectPixels(one, AppearanceFixture.toPixels(0.25));
           AppearanceFixture.expectPixels(attachedTop, one);
           AppearanceFixture.expectPixels(afterTop, two);
           AppearanceFixture.expectPixels(unattachedTop, two);

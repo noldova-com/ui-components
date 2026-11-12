@@ -61,15 +61,15 @@ describe("GalleryFeedComponent", () => {
     AppearanceFixture.reset();
   });
 
-  it("shows a message's states: Markdown with code, hover, focus, a continuation, bubbles, the clock time, a slot, a picture, file links, an image the app draws, selected, writing, cancelled, failed, Retry, three columns, content after the time, actions placed without a header or footer, and long on a full row", async () => {
+  it("shows a message's states: Markdown with code, hover, focus, a continuation, bubbles, the clock time, a slot, an attached slot, a picture, file links, an image the app draws, selected, writing, cancelled, failed, Retry, three columns, content after the time, actions placed without a header or footer, and long on a full row", async () => {
     await renderAsync();
-    const [answer, hovered, focused, first, continued, bubble, bubbleHovered, clock, attached, photo, linked, pictured, selected, writing, cancelled, failed, retryable, column, placed, columnPerson, columnApp, finished, running, long] = states();
+    const [answer, hovered, focused, first, continued, bubble, bubbleHovered, clock, attached, attachedSlot, photo, linked, pictured, selected, writing, cancelled, failed, retryable, column, placed, columnPerson, columnApp, finished, running, long] = states();
     const clockOf = (message: HTMLElement | undefined): string => new Intl.DateTimeFormat("en-US", { timeStyle: "short" }).format(new Date(message?.querySelector("time")?.getAttribute("datetime") ?? 0));
     const beside = states().map(t => [t.querySelector(".nol-message-avatar")?.getBoundingClientRect(), t.querySelector(".nol-message-author")?.getBoundingClientRect()])
       .filter(([avatar, author]) => avatar !== undefined && author !== undefined && avatar.right <= author.left && avatar.bottom > author.top);
     await Promise.all([bubble, bubbleHovered].flatMap(t => t?.querySelector(".nol-message-footer")?.getAnimations() ?? []).map(t => t.finished));
 
-    expect(beside.length).toBe(17);
+    expect(beside.length).toBe(18);
     expect([bubble, bubbleHovered].map(t => [t?.classList.contains("nol-message-bubble"), t?.querySelector(".nol-message-avatar, .nol-message-header"), textOf(t, "time") === clockOf(t),
       getComputedStyle(DomFixture.one(DomFixture.present(t), ".nol-message-footer")).opacity])).toEqual([[true, null, true, "0"], [true, null, true, "1"]]);
     expect([clock?.classList.contains("nol-message-bubble"), textOf(clock, ".nol-message-author"), textOf(clock, "time") === clockOf(clock)]).toEqual([false, "Reviewer", true]);
@@ -84,6 +84,7 @@ describe("GalleryFeedComponent", () => {
     expect([textOf(attached, ".nol-message-attachment-name"), textOf(attached, ".nol-gallery-message-slot"), selected?.classList.contains("nol-message-selected")]).toEqual([
       "build-log.txt", "Searched 12 notes for the release plan.", true
     ]);
+    expect([textOf(attachedSlot, ".nol-message-group-attached .nol-gallery-message-slot"), attached?.querySelectorAll(".nol-message-group-attached").length]).toEqual(["Stopped by you", 0]);
     expect([photo?.classList.contains("nol-message-bubble"), photo?.querySelector(".nol-message-picture")?.getAttribute("aria-label"), photo?.querySelectorAll(".nol-message-picture img").length,
       photo?.querySelector(".nol-message-attachment"), textOf(photo, "nol-markdown-view")]).toEqual([true, "screenshot.png", 1, null, "The build fails at this step."]);
     expect([attached?.querySelectorAll(".nol-message-attachment nol-file-badge").length, [...linked?.querySelectorAll(".nol-markdown-file-link") ?? []].map(t => t.querySelectorAll("nol-file-badge").length),
