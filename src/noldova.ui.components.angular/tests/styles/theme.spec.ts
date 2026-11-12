@@ -124,9 +124,9 @@ describe("theme stylesheet", () => {
       const forced = [read(root), read(scope)];
       await ForcedColorsFixture.resetAsync();
 
-      expect(terminal).toHaveLength(21);
+      expect(terminal).toHaveLength(42);
       expect(themed).toEqual([terminal.map(t => painted(ThemeMode.Dark).get(t)), terminal.map(t => painted(ThemeMode.Light).get(t))]);
-      expect(forced).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t) ?? "CanvasText")));
+      expect(forced).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t.replace("-dark-", "-")) ?? "CanvasText")));
       expect([read(root), read(scope)]).toEqual(themed);
     } finally {
       await ForcedColorsFixture.resetAsync();
