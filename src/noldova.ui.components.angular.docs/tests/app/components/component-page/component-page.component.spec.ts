@@ -1148,6 +1148,19 @@ describe("ComponentPageComponent", () => {
       await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /compact"));
       expect(document.activeElement).toBe(field);
     });
+
+    it("hides the list and reports it closed while nothing matches, and the field's arrows and Enter then choose nothing", async () => {
+      const host = await renderAsync(expectPage("CompletionListComponent"));
+      const examples = section(host, "Examples");
+      const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
+
+      await userEvent.fill(field, "/zz");
+      await vi.waitFor(() => expect(examples.querySelector("[aria-label=\"Commands\"]")).toBeNull());
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+
+      expect([field.getAttribute("aria-expanded"), field.hasAttribute("aria-activedescendant")]).toEqual(["false", false]);
+      expect(examples.textContent).toContain("Chosen: Nothing yet");
+    });
   });
 
   describe("the Quick input page", () => {

@@ -17,7 +17,7 @@ describe("CompletionChoice", () => {
   });
 
   it("takes a label and a given note only when they are not blank, naming the one that is", () => {
-    const named = (create: () => CompletionChoice): string | null => {
+    const named = (create: () => CompletionChoice): string | null | undefined => {
       try {
         create();
         return null;

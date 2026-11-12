@@ -40,17 +40,15 @@ export class CompletionListCommandsExampleComponent {
   protected move(event: KeyboardEvent): void {
     const count = this.choices().length;
     const step = CompletionListCommandsExampleComponent.steps.get(event.key);
-    if (count === 0)
-      return;
-    if (step !== undefined) {
+    if (count > 0 && step !== undefined) {
       event.preventDefault();
       this.active.set((this.active() + step + count) % count);
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      const choice = this.choices()[this.active()];
-      if (choice !== undefined)
-        this.choose(choice);
     }
+    if (event.key === "Enter")
+      for (const choice of this.choices().slice(this.active(), this.active() + 1)) {
+        event.preventDefault();
+        this.choose(choice);
+      }
   }
 
   protected choose(choice: CompletionChoice): void {

@@ -158,12 +158,19 @@ describe("CompletionListComponent", () => {
     await settleAsync();
     const room = list().getBoundingClientRect();
     const active = option(15).getBoundingClientRect();
+    const scrolled = list().scrollTop;
+    fixture.componentInstance.active.set(1);
+    await settleAsync();
+    const backScroll = list().scrollTop;
+    const backTop = option(1).getBoundingClientRect().top - list().getBoundingClientRect().top;
     fixture.componentInstance.maxHeight.set(1000);
     await settleAsync();
 
     AppearanceFixture.expectPixels(twelve, 12 * RowFillFixture.heightOf("menu-item-height") + frame);
     AppearanceFixture.expectPixels(room.height, 100);
-    expect([active.top >= room.top, active.bottom <= room.bottom + 1 / 32]).toEqual([true, true]);
+    expect([scrolled > 0, active.top >= room.top, active.bottom <= room.bottom + 1 / 32]).toEqual([true, true, true]);
+    AppearanceFixture.expectPixels(backTop, AppearanceFixture.measureLook("border-width"));
+    expect(backScroll).toBeGreaterThan(0);
     AppearanceFixture.expectPixels(list().getBoundingClientRect().height, twelve);
   });
 
