@@ -42,6 +42,13 @@ LICENSE file in the root directory of this source tree.
       </nol-message>
     </div>
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.messageAttachedSlot">
+    <div class="nol-gallery-message">
+      <nol-message [author]="reviewer" [time]="time" [blocks]="attachedSlot">
+        <ng-template [nolMessageSlot]="text.messageAttachedSlotId" [nolMessageSlotAttached]="true"><p class="nol-gallery-message-slot">{{ text.messageAttachedSlotText }}</p></ng-template>
+      </nol-message>
+    </div>
+  </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.messagePicture">
     <div class="nol-gallery-message">
       <nol-message [author]="person" [time]="time" [blocks]="pictureAttached" [layout]="layouts.Bubble" [timeFormat]="timeFormats.Clock" />
