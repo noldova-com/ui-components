@@ -61,9 +61,14 @@ describe("DialogService", () => {
   async function openShownAsync(): Promise<[DialogRef<unknown, OpenDialogComponent>, HTMLElement]> {
     const reference = await openAsync();
     const backdrop = reference.overlayRef.backdropElement as HTMLElement;
-    await vi.waitFor(() => expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true));
+    await showingAsync(backdrop);
     backdrop.getAnimations().forEach(t => t.finish());
     return [reference, backdrop];
+  }
+
+  async function showingAsync(backdrop: HTMLElement): Promise<void> {
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true);
   }
 
   const settleAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
@@ -161,7 +166,7 @@ describe("DialogService", () => {
   it("fades a dialog closed while its backdrop still fades in out from the opacity it got to, rather than from full", async () => {
     const reference = await openAsync();
     const backdrop = reference.overlayRef.backdropElement as HTMLElement;
-    await vi.waitFor(() => expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true));
+    await showingAsync(backdrop);
     const fadeIn = backdrop.getAnimations()[0];
     fadeIn?.pause();
     if (fadeIn !== undefined)
