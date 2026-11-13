@@ -26,7 +26,7 @@ Its type declarations carry the documentation of every export and public member,
   A kit version is released only while its Angular is Angular's newest patch: its release adds the build tools at the kit's version to a fresh install of the kit, and stops when they don't resolve.
 - Exactly one copy each of `@noldova/context.core` and `@noldova/context.exceptions`, within the ranges the kit names, from npm, `https://registry.npmjs.org`.
   They are the kit's peer dependencies, which npm installs beside it.
-  Each is a range from the version the kit builds and tests with to the next minor, `>=0.0.2 <0.1.0` today; from 1.0 it ends at the next major.
+  Each is a range from the version the kit builds and tests with to the next minor, `>=0.0.7 <0.1.0` today; from 1.0 it ends at the next major.
   So an app moves to a newer context release within the range without waiting for a kit release, while a release that may break the kit, the next minor below 1.0, stays outside it.
   Each night the repository builds and tests the kit with the newest context release inside the range.
   A second copy of the core fails when it loads, since both install the same members on `Object` and `String`, and a second copy of the exceptions splits `instanceof` checks between the two.
