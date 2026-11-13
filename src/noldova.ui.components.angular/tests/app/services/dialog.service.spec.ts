@@ -11,11 +11,13 @@ import { ApplicationRef, Component } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
 import { DialogService } from "../../../src/app/services/dialog.service";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../fixtures/dom.fixture";
 import { MotionFixture } from "../../fixtures/motion.fixture";
+import { TestTimeSource } from "../../fixtures/test-time-source";
 
 @Component({
   template: `<button type="button" class="inside">Keep working</button><button type="button" class="other">Look elsewhere</button>`
@@ -29,6 +31,7 @@ describe("DialogService", () => {
   let inert: HTMLElement;
   let popover: HTMLElement;
   let references: DialogRef<unknown, OpenDialogComponent>[];
+  let time: TestTimeSource;
 
   beforeEach(() => {
     references = [];
@@ -69,6 +72,11 @@ describe("DialogService", () => {
   async function showingAsync(backdrop: HTMLElement): Promise<void> {
     await new Promise(resolve => requestAnimationFrame(resolve));
     expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true);
+  }
+
+  function useTestTime(): void {
+    time = new TestTimeSource();
+    TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: time }] });
   }
 
   const settleAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
@@ -229,6 +237,7 @@ describe("DialogService", () => {
     });
 
   it("takes a closed dialog's backdrop away when its fade-out is cancelled, before the overlay's limit, and lets a listener on the document hear the cancel", async () => {
+    useTestTime();
     const [reference, backdrop] = await openShownAsync();
     references = [];
     await settleAsync();
@@ -240,60 +249,48 @@ describe("DialogService", () => {
     const types = ["transitionend", "transitioncancel"] as const;
     for (const type of types)
       document.addEventListener(type, listen);
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     try {
       reference.close();
       backdrop.getAnimations().forEach(t => t.cancel());
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await framesAsync();
 
-      expect([heard, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length])
-        .toEqual([[["transitioncancel", "opacity", false]], false, 0]);
+      expect([heard, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length, time.timerCount])
+        .toEqual([[["transitioncancel", "opacity", false]], false, 0, 0]);
     }
     finally {
-      vi.useRealTimers();
       for (const type of types)
         document.removeEventListener(type, listen);
     }
   });
 
   it("leaves a dialog opened during another's fade-out and its backdrop in place when the old fade ends after the new backdrop has faded in", async () => {
+    useTestTime();
     const [first, fading] = await openShownAsync();
     references = [];
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    try {
-      first.close();
-      const fades = fading.getAnimations();
-      fades.forEach(t => t.pause());
-      const [, shown] = await openShownAsync();
-      await framesAsync();
-      const before = [fading.isConnected, shown.isConnected];
-      fades.forEach(t => t.finish());
-      await framesAsync();
+    first.close();
+    const fades = fading.getAnimations();
+    fades.forEach(t => t.pause());
+    const [, shown] = await openShownAsync();
+    await framesAsync();
+    const before = [fading.isConnected, shown.isConnected];
+    fades.forEach(t => t.finish());
+    await framesAsync();
 
-      expect([before, fading.isConnected, shown.isConnected, shown.parentElement?.isConnected, document.querySelectorAll(".nol-dialog-backdrop").length, opener.inert])
-        .toEqual([[true, true], false, true, true, 1, true]);
-    }
-    finally {
-      vi.useRealTimers();
-    }
+    expect([before, fading.isConnected, shown.isConnected, shown.parentElement?.isConnected, document.querySelectorAll(".nol-dialog-backdrop").length, opener.inert])
+      .toEqual([[true, true], false, true, true, 1, true]);
   });
 
   it("takes a closed dialog's backdrop away at the overlay's own limit, 500ms, when its fade hasn't ended by then, as in a hidden window", async () => {
+    useTestTime();
     const [reference, backdrop] = await openShownAsync();
     references = [];
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    try {
-      reference.close();
-      backdrop.getAnimations().forEach(t => t.pause());
-      vi.advanceTimersByTime(499);
-      const before = [backdrop.isConnected, backdrop.getAnimations().length];
-      vi.advanceTimersByTime(1);
+    reference.close();
+    backdrop.getAnimations().forEach(t => t.pause());
+    time.advance(499);
+    const before = [backdrop.isConnected, backdrop.getAnimations().length];
+    time.advance(1);
 
-      expect([before, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual([[true, 1], false, 0]);
-    }
-    finally {
-      vi.useRealTimers();
-    }
+    expect([before, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual([[true, 1], false, 0]);
   });
 
   it("takes a closed dialog's backdrop away at once, with no fade, when a dialog opened after it stays open, so that dialog never shows under it", async () => {
