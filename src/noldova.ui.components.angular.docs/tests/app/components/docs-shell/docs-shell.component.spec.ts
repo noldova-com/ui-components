@@ -155,7 +155,7 @@ describe("DocsShellComponent", () => {
         `v${versionFile.version}`, `https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md#${versionFile.version.replaceAll(".", "")}`, null
       ]);
       expect(Math.abs(text.left - name.right - gap)).toBeLessThan(1 / 32);
-      expect(Math.abs(text.top + text.height / 2 - (name.top + name.height / 2))).toBeLessThan(0.5);
+      expect(Math.abs(box.top + box.height / 2 - (name.top + name.height / 2))).toBeLessThan(0.5);
       expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
       if (width === DocsFixture.DESKTOP_WIDTH)
         expect(box.right).toBeLessThanOrEqual(DocsFixture.one(header, "nol-docs-search").getBoundingClientRect().left);
