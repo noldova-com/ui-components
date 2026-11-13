@@ -8,7 +8,6 @@
 
 import { LiveAnnouncer } from "@angular/cdk/a11y";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { userEvent } from "vitest/browser";
 
 import { GalleryResources } from "../../../../src/app/components/gallery/gallery-resources";
 import { GalleryVirtualFeedComponent } from "../../../../src/app/components/gallery/gallery-virtual-feed.component";
@@ -74,7 +73,7 @@ describe("GalleryVirtualFeedComponent", () => {
     const announceAsync = vi.spyOn(TestBed.inject(LiveAnnouncer), "announce");
     const ticking = source.timerCount;
 
-    await userEvent.click(stream());
+    stream().click();
     source.advance(3900);
     await settleAsync();
     const feed = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "[role=feed]");
@@ -126,7 +125,7 @@ describe("GalleryVirtualFeedComponent", () => {
     };
     const opened = shown();
 
-    await userEvent.click(DomFixture.one(cell, ".nol-gallery-feed > button"));
+    DomFixture.one(cell, ".nol-gallery-feed > button").click();
     await settleAsync();
 
     expect([opened[0], opened[1] === "now", opened[2], cell.querySelector("nol-virtual-list")?.classList.contains("nol-gallery-feed-newest")]).toEqual([0, false, "200", true]);
@@ -155,7 +154,7 @@ describe("GalleryVirtualFeedComponent", () => {
     const source = await renderOnSourceAsync();
     const ticking = source.timerCount;
 
-    await userEvent.click(stream());
+    stream().click();
     const streaming = source.timerCount - ticking;
     fixture.destroy();
 

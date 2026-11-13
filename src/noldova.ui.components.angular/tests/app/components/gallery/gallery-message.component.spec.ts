@@ -7,7 +7,6 @@
  */
 
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { userEvent } from "vitest/browser";
 
 import { GalleryMessageComponent } from "../../../../src/app/components/gallery/gallery-message.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
@@ -117,7 +116,7 @@ describe("GalleryMessageComponent", () => {
     const source = await renderOnSourceAsync();
     const ticking = source.timerCount;
     const retryable = (): HTMLElement => DomFixture.one(element(), "nol-gallery-cell[aria-label=\"Error with Retry\"] nol-message");
-    await userEvent.click(DomFixture.one(retryable(), ".nol-message-retry"));
+    DomFixture.one(retryable(), ".nol-message-retry").click();
     await settleAsync();
     const retrying = [textOf(retryable(), ".nol-message-status > span"), retryable().querySelector(".nol-message-retry")];
     source.advance(1500);
@@ -131,7 +130,7 @@ describe("GalleryMessageComponent", () => {
     const ticking = source.timerCount;
     const retryable = DomFixture.one(element(), "nol-gallery-cell[aria-label=\"Error with Retry\"] nol-message");
 
-    await userEvent.click(DomFixture.one(retryable, ".nol-message-retry"));
+    DomFixture.one(retryable, ".nol-message-retry").click();
     const retrying = source.timerCount - ticking;
     fixture.destroy();
 
