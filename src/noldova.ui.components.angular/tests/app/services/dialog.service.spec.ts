@@ -72,6 +72,7 @@ describe("DialogService", () => {
   }
 
   const settleAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  const framesAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 
   function insideOf(index: number, name: string = "inside"): HTMLElement {
     return document.querySelectorAll<HTMLElement>(`.${name}`)[index] as HTMLElement;
@@ -258,18 +259,23 @@ describe("DialogService", () => {
   it("leaves a dialog opened during another's fade-out and its backdrop in place when the old fade ends after the new backdrop has faded in", async () => {
     const [first, fading] = await openShownAsync();
     references = [];
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      first.close();
+      const fades = fading.getAnimations();
+      fades.forEach(t => t.pause());
+      const [, shown] = await openShownAsync();
+      await framesAsync();
+      const before = [fading.isConnected, shown.isConnected];
+      fades.forEach(t => t.finish());
+      await framesAsync();
 
-    first.close();
-    const fades = fading.getAnimations();
-    fades.forEach(t => t.pause());
-    const [, shown] = await openShownAsync();
-    await settleAsync();
-    const before = [fading.isConnected, shown.isConnected];
-    fades.forEach(t => t.finish());
-    await settleAsync();
-
-    expect([before, fading.isConnected, shown.isConnected, shown.parentElement?.isConnected, document.querySelectorAll(".nol-dialog-backdrop").length, opener.inert])
-      .toEqual([[true, true], false, true, true, 1, true]);
+      expect([before, fading.isConnected, shown.isConnected, shown.parentElement?.isConnected, document.querySelectorAll(".nol-dialog-backdrop").length, opener.inert])
+        .toEqual([[true, true], false, true, true, 1, true]);
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 
   it("takes a closed dialog's backdrop away at the overlay's own limit, 500ms, when its fade hasn't ended by then, as in a hidden window", async () => {
