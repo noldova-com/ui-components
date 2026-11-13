@@ -32,6 +32,7 @@ export class Test extends Script {
   private static readonly KIT_CHECK_ARCHITECTURE: NodeJS.Architecture = "x64";
   private static readonly KIT_CHECKS_SKIPPED: string = "The Kit bundles, the Kit copies, the Kit manifest and Angular's newest run only on Linux x64; skipped.";
   private static readonly OPTION_PREFIX: string = "--";
+  private static readonly SHARD_PATTERN: RegExp = /^--shard=([1-8])\/([2-8])$/;
   private static readonly ACCEPTED_OPTIONS: readonly string[] = ["--skip-test-details", "--skip-coverage-details"];
   private static readonly ROOT: string = path.resolve(Config.ROOT);
   private static readonly ANGULAR_CLI_PATH: string = path.join(Test.ROOT, "node_modules/@angular/cli/bin/ng.js");
@@ -41,6 +42,7 @@ export class Test extends Script {
   private static readonly ANGULAR_COVERAGE_FILE: string = "../../_build/angular-coverage/coverage-final.json";
   private static readonly COVERAGE_OWNER: string = "The kit's";
   private static readonly ANGULAR_SELECTION_OPTIONS: readonly string[] = ["--no-coverage"];
+  private static readonly ANGULAR_PART_OPTIONS: readonly string[] = ["--configuration=part"];
   private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly WORKSPACE_FOLDER: string = ".";
@@ -52,9 +54,15 @@ export class Test extends Script {
 
   public override async runAsync(): Promise<void> {
     const filters: string[] = [];
+    let shard: { readonly part: number; readonly parts: number } | null = null;
     for (const argument of process.argv.slice(2)) {
       if (Test.ACCEPTED_OPTIONS.includes(argument))
         continue;
+      const match = Test.SHARD_PATTERN.exec(argument);
+      if (match !== null && shard === null && Number(match[1]) <= Number(match[2])) {
+        shard = { part: Number(match[1]), parts: Number(match[2]) };
+        continue;
+      }
       if (argument.startsWith(Test.OPTION_PREFIX)) {
         await this.writeLogAsync(Test.unknownOption(argument));
         process.exitCode = 1;
@@ -64,7 +72,7 @@ export class Test extends Script {
     }
 
     const isFiltered = filters.length > 0;
-    if (!isFiltered) {
+    if (!isFiltered && (shard === null || shard.part === 1)) {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
@@ -78,8 +86,10 @@ export class Test extends Script {
         await this.writeLogAsync(Test.KIT_CHECKS_SKIPPED);
       }
     }
-    const selected = await this.runAngularTestsAsync(filters);
+    const selected = await this.runAngularTestsAsync(filters, shard);
 
+    if (shard !== null)
+      await this.writeLogAsync(Test.partRun(shard.part, shard.parts, selected));
     if (isFiltered) {
       await this.writeLogAsync(Test.FILTERED_COVERAGE_SKIPPED);
       if (selected === 0) {
@@ -99,9 +109,10 @@ export class Test extends Script {
       this.failed = true;
   }
 
-  private async runAngularTestsAsync(filters: readonly string[]): Promise<number> {
+  private async runAngularTestsAsync(filters: readonly string[], shard: { readonly part: number; readonly parts: number } | null): Promise<number> {
     const specs = await this.report.listSpecFilesAsync();
-    const selected = filters.length === 0 ? specs : specs.filter(t => filters.some(u => `${Test.KIT_FOLDER}/${t}`.includes(u)));
+    const matched = filters.length === 0 ? specs : specs.filter(t => filters.some(u => `${Test.KIT_FOLDER}/${t}`.includes(u)));
+    const selected = shard === null ? matched : matched.filter((_, index) => index % shard.parts === shard.part - 1);
     if (selected.length === 0)
       return 0;
 
@@ -109,7 +120,9 @@ export class Test extends Script {
     await fs.rm(report, { force: true });
     await fs.rm(this.coverage.path, { force: true });
     await fs.rm(Test.DEPENDENCY_CACHE, { recursive: true, force: true });
-    const selection = filters.length === 0 ? [] : [...Test.ANGULAR_SELECTION_OPTIONS, ...selected.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
+    const isWhole = filters.length === 0 && shard === null;
+    const options = filters.length > 0 ? Test.ANGULAR_SELECTION_OPTIONS : Test.ANGULAR_PART_OPTIONS;
+    const selection = isWhole ? [] : [...options, ...selected.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
     await this.writeLogAsync(Test.BLANK_LINE);
     await this.runCommandAsync(process.execPath, [Test.ANGULAR_CLI_PATH, ...Test.ANGULAR_TEST_ARGUMENTS, report, ...selection], path.resolve(Test.WORKSPACE_FOLDER));
 
@@ -117,7 +130,7 @@ export class Test extends Script {
       await this.writeLogAsync(finding);
       this.failed = true;
     }
-    if (filters.length === 0)
+    if (isWhole)
       for (const line of await this.coverage.listUnhitAsync())
         await this.writeLogAsync(line);
     return selected.length;
@@ -135,7 +148,11 @@ export class Test extends Script {
   }
 
   private static unknownOption(option: string): string {
-    return `Unknown option "${option}"; npm run test takes only filters.`;
+    return `Unknown option "${option}"; npm run test takes only filters and one --shard=<part>/<parts>, with 2 to 8 parts.`;
+  }
+
+  private static partRun(part: number, parts: number, specs: number): string {
+    return `Part ${part} of ${parts} ran ${specs} of the kit's spec files and kept their coverage, which npm run test:merge gates with the other parts'; the checks before the specs run in part 1 alone.`;
   }
 }
 

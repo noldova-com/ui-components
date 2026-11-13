@@ -52,6 +52,16 @@
             "coverageExclude": [
               "src/app/enums/**"
             ]
+          },
+          "configurations": {
+            "part": {
+              "coverageThresholds": {
+                "statements": 0,
+                "branches": 0,
+                "functions": 0,
+                "lines": 0
+              }
+            }
           }
         },
         "build": {
