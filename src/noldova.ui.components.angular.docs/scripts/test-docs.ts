@@ -34,10 +34,17 @@ export class TestDocs extends Script {
   private static readonly BUILD_SCRIPT: string = "scripts/build-docs.ts";
   private static readonly SKIPPED_OFF_PLATFORM: string = "The docs site's build and tests run only on Linux; skipped.";
   private static readonly SKIPPED_FILTERED: string = "The docs site's build and tests skipped for a filtered run.";
+  private static readonly SEPARATE_TEST_VARIABLE: string = "NOLDOVA_SEPARATE_TEST";
+  private static readonly SEPARATE_TEST: string = "docs";
+  private static readonly SKIPPED_SEPARATE: string = "The docs site's build and tests skipped: they run in their own job, as npm run test:docs.";
 
   public override async runAsync(): Promise<void> {
     const arguments_ = process.argv.slice(2);
     if (arguments_.includes(TestDocs.SUITE_OPTION)) {
+      if (process.env[TestDocs.SEPARATE_TEST_VARIABLE] === TestDocs.SEPARATE_TEST) {
+        await this.writeLogAsync(TestDocs.SKIPPED_SEPARATE);
+        return;
+      }
       if (process.platform !== TestDocs.PLATFORM) {
         await this.writeLogAsync(TestDocs.SKIPPED_OFF_PLATFORM);
         return;

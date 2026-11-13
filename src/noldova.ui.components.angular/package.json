@@ -55,7 +55,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/build.ts",
-    "test": "node scripts/test.ts"
+    "test": "node scripts/test.ts",
+    "test:merge": "node scripts/merge-coverage.ts"
   },
   "dependencies": {
     "@angular/cdk": "22.2.7",
