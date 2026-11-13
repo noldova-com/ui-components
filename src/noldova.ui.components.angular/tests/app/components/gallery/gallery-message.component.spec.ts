@@ -15,6 +15,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { PressFixture } from "../../../fixtures/press.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 describe("GalleryMessageComponent", () => {
@@ -116,7 +117,7 @@ describe("GalleryMessageComponent", () => {
     const source = await renderOnSourceAsync();
     const ticking = source.timerCount;
     const retryable = (): HTMLElement => DomFixture.one(element(), "nol-gallery-cell[aria-label=\"Error with Retry\"] nol-message");
-    DomFixture.one(retryable(), ".nol-message-retry").click();
+    PressFixture.click(DomFixture.oneOf(retryable(), ".nol-message-retry", HTMLButtonElement));
     await settleAsync();
     const retrying = [textOf(retryable(), ".nol-message-status > span"), retryable().querySelector(".nol-message-retry")];
     source.advance(1500);
@@ -130,7 +131,7 @@ describe("GalleryMessageComponent", () => {
     const ticking = source.timerCount;
     const retryable = DomFixture.one(element(), "nol-gallery-cell[aria-label=\"Error with Retry\"] nol-message");
 
-    DomFixture.one(retryable, ".nol-message-retry").click();
+    PressFixture.click(DomFixture.oneOf(retryable, ".nol-message-retry", HTMLButtonElement));
     const retrying = source.timerCount - ticking;
     fixture.destroy();
 

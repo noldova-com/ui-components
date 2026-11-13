@@ -19,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { Resources } from "../../../../src/resources";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
+import { PressFixture } from "../../../fixtures/press.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 describe("GalleryVirtualFeedComponent", () => {
@@ -50,7 +51,7 @@ describe("GalleryVirtualFeedComponent", () => {
   const viewport = (): HTMLElement => DomFixture.one(element(), ".nol-virtual-list-viewport");
   const articles = (): HTMLElement[] => [...viewport().querySelectorAll<HTMLElement>("[role=article]")];
   const last = (): HTMLElement => DomFixture.present(articles().find(t => t.getAttribute("aria-posinset") === t.getAttribute("aria-setsize")));
-  const stream = (): HTMLElement => DomFixture.one(element(), ".nol-gallery-feed > button");
+  const stream = (): HTMLButtonElement => DomFixture.oneOf(element(), ".nol-gallery-feed > button", HTMLButtonElement);
   const textOf = (message: HTMLElement | undefined, selector: string): string | undefined => message?.querySelector(selector)?.textContent?.trim();
 
   beforeEach(() => TestBed.configureTestingModule({ providers: [provideMarkdown()] }));
@@ -73,7 +74,7 @@ describe("GalleryVirtualFeedComponent", () => {
     const announceAsync = vi.spyOn(TestBed.inject(LiveAnnouncer), "announce");
     const ticking = source.timerCount;
 
-    stream().click();
+    PressFixture.click(stream());
     source.advance(3900);
     await settleAsync();
     const feed = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "[role=feed]");
@@ -125,7 +126,7 @@ describe("GalleryVirtualFeedComponent", () => {
     };
     const opened = shown();
 
-    DomFixture.one(cell, ".nol-gallery-feed > button").click();
+    PressFixture.click(DomFixture.oneOf(cell, ".nol-gallery-feed > button", HTMLButtonElement));
     await settleAsync();
 
     expect([opened[0], opened[1] === "now", opened[2], cell.querySelector("nol-virtual-list")?.classList.contains("nol-gallery-feed-newest")]).toEqual([0, false, "200", true]);
@@ -154,7 +155,7 @@ describe("GalleryVirtualFeedComponent", () => {
     const source = await renderOnSourceAsync();
     const ticking = source.timerCount;
 
-    stream().click();
+    PressFixture.click(stream());
     const streaming = source.timerCount - ticking;
     fixture.destroy();
 
