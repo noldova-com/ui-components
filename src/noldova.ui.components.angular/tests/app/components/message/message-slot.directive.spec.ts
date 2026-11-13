@@ -20,13 +20,13 @@ class MessageSlotHostComponent {
 }
 
 describe("MessageSlotDirective", () => {
-  it("names its template for a message's slot block", async () => {
+  it("names its template for a message's slot block, and leaves it unattached unless asked", async () => {
     const fixture = TestBed.createComponent(MessageSlotHostComponent);
     await fixture.whenStable();
     const slot = fixture.componentInstance.slot();
 
     const view = slot.template.createEmbeddedView(null);
 
-    expect([slot.id(), view.rootNodes.map((t: Node) => t.textContent)]).toEqual(["card", ["Card"]]);
+    expect([slot.id(), slot.isAttached(), view.rootNodes.map((t: Node) => t.textContent)]).toEqual(["card", false, ["Card"]]);
   });
 });

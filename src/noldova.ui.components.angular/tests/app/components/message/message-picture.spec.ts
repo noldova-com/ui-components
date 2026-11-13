@@ -240,7 +240,7 @@ describe("MessageComponent with a picture attachment", () => {
 
   it("shows a picture where its block is, and an attachment without one as its row", async () => {
     await renderAsync(MessageLayout.Row, [new MessageAttachment("f1", "notes.txt", 12, "Text"), ...blocksOf(pngOf).slice(1, 2), new MessageText("After.")]);
-    const order = [...find(".nol-message-content").children].map(t => t.localName === "button" ? t.className : t.localName);
+    const order = all(".nol-message-content > .nol-message-part > *").map(t => t.localName === "button" ? t.className : t.localName);
 
     expect([order, find(".nol-message-attachment-name").textContent, all(".nol-message-attachment nol-file-badge").length])
       .toEqual([["nol-message-attachment", "nol-message-picture", "nol-message-run"], "notes.txt", 1]);

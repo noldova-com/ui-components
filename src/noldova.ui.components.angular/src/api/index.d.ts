@@ -8640,6 +8640,14 @@ export declare class MessageSlotDirective {
    * The id of the {@link MessageSlot} it fills, `nolMessageSlot`.
    */
   public readonly id: InputSignal<string>;
+
+  /**
+   * Whether the slot attaches to the part before it, `nolMessageSlotAttached`:
+   * it is drawn `space-1` after that part, in place of the content's `space-2`
+   * gap, and the part after it stays `space-2` after it. A slot that is the
+   * message's first part is drawn as an unattached one. False when not bound.
+   */
+  public readonly isAttached: InputSignal<boolean>;
 }
 
 /**
