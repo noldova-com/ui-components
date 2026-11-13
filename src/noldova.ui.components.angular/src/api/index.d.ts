@@ -12107,12 +12107,13 @@ export declare class ToolbarButtonComponent {
   public readonly isUnavailable: InputSignal<boolean>;
 
   /**
-   * Whether a button that opens a menu, with {@link hasMenu}, draws its
-   * pressed look, the toolbar hover fill or under forced colors `Highlight`,
-   * while its menu is open, which the menu trigger marks `aria-expanded`,
-   * and its idle look once the menu closes; it isn't announced pressed.
-   * Without it, the button looks idle while its menu is open. False when
-   * not bound.
+   * Whether a button that opens a menu draws its pressed look, the toolbar
+   * hover fill or under forced colors `Highlight`, while its menu is open,
+   * which the menu trigger marks `aria-expanded`, and its idle look once the
+   * menu closes; it isn't announced pressed. It needs no {@link hasMenu}, so
+   * an icon-only button, such as a toolbar's More, is pressed while open
+   * with no chevron, keeping its square. Without it, the button looks idle
+   * while its menu is open. False when not bound.
    */
   public readonly isPressedWhileOpen: InputSignal<boolean>;
 
