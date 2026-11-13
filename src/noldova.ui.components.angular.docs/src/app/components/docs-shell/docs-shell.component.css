@@ -44,10 +44,15 @@
 .nol-docs-title {
   display: inline-flex;
   align-items: center;
-  gap: var(--nol-space-2);
+  gap: var(--nol-space-1);
 }
 
 .nol-docs-version {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nol-icon-button-target);
+  padding-inline: var(--nol-space-1);
+  border-radius: var(--nol-radius-small);
   color: var(--nol-text-muted);
   font-size: var(--nol-text-label);
   line-height: var(--nol-line-label);
@@ -61,8 +66,8 @@
 }
 
 .nol-docs-version:focus-visible {
-  border-radius: var(--nol-radius-small);
   outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
 }
 
 .nol-docs-wordmark {
@@ -121,6 +126,10 @@
   .nol-docs-wordmark {
     forced-color-adjust: none;
     background-color: LinkText;
+  }
+
+  .nol-docs-version:focus-visible {
+    outline-color: Highlight;
   }
 }
 

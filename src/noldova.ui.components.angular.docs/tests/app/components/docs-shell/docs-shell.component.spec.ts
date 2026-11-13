@@ -137,18 +137,25 @@ describe("DocsShellComponent", () => {
       return resolved;
     };
 
-    it("shows the kit's version from version.json as v and the version, space-2 after the site's name and centred on its line, linking to the version's CHANGELOG section", async () => {
+    const textBoxOf = (element: HTMLElement): DOMRect => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getBoundingClientRect();
+    };
+
+    it("shows the kit's version from version.json as v and the version, its text space-2 after the site's name and centred on its line, linking to the version's CHANGELOG section", async () => {
       const header = await renderHeaderAsync();
       const version = DocsFixture.one(header, ".nol-docs-version");
       const box = version.getBoundingClientRect();
+      const text = textBoxOf(version);
       const name = DocsFixture.byText(DocsFixture.one(header, ".nol-docs-brand"), "span", "UI Components").getBoundingClientRect();
       const gap = parseFloat(resolve(header, "padding-left", "var(--nol-space-2)"));
 
       expect([version.textContent?.trim(), version.getAttribute("href"), version.getAttribute("target")]).toEqual([
         `v${versionFile.version}`, `https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md#${versionFile.version.replaceAll(".", "")}`, null
       ]);
-      expect(Math.abs(box.left - name.right - gap)).toBeLessThan(1 / 32);
-      expect(Math.abs(box.top + box.height / 2 - (name.top + name.height / 2))).toBeLessThan(0.5);
+      expect(Math.abs(text.left - name.right - gap)).toBeLessThan(1 / 32);
+      expect(Math.abs(text.top + text.height / 2 - (name.top + name.height / 2))).toBeLessThan(0.5);
       expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
       if (width === DocsFixture.DESKTOP_WIDTH)
         expect(box.right).toBeLessThanOrEqual(DocsFixture.one(header, "nol-docs-search").getBoundingClientRect().left);
@@ -173,11 +180,33 @@ describe("DocsShellComponent", () => {
       ]);
     });
 
-    it("draws the version in the link color under forced colors", async () => {
-      await ForcedColorsFixture.activateAsync();
-      const version = DocsFixture.one(await renderHeaderAsync(), ".nol-docs-version");
+    const focusRingAsync = async (header: HTMLElement): Promise<readonly string[]> => {
+      const version = DocsFixture.one(header, ".nol-docs-version");
+      await userEvent.keyboard("{Shift}");
+      version.focus();
+      await vi.waitFor(() => expect(version.matches(":focus-visible")).toBe(true));
+      const style = getComputedStyle(version);
+      return [style.outlineColor, style.outlineStyle, style.outlineWidth, style.outlineOffset];
+    };
 
-      expect(getComputedStyle(version).color).toBe(ForcedColorsFixture.resolve("LinkText"));
+    it("rings the version on keyboard focus in a solid accent outline at the border width, inset by it on a hit area as tall as the other header links'", async () => {
+      const header = await renderHeaderAsync();
+      const border = resolve(header, "padding-left", "var(--nol-border-width)");
+      const target = parseFloat(resolve(header, "padding-left", "var(--nol-icon-button-target)"));
+      const ring = await focusRingAsync(header);
+
+      expect(ring).toEqual([resolve(header, "color", "var(--nol-accent)"), "solid", border, `-${border}`]);
+      expect(DocsFixture.one(header, ".nol-docs-version").getBoundingClientRect().height).toBeCloseTo(target, 2);
+      expect(DocsFixture.one(header, ".nol-docs-header-link").getBoundingClientRect().height).toBeCloseTo(target, 2);
+    });
+
+    it("draws the version in the link color under forced colors, and its focus ring in a solid Highlight outline at the border width", async () => {
+      await ForcedColorsFixture.activateAsync();
+      const header = await renderHeaderAsync();
+      const border = resolve(header, "padding-left", "var(--nol-border-width)");
+
+      expect(getComputedStyle(DocsFixture.one(header, ".nol-docs-version")).color).toBe(ForcedColorsFixture.resolve("LinkText"));
+      expect(await focusRingAsync(header)).toEqual([ForcedColorsFixture.resolve("Highlight"), "solid", border, `-${border}`]);
     });
 
     it("draws the wordmark in the link color under forced colors, as the brand link's text", async () => {
