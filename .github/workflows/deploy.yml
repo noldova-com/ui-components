@@ -16,6 +16,20 @@ on:
         options:
           - staging
           - production
+  workflow_call:
+    inputs:
+      environment:
+        description: The environment whose label moves, staging or production
+        required: true
+        type: string
+      tag:
+        description: The version tag the release made, such as v0.0.1
+        required: true
+        type: string
+      commit:
+        description: The full hash of the commit the release published, which the tag must point at
+        required: true
+        type: string
 
 permissions: {}
 
@@ -24,7 +38,7 @@ defaults:
     shell: bash
 
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.environment }}
+  group: deploy-${{ inputs.environment }}
   cancel-in-progress: false
 
 jobs:
@@ -36,16 +50,54 @@ jobs:
       packages: read
     outputs:
       digest: ${{ steps.find.outputs.digest }}
+      tag: ${{ steps.source.outputs.tag }}
+      commit: ${{ steps.source.outputs.commit }}
     env:
       CRANE_VERSION: v0.22.1
       CRANE_SHA256: 0ab7a1d6932a213aed964ce97666c3077fe691c8606413674a8b3e0b9ec4cda0
     steps:
-      - name: Check that the run is on a version tag
+      - name: Check the version tag and its commit
+        id: source
+        env:
+          CALLED_TAG: ${{ inputs.tag }}
+          CALLED_COMMIT: ${{ inputs.commit }}
+          ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          if [ "$GITHUB_REF_TYPE" != tag ] || [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          set -euo pipefail
+          if [ -n "$CALLED_COMMIT" ]; then
+            release="$GITHUB_REPOSITORY/.github/workflows/release-npm.yml@"
+            if [[ "$GITHUB_WORKFLOW_REF" != "$release"* ]]; then
+              echo "::error::Only this repository's release-npm.yml calls a deploy with a commit, not \"$GITHUB_WORKFLOW_REF\"."
+              exit 1
+            fi
+            tag="$CALLED_TAG"
+            commit="$CALLED_COMMIT"
+          elif [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+            commit="$GITHUB_SHA"
+          else
             echo "::error::A deploy starts on a version tag, such as v0.0.1, not \"$GITHUB_REF_NAME\"."
             exit 1
           fi
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::A deploy needs a version tag, such as v0.0.1, not \"$tag\"."
+            exit 1
+          fi
+          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::A deploy needs a full commit hash, not \"$commit\"."
+            exit 1
+          fi
+          if [ "$ENVIRONMENT" != staging ] && [ "$ENVIRONMENT" != production ]; then
+            echo "::error::A deploy moves staging or production, not \"$ENVIRONMENT\"."
+            exit 1
+          fi
+          tagged=$(git ls-remote "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "refs/tags/$tag" "refs/tags/$tag^{}" | sort -k2 | tail -n 1 | cut -f1)
+          if [ "$tagged" != "$commit" ]; then
+            echo "::error::$tag points at \"$tagged\", not $commit, so no label moves."
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
       - name: Download crane
         run: |
@@ -64,16 +116,18 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           REGISTRY_TOKEN: ${{ github.token }}
           DOCS_IMAGE: ui-components-angular-docs
+          TAG: ${{ steps.source.outputs.tag }}
+          COMMIT: ${{ steps.source.outputs.commit }}
         run: |
           set -euo pipefail
           image="ghcr.io/${OWNER,,}/$DOCS_IMAGE"
           echo "$REGISTRY_TOKEN" | crane auth login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          if ! digest=$(crane digest "$image:$GITHUB_SHA"); then
-            echo "::error::$image has no image tagged $GITHUB_SHA, the commit of $GITHUB_REF_NAME, so no label moves."
+          if ! digest=$(crane digest "$image:$COMMIT"); then
+            echo "::error::$image has no image tagged $COMMIT, the commit of $TAG, so no label moves."
             exit 1
           fi
           if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "::error::The registry gave no digest for $image:$GITHUB_SHA, \"$digest\"."
+            echo "::error::The registry gave no digest for $image:$COMMIT, \"$digest\"."
             exit 1
           fi
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
@@ -81,6 +135,7 @@ jobs:
   approve:
     name: Approve the deploy
     needs: find
+    if: inputs.commit == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: deploy-${{ inputs.environment }}
@@ -88,13 +143,17 @@ jobs:
     steps:
       - name: Name what was approved
         env:
+          TAG: ${{ needs.find.outputs.tag }}
           DIGEST: ${{ needs.find.outputs.digest }}
           ENVIRONMENT: ${{ inputs.environment }}
-        run: echo "Approved $GITHUB_REF_NAME, $DIGEST, for $ENVIRONMENT."
+        run: echo "Approved $TAG, $DIGEST, for $ENVIRONMENT."
 
   move:
     name: Move the environment's label
     needs: [find, approve]
+    if: >-
+      ${{ !cancelled() && needs.find.result == 'success'
+      && (needs.approve.result == 'success' || (needs.approve.result == 'skipped' && inputs.commit != '')) }}
     uses: noldova-com/.github/.github/workflows/move-image-label.yml@7640859ac0de8cc03fadbd705b45376c2e1bd88b # v2.25.0
     permissions:
       packages: write
@@ -106,17 +165,21 @@ jobs:
   summary:
     name: Record the deploy
     needs: [find, move]
+    if: ${{ !cancelled() && needs.move.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     steps:
       - name: Write the summary
         env:
+          TAG: ${{ needs.find.outputs.tag }}
+          COMMIT: ${{ needs.find.outputs.commit }}
           DIGEST: ${{ needs.find.outputs.digest }}
           ENVIRONMENT: ${{ inputs.environment }}
+          APPROVAL: ${{ inputs.commit != '' && 'the release' || format('deploy-{0}', inputs.environment) }}
         run: |
           {
-            echo '| Tag | Commit | Digest | Environment |'
-            echo '|---|---|---|---|'
-            echo "| \`$GITHUB_REF_NAME\` | \`$GITHUB_SHA\` | \`$DIGEST\` | $ENVIRONMENT |"
+            echo '| Tag | Commit | Digest | Environment | Approved in |'
+            echo '|---|---|---|---|---|'
+            echo "| \`$TAG\` | \`$COMMIT\` | \`$DIGEST\` | $ENVIRONMENT | $APPROVAL |"
           } >> "$GITHUB_STEP_SUMMARY"
