@@ -6,9 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Exception, type ExceptionOptions } from "@noldova/context.exceptions";
+import type { ExceptionOptions } from "@noldova/context.exceptions";
 
-export class CodeHighlightingException extends Exception {
+import { UiComponentsException } from "./ui-components.exception.js";
+
+export class CodeHighlightingException extends UiComponentsException {
   public override readonly name: string = "CodeHighlightingException";
 
   public constructor(message: string, options?: ExceptionOptions) {
