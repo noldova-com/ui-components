@@ -84,7 +84,7 @@ describe("GalleryFeedComponent", () => {
     expect([textOf(attached, ".nol-message-attachment-name"), textOf(attached, ".nol-gallery-message-slot"), selected?.classList.contains("nol-message-selected")]).toEqual([
       "build-log.txt", "Searched 12 notes for the release plan.", true
     ]);
-    expect([textOf(attachedSlot, ".nol-message-group-attached .nol-gallery-message-slot"), attached?.querySelectorAll(".nol-message-group-attached").length]).toEqual(["Stopped by you", 0]);
+    expect([textOf(attachedSlot, ".nol-message-part-attached .nol-gallery-message-slot"), attached?.querySelectorAll(".nol-message-part-attached").length]).toEqual(["Stopped by you", 0]);
     expect([photo?.classList.contains("nol-message-bubble"), photo?.querySelector(".nol-message-picture")?.getAttribute("aria-label"), photo?.querySelectorAll(".nol-message-picture img").length,
       photo?.querySelector(".nol-message-attachment"), textOf(photo, "nol-markdown-view")]).toEqual([true, "screenshot.png", 1, null, "The build fails at this step."]);
     expect([attached?.querySelectorAll(".nol-message-attachment nol-file-badge").length, [...linked?.querySelectorAll(".nol-markdown-file-link") ?? []].map(t => t.querySelectorAll("nol-file-badge").length),

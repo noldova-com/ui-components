@@ -380,7 +380,7 @@ describe("MessageComponent", () => {
       new MessageAttachment("f2", "notes.txt", 12, "Text"), new MessageSlot("card"), new MessageSlot("missing"), new MessageText("Last")
     ]));
 
-    const order = all(".nol-message-content > .nol-message-group > *").map(t => t.tagName.toLowerCase() + (t.classList.contains("card") ? ".card" : ""));
+    const order = all(".nol-message-content > .nol-message-part > *").map(t => t.tagName.toLowerCase() + (t.classList.contains("card") ? ".card" : ""));
     const runs = all("nol-message-run").map(t => [...t.querySelectorAll("nol-markdown-view, nol-code-block")].map(c => c.tagName.toLowerCase()));
     expect([order, runs]).toEqual([["nol-message-run", "button", "button", "span.card", "nol-message-run"], [["nol-markdown-view", "nol-code-block"], ["nol-markdown-view"]]]);
     expect([text("nol-code-block code"), all(".nol-message-attachment-name").map(t => t.textContent), all(".nol-message-attachment-size").map(t => t.textContent),

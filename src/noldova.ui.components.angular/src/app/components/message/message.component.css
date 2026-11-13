@@ -283,20 +283,27 @@
 .nol-message-content {
   display: flex;
   flex-direction: column;
-  gap: var(--nol-space-2);
   min-width: 0;
   user-select: text;
 }
 
-.nol-message-group {
-  display: contents;
-}
-
-.nol-message-group-attached {
+.nol-message-part {
   display: flex;
   flex-direction: column;
-  gap: var(--nol-space-1);
+  gap: var(--nol-space-2);
   min-width: 0;
+}
+
+.nol-message-part:empty {
+  display: none;
+}
+
+.nol-message-part:not(:empty) ~ .nol-message-part {
+  margin-block-start: var(--nol-space-2);
+}
+
+.nol-message-part:not(:empty) ~ .nol-message-part-attached {
+  margin-block-start: var(--nol-space-1);
 }
 
 .nol-message-empty {

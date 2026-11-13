@@ -32,6 +32,9 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
       <nol-message [author]="author" [time]="time" [blocks]="blocks()" [layout]="layout()">
         <ng-template nolMessageSlot="stopped" [nolMessageSlotAttached]="attached()"><span class="stopped" style="display: block">Stopped</span></ng-template>
         <ng-template nolMessageSlot="card"><span class="card" style="display: block">Card</span></ng-template>
+        <ng-template nolMessageSlot="pair" [nolMessageSlotAttached]="attached()"><p class="first" style="margin: 0">First</p><p class="second" style="margin: 0">Second</p></ng-template>
+        <ng-template nolMessageSlot="control" [nolMessageSlotAttached]="attached()"><button type="button" class="control">Stop</button></ng-template>
+        <ng-template nolMessageSlot="nothing" [nolMessageSlotAttached]="attached()"></ng-template>
       </nol-message>
     </div>
   `
@@ -124,5 +127,39 @@ describe("MessageComponent with an attached slot", () => {
     AppearanceFixture.expectPixels(DomFixture.at(stopped, 1).top - attachment.bottom, one);
     AppearanceFixture.expectPixels(DomFixture.at(stopped, 2).top - DomFixture.at(stopped, 1).bottom, one);
     AppearanceFixture.expectPixels(rect(".card").top - DomFixture.at(stopped, 2).bottom, two);
+  });
+
+  it("keeps space-2 between an attached slot's own roots, and space-1 only before its first", async () => {
+    await changeAsync(() => host.blocks.set([new MessageText("Answer"), new MessageSlot("pair")]));
+    const gaps = (): number[] => [rect(".first").top - rect("nol-message-run").bottom, rect(".second").top - rect(".first").bottom];
+    const attached = gaps();
+    await changeAsync(() => host.attached.set(false));
+    const unattached = gaps();
+    const one = AppearanceFixture.measureLook("space-1");
+    const two = AppearanceFixture.measureLook("space-2");
+
+    AppearanceFixture.expectPixels(DomFixture.at(attached, 0), one);
+    AppearanceFixture.expectPixels(DomFixture.at(attached, 1), two);
+    AppearanceFixture.expectPixels(DomFixture.at(unattached, 0), two);
+    AppearanceFixture.expectPixels(DomFixture.at(unattached, 1), two);
+  });
+
+  it("keeps the slot's view, and the focus inside it, as the slot attaches and detaches", async () => {
+    await changeAsync(() => host.blocks.set([new MessageText("Answer"), new MessageSlot("control")]));
+    const control = DomFixture.one(DomFixture.host(fixture), ".control");
+    control.focus();
+    await changeAsync(() => host.attached.set(false));
+    const detached = [DomFixture.one(DomFixture.host(fixture), ".control"), document.activeElement];
+    await changeAsync(() => host.attached.set(true));
+
+    expect([...detached, DomFixture.one(DomFixture.host(fixture), ".control"), document.activeElement].map(t => t === control)).toEqual([true, true, true, true]);
+  });
+
+  it("leaves no gap for a slot that draws nothing or has no template, so an attached slot after it attaches to the part before it", async () => {
+    await changeAsync(() => host.blocks.set([new MessageText("Answer"), new MessageSlot("nothing"), new MessageSlot("missing"), new MessageSlot("stopped"), new MessageSlot("missing"),
+      new MessageText("After")]));
+
+    AppearanceFixture.expectPixels(rect(".stopped").top - rect("nol-message-run", 0).bottom, AppearanceFixture.measureLook("space-1"));
+    AppearanceFixture.expectPixels(rect("nol-message-run", 1).top - rect(".stopped").bottom, AppearanceFixture.measureLook("space-2"));
   });
 });
