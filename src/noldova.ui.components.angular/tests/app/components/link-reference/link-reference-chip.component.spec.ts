@@ -1004,7 +1004,7 @@ describe("LinkReferenceChipComponent", () => {
       const names = ["state", "location", "title", "author", "pill", "age"];
       const colors: string[][] = [];
       let linkColors: string[] = [];
-      const rectsOf = async (item: LinkReference): Promise<number[][]> => {
+      const rectsOfAsync = async (item: LinkReference): Promise<number[][]> => {
         await renderAsync(item, undefined, mode);
         const shown = await hoverAsync();
         const box = shown.getBoundingClientRect();
@@ -1018,8 +1018,8 @@ describe("LinkReferenceChipComponent", () => {
         await vi.waitFor(() => expect(card()).toBeNull());
         return [[box.width, box.height], ...rects];
       };
-      const plain = await rectsOf(itemOf({ comments: 3 }));
-      const linked = await rectsOf(linkedOf());
+      const plain = await rectsOfAsync(itemOf({ comments: 3 }));
+      const linked = await rectsOfAsync(linkedOf());
 
       expect(linked.length).toBe(plain.length);
       if (scheme === "forced colors")

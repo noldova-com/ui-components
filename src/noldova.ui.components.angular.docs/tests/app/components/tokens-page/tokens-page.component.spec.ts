@@ -154,8 +154,8 @@ describe("TokensPageComponent", () => {
     const host = await renderAsync("/tokens");
     const swatches = DocsFixture.all(host, "main .nol-docs-token-swatch");
     const painted = swatches.map(t => getComputedStyle(t).backgroundColor);
-    const forced = (value: string): Promise<unknown> => cdp().send("Emulation.setEmulatedMedia", { features: [{ name: "forced-colors", value }] });
-    await forced("active");
+    const forcedAsync = (value: string): Promise<unknown> => cdp().send("Emulation.setEmulatedMedia", { features: [{ name: "forced-colors", value }] });
+    await forcedAsync("active");
     try {
       const probe = host.appendChild(document.createElement("span"));
       probe.style.color = "CanvasText";
@@ -166,7 +166,7 @@ describe("TokensPageComponent", () => {
       expect(swatches.map(t => getComputedStyle(t).backgroundColor)).toEqual(painted);
       expect(new Set(swatches.map(t => getComputedStyle(t).borderTopColor))).toEqual(new Set([text]));
     } finally {
-      await forced("none");
+      await forcedAsync("none");
     }
   });
 
