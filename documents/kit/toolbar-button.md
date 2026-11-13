@@ -16,6 +16,10 @@ Inherited.
 
 Toolbar hover; pressed fills as hover does and exposes its state; a disabled item stays focusable, dims its glyph and label but not its keyboard focus outline, draws them in `GrayText` under forced colors, keeps half its pressed fill, or under forced colors draws a pressed one on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces, shows no hover and marks itself aria-disabled; never wider than its toolbar; its glyph and chevron never shrink, and a label too long for its width ends with an ellipsis inside the button, and the owner gives it a tooltip with the full label, shown while it is cut.
 
+## Pressed while its menu is open
+
+With `isPressedWhileOpen` on a button that opens a menu, such as a document toolbar's More, the button draws its pressed look while its menu is open, which the menu trigger marks `aria-expanded="true"`: the toolbar hover fill, or under forced colors the pressed button's `Highlight` fill under `HighlightText`. It draws its idle look again once the menu closes, and it is never announced as pressed, since `aria-expanded` already tells assistive technology the menu is open. It needs no `hasMenu`, so an icon-only More, whose menu trigger already marks `aria-haspopup="menu"`, is pressed while open with no chevron and keeps its square. Without it, a button keeps its idle look while its menu is open.
+
 ## Busy
 
 With `busy`, while its work is under way, the kit's 1rem spinner, its ring 0.75rem, stands centered in the button in its glyph's color, in place of its glyph, label and chevron, which stay in the layout unseen, so the button keeps its width and height to the pixel.

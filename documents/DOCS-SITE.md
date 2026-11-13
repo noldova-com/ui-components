@@ -32,7 +32,7 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 
 ## Pages
 
-- Every page's header shows the Noldova wordmark, drawn in the text's color and named "Noldova", then "UI Components", linking to the site's root; then the search, the theme switch and links to the kit's GitHub repository and to Noldova on X, which open in the same tab.
+- Every page's header shows the Noldova wordmark, drawn in the text's color and named "Noldova", then "UI Components", linking to the site's root; then, 0.5rem after it and centered on its line, the kit's version as `v<version>` in the muted text at the label size, read from the root's `version.json` when the site builds and linking to that version's section of the CHANGELOG; then the search, the theme switch and links to the kit's GitHub repository and to Noldova on X, which open in the same tab.
   Each of the two links shows only its brand's mark, black in the Light look and white in the Dark one, and the link color under forced colors; it is named "GitHub" or "X", with that name as its tooltip.
   The wordmark, `assets/noldova-wordmark.svg`, and the favicons, the Noldova "N" as `favicon.svg` with `favicon-32.png` and the 180px `apple-touch-icon.png`, are in `src/noldova.ui.components.angular.docs/public`, which the build copies to the site's root.
   The wordmark and the favicons are Noldova's trademarks, not under the MIT License, as the README's [Trademarks](../README.md#trademarks) says.
@@ -77,3 +77,13 @@ The build writes static files only.
 On each push to `main`, the "Docs" workflow, `.github/workflows/docs.yml`, calls the organization's shared docs image workflow, which the `.github` repository's README describes under "Building a docs image", pinned to a full commit SHA: it runs `npm ci` and `npm run build`, which builds the kit and then the docs site, on the organization's Linux runner, and pushes `_build/docs/browser` as the nginx image `ghcr.io/noldova-com/ui-components-angular-docs`, tagged with the commit's full hash, with its digest in the run's summary.
 The same workflow then moves the image's `latest` label to it, and the "Deploy" workflow moves `staging` or `production`, as the [README](../README.md#deploying-the-docs-site) says; which label each environment serves is decided outside this repository.
 No page carries a `robots` meta tag, so search engines may index the site wherever it is served.
+
+## Visit counts
+
+The site counts visits to the production docs, `angular.ui.noldova.dev`, with Cloudflare Web Analytics, which sets no cookie and stores nothing in the browser.
+`VisitCounter`, started once as the app starts, adds Cloudflare's beacon, `https://static.cloudflareinsights.com/beacon.min.js`, to the page's head as a classic deferred script, as Cloudflare's own snippet does, with the site's token in `data-cf-beacon`.
+It does so from the site's own script in the browser, on that host only: the prerendered pages hold no script of Cloudflare's, and staging, `angular.ui.staging.noldova.dev`, and local runs load none.
+The host, the beacon's address and the token, which every page that loads the beacon publishes, are `VisitCounterResources`' values.
+Cloudflare's automatic setup, which would add the beacon itself, must stay off for the site.
+The beacon sends its reports to `https://cloudflareinsights.com`.
+The docs image serves the organization's shared headers, whose Content-Security-Policy sets no `script-src` or `connect-src`, so it lets the beacon run but doesn't yet limit scripts and connections to the site and Cloudflare's two hosts.

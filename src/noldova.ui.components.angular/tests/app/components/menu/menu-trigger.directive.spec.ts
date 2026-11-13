@@ -10,9 +10,15 @@ import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { MenuGroupComponent } from "../../../../src/app/components/menu/menu-group.component";
 import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item.component";
+import { MenuSeparatorComponent } from "../../../../src/app/components/menu/menu-separator.component";
 import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
 import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
+import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-button/toolbar-button.component";
+import { ToolbarItemDirective } from "../../../../src/app/components/toolbar/toolbar-item.directive";
+import { ToolbarDirective } from "../../../../src/app/components/toolbar/toolbar.directive";
+import { TooltipDirective } from "../../../../src/app/components/tooltip/tooltip.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -50,6 +56,41 @@ class MenuHostComponent {
   public readonly alignment = signal(OverlayAlignment.Start);
   public readonly direction = signal<string | null>(null);
   public readonly chosen: string[] = [];
+}
+
+@Component({
+  imports: [MenuComponent, MenuGroupComponent, MenuItemComponent, MenuSeparatorComponent, MenuTriggerDirective, ToolbarButtonComponent, ToolbarDirective, ToolbarItemDirective, TooltipDirective],
+  template: `
+    <div nolToolbar style="position: fixed; top: 100px; left: 100px;">
+      <button nol-toolbar-button nolToolbarItem type="button" class="trigger" label="More" icon="more" nolTooltip="More" [nolMenuTriggerFor]="root"></button>
+    </div>
+    <ng-template #root>
+      <nol-menu class="root">
+        <button nol-menu-item label="Copy" (triggered)="shown.set('copy')"></button>
+        <button nol-menu-item class="beta" label="Versions" tag="2" [nolMenuTriggerFor]="submenu"></button>
+        <nol-menu-separator />
+        <button nol-menu-item label="Close" (triggered)="shown.set('close')"></button>
+      </nol-menu>
+    </ng-template>
+    <ng-template #submenu>
+      <nol-menu class="submenu">
+        <nol-menu-group label="Versions">
+          @for (version of versions; track version) {
+            <button nol-menu-item [class]="version" [label]="version" [checked]="version === shown()" (triggered)="showAsync(version)"></button>
+          }
+        </nol-menu-group>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class OnPushMenuHostComponent {
+  public readonly versions: readonly string[] = ["one", "two"];
+  public readonly shown = signal("two");
+
+  protected async showAsync(version: string): Promise<void> {
+    await Promise.resolve();
+    this.shown.set(version);
+  }
 }
 
 describe("MenuTriggerDirective", () => {
@@ -112,6 +153,52 @@ describe("MenuTriggerDirective", () => {
     expect(trigger().getAttribute("aria-haspopup")).toBe("menu");
     expect(trigger().getAttribute("aria-expanded")).toBe("true");
     expect(panel?.getAttribute("role")).toBe("menu");
+  });
+
+  it("names its open menu in aria-controls and names none once the menu closes, by a row, Escape, a click outside or a submenu's row, with aria-expanded beside it", async () => {
+    const controls: string[] = [];
+    const state = (): string => `${trigger().getAttribute("aria-controls") === menu("root")?.id ? "names the menu" : trigger().getAttribute("aria-controls")}, expanded ${trigger().getAttribute("aria-expanded")}`;
+    const openAsync = async (): Promise<void> => {
+      trigger().click();
+      await settledAsync();
+      controls.push(state());
+    };
+    await openAsync();
+    row("alpha").click();
+    await settledAsync();
+    controls.push(state());
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{Escape}");
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.click(fixture.nativeElement.querySelector(".outside"));
+    await settledAsync();
+    controls.push(state());
+    await openAsync();
+    await userEvent.hover(row("beta"));
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await settledAsync();
+    const beta = row("beta");
+    const betaOpen = [beta.getAttribute("aria-controls") === menu("submenu")?.id, beta.getAttribute("aria-expanded")];
+    await userEvent.click(row("one"));
+    await settledAsync();
+    controls.push(state());
+    const open = "names the menu, expanded true";
+    const closed = "null, expanded false";
+
+    expect([controls, betaOpen, menu("root")]).toEqual([[open, closed, closed, open, closed, open, closed], [true, "true"], null]);
+  });
+
+  it("names no submenu in its row's aria-controls once the submenu closes and its menu stays open", async () => {
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{ArrowDown}{ArrowRight}");
+    await settledAsync();
+    const open = [row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")];
+    await userEvent.keyboard("{ArrowLeft}");
+    await settledAsync();
+
+    expect([open, menu("submenu"), menu("root") === null, row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([[true, "true"], null, false, null, "false"]);
   });
 
   it("aligns its end with the trigger's end when asked", async () => {
@@ -421,5 +508,45 @@ describe("MenuTriggerDirective", () => {
     const box = OverlayWrapperFixture.narrow(shown.closest(".nol-menu-pane") as Element);
 
     await OverlayWrapperFixture.expectCappedAsync(shown, box);
+  });
+});
+
+describe("MenuTriggerDirective in an OnPush host", () => {
+  let fixture: ComponentFixture<OnPushMenuHostComponent>;
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(OnPushMenuHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  function menu(name: string): HTMLElement | null {
+    return document.querySelector<HTMLElement>(`.cdk-overlay-container nol-menu.${name}`);
+  }
+
+  function state(element: Element, name: string): string {
+    const controls = element.getAttribute("aria-controls");
+    return `${controls !== null && controls === menu(name)?.id ? "names the menu" : controls}, expanded ${element.getAttribute("aria-expanded")}`;
+  }
+
+  it("names no menu in aria-controls once a submenu's row closes its menus, after clicks with no change detection between them", async () => {
+    const trigger = DomFixture.one(DomFixture.host(fixture), ".trigger");
+    trigger.click();
+    await vi.waitFor(() => expect(menu("root")).not.toBeNull());
+    DomFixture.one(DomFixture.present(menu("root")), ".beta").click();
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    DomFixture.one(DomFixture.present(menu("submenu")), ".one").click();
+    await vi.waitFor(() => expect(menu("root")).toBeNull());
+    await fixture.whenStable();
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    await fixture.whenStable();
+
+    expect([state(trigger, "root"), fixture.componentInstance.shown()]).toEqual(["null, expanded false", "one"]);
   });
 });

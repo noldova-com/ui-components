@@ -13,6 +13,7 @@ export class ToolbarButtonPageResources {
   public static readonly componentName: string = "ToolbarButtonComponent";
   public static readonly toolbarButtonToolbarTitle: string = "A toolbar with a toggle and a button that is unavailable";
   public static readonly toolbarButtonStatesTitle: string = "A button that opens a menu, and one that gets busy";
+  public static readonly toolbarButtonOpenTitle: string = "Menu buttons pressed while their menus are open, with a label or icon-only";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus into the toolbar, onto its current button, and then past it: a toolbar is one Tab stop."),
     new DocsKey("Arrow Right", "In a toolbar, moves to the next button."),

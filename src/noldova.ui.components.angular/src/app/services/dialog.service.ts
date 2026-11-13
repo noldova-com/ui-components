@@ -13,6 +13,8 @@ import type { ComponentType } from "@angular/cdk/portal";
 import { DOCUMENT, Injectable, Injector, afterNextRender, inject } from "@angular/core";
 
 import { DialogServiceResources } from "./dialog-service.resources.js";
+import type { ITimeSource } from "../interfaces/i-time-source.js";
+import { ClockTokens } from "../models/clock-tokens.js";
 import { DialogTokens } from "../models/dialog-tokens.js";
 import { Resources } from "../../resources.js";
 
@@ -26,6 +28,7 @@ export class DialogService {
   private readonly modality: InputModalityDetector = inject(InputModalityDetector);
   private readonly document: Document = inject(DOCUMENT);
   private readonly injector: Injector = inject(Injector);
+  private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
   private background: readonly Element[] = [];
 
   public get isOpen(): boolean {
@@ -98,11 +101,11 @@ export class DialogService {
       host.remove();
       return;
     }
-    const limit = setTimeout(() => host.remove(), DialogServiceResources.backdropFadeLimit);
+    const cancelLimit = this.timeSource.after(() => host.remove(), DialogServiceResources.backdropFadeLimit);
     for (const [type, state] of DialogServiceResources.fadeEnds)
       backdrop.addEventListener(type, event => {
         if (event.target === backdrop && event.propertyName === DialogServiceResources.opacityProperty && fade.playState === state) {
-          clearTimeout(limit);
+          cancelLimit();
           host.remove();
         }
       });

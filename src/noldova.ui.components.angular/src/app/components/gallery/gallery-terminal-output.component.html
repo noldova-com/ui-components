@@ -10,5 +10,6 @@ LICENSE file in the root directory of this source tree.
   <nol-gallery-cell [caption]="text.defaultState"><nol-terminal-output [lines]="terminalOutputs.testRun" /></nol-gallery-cell>
   <nol-gallery-cell [caption]="text.terminalOutputStylesCaption"><nol-terminal-output [lines]="terminalOutputs.styles" /></nol-gallery-cell>
   <nol-gallery-cell [caption]="text.terminalOutputCappedCaption"><nol-terminal-output [lines]="terminalOutputs.log" [maxHeight]="8" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.terminalOutputDarkCaption"><div class="nol-terminal-dark"><nol-terminal-output [lines]="terminalOutputs.testRun" /></div></nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption"><nol-terminal-output class="nol-gallery-narrow" [lines]="terminalOutputs.testRun" /></nol-gallery-cell>
 </nol-gallery-specimen>

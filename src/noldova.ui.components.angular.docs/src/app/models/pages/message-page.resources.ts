@@ -14,6 +14,7 @@ export class MessagePageResources {
   public static readonly messageConversationTitle: string = "A conversation in one column, with an action of the reply";
   public static readonly messageRetryTitle: string = "A failed reply its owner tries again";
   public static readonly messageMenuTitle: string = "The owner's menu for a message";
+  public static readonly messageAttachedSlotTitle: string = "A reply its reader stopped, with the stopped line attached under it";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus to the message's time, a link in its text and its actions; the actions are one Tab stop, onto the action focused last."),
     new DocsKey("Arrow Right", "In the actions, moves to the next action."),

@@ -10,7 +10,7 @@ import { LiveAnnouncer } from "@angular/cdk/a11y";
 import { Component, ErrorHandler, type WritableSignal, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import { ToolCallOutputDirective } from "../../../../src/app/components/tool-call/tool-call-output.directive";
 import { ToolCallComponent } from "../../../../src/app/components/tool-call/tool-call.component";
@@ -298,6 +298,88 @@ describe("ToolCallComponent", () => {
     await renderAsync();
 
     expect(DomFixture.maybe(DomFixture.host(fixture), ".nol-tool-call-target")).toBeNull();
+  });
+
+  const note = "waiting for your answer";
+  const noteBox = (): HTMLElement => find(".nol-tool-call-note");
+  const titleTextBox = (): DOMRect => {
+    const range = document.createRange();
+    range.setStart(find(".nol-tool-call-title"), 0);
+    range.setEndBefore(noteBox());
+    return range.getBoundingClientRect();
+  };
+
+  it("draws a note after the title, inside the title's text, at its size and on its line, before the target, or before the state without a target", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ target: "src/app/main.ts", note }), t => t.width.set("40rem"));
+    const title = find(".nol-tool-call-title");
+    const shown = box(noteBox());
+
+    expect([noteBox().parentElement, noteBox().textContent, title.textContent, title.scrollWidth <= title.clientWidth])
+      .toEqual([title, ` · ${note}`, `Read main.ts · ${note}`, true]);
+    AppearanceFixture.expectPixels(shown.left, titleTextBox().right);
+    AppearanceFixture.expectPixels((shown.top + shown.bottom) / 2, (titleTextBox().top + titleTextBox().bottom) / 2);
+    expect(getComputedStyle(noteBox()).fontSize).toBe(getComputedStyle(title).fontSize);
+    expect(shown.right).toBeLessThanOrEqual(box(find(".nol-tool-call-target")).left);
+
+    await changeAsync(() => host.call.set(callOf({ note })));
+
+    expect(box(noteBox()).right).toBeLessThanOrEqual(box(find(".nol-tool-call-state")).left);
+    AppearanceFixture.expectPixels(box(noteBox()).left, titleTextBox().right);
+  });
+
+  it("draws no note for a call without one", async () => {
+    await renderAsync(callOf({ target: "src/app/main.ts" }));
+
+    expect([DomFixture.maybe(DomFixture.host(fixture), ".nol-tool-call-note"), find(".nol-tool-call-title").textContent]).toEqual([null, "Read main.ts"]);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws the note and its separator in the muted text color, apart from the title's, in the ${theme.id} theme in ${mode} mode`, async () => {
+        AppearanceFixture.apply(theme, mode);
+        await renderAsync(callOf({ note }));
+        const muted = AppearanceFixture.readColor(theme, mode, "text-muted");
+
+        expect([getComputedStyle(noteBox()).color, getComputedStyle(find(".nol-tool-call-title")).color === muted]).toEqual([muted, false]);
+      });
+
+  it("draws the note in the system's gray text in forced colors, apart from the title", async () => {
+    await ForcedColorsFixture.activateAsync();
+    try {
+      await renderAsync(callOf({ note }));
+      const gray = ForcedColorsFixture.resolve("GrayText");
+
+      expect([getComputedStyle(noteBox()).color, getComputedStyle(find(".nol-tool-call-title")).color === gray]).toEqual([gray, false]);
+    }
+    finally {
+      await ForcedColorsFixture.resetAsync();
+    }
+  });
+
+  it("names its toggle by the title and the note together, and shows both on the cut title's tooltip", async () => {
+    const title = "Read the configuration that every project of the workspace builds with";
+    AppearanceFixture.apply();
+    await renderAsync(new ToolCall("call-1", title, ToolCallKind.Read, ToolCallStatus.Succeeded, { note }), t => t.width.set("16rem"));
+    const named = page.getByRole("button", { name: `${title} · ${note}`, exact: true }).element();
+    await userEvent.hover(toggle());
+    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(`${title} · ${note}`));
+    const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
+    await userEvent.unhover(toggle());
+
+    expect([named, tooltip]).toEqual([toggle(), `${title} · ${note}`]);
+  });
+
+  it("cuts the title and its note together with one ellipsis when they don't fit, keeping the target and the status in view", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(new ToolCall("call-1", "Read a settings file whose name is long", ToolCallKind.Read, ToolCallStatus.Succeeded, { target: "src/app/main.ts", note }),
+      t => t.width.set("20rem"));
+    const title = find(".nol-tool-call-title");
+
+    AppearanceFixture.expectTruncates(title);
+    expect(box(noteBox()).right).toBeGreaterThan(box(title).right);
+    expect(box(find(".nol-tool-call-target")).left).toBeGreaterThanOrEqual(box(title).right);
+    expect(box(find(".nol-tool-call-state")).right).toBeLessThanOrEqual(box(card()).right);
   });
 
   it("cuts a title too long for the header with an ellipsis, keeping the status in view", async () => {
@@ -1006,9 +1088,7 @@ describe("ToolCallComponent", () => {
     });
     const closed = [find(".nol-tool-call-title").textContent, toggle().textContent?.trim().endsWith(shown), find(".nol-tool-call-cancel").getAttribute("aria-label")];
     await userEvent.hover(toggle());
-    await fixture.whenStable();
-    for (let frame = 0; frame < 3; frame++)
-      await new Promise(resolve => requestAnimationFrame(resolve));
+    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(title));
     const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
     await userEvent.unhover(toggle());
     await clickAsync(toggle());

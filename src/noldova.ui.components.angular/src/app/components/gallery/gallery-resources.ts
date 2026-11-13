@@ -27,6 +27,9 @@ export class GalleryResources {
   public static readonly dialogTitleIdPrefix: string = "nol-gallery-dialog-";
   public static readonly mentionListIdPrefix: string = "nol-gallery-mention-";
   public static readonly hoveredMention: string = ".nol-mention-option[aria-selected=false]";
+  public static readonly completionListIdPrefix: string = "nol-gallery-completion-";
+  public static readonly hoveredCompletion: string = ".nol-completion-option[aria-selected=false]";
+  public static readonly completionRoom: number = 72;
   public static readonly fieldMessageIdPrefix: string = "nol-gallery-field-message-";
   public static readonly groupRowsIdPrefix: string = "nol-gallery-group-rows-";
   public static readonly kitSectionsToken: string = "nol-gallery-kit-sections";
@@ -412,6 +415,7 @@ export class GalleryResources {
     messageBubbleHover: "Bubble, hover",
     messageClock: "Clock time",
     messageAttachments: "Attachment and slot",
+    messageAttachedSlot: "Attached slot",
     messagePicture: "Picture",
     messageImage: "Image",
     messageFileLinks: "File links",
@@ -446,6 +450,8 @@ export class GalleryResources {
     messagePictureText: "The build fails at this step.",
     messageSlotId: "search",
     messageSlotText: "Searched 12 notes for the release plan.",
+    messageAttachedSlotId: "stopped",
+    messageAttachedSlotText: "Stopped by you",
     messageFileLinksText: "I changed [main.ts](src/app/main.ts) and [the styles](src/styles.css), and the steps in [README.md](README.md) still hold. The icons are in [icon-preview](icon-preview).",
     messageFileLinksFolders: ["icon-preview"],
     referenceChips: "Reference chips",
@@ -568,6 +574,22 @@ export class GalleryResources {
     menuMinWidth: 18,
     menuOpensOnCaption: "Trigger that opens on a row past the first group",
     menuOpensOnTrigger: "Choose a model",
+    completionList: "Completion list",
+    completionLabel: "Completions",
+    completionCode: "Code, with notes",
+    completionRoom: "Less room than its rows",
+    completionReview: "/review",
+    completionReviewNote: "Review the changes",
+    completionPlan: "/plan",
+    completionPlanNote: "Plan the work",
+    completionClear: "/clear",
+    completionReadFile: "readFile",
+    completionReadonly: "readonly",
+    completionReadableStream: "ReadableStream",
+    completionFunction: "function",
+    completionKeyword: "keyword",
+    completionClass: "class",
+    completionLong: "/a_command_whose_name_is_far_too_long_to_fit_the_width_of_its_list",
     mentionField: "Mention field",
     mentionLabel: "Mentions",
     mentionFieldCaption: "Type @ to mention",
@@ -712,6 +734,7 @@ export class GalleryResources {
     terminalOutput: "Terminal output",
     terminalOutputStylesCaption: "Every style, then the color cube, the grays and RGB colors",
     terminalOutputCappedCaption: "Capped at 8rem, scrolling inside",
+    terminalOutputDarkCaption: "In a dark terminal scope, dark in both modes",
     statusColors: "Status colors",
     statusWindowCaption: "Status dots on the window color",
     statusPanelCaption: "Status dots on the panel color",
@@ -736,6 +759,10 @@ export class GalleryResources {
     toolCallPermissionCaption: "Waiting for permission",
     toolCallAnswerCaption: "Waiting for your answer",
     toolCallAskTitle: "Ask which branch to release from",
+    toolCallNoteCaption: "With a note",
+    toolCallNoteBareCaption: "With a note, no target",
+    toolCallNote: "waiting for your answer",
+    toolCallClickTitle: "Click \"Choose a plan\"",
     toolCallCancelledCaption: "Cancelled",
     toolCallDeniedCaption: "Denied",
     toolCallNothingCaption: "Nothing to show",

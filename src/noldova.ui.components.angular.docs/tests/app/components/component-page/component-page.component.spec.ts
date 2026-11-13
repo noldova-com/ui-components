@@ -169,7 +169,7 @@ describe("ComponentPageComponent", () => {
       controls: "nol-menu-group, button[aria-haspopup=\"menu\"]",
       roles: ["nol-menu-group[role=\"group\"][aria-labelledby]", "nol-menu-group .nol-menu-label[aria-hidden=\"true\"]", "button.nol-icon-button[aria-label=\"View options\"][aria-haspopup=\"menu\"]"],
       keys: ["Arrow Down", "Arrow Up", "Home", "End", "Escape"],
-      inputs: ["label", "maxRows"],
+      inputs: ["label", "maxRows", "uppercase"],
       outputs: []
     },
     MenuSeparatorComponent: {
@@ -230,8 +230,18 @@ describe("ComponentPageComponent", () => {
         "button.nol-toolbar-button[aria-pressed=\"false\"]", "button.nol-toolbar-button[aria-disabled=\"true\"]", "button.nol-toolbar-button[aria-haspopup=\"menu\"][aria-expanded=\"false\"]",
         ".nol-toolbar-button-glyph[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End", "Enter", "Space"],
-      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "busy"],
+      inputs: ["label", "icon", "isShowingLabel", "pressed", "hasMenu", "isUnavailable", "isPressedWhileOpen", "busy"],
       outputs: []
+    },
+    CompletionListComponent: {
+      specimen: "Completion list",
+      controls: "nol-completion-list",
+      roles: ["input[role=\"combobox\"][aria-controls=\"nol-docs-completion-commands\"][aria-activedescendant=\"nol-docs-completion-commands-option-0\"]",
+        "nol-completion-list[role=\"listbox\"][id=\"nol-docs-completion-commands\"][aria-label=\"Commands\"] [role=\"option\"][aria-selected=\"true\"][aria-label=\"/review, Review the changes\"]",
+        "[role=\"listbox\"][aria-label=\"Names\"] [role=\"option\"][aria-label=\"ReadableStream, class\"] .nol-completion-note:not([role])"],
+      keys: [],
+      inputs: ["choices", "active", "listId", "label", "isCode", "maxHeight"],
+      outputs: ["chosen"]
     },
     AvatarComponent: {
       specimen: "Avatar",
@@ -471,6 +481,14 @@ describe("ComponentPageComponent", () => {
     if (!(owner instanceof HTMLElement))
       throw new TypeError(`The ${title} heading has no section.`);
     return owner;
+  };
+
+  const resolve = (property: "paddingTop" | "backgroundColor", value: string): string => {
+    const probe = document.body.appendChild(document.createElement("div"));
+    probe.style[property] = value;
+    const resolved = getComputedStyle(probe)[property];
+    probe.remove();
+    return resolved;
   };
 
   const brokenWords = (cell: HTMLElement): readonly string[] => {
@@ -1115,6 +1133,53 @@ describe("ComponentPageComponent", () => {
     });
   });
 
+  describe("the Completion list page", () => {
+    it("follows the field's arrows, filters as the field is typed in, chooses and closes on Enter and on a click, closes on Escape, and keeps the focus in the field", async () => {
+      const host = await renderAsync(expectPage("CompletionListComponent"));
+      const examples = section(host, "Examples");
+      const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
+      const labels = (): readonly (string | undefined)[] => DocsFixture.all(examples, "[aria-label=\"Commands\"] .nol-completion-label").map(t => t.textContent?.trim());
+      const closed = (): readonly unknown[] => [labels(), field.getAttribute("aria-expanded"), field.hasAttribute("aria-controls"), field.hasAttribute("aria-activedescendant")];
+      const shut = [[], "false", false, false];
+
+      field.focus();
+      await userEvent.keyboard("{ArrowUp}");
+      await vi.waitFor(() => expect(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").getAttribute("aria-label")).toBe("/clear"));
+      expect(field.getAttribute("aria-activedescendant")).toBe(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").id);
+
+      await userEvent.fill(field, "/p");
+      await vi.waitFor(() => expect(labels()).toEqual(["/plan"]));
+      await userEvent.keyboard("{Enter}");
+      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /plan"));
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
+
+      await userEvent.fill(field, "/");
+      await vi.waitFor(() => expect([labels().length, field.getAttribute("aria-controls")]).toEqual([4, "nol-docs-completion-commands"]));
+      await userEvent.keyboard("{Escape}");
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
+
+      await userEvent.fill(field, "/c");
+      await vi.waitFor(() => expect(labels()).toEqual(["/compact", "/clear"]));
+      await userEvent.click(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-label=\"/compact, Shorten the conversation\"]"));
+      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /compact"));
+      await vi.waitFor(() => expect(closed()).toEqual(shut));
+      expect([document.activeElement, field instanceof HTMLInputElement ? field.value : null]).toEqual([field, "/compact"]);
+    });
+
+    it("hides the list and reports it closed while nothing matches, and the field's arrows and Enter then choose nothing", async () => {
+      const host = await renderAsync(expectPage("CompletionListComponent"));
+      const examples = section(host, "Examples");
+      const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
+
+      await userEvent.fill(field, "/zz");
+      await vi.waitFor(() => expect(examples.querySelector("[aria-label=\"Commands\"]")).toBeNull());
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+
+      expect([field.getAttribute("aria-expanded"), field.hasAttribute("aria-controls"), field.hasAttribute("aria-activedescendant")]).toEqual(["false", false, false]);
+      expect(examples.textContent).toContain("Chosen: Nothing yet");
+    });
+  });
+
   describe("the Quick input page", () => {
     it("moves the active result with the arrows, filters as the query is typed, chooses on Enter and clears on Escape", async () => {
       const host = await renderAsync(expectPage("QuickInputComponent"));
@@ -1193,6 +1258,29 @@ describe("ComponentPageComponent", () => {
       await vi.waitFor(() => expect(share.getAttribute("aria-disabled")).toBeNull());
       await userEvent.click(share);
       await vi.waitFor(() => expect(preview.textContent).toContain("Shared: 1"));
+    });
+
+    it("fills Sort and the icon-only More with the toolbar hover while their menus are open, More square with no chevron, and idles both once the menu closes", async () => {
+      const host = await renderAsync(expectPage("ToolbarButtonComponent"));
+      const preview = DocsFixture.one(section(host, "Examples"), "nol-docs-toolbar-button-open-example");
+      const hover = resolve("backgroundColor", "var(--nol-toolbar-hover)");
+      const looks: (readonly unknown[])[] = [];
+      for (const name of ["Sort", "More"]) {
+        const button = DocsFixture.one(preview, `button[aria-label="${name}"]`);
+        const idle = getComputedStyle(button).backgroundColor;
+        const closedBox = button.getBoundingClientRect();
+        button.focus();
+        await userEvent.keyboard("{Enter}");
+        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull());
+        const openBox = button.getBoundingClientRect();
+        const open = [button.getAttribute("aria-expanded"), getComputedStyle(button).backgroundColor === hover, button.getAttribute("aria-pressed"),
+          button.querySelector(".nol-toolbar-button-chevron") !== null, Math.abs(openBox.width - closedBox.width) < 0.5, Math.abs(openBox.height - closedBox.height) < 0.5];
+        await userEvent.keyboard("{Escape}");
+        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull());
+        looks.push([name, idle === hover, ...open, getComputedStyle(button).backgroundColor === idle, Math.abs(closedBox.width - closedBox.height) < 0.5]);
+      }
+
+      expect(looks).toEqual([["Sort", false, "true", true, null, true, true, true, true, false], ["More", false, "true", true, null, false, true, true, true, true]]);
     });
   });
 
@@ -1546,6 +1634,18 @@ describe("ComponentPageComponent", () => {
       await userEvent.click(DocsFixture.one(failed, "button.nol-message-retry"));
       await vi.waitFor(() => expect(failed.querySelector(".nol-message-error")).toBeNull());
       await vi.waitFor(() => expect(failed.textContent).toContain("in the note Weekly plan, under Monday."));
+    });
+
+    it("draws the stopped line attached under the reply's text, space-1 after it rather than space-2", async () => {
+      const host = await renderAsync(expectPage("MessageComponent"));
+      const message = DocsFixture.one(section(host, "Examples"), "nol-docs-message-attached-slot-example nol-message");
+      const stopped = DocsFixture.one(message, ".nol-docs-message-stopped");
+      const gap = stopped.getBoundingClientRect().top - DocsFixture.one(message, "nol-message-run").getBoundingClientRect().bottom;
+      const space = (name: string): number => Number.parseFloat(resolve("paddingTop", `var(--nol-space-${name})`));
+
+      expect([stopped.textContent?.trim(), stopped.closest(".nol-message-part")?.classList.contains("nol-message-part-attached")]).toEqual(["Stopped by you", true]);
+      expect(Math.abs(gap - space("1"))).toBeLessThan(0.5);
+      expect(space("2") - space("1")).toBeGreaterThan(1);
     });
 
     it("opens its owner's menu on Shift+F10 below the focused part, and gives that part the focus back on Escape", async () => {

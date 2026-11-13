@@ -21,9 +21,9 @@ describe("ToolCall", () => {
   it("holds its id, title, kind and status, and nothing else unless given", () => {
     const call = new ToolCall("call-1", "Read the notes", ToolCallKind.Read, ToolCallStatus.Pending);
 
-    expect([call.id, call.title, call.kind, call.status, call.target, call.startedAt, call.endedAt, call.input, call.output, call.outputState, call.hasOutputControl,
+    expect([call.id, call.title, call.kind, call.status, call.target, call.note, call.startedAt, call.endedAt, call.input, call.output, call.outputState, call.hasOutputControl,
       call.error, call.canCancel, call.children, call.duration])
-      .toEqual(["call-1", "Read the notes", ToolCallKind.Read, ToolCallStatus.Pending, null, null, null, null, null, ToolCallOutputState.Idle, false, null, false, [], null]);
+      .toEqual(["call-1", "Read the notes", ToolCallKind.Read, ToolCallStatus.Pending, null, null, null, null, null, null, ToolCallOutputState.Idle, false, null, false, [], null]);
   });
 
   it("holds what its options give, with copies of its times and nested calls", () => {
@@ -32,14 +32,14 @@ describe("ToolCall", () => {
     const children = [child];
     const started = new Date(START.getTime());
     const call = new ToolCall("call-1", "Run the tests", ToolCallKind.RunCommand, ToolCallStatus.Failed, {
-      target: "npm test", startedAt: started, endedAt: END, input, output: "1 failed", outputState: ToolCallOutputState.Loading, hasOutputControl: true,
+      target: "npm test", note: "waiting for your answer", startedAt: started, endedAt: END, input, output: "1 failed", outputState: ToolCallOutputState.Loading, hasOutputControl: true,
       error: "Exit code 1", canCancel: true, children
     });
     started.setFullYear(2000);
     children.pop();
 
-    expect([call.target, call.startedAt, call.endedAt, call.input, call.output, call.outputState, call.hasOutputControl, call.error, call.canCancel, call.children])
-      .toEqual(["npm test", START, END, input, "1 failed", ToolCallOutputState.Loading, true, "Exit code 1", true, [child]]);
+    expect([call.target, call.note, call.startedAt, call.endedAt, call.input, call.output, call.outputState, call.hasOutputControl, call.error, call.canCancel, call.children])
+      .toEqual(["npm test", "waiting for your answer", START, END, input, "1 failed", ToolCallOutputState.Loading, true, "Exit code 1", true, [child]]);
     expect(call.duration).toBe(4250);
   });
 
@@ -61,7 +61,7 @@ describe("ToolCall", () => {
     expect(new ToolCall("call-1", "Browse", ToolCallKind.Browse, ToolCallStatus.Succeeded, { startedAt: START, endedAt: START }).duration).toBe(0);
   });
 
-  it("refuses an empty id, title or target, an end without a start or before it, and an id used twice among it and its nested calls", () => {
+  it("refuses an empty id, title, target or note, an end without a start or before it, and an id used twice among it and its nested calls", () => {
     const nested = new ToolCall("call-3", "Other", ToolCallKind.Other, ToolCallStatus.Running, {
       children: [new ToolCall("call-4", "Read", ToolCallKind.Read, ToolCallStatus.Running)]
     });
@@ -71,6 +71,8 @@ describe("ToolCall", () => {
     expect(() => create(" ", "Other", {})).toThrow(ArgumentException);
     expect(() => create("call-1", "", {})).toThrow(ArgumentException);
     expect(() => create("call-1", "Other", { target: " " })).toThrow(ArgumentException);
+    expect(() => create("call-1", "Other", { note: "" })).toThrow(ArgumentException);
+    expect(() => create("call-1", "Other", { note: " " })).toThrow(ArgumentException);
     expect(() => create("call-1", "Other", { endedAt: END })).toThrow(ArgumentException);
     expect(() => create("call-1", "Other", { startedAt: END, endedAt: START })).toThrow(ArgumentException);
     expect(() => create("call-4", "Other", { children: [nested] })).toThrow("call-4 appears more than once");

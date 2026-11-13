@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div nolToolbar nolToolbarLabel="Document">
+  <button type="button" nol-toolbar-button nolToolbarItem icon="sort" label="Sort" [isShowingLabel]="true" [hasMenu]="true" [isPressedWhileOpen]="true" [nolMenuTriggerFor]="sortMenu"></button>
+  <button type="button" nol-toolbar-button nolToolbarItem icon="more_horiz" label="More" nolTooltip="More" [isPressedWhileOpen]="true" [nolMenuTriggerFor]="moreMenu"></button>
+</div>
+<span>Sorted by: {{ order() }} · Chosen: {{ chosen() }}</span>
+<ng-template #sortMenu>
+  <nol-menu aria-label="Sort">
+    @for (choice of orders; track choice) {
+      <button type="button" nol-menu-item [label]="choice" [checked]="choice === order()" (triggered)="order.set(choice)"></button>
+    }
+  </nol-menu>
+</ng-template>
+<ng-template #moreMenu>
+  <nol-menu aria-label="More">
+    <button type="button" nol-menu-item label="Rename" icon="edit" (triggered)="chosen.set('Rename')"></button>
+    <button type="button" nol-menu-item label="Duplicate" icon="content_copy" (triggered)="chosen.set('Duplicate')"></button>
+  </nol-menu>
+</ng-template>

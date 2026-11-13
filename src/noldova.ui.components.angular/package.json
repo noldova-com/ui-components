@@ -72,8 +72,8 @@
     "@angular/core": "22.2.6",
     "@angular/forms": "22.2.6",
     "@angular/platform-browser": "22.2.6",
-    "@noldova/context.core": ">=0.0.2 <0.1.0",
-    "@noldova/context.exceptions": ">=0.0.2 <0.1.0",
+    "@noldova/context.core": ">=0.0.7 <0.1.0",
+    "@noldova/context.exceptions": ">=0.0.7 <0.1.0",
     "rxjs": "7.8.2"
   },
   "devDependencies": {
@@ -85,8 +85,8 @@
     "@angular/core": "22.2.6",
     "@angular/forms": "22.2.6",
     "@angular/platform-browser": "22.2.6",
-    "@noldova/context.core": "0.0.2",
-    "@noldova/context.exceptions": "0.0.2",
+    "@noldova/context.core": "0.0.7",
+    "@noldova/context.exceptions": "0.0.7",
     "@vitest/browser-playwright": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
     "playwright": "1.63.0",
