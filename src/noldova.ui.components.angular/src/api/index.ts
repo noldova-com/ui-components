@@ -133,6 +133,7 @@ export { LinkReferenceException } from "../app/exceptions/link-reference.excepti
 export { MarkdownException } from "../app/exceptions/markdown.exception.js";
 export { ThemeException } from "../app/exceptions/theme.exception.js";
 export { TreeMoveException } from "../app/exceptions/tree-move.exception.js";
+export { UiComponentsException } from "../app/exceptions/ui-components.exception.js";
 export { VirtualListException } from "../app/exceptions/virtual-list.exception.js";
 export type { IAnnouncementOptions } from "../app/interfaces/i-announcement-options.js";
 export type { ILinkReferenceOptions } from "../app/interfaces/i-link-reference-options.js";

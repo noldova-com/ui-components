@@ -12,7 +12,7 @@ import { CdkMenuItem, CdkMenuTrigger, CdkMenuTriggerBase } from "@angular/cdk/me
 import type { OverlayRef } from "@angular/cdk/overlay";
 import type { ComponentPortal, ComponentType, TemplatePortal } from "@angular/cdk/portal";
 import type { ComponentRef, EmbeddedViewRef, EnvironmentProviders, InjectionToken, Injector, InputSignal, InputSignalWithTransform, ModelSignal, OutputEmitterRef, OutputRef, Signal, TemplateRef } from "@angular/core";
-import { Exception } from "@noldova/context.exceptions";
+import { Exception, type ExceptionOptions } from "@noldova/context.exceptions";
 import type { Observable } from "rxjs";
 
 /**
@@ -4422,7 +4422,7 @@ export declare class DiffContextRequest {
  * The exception thrown when a diff's data is not valid, such as a hunk whose
  * lines don't match its ranges or a renamed file with no old path.
  */
-export declare class DiffException extends Exception {
+export declare class DiffException extends UiComponentsException {
   /**
    * The exception's name, `"DiffException"`, which the class sets itself so
    * that a minified build keeps it.
@@ -4448,7 +4448,7 @@ export declare class DiffException extends Exception {
  * negative or non-finite duration, an action with an empty label, address
  * or glyph, or a reference with no card given a part only its card shows.
  */
-export declare class LinkReferenceException extends Exception {
+export declare class LinkReferenceException extends UiComponentsException {
   /**
    * The exception's name, `"LinkReferenceException"`, which the class sets
    * itself so that a minified build keeps it.
@@ -5905,7 +5905,7 @@ export declare class KeptOpenMenuItemDirective extends CdkMenuItem {
  * The exception thrown when an app names a link scheme a Markdown view
  * can't take, such as `https` or `javascript`.
  */
-export declare class MarkdownException extends Exception {
+export declare class MarkdownException extends UiComponentsException {
   /**
    * The exception's name, `"MarkdownException"`, which the class sets itself
    * so that a minified build keeps it.
@@ -11810,7 +11810,7 @@ export declare class Theme {
  * the painter's default theme has a value the kit paints: a color, a look
  * value or a shape. {@link ThemePainter.paint} throws it.
  */
-export declare class ThemeException extends Exception {
+export declare class ThemeException extends UiComponentsException {
   /**
    * The exception's name, `"ThemeException"`, which the class sets itself so
    * that a minified build keeps it.
@@ -13179,7 +13179,7 @@ export declare class TreeMove {
  * {@link TreeMove.apply} throws it when the moved row is missing, or the new
  * parent is missing, is the row itself or lies inside it.
  */
-export declare class TreeMoveException extends Exception {
+export declare class TreeMoveException extends UiComponentsException {
   /**
    * The exception's name, `"TreeMoveException"`, which the class sets itself so
    * that a minified build keeps it.
@@ -13452,6 +13452,48 @@ export declare class TypographyPainter {
    * ```
    */
   public static erase(element: HTMLElement): void;
+}
+
+/**
+ * The base of every exception the kit throws or reports, the one type an app
+ * catches to handle any of the kit's failures and only the kit's. It extends
+ * context's `Exception`, and each of the kit's exceptions extends it:
+ * {@link DiffException}, {@link LinkReferenceException},
+ * {@link MarkdownException}, {@link ThemeException},
+ * {@link TreeMoveException}, {@link VirtualListException}, and
+ * `CodeHighlightingException` from
+ * `@noldova/ui.components.angular/code-highlighting`.
+ */
+export declare class UiComponentsException extends Exception {
+  /**
+   * The exception's name, `"UiComponentsException"`, which the class sets
+   * itself so that a minified build keeps it; each subclass sets its own.
+   */
+  public override readonly name: string;
+
+  /**
+   * Creates the exception.
+   *
+   * @param message A sentence naming what failed.
+   * @param options The failure that caused it, as its `cause`, if one did.
+   * @example
+   * ```ts
+   * import { ErrorHandler, Injectable } from "@angular/core";
+   * import { UiComponentsException } from "@noldova/ui.components.angular";
+   *
+   * @Injectable()
+   * export class KitErrorHandler implements ErrorHandler {
+   *   public readonly kitFailures: UiComponentsException[] = [];
+   *
+   *   public handleError(error: unknown): void {
+   *     if (!(error instanceof UiComponentsException))
+   *       throw error;
+   *     this.kitFailures.push(error);
+   *   }
+   * }
+   * ```
+   */
+  public constructor(message: string, options?: ExceptionOptions);
 }
 
 /**
@@ -13875,7 +13917,7 @@ export declare class VirtualListComponent<T> {
  * or a change that does not fit the list, and that the kit's list reports
  * when a source answers a read with the wrong number of items.
  */
-export declare class VirtualListException extends Exception {
+export declare class VirtualListException extends UiComponentsException {
   /**
    * The exception's name, `"VirtualListException"`, which the class sets
    * itself so that a minified build keeps it.

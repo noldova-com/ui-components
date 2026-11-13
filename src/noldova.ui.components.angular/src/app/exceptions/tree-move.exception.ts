@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Exception } from "@noldova/context.exceptions";
+import { UiComponentsException } from "./ui-components.exception.js";
 
-export class TreeMoveException extends Exception {
+export class TreeMoveException extends UiComponentsException {
   public override readonly name: string = "TreeMoveException";
 
   public constructor(message: string) {
