@@ -241,7 +241,7 @@ gh workflow run deploy.yml --ref v<version> -f environment=staging
 The "Deploy" workflow, `.github/workflows/deploy.yml`, checks that the tag is a version tag that points at the commit to deploy, finds the image tagged with that commit and moves the environment's label to it, without building anything; if there is no such image, it fails and moves nothing.
 Its summary records the tag, the commit, the digest, the environment and where the deploy was approved.
 A run started by hand, once it has found the image, waits in the `deploy-staging` or `deploy-production` environment, and `deploy-production` needs a maintainer's approval; both accept version tags only, and a run started by hand has no way to skip them.
-Only the release, which calls it with the tag and the commit it published, deploys without them.
+Only the release, which calls it with the tag and the commit it published, deploys without them: a run called with a commit fails unless its calling workflow is this repository's `release-npm.yml`, so no other workflow can skip them.
 To undo a deploy, run the same command on an older tag.
 A run uses the workflow file at its tag, so a tag from before this workflow, such as `v0.0.1`, can't be deployed.
 

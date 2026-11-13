@@ -65,6 +65,11 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "$CALLED_COMMIT" ]; then
+            release="$GITHUB_REPOSITORY/.github/workflows/release-npm.yml@"
+            if [[ "$GITHUB_WORKFLOW_REF" != "$release"* ]]; then
+              echo "::error::Only this repository's release-npm.yml calls a deploy with a commit, not \"$GITHUB_WORKFLOW_REF\"."
+              exit 1
+            fi
             tag="$CALLED_TAG"
             commit="$CALLED_COMMIT"
           elif [ "$GITHUB_REF_TYPE" = tag ]; then
