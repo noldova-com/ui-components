@@ -77,7 +77,7 @@ LICENSE file in the root directory of this source tree.
     <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="stopped" [status]="statuses.Error" /></div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.messageErrorRetry">
-    <nol-gallery-retry-message class="nol-gallery-message" />
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="stopped" [status]="retryStatus()" (retry)="retry()" /></div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.messageColumn">
     <div class="nol-gallery-message">

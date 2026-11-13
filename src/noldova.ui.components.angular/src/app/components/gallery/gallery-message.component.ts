@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, type Signal, viewChild } from "@angular/core";
+import { Component, DestroyRef, type Signal, type WritableSignal, inject, signal, viewChild } from "@angular/core";
 
 import { AvatarColor } from "../../enums/avatar-color.js";
 import { ChipKind } from "../../enums/chip-kind.js";
@@ -16,6 +16,8 @@ import { MessageFooterPlacement } from "../../enums/message-footer-placement.js"
 import { MessageLayout } from "../../enums/message-layout.js";
 import { MessageStatus } from "../../enums/message-status.js";
 import { MessageTimeFormat } from "../../enums/message-time-format.js";
+import type { ITimeSource } from "../../interfaces/i-time-source.js";
+import { ClockTokens } from "../../models/clock-tokens.js";
 import { MentionCandidate } from "../../models/mention-candidate.js";
 import { MessageAttachment } from "../../models/message-attachment.js";
 import { MessageAttachmentPicture } from "../../models/message-attachment-picture.js";
@@ -33,18 +35,20 @@ import { MessageSlotDirective } from "../message/message-slot.directive.js";
 import { MessageComponent } from "../message/message.component.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
 import { GalleryResources } from "./gallery-resources.js";
-import { GalleryRetryMessageComponent } from "./gallery-retry-message.component.js";
 import { GallerySpecimenComponent } from "./gallery-specimen.component.js";
 import { GalleryStateDirective } from "./gallery-state.directive.js";
 
 @Component({
   selector: "nol-gallery-message",
-  imports: [ChipComponent, GalleryCellComponent, GalleryRetryMessageComponent, GallerySpecimenComponent, GalleryStateDirective, IconButtonComponent, MessageActionDirective, MessageComponent,
-    MessageFooterEndDirective, MessageImageDirective, MessageSlotDirective],
+  imports: [ChipComponent, GalleryCellComponent, GallerySpecimenComponent, GalleryStateDirective, IconButtonComponent, MessageActionDirective, MessageComponent, MessageFooterEndDirective,
+    MessageImageDirective, MessageSlotDirective],
   templateUrl: "./gallery-message.component.html",
   styleUrl: "./gallery-feed.component.css"
 })
 export class GalleryMessageComponent {
+  private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
+  private readonly timers: Set<() => void> = new Set();
+
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly statuses: typeof MessageStatus = MessageStatus;
@@ -52,6 +56,7 @@ export class GalleryMessageComponent {
   protected readonly footerPlacements: typeof MessageFooterPlacement = MessageFooterPlacement;
   protected readonly chipKinds: typeof ChipKind = ChipKind;
   protected readonly timeFormats: typeof MessageTimeFormat = MessageTimeFormat;
+  protected readonly retryStatus: WritableSignal<MessageStatus> = signal(MessageStatus.Error);
   protected readonly slot: Signal<MessageSlotDirective> = viewChild.required(MessageSlotDirective);
   protected readonly time: Date = new Date(Date.now() - GalleryResources.messageAgo);
   protected readonly actionsTop: string = GalleryResources.messageActionsTop;
@@ -85,4 +90,20 @@ export class GalleryMessageComponent {
   protected readonly linked: readonly MessageBlock[] = [new MessageText(this.text.messageFileLinksText)];
   protected readonly linkedFolders: ReadonlySet<string> = new Set(this.text.messageFileLinksFolders);
   protected readonly long: readonly MessageBlock[] = [new MessageText(Array.from({ length: GalleryResources.messageLongParagraphs }, () => this.text.messageLong).join(GalleryResources.messageParagraphBreak))];
+
+  public constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      for (const cancel of this.timers)
+        cancel();
+    });
+  }
+
+  protected retry(): void {
+    this.retryStatus.set(MessageStatus.Streaming);
+    const cancel = this.timeSource.after(() => {
+      this.timers.delete(cancel);
+      this.retryStatus.set(MessageStatus.Error);
+    }, GalleryResources.messageRetryDelay);
+    this.timers.add(cancel);
+  }
 }

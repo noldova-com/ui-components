@@ -116,6 +116,22 @@ describe("GalleryVirtualFeedComponent", () => {
     expect([fast.querySelector(".nol-gallery-feed-slow"), slow.querySelector("nol-virtual-list")?.classList.contains("nol-gallery-feed-slow")]).toEqual([null, true]);
   });
 
+  it("shows a newest-first feed at its top, where a row added at the top shows", async () => {
+    await renderAsync();
+    const cell = DomFixture.one(element(), ".nol-gallery-specimen[aria-label=\"Virtual feed\"] nol-gallery-cell[aria-label=\"Newest first\"]");
+    const shown = (): [number, string | undefined, string | null | undefined] => {
+      const first = cell.querySelector<HTMLElement>("[role=article][aria-posinset=\"1\"]");
+      return [DomFixture.one(cell, ".nol-virtual-list-viewport").scrollTop, textOf(first ?? undefined, "time"), first?.getAttribute("aria-setsize")];
+    };
+    const opened = shown();
+
+    DomFixture.one(cell, ".nol-gallery-feed > button").click();
+    await settleAsync();
+
+    expect([opened[0], opened[1] === "now", opened[2], cell.querySelector("nol-virtual-list")?.classList.contains("nol-gallery-feed-newest")]).toEqual([0, false, "200", true]);
+    expect(shown()).toEqual([0, "now", "201"]);
+  });
+
   it("fits each feed cell's feed, list and button in a cell narrower than the list's 30rem", async () => {
     await renderAsync();
     element().style.width = "20rem";
