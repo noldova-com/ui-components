@@ -36,6 +36,28 @@ jobs:
       commit: ${{ inputs.commit }}
       environment: release
 
+  staging:
+    name: Deploy the docs to staging
+    needs: release
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      packages: write
+    with:
+      environment: staging
+      tag: v${{ inputs.version }}
+      commit: ${{ inputs.commit }}
+
+  production:
+    name: Deploy the docs to production
+    needs: staging
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      packages: write
+    with:
+      environment: production
+      tag: v${{ inputs.version }}
+      commit: ${{ inputs.commit }}
+
   dependents:
     needs: release
     uses: noldova-com/.github/.github/workflows/update-dependents.yml@7640859ac0de8cc03fadbd705b45376c2e1bd88b # v2.25.0

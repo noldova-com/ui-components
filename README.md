@@ -223,21 +223,25 @@ A maintainer starts it with the version and the commit: `gh workflow run release
 Its version is `version.json`'s at the released commit, such as `{ "version": "0.0.1" }`; the pull request that changes it writes that version's section in [CHANGELOG.md](CHANGELOG.md).
 The release tags the commit `v<version>` first, before it builds or publishes; a version whose build or publish then fails keeps its tag, so releasing other changes needs a new version.
 A release's build also adds Angular's build tools to a fresh install of the kit, as the checks above say, so a release whose Angular is behind Angular's newest stops there; the Angular's newest check fails pull requests and the nightly run first, and the next version pull request moves the kit's `@angular/*` pins to Angular's newest and relocks, as the 0.0.5 one did.
+Once the version is published, the workflow deploys that tag's docs to staging and then, once staging's deploy succeeds, to production, as [Deploying the docs site](#deploying-the-docs-site) says; a failed build or publish deploys nothing.
+The maintainer's approval of the release in the `release` environment covers both deploys, so they wait for no other approval.
 After a release, the workflow proposes the version to each public repository that pins the kit, in one pull request each, through a GitHub App whose key the `version-updates` environment holds.
 
 ## Deploying the docs site
 
 The docs image has three moving labels, one for each environment that serves it: `latest`, `staging` and `production`.
 Each push to `main` moves `latest` to the image it built, so the sandbox follows `main` by itself.
-Staging and production are deployed by hand, on a version tag:
+Each release deploys its version to staging and then production, its own approval covering both, as [Releases](#releases) says; the image of its commit is built by that commit's push to `main`, so a release started before that build ends fails to deploy and is deployed by hand once the image is there.
+Staging and production are also deployed by hand, on a version tag, to repair or roll back:
 
 ```bash
 gh workflow run deploy.yml --ref v<version> -f environment=staging
 ```
 
-The "Deploy" workflow, `.github/workflows/deploy.yml`, finds the image tagged with that tag's commit and moves the environment's label to it, without building anything; if there is no such image, it fails and moves nothing.
-Its summary records the tag, the commit, the digest and the environment.
-Once it has found the image, the run waits in the `deploy-staging` or `deploy-production` environment, and `deploy-production` needs a maintainer's approval; both accept version tags only.
+The "Deploy" workflow, `.github/workflows/deploy.yml`, checks that the tag is a version tag that points at the commit to deploy, finds the image tagged with that commit and moves the environment's label to it, without building anything; if there is no such image, it fails and moves nothing.
+Its summary records the tag, the commit, the digest, the environment and where the deploy was approved.
+A run started by hand, once it has found the image, waits in the `deploy-staging` or `deploy-production` environment, and `deploy-production` needs a maintainer's approval; both accept version tags only, and a run started by hand has no way to skip them.
+Only the release, which calls it with the tag and the commit it published, deploys without them.
 To undo a deploy, run the same command on an older tag.
 A run uses the workflow file at its tag, so a tag from before this workflow, such as `v0.0.1`, can't be deployed.
 
