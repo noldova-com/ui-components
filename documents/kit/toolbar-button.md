@@ -18,7 +18,7 @@ Toolbar hover; pressed fills as hover does and exposes its state; a disabled ite
 
 ## Pressed while its menu is open
 
-With `isPressedWhileOpen` on a button that opens a menu (`hasMenu`), such as a document toolbar's More, the button draws its pressed look while its menu is open, which the menu trigger marks `aria-expanded="true"`: the toolbar hover fill, or under forced colors the pressed button's `Highlight` fill under `HighlightText`. It draws its idle look again once the menu closes, and it is never announced as pressed, since `aria-expanded` already tells assistive technology the menu is open. Without it, a button keeps its idle look while its menu is open.
+With `isPressedWhileOpen` on a button that opens a menu, such as a document toolbar's More, the button draws its pressed look while its menu is open, which the menu trigger marks `aria-expanded="true"`: the toolbar hover fill, or under forced colors the pressed button's `Highlight` fill under `HighlightText`. It draws its idle look again once the menu closes, and it is never announced as pressed, since `aria-expanded` already tells assistive technology the menu is open. It needs no `hasMenu`, so an icon-only More, whose menu trigger already marks `aria-haspopup="menu"`, is pressed while open with no chevron and keeps its square. Without it, a button keeps its idle look while its menu is open.
 
 ## Busy
 

@@ -24,6 +24,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective, ToolbarButtonComponent],
   template: `
     <button type="button" class="more" nol-toolbar-button icon="more_horiz" label="More" [hasMenu]="true" [isPressedWhileOpen]="true" [nolMenuTriggerFor]="menu"></button>
+    <button type="button" class="kebab" nol-toolbar-button icon="more_vert" label="More" [isPressedWhileOpen]="true" [nolMenuTriggerFor]="menu"></button>
     <button type="button" class="plain" nol-toolbar-button icon="filter_list" label="Filter" [hasMenu]="true" [nolMenuTriggerFor]="menu"></button>
     <ng-template #menu>
       <nol-menu>
@@ -102,5 +103,50 @@ describe("ToolbarButtonComponent pressed while its menu is open", () => {
 
     expect([open, fill("more")]).toEqual([ForcedColorsFixture.resolve("Highlight"), idle]);
     expect(open).not.toBe(idle);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws an icon-only button pressed while its menu is open with no chevron, a toolbar-button square open and closed, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(mode);
+        AppearanceFixture.apply(theme, mode);
+        await fixture.whenStable();
+        const side = AppearanceFixture.measureLook("toolbar-button");
+        const look = (): unknown[] => {
+          const box = button("kebab").getBoundingClientRect();
+          return [button("kebab").getAttribute("aria-haspopup"), button("kebab").getAttribute("aria-expanded"), fill("kebab"), box.width, box.height,
+            button("kebab").querySelectorAll(".nol-toolbar-button-chevron").length];
+        };
+
+        const idle = look();
+        await openAsync("kebab");
+        const open = look();
+        await closeAsync();
+
+        expect([idle, open, look()]).toEqual([
+          ["menu", "false", "rgba(0, 0, 0, 0)", expect.closeTo(side, 1), expect.closeTo(side, 1), 0],
+          ["menu", "true", toolbarHover(), expect.closeTo(side, 1), expect.closeTo(side, 1), 0],
+          ["menu", "false", "rgba(0, 0, 0, 0)", expect.closeTo(side, 1), expect.closeTo(side, 1), 0]
+        ]);
+        if (theme === DefaultTheme.theme)
+          AppearanceFixture.expectPixels(side, AppearanceFixture.toPixels(1.5));
+      });
+
+  it("draws an icon-only button pressed while its menu is open in the pressed button's Highlight fill under forced colors, with no chevron and a toolbar-button square open and closed", async () => {
+    await renderAsync();
+    await ForcedColorsFixture.activateAsync();
+
+    const side = AppearanceFixture.measureLook("toolbar-button");
+    const square = (): number[] => [button("kebab").getBoundingClientRect().width, button("kebab").getBoundingClientRect().height];
+    const idle = [fill("kebab"), ...square()];
+    await openAsync("kebab");
+    const open = [fill("kebab"), getComputedStyle(button("kebab")).getPropertyValue("--nol-icon-color").trim(), button("kebab").querySelectorAll(".nol-toolbar-button-chevron").length, ...square()];
+    await closeAsync();
+
+    expect([open, [fill("kebab"), ...square()]]).toEqual([
+      [ForcedColorsFixture.resolve("Highlight"), "HighlightText", 0, expect.closeTo(side, 1), expect.closeTo(side, 1)],
+      [DomFixture.at(idle, 0), expect.closeTo(side, 1), expect.closeTo(side, 1)]
+    ]);
+    expect(idle.slice(1)).toEqual([expect.closeTo(side, 1), expect.closeTo(side, 1)]);
   });
 });
