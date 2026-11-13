@@ -13,7 +13,6 @@ import { ButtonVariant } from "../../enums/button-variant.js";
 import { GallerySize } from "../../enums/gallery-size.js";
 import { MessageAuthorKind } from "../../enums/message-author-kind.js";
 import { MessageStatus } from "../../enums/message-status.js";
-import { VirtualListEdge } from "../../enums/virtual-list-edge.js";
 import { VirtualListKind } from "../../enums/virtual-list-kind.js";
 import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import { ArrayVirtualListSource } from "../../models/array-virtual-list-source.js";
@@ -28,25 +27,25 @@ import { VirtualRowDirective } from "../virtual-list/virtual-row.directive.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
 import { GalleryFeedSource } from "./gallery-feed-source.js";
 import { GalleryMessage } from "./gallery-message.js";
+import { GalleryNewestFeedComponent } from "./gallery-newest-feed.component.js";
 import { GalleryResources } from "./gallery-resources.js";
 import { GallerySpecimenComponent } from "./gallery-specimen.component.js";
 import { GalleryStateDirective } from "./gallery-state.directive.js";
 
 @Component({
   selector: "nol-gallery-virtual-feed",
-  imports: [ButtonComponent, GalleryCellComponent, GallerySpecimenComponent, GalleryStateDirective, MessageComponent, NgTemplateOutlet, VirtualListComponent, VirtualRowDirective],
+  imports: [ButtonComponent, GalleryCellComponent, GalleryNewestFeedComponent, GallerySpecimenComponent, GalleryStateDirective, MessageComponent, NgTemplateOutlet, VirtualListComponent,
+    VirtualRowDirective],
   templateUrl: "./gallery-virtual-feed.component.html",
   styleUrl: "./gallery-feed.component.css"
 })
 export class GalleryVirtualFeedComponent {
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
   private readonly timers: Set<() => void> = new Set();
-  private added: number = GalleryResources.feedNewestLength;
 
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly kinds: typeof VirtualListKind = VirtualListKind;
-  protected readonly edges: typeof VirtualListEdge = VirtualListEdge;
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
   protected readonly replies: WritableSignal<number> = signal(0);
   protected readonly messages: GalleryFeedSource = new GalleryFeedSource(GalleryResources.feedLength, GalleryResources.feedReadDelay, Date.now(), this.timeSource);
@@ -64,20 +63,12 @@ export class GalleryVirtualFeedComponent {
   protected readonly longMessages: ArrayVirtualListSource<GalleryMessage> = new ArrayVirtualListSource([
     new GalleryMessage("long", this.person, this.time, [new MessageText(this.text.feedLongText)], MessageStatus.Complete)
   ], t => t.key, GalleryResources.virtualListEstimate);
-  protected readonly newestMessages: ArrayVirtualListSource<GalleryMessage> = new ArrayVirtualListSource(Array.from({ length: GalleryResources.feedNewestLength }, (_, t) =>
-    new GalleryMessage(`newest-${GalleryResources.feedNewestLength - t}`, t % 2 === 0 ? this.reviewer : this.person, new Date(this.time.getTime() - t * GalleryResources.feedNewestStep),
-      this.continued, MessageStatus.Complete)), t => t.key, GalleryResources.virtualListEstimate);
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => {
       for (const cancel of this.timers)
         cancel();
     });
-  }
-
-  protected addNewest(): void {
-    this.added++;
-    this.newestMessages.insert(0, [new GalleryMessage(`newest-${this.added}`, this.reviewer, new Date(), this.continued, MessageStatus.Complete)]);
   }
 
   protected streamReply(): void {

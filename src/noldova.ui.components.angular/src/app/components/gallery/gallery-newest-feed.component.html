@@ -1,0 +1,14 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-virtual-list class="nol-gallery-feed-list nol-gallery-feed-newest" [kind]="kinds.Feed" [latest]="edges.Start" [label]="text.virtualFeedLabel" [source]="newestMessages">
+  <ng-template [nolVirtualRow]="newestMessages" let-message let-labelId="labelId">
+    <nol-message [author]="message.author" [time]="message.time" [blocks]="message.blocks" [status]="message.status" [key]="message.key" [labelId]="labelId" />
+  </ng-template>
+</nol-virtual-list>
+<button type="button" nol-button [variant]="variants.Secondary" (click)="addNewest()">{{ text.virtualFeedAdd }}</button>

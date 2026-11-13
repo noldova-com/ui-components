@@ -25,14 +25,7 @@ LICENSE file in the root directory of this source tree.
     </nol-virtual-list>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.virtualFeedNewest">
-    <div class="nol-gallery-feed">
-      <nol-virtual-list class="nol-gallery-feed-list nol-gallery-feed-newest" [kind]="kinds.Feed" [latest]="edges.Start" [label]="text.virtualFeedLabel" [source]="newestMessages">
-        <ng-template [nolVirtualRow]="newestMessages" let-message let-labelId="labelId">
-          <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: message, labelId }" />
-        </ng-template>
-      </nol-virtual-list>
-      <button type="button" nol-button [variant]="variants.Secondary" (click)="addNewest()">{{ text.virtualFeedAdd }}</button>
-    </div>
+    <nol-gallery-newest-feed class="nol-gallery-feed" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
     <nol-virtual-list class="nol-gallery-feed-list nol-gallery-feed-short" [nolGalleryFocus]="focusedFeed" [kind]="kinds.Feed" [label]="text.virtualFeedLabel" [source]="shortMessages">
