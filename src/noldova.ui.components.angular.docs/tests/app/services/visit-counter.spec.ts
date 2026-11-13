@@ -28,12 +28,12 @@ describe("VisitCounter", () => {
 
   const beacons = (): HTMLScriptElement[] => [...page.head.querySelectorAll("script")];
 
-  it("adds Cloudflare's beacon once on the production docs host, as a module with the site's token", () => {
+  it("adds Cloudflare's beacon once on the production docs host, as a classic deferred script with the site's token", () => {
     startOn("angular.ui.noldova.dev");
     const shown = beacons();
 
-    expect(shown.map(t => [t.type, t.src, t.getAttribute("data-cf-beacon")]))
-      .toEqual([["module", "https://static.cloudflareinsights.com/beacon.min.js", "{\"token\":\"e8c740f47a4b48c19fb268423c83f57c\"}"]]);
+    expect(shown.map(t => [t.type, t.defer, t.src, t.getAttribute("data-cf-beacon")]))
+      .toEqual([["", true, "https://static.cloudflareinsights.com/beacon.min.js", "{\"token\":\"e8c740f47a4b48c19fb268423c83f57c\"}"]]);
   });
 
   for (const hostname of ["angular.ui.staging.noldova.dev", "localhost", "noldova.dev", "angular.ui.noldova.dev.pages.dev", "ui.noldova.dev.example.com"])

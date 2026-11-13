@@ -12,6 +12,5 @@ export class VisitCounterResources {
   public static readonly beaconToken: string = "e8c740f47a4b48c19fb268423c83f57c";
   public static readonly beaconAttribute: string = "data-cf-beacon";
   public static readonly scriptTag: "script" = "script";
-  public static readonly moduleType: string = "module";
   public static readonly beaconSelector: string = `script[src="${VisitCounterResources.beaconSource}"]`;
 }

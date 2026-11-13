@@ -23,7 +23,7 @@ export class VisitCounter {
       || !Object.isNullOrUndefined(this.document.head.querySelector(VisitCounterResources.beaconSelector)))
       return;
     const script = this.document.createElement(VisitCounterResources.scriptTag);
-    script.type = VisitCounterResources.moduleType;
+    script.defer = true;
     script.src = VisitCounterResources.beaconSource;
     script.setAttribute(VisitCounterResources.beaconAttribute, JSON.stringify({ token: VisitCounterResources.beaconToken }));
     this.document.head.append(script);

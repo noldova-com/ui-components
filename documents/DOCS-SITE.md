@@ -81,7 +81,7 @@ No page carries a `robots` meta tag, so search engines may index the site wherev
 ## Visit counts
 
 The site counts visits to the production docs, `angular.ui.noldova.dev`, with Cloudflare Web Analytics, which sets no cookie and stores nothing in the browser.
-`VisitCounter`, started once as the app starts, adds Cloudflare's beacon, `https://static.cloudflareinsights.com/beacon.min.js`, to the page's head as a module script, with the site's token in `data-cf-beacon`.
+`VisitCounter`, started once as the app starts, adds Cloudflare's beacon, `https://static.cloudflareinsights.com/beacon.min.js`, to the page's head as a classic deferred script, as Cloudflare's own snippet does, with the site's token in `data-cf-beacon`.
 It does so from the site's own script in the browser, on that host only: the prerendered pages hold no script of Cloudflare's, and staging, `angular.ui.staging.noldova.dev`, and local runs load none.
 The host, the beacon's address and the token, which every page that loads the beacon publishes, are `VisitCounterResources`' values.
 Cloudflare's automatic setup, which would add the beacon itself, must stay off for the site.
