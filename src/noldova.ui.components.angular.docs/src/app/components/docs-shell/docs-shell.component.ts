@@ -13,6 +13,7 @@ import { IconButtonComponent, SectionHeaderComponent, TooltipDirective } from "@
 import { Resources } from "../../../resources.js";
 import { DocsBrand } from "../../enums/docs-brand.js";
 import { DocsCatalog } from "../../models/docs-catalog.js";
+import { DocsKitVersion } from "../../models/docs-kit-version.js";
 import type { DocsMenuGroup } from "../../models/docs-menu-group.js";
 import type { DocsPage } from "../../models/docs-page.js";
 import { DocsBrandMarkComponent } from "../docs-brand-mark/docs-brand-mark.component.js";
@@ -44,6 +45,7 @@ export class DocsShellComponent {
 
   protected readonly resources: typeof Resources = Resources;
   protected readonly brands: typeof DocsBrand = DocsBrand;
+  protected readonly version: typeof DocsKitVersion = DocsKitVersion;
   protected readonly gettingStarted: DocsPage = DocsCatalog.gettingStarted;
   protected readonly tokens: DocsPage = DocsCatalog.tokens;
   protected readonly groups: readonly DocsMenuGroup[] = DocsCatalog.menuGroups;
