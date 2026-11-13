@@ -26,7 +26,7 @@ describe("FocusRecordFixture", () => {
     second.remove();
   });
 
-  async function failureOf(check: () => Promise<unknown>, record: FocusRecordFixture): Promise<string> {
+  async function failureOfAsync(check: () => Promise<unknown>, record: FocusRecordFixture): Promise<string> {
     try {
       await record.expectAsync(check);
     }
@@ -42,7 +42,7 @@ describe("FocusRecordFixture", () => {
     record.mark("on the first");
     second.focus();
     second.blur();
-    const message = await failureOf(() => Promise.resolve().then(() => expect(document.activeElement).toBe(first)), record);
+    const message = await failureOfAsync(() => Promise.resolve().then(() => expect(document.activeElement).toBe(first)), record);
     const lines = message.split("\n");
     const recorded = lines.slice(lines.indexOf("Focus record:") + 1).map(t => t.replace(/^\d+ms /, ""));
 
@@ -65,12 +65,12 @@ describe("FocusRecordFixture", () => {
     const record = new FocusRecordFixture();
     first.focus();
 
-    expect(await failureOf(() => Promise.resolve().then(() => expect(document.activeElement).toBe(first)), record)).toBe("passed");
+    expect(await failureOfAsync(() => Promise.resolve().then(() => expect(document.activeElement).toBe(first)), record)).toBe("passed");
   });
 
   it("passes on what a check throws that is not an error, unchanged", async () => {
     const record = new FocusRecordFixture();
 
-    expect(await failureOf(() => Promise.reject("not an error"), record)).toBe("not an error");
+    expect(await failureOfAsync(() => Promise.reject("not an error"), record)).toBe("not an error");
   });
 });

@@ -97,11 +97,11 @@ describe("SwitchComponent", () => {
 
   it("tells assistive technology it is checked while on and not checked while off, by its label or by the name its owner gives", async () => {
     render();
-    const read = async (): Promise<readonly (string | null)[]> => [await AccessibilityFixture.checkedAsync("switch", "Own servers"),
+    const readAsync = async (): Promise<readonly (string | null)[]> => [await AccessibilityFixture.checkedAsync("switch", "Own servers"),
       await AccessibilityFixture.checkedAsync("switch", "Servers of Agent 1")];
-    const off = await read();
+    const off = await readAsync();
     change(true);
-    const on = await read();
+    const on = await readAsync();
 
     expect([off, on]).toEqual([["false", "false"], ["true", "true"]]);
   });
