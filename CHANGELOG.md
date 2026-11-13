@@ -4,6 +4,11 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.10
+
+- `@noldova/ui.components.angular`: `ng-template nolMessageSlot` takes `nolMessageSlotAttached`, false by default. An attached slot is drawn `space-1` (0.25rem) after the part before it instead of the `space-2` (0.5rem) gap between a message's parts, and the part after it stays `space-2` after it. A slot that is the message's first part, or that has only empty slots before it, is drawn as an unattached one. A slot's own roots keep `space-2` between them, and switching the input keeps the slot's view and the focus inside it. Each part of the message's content now has its own wrapper, spaced by a margin instead of the content's gap, and a slot that draws nothing, or has no template, still adds no gap.
+- `@noldova/ui.components.angular`: `nol-toolbar-button`'s `isPressedWhileOpen` no longer needs `hasMenu`. An icon-only button that opens a menu, such as a toolbar's More, draws its pressed look while its menu is open with no chevron, keeping its square. Its menu trigger still marks `aria-haspopup` and `aria-expanded`.
+
 ## 0.0.9
 
 - `@noldova/ui.components.angular`: a menu trigger no longer keeps `aria-controls` naming its menu once that menu has closed, as it did after a submenu's row closed the menus with no change detection while they were open, such as in a spec that clicks the trigger, the submenu's row and its row in turn. The trigger now forgets its menu whenever the menu's overlay closes.
