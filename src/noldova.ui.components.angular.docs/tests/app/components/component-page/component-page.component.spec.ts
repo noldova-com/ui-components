@@ -483,6 +483,14 @@ describe("ComponentPageComponent", () => {
     return owner;
   };
 
+  const resolve = (property: "paddingTop" | "backgroundColor", value: string): string => {
+    const probe = document.body.appendChild(document.createElement("div"));
+    probe.style[property] = value;
+    const resolved = getComputedStyle(probe)[property];
+    probe.remove();
+    return resolved;
+  };
+
   const brokenWords = (cell: HTMLElement): readonly string[] => {
     const broken: string[] = [];
     const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
@@ -1251,6 +1259,29 @@ describe("ComponentPageComponent", () => {
       await userEvent.click(share);
       await vi.waitFor(() => expect(preview.textContent).toContain("Shared: 1"));
     });
+
+    it("fills Sort and the icon-only More with the toolbar hover while their menus are open, More square with no chevron, and idles both once the menu closes", async () => {
+      const host = await renderAsync(expectPage("ToolbarButtonComponent"));
+      const preview = DocsFixture.one(section(host, "Examples"), "nol-docs-toolbar-button-open-example");
+      const hover = resolve("backgroundColor", "var(--nol-toolbar-hover)");
+      const looks: (readonly unknown[])[] = [];
+      for (const name of ["Sort", "More"]) {
+        const button = DocsFixture.one(preview, `button[aria-label="${name}"]`);
+        const idle = getComputedStyle(button).backgroundColor;
+        const closedBox = button.getBoundingClientRect();
+        button.focus();
+        await userEvent.keyboard("{Enter}");
+        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull());
+        const openBox = button.getBoundingClientRect();
+        const open = [button.getAttribute("aria-expanded"), getComputedStyle(button).backgroundColor === hover, button.getAttribute("aria-pressed"),
+          button.querySelector(".nol-toolbar-button-chevron") !== null, Math.abs(openBox.width - closedBox.width) < 0.5, Math.abs(openBox.height - closedBox.height) < 0.5];
+        await userEvent.keyboard("{Escape}");
+        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull());
+        looks.push([name, idle === hover, ...open, getComputedStyle(button).backgroundColor === idle, Math.abs(closedBox.width - closedBox.height) < 0.5]);
+      }
+
+      expect(looks).toEqual([["Sort", false, "true", true, null, true, true, true, true, false], ["More", false, "true", true, null, false, true, true, true, true]]);
+    });
   });
 
   describe("the Chip page", () => {
@@ -1603,6 +1634,18 @@ describe("ComponentPageComponent", () => {
       await userEvent.click(DocsFixture.one(failed, "button.nol-message-retry"));
       await vi.waitFor(() => expect(failed.querySelector(".nol-message-error")).toBeNull());
       await vi.waitFor(() => expect(failed.textContent).toContain("in the note Weekly plan, under Monday."));
+    });
+
+    it("draws the stopped line attached under the reply's text, space-1 after it rather than space-2", async () => {
+      const host = await renderAsync(expectPage("MessageComponent"));
+      const message = DocsFixture.one(section(host, "Examples"), "nol-docs-message-attached-slot-example nol-message");
+      const stopped = DocsFixture.one(message, ".nol-docs-message-stopped");
+      const gap = stopped.getBoundingClientRect().top - DocsFixture.one(message, "nol-message-run").getBoundingClientRect().bottom;
+      const space = (name: string): number => Number.parseFloat(resolve("paddingTop", `var(--nol-space-${name})`));
+
+      expect([stopped.textContent?.trim(), stopped.closest(".nol-message-part")?.classList.contains("nol-message-part-attached")]).toEqual(["Stopped by you", true]);
+      expect(Math.abs(gap - space("1"))).toBeLessThan(0.5);
+      expect(space("2") - space("1")).toBeGreaterThan(1);
     });
 
     it("opens its owner's menu on Shift+F10 below the focused part, and gives that part the focus back on Escape", async () => {
