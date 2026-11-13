@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Exception } from "@noldova/context.exceptions";
+import { UiComponentsException } from "./ui-components.exception.js";
 
-export class MarkdownException extends Exception {
+export class MarkdownException extends UiComponentsException {
   public override readonly name: string = "MarkdownException";
 
   public constructor(message: string) {

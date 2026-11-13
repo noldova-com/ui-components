@@ -7,7 +7,8 @@
  */
 
 import type { EnvironmentProviders } from "@angular/core";
-import { Exception, type ExceptionOptions } from "@noldova/context.exceptions";
+import type { ExceptionOptions } from "@noldova/context.exceptions";
+import { UiComponentsException } from "@noldova/ui.components.angular";
 
 /**
  * Turns on the coloring of the kit's code block, `CodeBlockComponent` from
@@ -111,7 +112,7 @@ export declare function provideCodeHighlightingWorker(start: () => Worker): Envi
  * `ErrorHandler` when its worker fails, or when a grammar fails to load in
  * the worker.
  */
-export declare class CodeHighlightingException extends Exception {
+export declare class CodeHighlightingException extends UiComponentsException {
   /**
    * The exception's name, `"CodeHighlightingException"`, which the class
    * sets itself so that a minified build keeps it.
