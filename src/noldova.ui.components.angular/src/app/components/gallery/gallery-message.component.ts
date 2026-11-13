@@ -74,6 +74,7 @@ export class GalleryMessageComponent {
     new MessageAttachment(this.text.messageAttachmentId, this.text.messageAttachmentName, GalleryResources.messageAttachmentSize, this.text.messageAttachmentType),
     new MessageSlot(this.text.messageSlotId)
   ];
+  protected readonly attachedSlot: readonly MessageBlock[] = [new MessageText(this.text.messageStopped), new MessageSlot(this.text.messageAttachedSlotId)];
   protected readonly pictureAttached: readonly MessageBlock[] = [
     new MessageAttachment(this.text.messagePictureId, this.text.messagePictureName, GalleryResources.messagePictureSize, this.text.messagePictureType, null, null,
       new MessageAttachmentPicture(GalleryResources.messagePicture, GalleryResources.messagePictureWidth, GalleryResources.messagePictureHeight)),

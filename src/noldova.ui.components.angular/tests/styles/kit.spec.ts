@@ -445,8 +445,8 @@ describe("kit styles in forced colors", () => {
     try {
       const shown = [root, scope].map(t => terminal.map(u => getComputedStyle(t).getPropertyValue(u).trim()));
 
-      expect([themeLoaded, terminal.length]).toEqual([false, 21]);
-      expect(shown).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t) ?? "CanvasText")));
+      expect([themeLoaded, terminal.length]).toEqual([false, 42]);
+      expect(shown).toEqual(Array.from({ length: 2 }, () => terminal.map(t => system.get(t.replace("-dark-", "-")) ?? "CanvasText")));
     } finally {
       painter.erase(root);
       scope.remove();
@@ -464,6 +464,23 @@ describe("kit styles in forced colors", () => {
       const shown = [root, scope].map(t => status.map(u => getComputedStyle(t).getPropertyValue(u).trim()));
 
       expect(shown).toEqual([["CanvasText", "CanvasText", "CanvasText"], ["CanvasText", "CanvasText", "CanvasText"]]);
+    } finally {
+      painter.erase(root);
+      scope.remove();
+    }
+  });
+
+  it("gives the warning and error band fills Canvas over a painted theme on the page and in a painted scope inside it, from kit.css without theme.css", () => {
+    const root = document.documentElement;
+    const scope = document.body.appendChild(document.createElement("div"));
+    const painter = new ThemePainter(DefaultTheme.theme);
+    const bands = ["--nol-warning-background", "--nol-error-background"];
+    painter.paint(root, DefaultTheme.theme, ThemeMode.Dark);
+    painter.paint(scope, DefaultTheme.theme, ThemeMode.Light);
+    try {
+      const shown = [root, scope].map(t => bands.map(u => getComputedStyle(t).getPropertyValue(u).trim()));
+
+      expect(shown).toEqual([["Canvas", "Canvas"], ["Canvas", "Canvas"]]);
     } finally {
       painter.erase(root);
       scope.remove();

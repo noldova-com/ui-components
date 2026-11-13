@@ -108,6 +108,8 @@ The default theme's grays for surfaces, borders, hover, selection and the focuse
 | `--nol-status-ok` | `status-ok` | #1A7F37 | #3FB950 | An app's status dot for a positive state, such as Connected; `CanvasText` in forced colors |
 | `--nol-status-failed` | `status-failed` | #CF222E | #F85149 | An app's status dot for a failed state, such as Sign-in required or Connection error; `CanvasText` in forced colors |
 | `--nol-warning` | `warning` | #8A5800 | #E3A33B | Text and marks for a state near a limit or one to check, such as a Warning chip or a meter's warning tone, with text that names it; `CanvasText` in forced colors |
+| `--nol-warning-background` | `warning-background` | #8A580014 | #E3A33B1F | The fill of a band that warns, such as an offline bar, under `warning` text, which keeps 4.5:1 on it over the window, panel, raised and dialog surfaces; `Canvas` in forced colors |
+| `--nol-error-background` | `error-background` | #A1260D12 | #F487711C | The fill of a band that reports an error, under `error` text, which keeps 4.5:1 on it over the window, panel, raised and dialog surfaces; `Canvas` in forced colors |
 | `--nol-docking-preview` | `docking-preview`, fallback `selected` | #E6E6E6 | #383838 | The area a dragged tab will occupy |
 | `--nol-docking-preview-border` | `docking-preview-border`, fallback `accent` | #005FB8 | #4DAAFC | The border of that area |
 | `--nol-text-selection` | `text-selection` | #ADD6FF | #264F78 | Selected text's fill where the kit paints a selection itself, as in the mention field; the selection foreground stays at least 4.5:1 on it. Forced colors use `Highlight` |
@@ -133,6 +135,27 @@ The default theme's grays for surfaces, borders, hover, selection and the focuse
 | `--nol-terminal-ansi-bright-magenta` | `terminal-ansi-bright-magenta` | #D670D6 | #D670D6 | The terminal's ANSI bright magenta; under 4.5:1 on the terminal background in light mode, an exception stated below the table |
 | `--nol-terminal-ansi-bright-cyan` | `terminal-ansi-bright-cyan` | #29B8DB | #29B8DB | The terminal's ANSI bright cyan; under 4.5:1 on the terminal background in light mode, an exception stated below the table |
 | `--nol-terminal-ansi-bright-white` | `terminal-ansi-bright-white` | #A5A5A5 | #E5E5E5 | The terminal's ANSI bright white; under 4.5:1 on the terminal background in light mode, an exception stated below the table |
+| `--nol-terminal-dark-background` | `terminal-dark-background` | #1F1F1F | #1F1F1F | The dark terminal background, which a `nol-terminal-dark` scope gives its terminal in both modes |
+| `--nol-terminal-dark-foreground` | `terminal-dark-foreground` | #CCCCCC | #CCCCCC | Dark terminal text in its default color; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-cursor` | `terminal-dark-cursor` | #CCCCCC | #CCCCCC | Dark terminal cursor; at least 3:1 on the dark terminal background |
+| `--nol-terminal-dark-selection` | `terminal-dark-selection` | #264F78 | #264F78 | Selected dark terminal text's fill; the dark selection foreground stays at least 4.5:1 on it |
+| `--nol-terminal-dark-selection-foreground` | `terminal-dark-selection-foreground` | #CCCCCC | #CCCCCC | Selected dark terminal text; at least 4.5:1 on the dark terminal selection |
+| `--nol-terminal-dark-ansi-black` | `terminal-dark-ansi-black` | #000000 | #000000 | The dark terminal's ANSI black; under 4.5:1 on the dark terminal background in both modes, an exception stated below the table |
+| `--nol-terminal-dark-ansi-red` | `terminal-dark-ansi-red` | #CD3131 | #CD3131 | The dark terminal's ANSI red; under 4.5:1 on the dark terminal background in both modes, an exception stated below the table |
+| `--nol-terminal-dark-ansi-green` | `terminal-dark-ansi-green` | #0DBC79 | #0DBC79 | The dark terminal's ANSI green; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-yellow` | `terminal-dark-ansi-yellow` | #E5E510 | #E5E510 | The dark terminal's ANSI yellow; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-blue` | `terminal-dark-ansi-blue` | #2472C8 | #2472C8 | The dark terminal's ANSI blue; under 4.5:1 on the dark terminal background in both modes, an exception stated below the table |
+| `--nol-terminal-dark-ansi-magenta` | `terminal-dark-ansi-magenta` | #BC3FBC | #BC3FBC | The dark terminal's ANSI magenta; under 4.5:1 on the dark terminal background in both modes, an exception stated below the table |
+| `--nol-terminal-dark-ansi-cyan` | `terminal-dark-ansi-cyan` | #11A8CD | #11A8CD | The dark terminal's ANSI cyan; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-white` | `terminal-dark-ansi-white` | #E5E5E5 | #E5E5E5 | The dark terminal's ANSI white; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-black` | `terminal-dark-ansi-bright-black` | #666666 | #666666 | The dark terminal's ANSI bright black; under 4.5:1 on the dark terminal background in both modes, an exception stated below the table |
+| `--nol-terminal-dark-ansi-bright-red` | `terminal-dark-ansi-bright-red` | #F14C4C | #F14C4C | The dark terminal's ANSI bright red; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-green` | `terminal-dark-ansi-bright-green` | #23D18B | #23D18B | The dark terminal's ANSI bright green; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-yellow` | `terminal-dark-ansi-bright-yellow` | #F5F543 | #F5F543 | The dark terminal's ANSI bright yellow; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-blue` | `terminal-dark-ansi-bright-blue` | #3B8EEA | #3B8EEA | The dark terminal's ANSI bright blue; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-magenta` | `terminal-dark-ansi-bright-magenta` | #D670D6 | #D670D6 | The dark terminal's ANSI bright magenta; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-cyan` | `terminal-dark-ansi-bright-cyan` | #29B8DB | #29B8DB | The dark terminal's ANSI bright cyan; at least 4.5:1 on the dark terminal background |
+| `--nol-terminal-dark-ansi-bright-white` | `terminal-dark-ansi-bright-white` | #E5E5E5 | #E5E5E5 | The dark terminal's ANSI bright white; at least 4.5:1 on the dark terminal background |
 | `--nol-author-1` | `author-1`, fallback `accent` | #2F78CA | #76A7DF | Blue, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
 | `--nol-author-2` | `author-2`, fallback `accent` | #1F8582 | #2AB5B0 | Teal, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
 | `--nol-author-3` | `author-3`, fallback `accent` | #20882E | #2CBB3F | Green, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
@@ -181,14 +204,17 @@ These tokens derive from the theme's colors rather than having keys of their own
 
 The table gives normal-state colors.
 The terminal's colors are the maintainer's decision, and its background is its host's background, the window or the panel color.
-The stored ANSI colors listed above as under 4.5:1 on the terminal background, 9 in light mode and 5 in dark, the same on the window color as on the panel color, which the Gallery's terminal colors check, are an exception to the contrast the organization's UI standard sets, the maintainer's, as long as the app's terminal sets xterm's `minimumContrastRatio` to 4.5, so that every ANSI color it draws meets 4.5:1 on screen; the foreground, the selection's text and the cursor keep their ratios.
+The stored ANSI colors listed above as under 4.5:1 on the terminal background, 9 in light mode and 5 in dark, and the dark terminal set's 5 in both modes, the same on the window color as on the panel color, which the Gallery's terminal colors check, are an exception to the contrast the organization's UI standard sets, the maintainer's, as long as the app's terminal sets xterm's `minimumContrastRatio` to 4.5, so that every ANSI color it draws meets 4.5:1 on screen; the foreground, the selection's text and the cursor keep their ratios.
+A terminal can show the dark look inside the light theme: an app puts the `nol-terminal-dark` class on the terminal's container, and inside it every `--nol-terminal-*` token takes its `--nol-terminal-dark-*` twin, so the terminal draws the dark set in both modes.
+The theme carries the dark set as colors of its own, the dark mode's terminal colors in both of the default theme's modes, so a custom theme can give its own; a theme without them gets the default theme's from `styles/theme.css`.
+The class is in `styles/terminal.css`; it goes on the terminal's container or another element inside a painted theme scope, not on the scope's own element, whose painted `--nol-terminal-*` values win over it. A terminal follows the class when it is added or removed, as `nol-terminal-output` does.
 Another exception to that contrast, the maintainer's, is the diff view: code's token colors on its changed lines and changed characters may fall below 4.5:1, while plain code text keeps it.
 
-A terminal draws its own text, which forced colors don't recolor, so in forced colors the terminal tokens take the system's colors over any painted theme: `Canvas` for the background, `Highlight` for the selection, `HighlightText` for the selected text, and `CanvasText` for the foreground, the cursor and every ANSI color, on the page and in every scope a theme is painted on.
+A terminal draws its own text, which forced colors don't recolor, so in forced colors the terminal tokens take the system's colors over any painted theme: `Canvas` for the background, `Highlight` for the selection, `HighlightText` for the selected text, and `CanvasText` for the foreground, the cursor and every ANSI color, on the page, in every scope a theme is painted on and in a `nol-terminal-dark` scope, whose dark set takes the same system colors.
 These values are in `styles/terminal.css`, which `styles/kit.css` imports, so every page that loads the kit gets them, with or without `styles/theme.css`.
 Since every ANSI color is then `CanvasText`, an app's terminal draws an ANSI cell background (SGR 40 to 47 and 100 to 107) as `--nol-terminal-background` in forced colors, so its text stays `CanvasText` on `Canvas`; the kit has no ANSI background tokens.
 The status dot tokens, `--nol-status-ok` and `--nol-status-failed`, are their own colors, so a diff's added color and the error color don't change with them, and a status dot keeps 3:1 on the window, the panel, a hovered row and a selected row.
-Forced colors have no green or red, so both become `CanvasText`, from `styles/status.css`, which `styles/kit.css` imports, on the page and in every scope a theme is painted on; a dot then stays visible, and the label beside it names the state, since `Highlight` would read as a selection.
+Forced colors have no green or red, so both become `CanvasText`, and the warning and error band fills `Canvas`, from `styles/status.css`, which `styles/kit.css` imports, on the page and in every scope a theme is painted on; a dot then stays visible, and the label beside it names the state, since `Highlight` would read as a selection.
 A dot drawn as a background sets `forced-color-adjust: none`, as the Gallery's Status colors specimen does, since forced colors would otherwise paint its background as `Canvas`.
 
 Muted text inside a selected surface takes that surface's normal text color, and every selected state sets the fill and that color together.
@@ -223,7 +249,7 @@ Each control's specification is a file of its own in [kit/](kit/), which gives i
 Widths are preferred maxima unless marked as minimums, and the text roles are the kit's text tokens, `--nol-text-<role>`.
 Where a specification says the owner does something, the control leaves it to the code that uses it.
 An overlay anchored to a control, such as a menu, a select list, a popover, a tooltip or a mention list, is placed for the size it has in the frame it first paints, and placed again before the next paint whenever a render changes its size.
-A list that fills a row while it is hovered, active, chosen or current keeps two neighboring fills `--nol-row-gap` apart, twice the tab's side inset `--nol-tab-inset`, so 0.25rem, as two tabs' pills stand: the tree's rows and a virtual list's options have the gap between rows, and menu items and select, quick input and mention options are each that much taller, with their fill inset by the tab's side inset above and below, so the rows meet.
+A list that fills a row while it is hovered, active, chosen or current keeps two neighboring fills `--nol-row-gap` apart, twice the tab's side inset `--nol-tab-inset`, so 0.25rem, as two tabs' pills stand: the tree's rows and a virtual list's options have the gap between rows, and menu items and select, quick input, mention and completion options are each that much taller, with their fill inset by the tab's side inset above and below, so the rows meet.
 
 - [Avatar](kit/avatar.md)
 - [Badge (counts, +1 −0), key and status chips](kit/badge.md)
@@ -233,6 +259,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [Choice pills (toggle group)](kit/choice-pills.md)
 - [Choice row](kit/choice-row.md)
 - [Code block](kit/code-block.md)
+- [Completion list](kit/completion-list.md)
 - [Configuration table](kit/configuration-table.md)
 - [Copy](kit/copy.md)
 - [Dialog](kit/dialog.md)

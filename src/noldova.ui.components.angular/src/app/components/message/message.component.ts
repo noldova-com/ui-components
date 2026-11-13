@@ -240,6 +240,11 @@ export class MessageComponent {
     return this.slots().find(t => t.id() === id)?.template ?? null;
   }
 
+  protected isAttached(part: MessagePart): boolean {
+    const block = part.blocks.at(0);
+    return block instanceof MessageSlot && this.slots().some(t => t.id() === block.id && t.isAttached());
+  }
+
   protected sizeOf(attachment: MessageAttachment): string {
     return MessageResources.formatMessageAttachment(attachment.type, ByteSize.textOf(attachment.size, this.locale));
   }

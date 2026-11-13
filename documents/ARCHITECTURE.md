@@ -35,7 +35,7 @@ products (desktop apps, websites)
 
 - Products depend on a published version of the packages.
 - `@noldova/ui.components.angular` takes `@noldova/context.core` and `@noldova/context.exceptions`, the context repository's packages, published on npm, as peer dependencies, so an app holds one copy of each beside the kit.
-  Each peer is a range from the version the kit builds and tests with to the next minor, `>=0.0.2 <0.1.0` today, so an app moves to a newer context release without waiting for the kit; from 1.0 it ends at the next major.
+  Each peer is a range from the version the kit builds and tests with to the next minor, `>=0.0.7 <0.1.0` today, so an app moves to a newer context release without waiting for the kit; from 1.0 it ends at the next major.
   The kit's own `package.json` and the docs site's install them from npm, `https://registry.npmjs.org`, at that lowest version, exactly.
 - No package depends on a product.
 - The rules for the public API, its versions, copying and outside material are in [AGENTS.md](../AGENTS.md#the-package).

@@ -4,6 +4,36 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.10
+
+- `@noldova/ui.components.angular`: `ng-template nolMessageSlot` takes `nolMessageSlotAttached`, false by default. An attached slot is drawn `space-1` (0.25rem) after the part before it instead of the `space-2` (0.5rem) gap between a message's parts, and the part after it stays `space-2` after it. A slot that is the message's first part, or that has only empty slots before it, is drawn as an unattached one. A slot's own roots keep `space-2` between them, and switching the input keeps the slot's view and the focus inside it. Each part of the message's content now has its own wrapper, spaced by a margin instead of the content's gap, and a slot that draws nothing, or has no template, still adds no gap.
+- `@noldova/ui.components.angular`: `nol-toolbar-button`'s `isPressedWhileOpen` no longer needs `hasMenu`. An icon-only button that opens a menu, such as a toolbar's More, draws its pressed look while its menu is open with no chevron, keeping its square. Its menu trigger still marks `aria-haspopup` and `aria-expanded`.
+
+## 0.0.9
+
+- `@noldova/ui.components.angular`: a menu trigger no longer keeps `aria-controls` naming its menu once that menu has closed, as it did after a submenu's row closed the menus with no change detection while they were open, such as in a spec that clicks the trigger, the submenu's row and its row in turn. The trigger now forgets its menu whenever the menu's overlay closes.
+- `@noldova/ui.components.angular`: `nol-completion-list`, `CompletionListComponent` with `CompletionChoice(label, note)`: a listbox of completion choices for a field that keeps the focus, such as commands after a slash or names in code. The host is the listbox with the owner's id and name, each option is `<listId>-option-<index>` (`CompletionListComponent.optionId`) named by its label and note, and the active one is marked selected and kept in view; a click emits the choice the owner gave, and a press never takes the focus from the field. It draws the menu's box and the menu item's rows, the active row in the hover fill, sets no position, z-index or width, and is at most twelve rows high, or `maxHeight` in CSS pixels when less; `isCode` shows the labels in the code font.
+
+## 0.0.8
+
+- `@noldova/ui.components.angular`: a menu trigger, a context menu's host and a submenu's row name their menu in `aria-controls` only while it is open; before, they kept naming a menu that had closed and was no longer in the document.
+
+## 0.0.7
+
+- `@noldova/ui.components.angular`: `ButtonVariant.Accent`, the accent chip look for `nol-button`, for an action on a card that names what is shown, such as a page card's Open while its page is open: the chip's height and side padding, the `selected` fill with a `text` label and no visible border, the toolbar hover over that fill under the pointer, the button's focus outline and disabled look, and under forced colors a `ButtonText` border and label, or `GrayText` while disabled. It keeps the chip's height at the compact size.
+- `@noldova/ui.components.angular`: `ToolCall` takes an optional `note`, such as "waiting for your answer", which the card draws after the title inside the same truncating text: a ` · ` separator and the note in `text-muted` at the title's size, or `GrayText` under forced colors. The toggle's accessible name and the title's tooltip read the title and the note together.
+- `@noldova/ui.components.angular`: a terminal can show the dark terminal look inside the light theme: the `nol-terminal-dark` class on an element around it maps every `--nol-terminal-*` token to a new `--nol-terminal-dark-*` twin, which the default theme gives its dark mode's terminal colors in both modes and a custom theme can set. Under forced colors the scope keeps the system's colors. `nol-terminal-output` follows the class when it's added or removed.
+- `@noldova/ui.components.angular`: `isPressedWhileOpen` on a toolbar button with a menu draws the pressed fill while its menu is open, and its idle look once it closes; it is opt-in, so other toolbar buttons keep their look.
+- `@noldova/ui.components.angular`: two new colors, `warning-background` and `error-background`, for a band under `warning` or `error` text, both `Canvas` under forced colors.
+- `@noldova/ui.components.angular`: `uppercase` on `nol-menu-group` draws its label in capitals in the uppercase section header's look, at the kit's 12px small size; the group's accessible name stays the label as written.
+- `@noldova/ui.components.angular`: a working tab's leading spinner takes the icon's 1rem box and its 0.25rem gap, so the label no longer moves left while the tab works; the ring stays 0.75rem, centred in the box.
+
+## 0.0.6
+
+- `@noldova/ui.components.angular`: `nol-menu-item` takes `isShowingChevron`, true by default; a row that opens a submenu with it false leaves out its chevron, so its value or shortcut ends at the row's end padding, as a Zoom row showing the page's zoom does. The row still opens its submenu by the pointer, Enter and the arrow key toward its side, and still tells screen readers it opens a menu.
+- `@noldova/ui.components.angular`: a collapsible section header's caret is 0.875rem, by the new `--nol-section-header-caret` token, in the header's text color, `text-strong`, or `text` on an uppercase header, rather than 1rem in `icon-color`; under forced colors it takes the label's system color.
+- `@noldova/ui.components.angular`: its development pins of Angular's build tools, `@angular/build` and `@angular/cli`, move from 22.2.6 to 22.2.7, their newest patch, which they published apart from Angular's; the kit's Angular stays at 22.2.6. An app can take the build tools at 22.2.7 with the kit, or keep them at 22.2.6.
+
 ## 0.0.5
 
 0.0.4 was tagged but never published: its release stopped before the publish, since Angular's newest patch had moved past the kit's. This version holds what 0.0.4 would have, and moves the kit to that patch.

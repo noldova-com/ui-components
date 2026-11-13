@@ -26,6 +26,8 @@ describe("DefaultTheme", () => {
       ["window", "#F8F8F8", "#181818"],
       ["panel", "#FFFFFF", "#1F1F1F"],
       ["terminal-background", "#FFFFFF", "#1F1F1F"],
+      ["terminal-dark-background", "#1F1F1F", "#1F1F1F"],
+      ["terminal-dark-foreground", "#CCCCCC", "#CCCCCC"],
       ["raised", "#F8F8F8", "#2B2B2B"],
       ["attachment", "#F2F2F2", "#2B2B2B"],
       ["code-header-raised", "#F2F2F2", "#343434"],
@@ -73,6 +75,8 @@ describe("DefaultTheme", () => {
       ["status-ok", "#1A7F37", "#3FB950"],
       ["status-failed", "#CF222E", "#F85149"],
       ["warning", "#8A5800", "#E3A33B"],
+      ["warning-background", "#8A580014", "#E3A33B1F"],
+      ["error-background", "#A1260D12", "#F487711C"],
       ["author-1", "#2F78CA", "#76A7DF"],
       ["author-2", "#1F8582", "#2AB5B0"],
       ["author-3", "#20882E", "#2CBB3F"],
@@ -152,6 +156,7 @@ describe("DefaultTheme contrast", () => {
   const on = (foreground: string, grounds: readonly (readonly string[])[], ratio: number): (readonly [string, readonly string[], number])[] =>
     grounds.map(t => [foreground, t, ratio] as const);
   const ansi: readonly string[] = ["", "bright-"].flatMap(t => ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"].map(u => `terminal-ansi-${t}${u}`));
+  const darkAnsi: readonly string[] = ansi.map(t => t.replace("terminal-", "terminal-dark-"));
   const pairs: readonly (readonly [string, readonly string[], number])[] = [
     ...on("text", [...surfaces.map(t => [t]), ["window", "hover"], ["panel", "hover"], ["window", "selected"], ["panel", "selected"], ["window", "toolbar-hover"], ["panel", "toolbar-hover"], ["raised", "toolbar-hover"], ["dialog", "toolbar-hover"]], textRatio),
     ...on("text-strong", [...surfaces.map(t => [t]), ["window", "hover"], ["panel", "hover"], ["window", "selected"], ["panel", "selected"], ["window", "toolbar-hover"], ["panel", "toolbar-hover"], ["raised", "toolbar-hover"], ["dialog", "toolbar-hover"]], textRatio),
@@ -160,6 +165,7 @@ describe("DefaultTheme contrast", () => {
     ...on("setting-title", [["panel"], ["panel", "hover"]], textRatio),
     ...on("link", [["window"], ["panel"], ["dialog"]], textRatio),
     ...on("mention", [["window"], ["panel"], ["dialog"], ["raised"]], textRatio),
+    ...on("text", [["raised", "selected"], ["dialog", "selected"], ["window", "selected", "toolbar-hover"], ["panel", "selected", "toolbar-hover"], ["raised", "selected", "toolbar-hover"], ["dialog", "selected", "toolbar-hover"]], textRatio),
     ...on("list-highlight", [["panel"], ["panel", "hover"], ["quick-input"], ["quick-input", "selected"]], textRatio),
     ...on("input-text", [["input"], ["dropdown"], ["dropdown-list"]], textRatio),
     ...on("placeholder", [["input"]], textRatio),
@@ -174,7 +180,8 @@ describe("DefaultTheme contrast", () => {
     ...on("added", [["panel"], ["code"]], textRatio),
     ...on("status-ok", [["window"], ["panel"], ["panel", "hover"], ["panel", "selected"]], partRatio),
     ...on("status-failed", [["window"], ["panel"], ["panel", "hover"], ["panel", "selected"]], partRatio),
-    ...on("warning", [["window"], ["panel"], ["dialog"], ["panel", "hover"], ["panel", "selected"]], textRatio),
+    ...on("warning", [["window"], ["panel"], ["dialog"], ["panel", "hover"], ["panel", "selected"], ["window", "warning-background"], ["panel", "warning-background"], ["raised", "warning-background"], ["dialog", "warning-background"]], textRatio),
+    ...on("error", [["window", "error-background"], ["panel", "error-background"], ["raised", "error-background"], ["dialog", "error-background"]], textRatio),
     ...on("code-comment", [["code"]], textRatio),
     ...on("code-keyword", [["code"]], textRatio),
     ...on("code-control", [["code"]], textRatio),
@@ -189,6 +196,9 @@ describe("DefaultTheme contrast", () => {
     ...on("terminal-foreground", [["terminal-background"]], textRatio),
     ...on("terminal-selection-foreground", [["terminal-background", "terminal-selection"]], textRatio),
     ...ansi.flatMap(t => on(t, [["terminal-background"]], textRatio)),
+    ...on("terminal-dark-foreground", [["terminal-dark-background"]], textRatio),
+    ...on("terminal-dark-selection-foreground", [["terminal-dark-background", "terminal-dark-selection"]], textRatio),
+    ...darkAnsi.flatMap(t => on(t, [["terminal-dark-background"]], textRatio)),
     ...on("icon-color", [["window"], ["panel"], ["menu"], ["attachment"], ["window", "hover"], ["window", "selected"], ["window", "toolbar-hover"], ["panel", "toolbar-hover"]], partRatio),
     ...on("accent", [["window"], ["panel"], ["raised"], ["dialog"], ["menu"], ["quick-input"], ["input"], ["window", "selected"], ["window", "toolbar-hover"], ["panel", "toolbar-hover"], ["raised", "toolbar-hover"], ["dialog", "toolbar-hover"]], partRatio),
     ...on("sash-active", [["window"]], partRatio),
@@ -200,6 +210,7 @@ describe("DefaultTheme contrast", () => {
     ...on("switch-knob", [["accent"]], partRatio),
     ...on("docking-preview-border", [["window"], ["panel"], ["panel", "docking-preview"]], partRatio),
     ...on("terminal-cursor", [["terminal-background"]], partRatio),
+    ...on("terminal-dark-cursor", [["terminal-dark-background"]], partRatio),
     ...on("avatar-default-text", [["avatar-default"]], textRatio),
     ...on("avatar-teal-text", [["avatar-teal"]], textRatio),
     ...on("avatar-green-text", [["avatar-green"]], textRatio),
@@ -238,10 +249,10 @@ describe("DefaultTheme contrast", () => {
   ]);
   const storedLight: readonly string[] = ["yellow", "cyan", "bright-red", "bright-green", "bright-yellow", "bright-blue", "bright-magenta", "bright-cyan", "bright-white"];
   const storedDark: readonly string[] = ["black", "red", "blue", "magenta", "bright-black"];
-  const storedUnder: readonly (readonly [ThemeMode, string, string])[] = [
-    ...storedLight.map(t => [ThemeMode.Light, `terminal-ansi-${t}`, "A stored terminal color; the exception holds as long as the terminal sets minimumContrastRatio to 4.5, which lifts it to 4.5:1 on screen."] as const),
-    ...storedDark.map(t => [ThemeMode.Dark, `terminal-ansi-${t}`, "A stored terminal color; the exception holds as long as the terminal sets minimumContrastRatio to 4.5, which lifts it to 4.5:1 on screen."] as const)
-  ];
+  const storedUnder: readonly (readonly [ThemeMode, string, string])[] = modes.flatMap(mode => [
+    ...(mode === ThemeMode.Light ? storedLight : storedDark).map(t => [mode, `terminal-ansi-${t}`, "A stored terminal color; the exception holds as long as the terminal sets minimumContrastRatio to 4.5, which lifts it to 4.5:1 on screen."] as const),
+    ...storedDark.map(t => [mode, `terminal-dark-ansi-${t}`, "The dark terminal set is the dark mode's terminal colors in both modes, so its stored colors fall under as the dark mode's do."] as const)
+  ]);
   const isStoredUnder = (mode: ThemeMode, foreground: string): boolean => storedUnder.some(([exempt, color]) => exempt === mode && color === foreground);
   const fillCues: readonly (readonly [string, string, string])[] = [
     ["selected", "window", "Selection shows by its fill alone, by decision; its semantics and forced colors' Highlight fill convey it."],
@@ -283,10 +294,11 @@ describe("DefaultTheme contrast", () => {
     expect(failures).toEqual([]);
   });
 
-  it("lets only the stored terminal colors fall under 4.5:1 on its background, the listed slots in each mode", () => {
-    const under = modes.flatMap(mode => ansi
-      .filter(t => ratio(DefaultTheme.theme, mode, t, ["terminal-background"]) < textRatio)
-      .map(t => [mode, t] as const));
+  it("lets only the stored terminal colors fall under 4.5:1 on its background, the listed slots in each mode, in the theme's terminal set and its dark set", () => {
+    const grounded = [...ansi.map(t => [t, "terminal-background"] as const), ...darkAnsi.map(t => [t, "terminal-dark-background"] as const)];
+    const under = modes.flatMap(mode => grounded
+      .filter(([color, ground]) => ratio(DefaultTheme.theme, mode, color, [ground]) < textRatio)
+      .map(([color]) => [mode, color] as const));
 
     expect(under).toEqual(storedUnder.map(([mode, color]) => [mode, color]));
     expect(storedUnder.every(([, , reason]) => reason.length > 0)).toBe(true);

@@ -201,6 +201,27 @@ describe("TerminalOutputComponent", () => {
     expect(spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)).toEqual([]);
   });
 
+  it("lifts its runs' text again for the dark terminal set when a dark terminal scope's class is added around it, and back when it's removed", async () => {
+    await renderAsync(ThemeMode.Light);
+    const scope = DomFixture.host(fixture);
+    const light = getComputedStyle(spanOf("black")).color;
+    const lightBackground = getComputedStyle(body()).backgroundColor;
+    scope.classList.add("nol-terminal-dark");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(getComputedStyle(spanOf("black")).color).not.toBe(light);
+    });
+    const dark = [getComputedStyle(body()).backgroundColor, spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)];
+    scope.classList.remove("nol-terminal-dark");
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(getComputedStyle(spanOf("black")).color).toBe(light);
+    });
+
+    expect(dark).toEqual([AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "terminal-dark-background"), []]);
+    expect(getComputedStyle(body()).backgroundColor).toBe(lightBackground);
+  });
+
   it("grows with its lines until its owner's height cap, then scrolls inside, open at its end", async () => {
     await renderAsync();
     const many = Array.from({ length: 40 }, (_, i) => new TerminalOutputLine(`line ${String(i)}`));

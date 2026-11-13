@@ -8,7 +8,7 @@
 
 import type { FocusOrigin } from "@angular/cdk/a11y";
 import { CdkMenuTriggerBase, MENU_STACK, MenuStack, MenuTracker } from "@angular/cdk/menu";
-import { DOCUMENT, Directive, ElementRef, Injector, inject } from "@angular/core";
+import { ChangeDetectorRef, DOCUMENT, Directive, ElementRef, Injector, inject } from "@angular/core";
 import { takeUntil } from "rxjs";
 
 import "@noldova/context.core";
@@ -26,6 +26,7 @@ import { ContextMenuTriggerResources } from "./context-menu-trigger.resources.js
   inputs: [{ name: "menuTemplateRef", alias: "nolContextMenuTriggerFor" }],
   host: {
     "[attr.data-cdk-menu-stack-id]": "null",
+    "[attr.aria-controls]": "isOpen() ? childMenu?.id : null",
     "(contextmenu)": "openAtPointer($event)",
     "(keydown)": "openFromKeyboard($event)"
   },
@@ -35,6 +36,7 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly document: Document = inject(DOCUMENT);
   private readonly tracker: MenuTracker = inject(MenuTracker);
+  private readonly changes: ChangeDetectorRef = inject(ChangeDetectorRef);
   private readonly anchored: AnchoredOverlay = new AnchoredOverlay(inject(Injector), Resources.menuPaneClass);
   private echoes: readonly string[] = [];
   private target: HTMLElement = this.host;
@@ -47,6 +49,7 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
         this.closed.next();
         this.takeLostFocus();
         this.anchored.close();
+        this.changes.markForCheck();
       }
       if (focusParentTrigger === true && this.menuStack.isEmpty())
         this.target.focus();

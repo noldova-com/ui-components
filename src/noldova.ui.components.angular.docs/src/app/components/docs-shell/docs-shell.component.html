@@ -9,10 +9,13 @@ LICENSE file in the root directory of this source tree.
 <header #header class="nol-docs-header">
   <button #menuButton type="button" nol-icon-button class="nol-docs-menu-button" [icon]="resources.menuGlyph" [label]="resources.menuButtonLabel"
     [attr.aria-expanded]="isMenuOpen()" aria-controls="nol-docs-menu" (click)="toggleMenu()"></button>
-  <a class="nol-docs-brand" [routerLink]="resources.homeLink">
-    <span class="nol-docs-wordmark" role="img" [attr.aria-label]="resources.wordmarkLabel"></span>
-    <span>{{ resources.siteName }}</span>
-  </a>
+  <div class="nol-docs-title">
+    <a class="nol-docs-brand" [routerLink]="resources.homeLink">
+      <span class="nol-docs-wordmark" role="img" [attr.aria-label]="resources.wordmarkLabel"></span>
+      <span>{{ resources.siteName }}</span>
+    </a>
+    <a class="nol-docs-version" [href]="version.changelogLink">{{ version.text }}</a>
+  </div>
   <nol-docs-search class="nol-docs-header-search" />
   <div class="nol-docs-header-end">
     <nol-docs-theme-switch />

@@ -17,7 +17,7 @@ Label, at the emphasis weight, in `text-strong`.
 A header the owner marks uppercase reads as a group heading over rows whose own text is in the same case, such as an Explorer's Pinned, Projects and Chats.
 
 - Its label is in capitals at `--nol-text-small`, 0.75rem and never under 12px, at the emphasis weight, in `text` rather than `text-strong`, with `--nol-letter-spacing-caps`, 0.05em, between its letters.
-- Its icon and caret keep their glyph, size, color and place, and its height and insets are a header's without it.
+- Its icon keeps its glyph, size, color and place, and its caret its glyph, size and place in the label's `text` color, and its height and insets are a header's without it.
 - The capitals are only its look: the label's text, and what a screen reader reads, are as the owner gives them.
 - Under forced colors the label takes the system's text color, at the same size, case and spacing.
 - Without it, the header is as above.
@@ -45,7 +45,7 @@ An optional icon before the label, such as a chat icon above a list of chats.
 A header the owner makes collapsible lets the person fold its group from the title, where a [group header](group-header.md) puts a twistie before the title and actions after it.
 
 - The heading holds one button, the whole header, with the icon and the label where they are in a header that isn't collapsible, and the same height.
-- A caret follows the label 0.25rem after it, a Material Symbols glyph at the `icon` size in `icon-color`, centered on the label's first line and hidden from screen readers; it always shows.
+- A caret follows the label 0.25rem after it, a Material Symbols glyph at the `section-header-caret` size, 0.875rem, in the header's text color, centered on the label's first line and hidden from screen readers; it always shows.
 - The caret points down while the group is open and turns a quarter to the end while it is closed: right, or left in a right-to-left layout.
 - No fill and no line at rest; the tree row's hover fill on the whole header while the pointer is over it, with the small radius, and under forced colors the tree row's dashed Highlight outline inside its edge.
 - The button exposes whether the group is open and, when the owner names it, the region it controls; a click, Enter or Space flips it.
