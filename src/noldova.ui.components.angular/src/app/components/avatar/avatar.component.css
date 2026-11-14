@@ -15,7 +15,7 @@
   height: var(--nol-avatar);
   box-sizing: border-box;
   overflow: hidden;
-  border-radius: var(--nol-radius-large);
+  border-radius: 50%;
   background-color: var(--nol-avatar-fill);
   color: var(--nol-avatar-letter);
   font-size: var(--nol-text-panel);
@@ -38,6 +38,7 @@
   height: var(--nol-icon-button);
 
   @media (forced-colors: active) {
+    --nol-avatar-initials-least: 12px;
     font-size: var(--nol-text-small);
   }
 }
@@ -45,15 +46,14 @@
 :host(.nol-avatar-byline) {
   width: var(--nol-avatar-byline);
   height: var(--nol-avatar-byline);
-  border-radius: 50%;
   font-size: var(--nol-text-avatar-byline);
   font-weight: var(--nol-weight-strong);
 }
 
 :host(.nol-avatar-icon) {
+  --nol-avatar-initials-least: 12px;
   width: var(--nol-icon);
   height: var(--nol-icon);
-  border-radius: var(--nol-radius-small);
   font-size: var(--nol-text-small);
 }
 

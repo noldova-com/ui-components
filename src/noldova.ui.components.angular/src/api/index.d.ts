@@ -119,8 +119,8 @@ export declare enum AvatarSize {
 
   /**
    * The theme's `icon` size, 1rem by default, for a header or a row that
-   * sets it beside icons, such as a card's header; its corners are small and
-   * it shows only the first character of its initials.
+   * sets it beside icons, such as a card's header; it shows only the
+   * first character of its initials.
    */
   Icon = "Icon",
 
@@ -132,7 +132,7 @@ export declare enum AvatarSize {
   IconButton = "IconButton",
 
   /**
-   * The theme's `avatar-byline` size, 1.25rem by default, round, for a face
+   * The theme's `avatar-byline` size, 1.25rem by default, for a face
    * beside a name in a line of text, such as an author on a reference card.
    */
   Byline = "Byline"
@@ -2437,15 +2437,19 @@ export declare class ArrayVirtualListSource<T> extends VirtualListSource<T> {
 }
 
 /**
- * An avatar, `nol-avatar`, for a person or an agent: a rounded square with
- * the large radius, filled with its {@link AvatarColor}'s fill, showing its
- * image clipped to that square, or else its initials in that color's letter
+ * An avatar, `nol-avatar`, for a person or an agent: a circle at every
+ * size, filled with its {@link AvatarColor}'s fill, showing its image
+ * clipped to that circle, or else its initials in that color's letter
  * color, regular at the panel text size, at least 4.5:1 on the fill. Its
  * color is the one bound, or else the one of its author color's family, or
  * else the one its color key chooses, or else the default pair,
  * `avatar-default`. Under forced colors it keeps a 1px `CanvasText` edge.
- * Initials wider than the room inside its edge, less 1px on each side, are
- * scaled down to that room at every size; initials that fit keep their size.
+ * Initials whose letters, as drawn, reach past the circle inside its edge,
+ * less 1px all round, allowing for the line's snap to a whole pixel, are
+ * scaled down until they fit it, at every size, but never below the small
+ * text's 12px, at the icon size and, under forced colors, the icon button
+ * size; initials that fit, such as "RV" and the icon size's one letter,
+ * keep their size.
  * Shown alone, it is an image named by its name, or by
  * its label; beside the name it shows, it is decorative and hidden from
  * assistive technology, as it is when its name and label are both blank.

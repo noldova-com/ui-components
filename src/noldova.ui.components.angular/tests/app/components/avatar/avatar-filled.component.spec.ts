@@ -62,7 +62,7 @@ describe("AvatarComponent's fill", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`fills a borderless rounded square with each color's fill and its letter in that color's letter color, regular at the panel text size, in the ${theme.id} theme in ${mode} mode`, async () => {
+      it(`fills a borderless circle with each color's fill and its letter in that color's letter color, regular at the panel text size, in the ${theme.id} theme in ${mode} mode`, async () => {
         await renderAsync(theme, mode);
         const seen: unknown[] = [];
         const expected: unknown[] = [];
@@ -74,7 +74,7 @@ describe("AvatarComponent's fill", () => {
         }
 
         expect(seen).toEqual(expected);
-        AppearanceFixture.expectLook(style().borderTopLeftRadius, theme, "radius-large", "border-top-left-radius", "border-radius");
+        expect([style().borderTopLeftRadius, style().borderBottomRightRadius]).toEqual(["50%", "50%"]);
         AppearanceFixture.expectPixels(parseFloat(style().fontSize), panelText());
         AppearanceFixture.expectLook(style().width, theme, "avatar-small", "width");
         AppearanceFixture.expectLook(style().height, theme, "avatar-small", "height");
