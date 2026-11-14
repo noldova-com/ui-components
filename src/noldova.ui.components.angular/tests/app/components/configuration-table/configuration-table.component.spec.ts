@@ -49,12 +49,16 @@ describe("ConfigurationTableComponent", () => {
     return bottom;
   };
 
-  const contentEdges = (cell: HTMLElement): { top: number; left: number; right: number } => {
-    const probe = document.createElement("div");
-    cell.prepend(probe);
-    const edges = probe.getBoundingClientRect();
-    probe.remove();
-    return { top: edges.top, left: edges.left, right: edges.right };
+  const contentEdges = (cell: HTMLElement): { top: number; left: number; right: number; bottom: number } => {
+    const start = document.createElement("div");
+    const end = document.createElement("div");
+    cell.prepend(start);
+    cell.append(end);
+    const edges = start.getBoundingClientRect();
+    const bottom = end.getBoundingClientRect().top;
+    start.remove();
+    end.remove();
+    return { top: edges.top, left: edges.left, right: edges.right, bottom };
   };
   const expectCompactGeometry = (): void => {
     const space = AppearanceFixture.measureLook("space-1");
@@ -71,6 +75,8 @@ describe("ConfigurationTableComponent", () => {
       AppearanceFixture.expectPixels(edges.left - outer.left, cell.previousElementSibling === null ? 0 : space * 1.5);
       AppearanceFixture.expectPixels(outer.right - edges.right, cell.nextElementSibling === null ? 0 : space * 1.5);
     }
+    for (const tallest of [...DomFixture.all(DomFixture.host(fixture), "thead th").filter(t => (t.textContent ?? "").trim() !== ""), find(".short td:last-child")])
+      AppearanceFixture.expectPixels(tallest.getBoundingClientRect().bottom - contentEdges(tallest).bottom, (tallest.tagName === "TH" ? space : space * 1.5) + line / 2);
   };
 
   afterEach(async () => {
@@ -193,6 +199,24 @@ describe("ConfigurationTableComponent", () => {
       expectCompactGeometry();
       expect(getComputedStyle(find(".nol-configuration-table-explanation")).color).toBe(ForcedColorsFixture.resolve("CanvasText"));
     });
+
+  it("keeps its compact parts a step apart when its actions wrap under an explanation with no heading", async () => {
+    await renderAsync();
+    await changeAsync(t => {
+      t.density.set(ConfigurationTableDensity.Compact);
+      t.heading.set("");
+      t.label.set("Environment variables");
+      t.explanation.set("Each variable is set for the programs the shell starts, after the system's own, and a project's variables come after these.");
+    });
+    const space = AppearanceFixture.measureLook("space-1");
+    await changeAsync(t => t.width.set(`calc(var(--nol-text-field-width) + ${AppearanceFixture.measureLook("space-4") + box(".add").width - 1}px)`));
+    const explanation = box(".nol-configuration-table-explanation");
+    const add = box(".add");
+
+    expect(add.top).toBeGreaterThanOrEqual(explanation.bottom);
+    AppearanceFixture.expectPixels(add.top - explanation.bottom, space);
+    AppearanceFixture.expectPixels(box("table").top - add.bottom, space);
+  });
 
   it("keeps its normal density when the density is bound to Normal", async () => {
     await renderAsync();

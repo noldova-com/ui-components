@@ -13,6 +13,7 @@
   --nol-configuration-table-header-cell-padding: var(--nol-space-2);
   --nol-configuration-table-cell-alignment: baseline;
   --nol-configuration-table-explanation-color: var(--nol-text);
+  --nol-configuration-table-header-row-gap: var(--nol-space-2);
 
   display: flex;
   flex-direction: column;
@@ -25,6 +26,7 @@
   --nol-configuration-table-header-cell-padding: var(--nol-space-1) calc(var(--nol-space-1) * 1.5);
   --nol-configuration-table-cell-alignment: top;
   --nol-configuration-table-explanation-color: var(--nol-text-muted);
+  --nol-configuration-table-header-row-gap: var(--nol-space-1);
 
   gap: var(--nol-space-1);
 }
@@ -33,7 +35,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--nol-space-2) var(--nol-space-4);
+  gap: var(--nol-configuration-table-header-row-gap) var(--nol-space-4);
 }
 
 .nol-configuration-table-header-explained {

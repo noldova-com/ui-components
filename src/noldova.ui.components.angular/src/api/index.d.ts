@@ -270,12 +270,15 @@ export declare enum ConfigurationTableDensity {
 
   /**
    * For a settings form that needs the table tighter: the heading's row, the
-   * explanation and the table 0.25rem apart, the explanation in
+   * explanation and the table 0.25rem apart, as are actions that wrap under
+   * an explanation with no heading, the explanation in
    * `text-muted`, the header's cells padded 0.25rem above and below and
    * 0.375rem at their sides, the body's cells 0.375rem on every side, and
    * every cell at the top of its row. The outer side of each row's first and
-   * last cells keeps no padding, and every other part of the look is the
-   * normal one.
+   * last cells keeps no padding. A row's text and its buttons both start at
+   * the row's top, so the text no longer sits level with the buttons'
+   * labels; the columns, the hovered row's band and the lines are the
+   * normal look's.
    */
   Compact = "Compact"
 }
