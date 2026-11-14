@@ -30,8 +30,10 @@ export class AvatarInitialsFitter {
     const style = getComputedStyle(host);
     const room = host.getBoundingClientRect().width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)
       - 2 * (AvatarResources.avatarInitialsInset + AvatarResources.avatarInitialsSlack);
-    const width = letters.getBoundingClientRect().width / (this.scales.get(letters) ?? 1);
-    return width > room ? Math.max(room, 0) / width : 1;
+    const shown = letters.getBoundingClientRect();
+    const scale = this.scales.get(letters) ?? 1;
+    const diagonal = Math.hypot(shown.width / scale, shown.height / scale);
+    return diagonal > room ? Math.max(room, 0) / diagonal : 1;
   }
 
   public apply(letters: HTMLElement, scale: number): void {

@@ -51,14 +51,41 @@ describe("AvatarComponent", () => {
     AppearanceFixture.expectPixels(letter.left - box.left, box.right - letter.right);
     expect(Math.abs((letter.top - box.top) - (box.bottom - letter.bottom)), "the letter's gaps above and below, whose text line lands on a whole pixel").toBeLessThanOrEqual(1);
   };
-  const room = (): readonly number[] => {
+  const room = (): number => {
     const style = getComputedStyle(avatar());
     const box = avatar().getBoundingClientRect();
     const range = document.createRange();
     range.selectNodeContents(avatar());
     const letters = range.getBoundingClientRect();
-    return [letters.left - (box.left + Number.parseFloat(style.borderLeftWidth)), box.right - Number.parseFloat(style.borderRightWidth) - letters.right,
-      letters.top - (box.top + Number.parseFloat(style.borderTopWidth)), box.bottom - Number.parseFloat(style.borderBottomWidth) - letters.bottom];
+    const radius = (box.width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)) / 2;
+    const [x, y] = [box.left + box.width / 2, box.top + box.height / 2];
+    return radius - Math.max(...[letters.left, letters.right].flatMap(t => [letters.top, letters.bottom].map(u => Math.hypot(t - x, u - y))));
+  };
+  const pixelsAsync = async (): Promise<{ width: number; height: number; at: (x: number, y: number) => string }> => {
+    const shot = new Image();
+    shot.src = `data:image/png;base64,${await page.screenshot({ element: avatar(), save: false })}`;
+    await shot.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = shot.width;
+    canvas.height = shot.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (context === null)
+      throw new Error("The canvas has no 2D context.");
+    context.drawImage(shot, 0, 0);
+    return { width: shot.width, height: shot.height, at: (x, y) => context.getImageData(Math.round(x), Math.round(y), 1, 1).data.join(",") };
+  };
+  const expectCircleAsync = async (size: AvatarSize): Promise<void> => {
+    const pixels = await pixelsAsync();
+    const scale = pixels.width / avatar().getBoundingClientRect().width;
+    const radius = pixels.width / 2;
+    const center = (pixels.width - 1) / 2;
+    const along = (distance: number): string => pixels.at(center + distance / Math.SQRT2, center + distance / Math.SQRT2);
+    const outside = pixels.at(0, 0);
+    const edge = Array.from({ length: Math.ceil(1.5 * scale) + 1 }, (_, t) => along(radius - 1.5 * scale + t));
+
+    expect([pixels.width, pixels.height], `the ${size} avatar's screenshot`).toEqual([pixels.height, pixels.width]);
+    expect(along(radius + (radius * Math.SQRT2 - radius) * 0.35), `outside the ${size} avatar's circle, inside a square's rounded corner`).toBe(outside);
+    expect(edge.some(t => t !== outside), `the ${size} avatar's edge on its diagonal`).toBe(true);
   };
   const painted = (): string => avatar().style.getPropertyValue("--nol-avatar-fill");
   const hues = (names: readonly string[]): string[] => names.map(t => `var(--nol-avatar-${t})`);
@@ -126,26 +153,17 @@ describe("AvatarComponent", () => {
     expect([shown(), image.getAttribute("alt"), image.getAttribute("src")?.startsWith("data:image/gif"), image.classList.contains("nol-avatar-image")]).toEqual(["", "", true, true]);
   });
 
-  it("clips its image to its rounded square, so the corners show what is behind it", async () => {
+  it("clips its image to its circle, so the corners show what is behind it", async () => {
     AppearanceFixture.apply();
     await renderAsync(t => t.image.set("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='10' height='10' fill='%23ff0000'/></svg>"));
     await DomFixture.oneOf(avatar(), "img", HTMLImageElement).decode();
-    const shot = new Image();
-    shot.src = `data:image/png;base64,${await page.screenshot({ element: avatar(), save: false })}`;
-    await shot.decode();
-    const canvas = document.createElement("canvas");
-    canvas.width = shot.width;
-    canvas.height = shot.height;
-    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-    context.drawImage(shot, 0, 0);
-    const isRed = (x: number, y: number): boolean => {
-      const [red, green, blue] = context.getImageData(x, y, 1, 1).data;
-      return red === 255 && green === 0 && blue === 0;
-    };
+    const shot = await pixelsAsync();
+    const isRed = (x: number, y: number): boolean => shot.at(x, y).startsWith("255,0,0,");
     const [right, bottom] = [shot.width - 1, shot.height - 1];
 
     expect([isRed(shot.width >> 1, shot.height >> 1), isRed(shot.width >> 1, 0), isRed(0, shot.height >> 1), isRed(0, 0), isRed(right, 0), isRed(0, bottom), isRed(right, bottom)])
       .toEqual([true, true, true, false, false, false, false]);
+    await expectCircleAsync(AvatarSize.Normal);
   });
 
   it("is an image named by its name or its label, says when it is unavailable, and is hidden when decorative", async () => {
@@ -279,7 +297,7 @@ describe("AvatarComponent", () => {
     }
   });
 
-  it("sets two initials at the icon button size in the small text size under forced colors, at least 1px inside its edge on each side, and keeps the panel size otherwise", async () => {
+  it("sets two initials at the icon button size in the small text size under forced colors, at least 1px inside its circle, and keeps the panel size otherwise", async () => {
     AppearanceFixture.apply();
     await renderAsync(t => {
       t.initials.set("AP");
@@ -289,23 +307,17 @@ describe("AvatarComponent", () => {
     await ForcedColorsFixture.activateAsync();
     try {
       const style = getComputedStyle(avatar());
-      const box = avatar().getBoundingClientRect();
-      const range = document.createRange();
-      range.selectNodeContents(avatar());
-      const letters = range.getBoundingClientRect();
-      const edge = Number.parseFloat(style.borderTopWidth);
 
       expect([shown(), normal]).toEqual(["AP", `${AppearanceFixture.toPixels(0.8125)}px`]);
       expect(style.fontSize).toBe(GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-small)"));
-      expect(letters.left - (box.left + edge)).toBeGreaterThanOrEqual(1);
-      expect(box.right - edge - letters.right).toBeGreaterThanOrEqual(1);
+      await vi.waitFor(() => expect(room()).toBeGreaterThanOrEqual(1));
     } finally {
       await ForcedColorsFixture.resetAsync();
     }
   });
 
   for (const forced of [false, true])
-    it(`fits two wide initials, "MW" and "WW", at least 1px inside its inner box at every size that shows two${forced ? ", under forced colors" : ""}, and leaves a pair that fits at its size's own text size`, async () => {
+    it(`fits two wide initials, "MW" and "WW", at least 1px inside its inner circle at every size that shows two${forced ? ", under forced colors" : ""}, and leaves a pair that fits at its size's own text size`, async () => {
       AppearanceFixture.apply();
       if (forced)
         await ForcedColorsFixture.activateAsync();
@@ -325,7 +337,7 @@ describe("AvatarComponent", () => {
           return range.getBoundingClientRect().width;
         };
         const sizes = [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Byline];
-        const rooms: (readonly [AvatarSize, string, readonly number[]])[] = [];
+        const rooms: (readonly [AvatarSize, string, number])[] = [];
         await document.fonts.ready;
         const kept: (readonly [AvatarSize, number])[] = [];
         for (const size of sizes) {
@@ -340,7 +352,7 @@ describe("AvatarComponent", () => {
           kept.push([size, Math.abs(width() - natural())]);
         }
 
-        expect(rooms.filter(([, , t]) => t.some(u => u < 1)), `the room each side of the pair, left, right, top and bottom: ${JSON.stringify(rooms)}`).toEqual([]);
+        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's box and the circle inside the edge: ${JSON.stringify(rooms)}`).toEqual([]);
         expect(kept.filter(([, t]) => t > 0.5), `how far "IL" is from its natural width: ${JSON.stringify(kept)}`).toEqual([]);
       } finally {
         await ForcedColorsFixture.resetAsync();
@@ -369,7 +381,7 @@ describe("AvatarComponent", () => {
   it("fits its initials again when its text grows after it is drawn, and lets them back to their own size when the text shrinks again", async () => {
     AppearanceFixture.apply();
     await document.fonts.ready;
-    await renderAsync(t => t.initials.set("MW"));
+    await renderAsync(t => t.initials.set("AP"));
     const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
     const drawn = letters.style.transform;
     avatar().style.fontSize = "2rem";
@@ -378,7 +390,7 @@ describe("AvatarComponent", () => {
     avatar().style.fontSize = "";
     await vi.waitFor(() => expect(letters.style.transform).toBe(drawn));
 
-    expect([drawn, grown.every(t => t >= 1)]).toEqual(["", true]);
+    expect([drawn, grown >= 1]).toEqual(["", true]);
   });
 
   it("fills with the hue of the author color it is given, or the default hue, and refuses a color that is not one of the eight", async () => {
@@ -420,7 +432,7 @@ describe("AvatarComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`takes its sizes, its corners, its letter and its hue's fill and letter colors, with no border, from the ${theme.id} theme in ${mode} mode`, async () => {
+      it(`takes its sizes, its letter and its hue's fill and letter colors, with no border, from the ${theme.id} theme in ${mode} mode, a circle at every size`, async () => {
         AppearanceFixture.apply(theme, mode);
         await renderAsync(t => t.color.set(3));
         const style = getComputedStyle(avatar());
@@ -428,15 +440,14 @@ describe("AvatarComponent", () => {
         expect([style.backgroundColor, style.color, style.borderTopStyle, style.fontWeight, style.fontSize])
           .toEqual([AppearanceFixture.readColor(theme, mode, "avatar-green"), AppearanceFixture.readColor(theme, mode, "avatar-green-text"), "none", "400",
             GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-panel)")]);
-        for (const corner of [style.borderTopLeftRadius, style.borderTopRightRadius, style.borderBottomRightRadius, style.borderBottomLeftRadius])
-          AppearanceFixture.expectLook(corner, theme, "radius-large", "border-top-left-radius", "border-radius");
         AppearanceFixture.expectLook(style.width, theme, "avatar", "width");
         AppearanceFixture.expectLook(style.height, theme, "avatar", "height");
+        await expectCircleAsync(AvatarSize.Normal);
         await changeAsync(() => host.size.set(AvatarSize.Small));
         const small = getComputedStyle(avatar());
         AppearanceFixture.expectLook(small.width, theme, "avatar-small", "width");
         AppearanceFixture.expectLook(small.height, theme, "avatar-small", "height");
-        AppearanceFixture.expectLook(small.borderTopLeftRadius, theme, "radius-large", "border-top-left-radius", "border-radius");
+        await expectCircleAsync(AvatarSize.Small);
         await changeAsync(() => {
           host.initials.set("RV");
           host.size.set(AvatarSize.IconButton);
@@ -445,8 +456,7 @@ describe("AvatarComponent", () => {
         const iconButton = getComputedStyle(avatar());
         AppearanceFixture.expectLook(`${square.width}px`, theme, "icon-button", "width");
         AppearanceFixture.expectLook(`${square.height}px`, theme, "icon-button", "height");
-        for (const corner of [iconButton.borderTopLeftRadius, iconButton.borderTopRightRadius, iconButton.borderBottomRightRadius, iconButton.borderBottomLeftRadius])
-          AppearanceFixture.expectLook(corner, theme, "radius-large", "border-top-left-radius", "border-radius");
+        await expectCircleAsync(AvatarSize.IconButton);
         expect([shown(), iconButton.fontSize]).toEqual(["RV", GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-panel)")]);
         expectLetterCentred();
         await changeAsync(() => host.image.set("data:image/gif;base64,R0lGODlhAQABAAAAACw="));
@@ -461,8 +471,7 @@ describe("AvatarComponent", () => {
         const icon = getComputedStyle(avatar());
         AppearanceFixture.expectLook(icon.width, theme, "icon", "width");
         AppearanceFixture.expectLook(icon.height, theme, "icon", "height");
-        for (const corner of [icon.borderTopLeftRadius, icon.borderTopRightRadius, icon.borderBottomRightRadius, icon.borderBottomLeftRadius])
-          AppearanceFixture.expectLook(corner, theme, "radius-small", "border-top-left-radius", "border-radius");
+        await expectCircleAsync(AvatarSize.Icon);
         expect([shown(), icon.fontSize, icon.backgroundColor, icon.color])
           .toEqual(["R", GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-small)"),
             AppearanceFixture.readColor(theme, mode, "avatar-green"), AppearanceFixture.readColor(theme, mode, "avatar-green-text")]);
@@ -471,10 +480,27 @@ describe("AvatarComponent", () => {
         const byline = getComputedStyle(avatar());
         AppearanceFixture.expectLook(byline.width, theme, "avatar-byline", "width");
         AppearanceFixture.expectLook(byline.height, theme, "avatar-byline", "height");
-        expect([shown(), byline.borderTopLeftRadius, byline.fontSize, byline.fontWeight, byline.backgroundColor])
-          .toEqual(["RV", "50%", GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-avatar-byline)"), "600", AppearanceFixture.readColor(theme, mode, "avatar-green")]);
+        await expectCircleAsync(AvatarSize.Byline);
+        expect([shown(), byline.fontSize, byline.fontWeight, byline.backgroundColor])
+          .toEqual(["RV", GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-avatar-byline)"), "600", AppearanceFixture.readColor(theme, mode, "avatar-green")]);
         expectLetterCentred();
       });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a circle at every size under forced colors in ${mode} mode, its border and initials inside it`, async () => {
+      AppearanceFixture.apply(DefaultTheme.theme, mode);
+      await ForcedColorsFixture.activateAsync();
+      try {
+        await renderAsync(t => t.initials.set("RV"));
+        for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline]) {
+          await changeAsync(() => host.size.set(size));
+          await expectCircleAsync(size);
+          await vi.waitFor(() => expect(room(), `the room between the ${size} avatar's initials and its circle`).toBeGreaterThanOrEqual(1));
+        }
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
 
   for (const mode of AppearanceFixture.modes)
     it(`keeps its initials at least 4.5:1 against its fill in the default hue and every author color's in ${mode} mode`, async () => {
