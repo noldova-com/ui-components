@@ -14,6 +14,7 @@ import "@noldova/context.core";
 import { AvatarResources } from "./avatar.resources.js";
 
 type AvatarParts = readonly [host: HTMLElement, letters: HTMLElement];
+type Point = readonly [x: number, y: number];
 
 @Injectable({ providedIn: "root" })
 export class AvatarInitialsFitter {
@@ -21,6 +22,7 @@ export class AvatarInitialsFitter {
   private readonly watched: Map<Element, AvatarParts> = new Map();
   private readonly isInBrowser: boolean = isPlatformBrowser(inject(PLATFORM_ID));
   private observer: ResizeObserver | null = null;
+  private context: CanvasRenderingContext2D | null | undefined;
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => this.observer?.disconnect());
@@ -28,10 +30,15 @@ export class AvatarInitialsFitter {
 
   public measure(host: HTMLElement, letters: HTMLElement): number {
     const style = getComputedStyle(host);
-    const room = host.getBoundingClientRect().width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)
-      - 2 * (AvatarResources.avatarInitialsInset + AvatarResources.avatarInitialsSlack);
-    const width = letters.getBoundingClientRect().width / (this.scales.get(letters) ?? 1);
-    return width > room ? Math.max(room, 0) / width : 1;
+    const frame = host.getBoundingClientRect();
+    const radius = (frame.width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)) / 2
+      - AvatarResources.avatarInitialsInset;
+    const scale = this.scales.get(letters) ?? 1;
+    const shown = letters.getBoundingClientRect();
+    const [right, below]: Point = [shown.left + shown.width / 2 - (frame.left + frame.width / 2), shown.top + shown.height / 2 - (frame.top + frame.height / 2)];
+    const least = Number.parseFloat(style.getPropertyValue(AvatarResources.avatarInitialsLeastProperty)) / Number.parseFloat(style.fontSize);
+    return Math.max(Number.isNaN(least) ? 0 : least, Math.min(1, ...this.inkCorners(letters, shown.width / scale, scale)
+      .map(t => AvatarInitialsFitter.reach(t, [right, below + Math.sign(t[1]) * AvatarResources.avatarInitialsSlack], radius))));
   }
 
   public apply(letters: HTMLElement, scale: number): void {
@@ -56,6 +63,35 @@ export class AvatarInitialsFitter {
     this.observing().unobserve(letters);
     this.watched.delete(host);
     this.watched.delete(letters);
+  }
+
+  private inkCorners(letters: HTMLElement, width: number, scale: number): readonly Point[] {
+    this.context ??= letters.ownerDocument.createElement("canvas").getContext("2d");
+    if (Object.isNull(this.context)) {
+      const text = letters.ownerDocument.createRange();
+      text.selectNodeContents(letters);
+      const box = text.getBoundingClientRect();
+      return AvatarInitialsFitter.cornersOf([-box.width / scale / 2, box.width / scale / 2], [-box.height / scale / 2, box.height / scale / 2]);
+    }
+    const font = getComputedStyle(letters);
+    this.context.font = `${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+    const line = this.context.measureText(letters.innerText);
+    const baseline = (line.fontBoundingBoxAscent - line.fontBoundingBoxDescent) / 2;
+    this.context.font = `${font.fontStyle} ${font.fontWeight} ${AvatarResources.avatarInitialsMeasureSize}px ${font.fontFamily}`;
+    const ink = this.context.measureText(letters.innerText);
+    const size = Number.parseFloat(font.fontSize) / AvatarResources.avatarInitialsMeasureSize;
+    return AvatarInitialsFitter.cornersOf([-width / 2 - ink.actualBoundingBoxLeft * size, width / 2 - (ink.width - ink.actualBoundingBoxRight) * size],
+      [baseline - ink.actualBoundingBoxAscent * size, baseline + ink.actualBoundingBoxDescent * size]);
+  }
+
+  private static cornersOf(across: readonly number[], down: readonly number[]): readonly Point[] {
+    return across.flatMap(x => down.map((y): Point => [x, y]));
+  }
+
+  private static reach([x, y]: Point, [right, below]: Point, radius: number): number {
+    const length = x * x + y * y;
+    const along = x * right + y * below;
+    return (Math.sqrt(along * along - length * (right * right + below * below - radius * radius)) - along) / length;
   }
 
   private observing(): ResizeObserver {

@@ -6,10 +6,10 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 ## Default geometry
 
-A rounded square with the large radius, `radius-large`, 0.5rem; 1.75rem, the `avatar` token, or 1.5rem small, the `avatar-small` token, 24px at the default text size, for rows and lists; no border.
+A circle at every size, its width and height alike; 1.75rem, the `avatar` token, or 1.5rem small, the `avatar-small` token, 24px at the default text size, for rows and lists; no border.
 At the icon button size, `AvatarSize.IconButton`, it is the `icon-button` token, 1.375rem, as large as an icon button's hover square, for a header that sets it level with icon buttons, such as a card's header beside its Copy button.
-At the icon size, `AvatarSize.Icon`, it is the `icon` token, 1rem, for a header or a row that sets it beside icons, such as a card's header, with the small radius, `radius-small`, 0.25rem.
-At the byline size, `AvatarSize.Byline`, it is the `avatar-byline` token, 1.25rem, and round, for a face beside a name in a line of text, such as the author on a [link reference](link-reference.md) card.
+At the icon size, `AvatarSize.Icon`, it is the `icon` token, 1rem, for a header or a row that sets it beside icons, such as a card's header.
+At the byline size, `AvatarSize.Byline`, it is the `avatar-byline` token, 1.25rem, for a face beside a name in a line of text, such as the author on a [link reference](link-reference.md) card.
 
 ## Text role
 
@@ -17,11 +17,11 @@ Panel, 0.8125rem, 400; at the icon size, small, `text-small`, 0.75rem and never 
 
 ## Surface and behavior
 
-The kit's `nol-avatar`, for a person or an agent: its image, cropped to cover the square and clipped to its corners, or else, with no image or one that fails to load or decode until it is given another address, its initials, or the first character of its name in upper case in the app's locale; at the icon size, only the first character of either. Initials wider than the room inside its edge, less 1px on each side, such as "MW", are scaled down to that room, at every size and in forced colors; initials that fit keep their size.
+The kit's `nol-avatar`, for a person or an agent: its image, cropped to cover the avatar's box and clipped to its circle, or else, with no image or one that fails to load or decode until it is given another address, its initials, or the first character of its name in upper case in the app's locale; at the icon size, only the first character of either. Initials whose letters, as drawn, reach past the circle inside its edge, less 1px all round, such as "MW", are scaled down until the corners of the letters' ink are that far inside it, allowing for the line's snap to a whole pixel, at every size and in forced colors, but never below the small text's 12px: at the icon size and, under forced colors, the icon button size, wide initials such as "MW" keep 12px and reach past it. Initials that fit, such as "RV" and the icon size's one letter, keep their size.
 It is filled with its hue's fill, its initials in that hue's letter color.
 Shown alone, it is an image named by its name, or by the label the owner gives; beside the name it stands for, the owner makes it decorative, hidden from assistive technology; with a blank name and no label it is hidden too.
 An unavailable avatar is dimmed to half its opacity, and its name ends in "unavailable".
-Under forced colors it keeps a 1px `CanvasText` edge, at the same size.
+Under forced colors it keeps a 1px `CanvasText` edge round its circle, at the same size.
 It has no hover or focus of its own; the control around it, such as a row, gives those.
 
 ## Colors
