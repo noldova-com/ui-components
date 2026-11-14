@@ -1,7 +1,7 @@
 # @noldova/ui.components.angular
 
 Noldova's interface kit: the design tokens, the fonts and the Angular components that Noldova's products build their interfaces from.
-Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery` and `@noldova/ui.components.angular/testing`.
+Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery`, `@noldova/ui.components.angular/markdown` and `@noldova/ui.components.angular/testing`.
 Its type declarations carry the documentation of every export and public member, which editors show on hover and in completions.
 
 ## What an app needs
@@ -141,7 +141,7 @@ export const appConfig: ApplicationConfig = {
 `@noldova/ui.components.angular/testing` holds the helpers the kit's own tests use, for an app's tests that run in a browser through Vitest.
 Only this entry uses Vitest, so an app's bundle never takes it.
 A product that uses this entry brings its own Vitest, at the version the kit tests with, 5.0.5.
-The kit doesn't list Vitest as a peer dependency, because GitHub's npm registry drops `peerDependenciesMeta`, so an optional peer would become a required one in each product's lockfile.
+The kit doesn't list Vitest among its dependencies or peers, so a product that doesn't use this entry never installs it.
 Each helper's type declarations document it.
 
 - `kitTestProviders`: the providers a component test starts from, with an error handler that rethrows and a clipboard double.
@@ -152,6 +152,7 @@ Each helper's type declarations document it.
 - `MarkdownFixture`: loads the kit's Markdown parser into the test page in a setup file, so the first spec that shows Markdown doesn't wait for its import.
 - `CodeHighlightingFixture`: for tests only, a provider, `sharedShiki`, that gives every `TestBed` of a test file one Shiki, so each grammar a code highlighter loads or preloads compiles once in the file, not in every test; and `isLanguageLoaded(injector, name)`, which tells whether the highlighter the injector's `provideCodeHighlighting` sets up has loaded a language, by any name or alias a code block takes, without loading anything, so a spec can check what it preloads.
 - `PointerFixture`: hovers an element with the real pointer, finding it by a test id, which costs the same on a page of any size; hovering the element itself makes Vitest build a selector for it from the page around it, which takes seconds on a page as large as the Gallery.
+- `TooltipFixture`: a provider, `atOnce`, that opens a hovered anchor's tooltip, and a hovered link reference chip's card, at once, without the 500ms rest the pointer otherwise waits on its anchor, for tests that check what a tooltip shows rather than when.
 - `ClipboardWriterFixture` and `ThrowingErrorHandler`: the clipboard double and the error handler that `kitTestProviders` provides.
 
 ## Themes

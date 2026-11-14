@@ -48,7 +48,7 @@ export class DocsPreparation {
     const kit = path.join(this.root, DocsPreparation.DEPENDENCIES_FOLDER, ...DocsPreparation.KIT_PACKAGE.split("/"));
     const built = await lstat(kit).then(t => t.isDirectory(), () => false);
     if (!built)
-      throw new CommandFailedException(`The docs site builds with the kit npm run build:components installs at the root, which isn't built; run npm run build:components first.`);
+      throw new CommandFailedException(`The docs site needs npm run build:components first, which hasn't run: the kit isn't installed at the root.`);
   }
 
   public async generateApiAsync(output: Writable): Promise<void> {

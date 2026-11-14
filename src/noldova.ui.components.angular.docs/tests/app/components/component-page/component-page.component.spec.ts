@@ -694,7 +694,6 @@ describe("ComponentPageComponent", () => {
       });
     });
 
-    // Only the tables' fit runs at every width the site promises; the other per-page specs keep the desktop and phone widths, so the docs tests stay quick.
     describe.each([
       [DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
       [768, 1024],

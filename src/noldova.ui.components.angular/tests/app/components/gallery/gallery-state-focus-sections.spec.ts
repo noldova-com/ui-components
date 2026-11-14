@@ -12,7 +12,6 @@ import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Focus sections", () => {
-  // Each of the kit's sections renders alone, the others stood in for: the whole Gallery took about half the 15 s limit to render on macOS x64.
   it.each(GalleryFixture.kitSections.map(t => ({ name: t.name, kitSection: t })))("finds a Focus cell in every section in the kit's $name, except a section marked noFocus, which has none", async ({ kitSection }) => {
     const state = GalleryState.Focus;
     const flag = GalleryResources.noFocusAttribute;
