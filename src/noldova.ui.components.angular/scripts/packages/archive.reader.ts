@@ -24,6 +24,8 @@ export class ArchiveReader {
   private static readonly EXTENDED_TYPE: string = "x";
   private static readonly PATH_RECORD: RegExp = /^\d+ path=(.*)$/m;
   private static readonly FIELD_END: RegExp = /\0.*$/s;
+  private static readonly MISSING_CODE: string = "ENOENT";
+  private static readonly ZLIB_CODE_PREFIX: string = "Z_";
 
   public async readAsync(archive: string): Promise<ReadonlyMap<string, Buffer>> {
     let tar: Buffer;
@@ -31,6 +33,8 @@ export class ArchiveReader {
       tar = zlib.gunzipSync(await readFile(archive));
     }
     catch (error) {
+      if (!(error instanceof Error && "code" in error && typeof error.code === "string" && (error.code === ArchiveReader.MISSING_CODE || error.code.startsWith(ArchiveReader.ZLIB_CODE_PREFIX))))
+        throw error;
       throw new CommandFailedException(`${archive} could not be read as a gzipped archive.`, { cause: error });
     }
 

@@ -27,6 +27,8 @@ export class JsonFields {
       value = JSON.parse(text);
     }
     catch (error) {
+      if (!(error instanceof SyntaxError))
+        throw error;
       throw new CommandFailedException(`${source} is not JSON.`, { cause: error });
     }
     return new JsonFields(value, source);

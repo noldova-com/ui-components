@@ -96,7 +96,9 @@ export class MergeCoverage extends Script {
         await new CoverageMerge(root, MergeCoverage.KIT_FOLDER).mergeAsync(path.join(folder, "parts"), check.parts, output);
       }
       catch (error) {
-        failure = error instanceof Error ? error.message : String(error);
+        if (!(error instanceof CommandFailedException))
+          throw error;
+        failure = error.message;
       }
       const unhit = failure === "" ? await new AngularCoverageReport(path.join(root, MergeCoverage.KIT_FOLDER), output, MergeCoverage.COVERAGE_OWNER).listUnhitAsync() : [];
       return check.holds(unhit, failure);

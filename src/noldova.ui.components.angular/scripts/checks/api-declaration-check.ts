@@ -57,6 +57,8 @@ export class ApiDeclarationCheck implements ICheck {
       });
     }
     catch (error) {
+      if (!(error instanceof ApiException))
+        throw error;
       return [ApiException.describe(error)];
     }
   }

@@ -62,7 +62,9 @@ export class MarkdownLink {
     try {
       return decodeURIComponent(url);
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof URIError))
+        throw error;
       return null;
     }
   }

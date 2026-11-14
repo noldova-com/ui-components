@@ -53,6 +53,13 @@ describe("KitStylesheetFixture", () => {
     return document.head.appendChild(created);
   }
 
+  function styleSheet(css: string): CSSStyleSheet {
+    const created = sheet(css).sheet;
+    if (created === null)
+      throw new Error("The style element holds no stylesheet.");
+    return created;
+  }
+
   function addressOf(file: string): string {
     return new URL(file, document.baseURI).href;
   }
@@ -182,17 +189,37 @@ describe("KitStylesheetFixture", () => {
     expect(reported(failure).slice(1)).toEqual([`Missing Face 400 normal: ${addressOf("missing-face.woff2")} did not answer within 5000 ms`]);
   });
 
+  it("rethrows an error other than a network failure or its own deadline that asking a source's server raises", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    const broken = new RangeError("The request broke.");
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(broken);
+
+    await expect(KitStylesheetFixture.ensureAsync()).rejects.toBe(broken);
+  });
+
+  it("rethrows an error other than the page's refusal that reading a stylesheet's rules raises", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    const broken = new TypeError("The rules broke.");
+    const unreadable = styleSheet("");
+    vi.spyOn(unreadable, "cssRules", "get").mockImplementation(() => {
+      throw broken;
+    });
+
+    await expect(KitStylesheetFixture.ensureAsync()).rejects.toBe(broken);
+  });
+
   it("reads a face's source against its stylesheet's own address, and skips a stylesheet whose rules the page may not read", async () => {
     page.forEach(t => t.media = "");
-    const faces = sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    const unreadable = styleSheet("");
+    vi.spyOn(unreadable, "href", "get").mockReturnValue("https://fonts.example/faces.css");
+    vi.spyOn(unreadable, "cssRules", "get").mockImplementation(() => {
+      throw new DOMException("Cannot access rules", "SecurityError");
+    });
+    const faces = styleSheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
     const folder = addressOf("fonts/");
-    const unreadable = {
-      href: "https://fonts.example/faces.css",
-      get cssRules(): CSSRuleList {
-        throw new DOMException("Cannot access rules", "SecurityError");
-      }
-    };
-    vi.spyOn(document, "styleSheets", "get").mockReturnValue([unreadable, { href: `${folder}faces.css`, cssRules: faces.sheet?.cssRules }] as unknown as StyleSheetList);
+    vi.spyOn(faces, "href", "get").mockReturnValue(`${folder}faces.css`);
 
     const failure = await failureAsync();
 

@@ -44,7 +44,9 @@ export class MarkdownMathRenderer {
       katex.default.render(tex, element, { ...MarkdownMathRendererResources.markdownMathOptions, displayMode: isDisplay, macros: { ...MarkdownMathRendererResources.markdownMathUntrustedMacros } });
       return true;
     }
-    catch {
+    catch (error) {
+      if (!(error instanceof katex.default.ParseError))
+        throw error;
       return false;
     }
   }

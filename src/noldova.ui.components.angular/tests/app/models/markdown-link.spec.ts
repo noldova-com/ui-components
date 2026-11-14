@@ -115,4 +115,17 @@ describe("MarkdownLink", () => {
     expect([urls.map(t => MarkdownLink.mentionIdOf(t)), urls.map(t => MarkdownLink.isLink(t))])
       .toEqual([["p-1", "agent 7", "(x)", null, null, null, null, null], [true, true, true, false, false, false, false, true]]);
   });
+
+  it("rethrows an error other than a broken encoding that decoding a target raises", () => {
+    const failure = new TypeError("Decoding failed.");
+    vi.stubGlobal("decodeURIComponent", () => {
+      throw failure;
+    });
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+
+    expect(() => MarkdownLink.pathOf("docs/a.md")).toThrow(failure);
+    expect(() => MarkdownLink.mentionIdOf("mention:p-1")).toThrow(failure);
+  });
 });

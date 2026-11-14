@@ -78,8 +78,10 @@ export class KitBundleCheck implements ICheck {
     try {
       stats = JSON.parse(text);
     }
-    catch {
-      return null;
+    catch (error) {
+      if (error instanceof SyntaxError)
+        return null;
+      throw error;
     }
     const outputs = KitBundleCheck.field(stats, "outputs");
     if (!KitBundleCheck.isRecord(outputs))

@@ -15,6 +15,7 @@ export class AngularTestReport {
   private static readonly WORKSPACE_FILE: string = "angular.json";
   private static readonly IDENTITY_SEPARATOR: string = " › ";
   private static readonly TEXT_ENCODING: BufferEncoding = "utf8";
+  private static readonly MISSING_CODE: string = "ENOENT";
 
   private readonly folder: string;
   private readonly project: string;
@@ -68,8 +69,10 @@ export class AngularTestReport {
       await fs.access(file);
       return true;
     }
-    catch {
-      return false;
+    catch (error) {
+      if (error instanceof Error && "code" in error && error.code === AngularTestReport.MISSING_CODE)
+        return false;
+      throw error;
     }
   }
 

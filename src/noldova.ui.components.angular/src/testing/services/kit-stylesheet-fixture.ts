@@ -14,6 +14,8 @@ export class KitStylesheetFixture {
   private static readonly SOURCE_PATTERN: RegExp = /url\("([^"]*)"\)/gu;
   private static readonly DEFAULT_DESCRIPTOR: string = "normal";
   private static readonly ANSWER_LIMIT: number = 5_000;
+  private static readonly REFUSED_RULES: string = "SecurityError";
+  private static readonly ABORTED: string = "AbortError";
 
   public static get isApplied(): boolean {
     return getComputedStyle(document.documentElement).getPropertyValue(KitStylesheetFixture.APPLIED_PROPERTY) !== "";
@@ -55,7 +57,9 @@ export class KitStylesheetFixture {
   private static rulesOf(sheet: CSSStyleSheet): readonly CSSRule[] {
     try {
       return [...sheet.cssRules];
-    } catch {
+    } catch (error) {
+      if (!(error instanceof DOMException) || error.name !== KitStylesheetFixture.REFUSED_RULES)
+        throw error;
       return [];
     }
   }
@@ -73,6 +77,8 @@ export class KitStylesheetFixture {
       const response = await fetch(url, { cache: "no-store", signal: controller.signal });
       return `${url} answered HTTP ${`${response.status} ${response.statusText}`.trim()}`;
     } catch (error) {
+      if (!(error instanceof TypeError) && !(error instanceof DOMException && error.name === KitStylesheetFixture.ABORTED))
+        throw error;
       return controller.signal.aborted ? `${url} did not answer within ${KitStylesheetFixture.ANSWER_LIMIT} ms` : `fetching ${url} failed with ${String(error)}`;
     } finally {
       clearTimeout(deadline);

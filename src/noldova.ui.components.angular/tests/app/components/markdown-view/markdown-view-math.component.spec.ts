@@ -185,6 +185,19 @@ describe("MarkdownViewComponent's math", () => {
     expect([formulas().map(t => t.textContent), view().querySelectorAll(".katex").length, report.mock.calls]).toEqual([["$x^2$", "$y$"], 0, [[failure]]]);
   });
 
+  it("rethrows an error KaTeX raises other than one for a formula it can't read", async () => {
+    statics.module = null;
+    const real = await import("katex");
+    const failure = new TypeError("KaTeX failed.");
+    vi.spyOn(statics, "importAsync").mockResolvedValue({ ...real, default: { ...real.default, render: () => {
+      throw failure;
+    } } });
+    const renderer = TestBed.inject(MarkdownMathRenderer);
+    await renderer.loadAsync();
+
+    expect(() => renderer.render(document.createElement("span"), "x", false)).toThrow(failure);
+  });
+
   it("shows a formula that would link, load or set attributes as its source, and keeps no definition between formulas", async () => {
     await renderAsync(["$\\href{https://example.com/}{a}$", "$\\url{https://example.com/}$", "$\\includegraphics{x.png}$", "$\\htmlClass{c}{x}$",
       "$\\htmlId{i}{x}$", "$\\htmlStyle{color: red}{x}$", "$\\htmlData{k=v}{x}$", "$\\gdef\\href#1#2{#2}$", "$\\href{https://example.com/}{b}$", "$z$"].join(" "));
