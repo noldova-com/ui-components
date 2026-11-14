@@ -35,7 +35,7 @@ products (desktop apps, websites)
 
 - Products depend on a published version of the packages.
 - `@noldova/ui.components.angular` takes `@noldova/context.core` and `@noldova/context.exceptions`, the context repository's packages, published on npm, as peer dependencies, so an app holds one copy of each beside the kit.
-  Each peer is a range from the version the kit builds and tests with to the next minor, `>=0.0.7 <0.1.0` today, so an app moves to a newer context release without waiting for the kit; from 1.0 it ends at the next major.
+  Each peer is the range the kit's [README](../src/noldova.ui.components.angular/README.md#what-an-app-needs) sets.
   The kit's own `package.json` and the docs site's install them from npm, `https://registry.npmjs.org`, at that lowest version, exactly.
 - No package depends on a product.
 - The rules for the public API, its versions, copying and outside material are in [AGENTS.md](../AGENTS.md#the-package).
@@ -65,7 +65,7 @@ The code rules only this repository has; [Noldova's standards](https://github.co
   Each package's `scripts/` use the language's own checks, because they run before the packages are built.
 - **Exceptions:** every exception the kit owns extends `UiComponentsException`, in `src/app/exceptions/`, which extends context's `Exception`, so an app catches the kit's failures, and only the kit's, as that one type.
   The kit's exceptions are `CodeHighlightingException`, exported from the `code-highlighting` entry, and `DiffException`, `LinkReferenceException`, `MarkdownException`, `ThemeException`, `TreeMoveException` and `VirtualListException`, exported with the base from the main entry; a new one extends the base too.
-- **Comments:** only the license header is allowed in source, tests, scripts, styles, templates and workflows, with the API documentation in each entry's `src/api/<entry>.d.ts` and, in a workflow, the release version beside each action pinned to a commit SHA, which the security standard requires.
+- **Comments:** as [Noldova's code standard](https://github.com/noldova-com/.github/blob/main/standards/CODE.md#comments-and-api-documentation) says; the API documentation is in each entry's `src/api/<entry>.d.ts`, and a workflow names the release beside each action pinned to a commit SHA, as the security standard requires.
   The kit's build carries that documentation onto the declarations the Angular compiler writes for each entry, and fails when the two declare different exports or members; the root build compares the installed kit's declarations with them too.
 - **License headers:** TypeScript, JavaScript, CSS, HTML and YAML files hold the header of the organization's code standard, and an HTML template's header takes exactly this form:
 
