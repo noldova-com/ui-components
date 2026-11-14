@@ -15,20 +15,8 @@ import { TemporaryFolder } from "../processes/temporary-folder.ts";
 import Script from "../script.ts";
 import { AngularTestTiming } from "./angular-test-timing.ts";
 import type { AngularTestTimingResult } from "./angular-test-timing-result.ts";
-
-interface ITimedTest {
-  readonly file: string;
-  readonly title: string;
-  readonly status: string;
-  readonly duration: number;
-}
-
-interface ITimingCase {
-  readonly expectation: string;
-  /** Each run's tests, or null for a run that wrote no report. */
-  readonly runs: readonly (readonly ITimedTest[] | null)[];
-  readonly holds: (result: AngularTestTimingResult | null, failure: string) => boolean;
-}
+import { TimedTest } from "./timed-test.ts";
+import { TimingCase } from "./timing-case.ts";
 
 // The timing check's run loop, for the kit's and the docs site's specs alike: it checks itself on small reports, runs the project's specs several
 // times without coverage, and judges their times.
@@ -99,55 +87,55 @@ export abstract class AngularTimingScript extends Script {
       process.exitCode = 1;
   }
 
-  private static cases(): readonly ITimingCase[] {
-    const timed = (file: string, title: string, duration: number, status: string = AngularTimingScript.PASSED): ITimedTest => ({ file, title, status, duration });
+  private static cases(): readonly TimingCase[] {
+    const timed = (file: string, title: string, duration: number, status: string = AngularTimingScript.PASSED): TimedTest => new TimedTest(file, title, duration, status);
     const isOver = (result: AngularTestTimingResult | null, file: string): boolean => result?.lines.some(t => t.startsWith(`Over: ${file},`)) ?? false;
     return [
-      {
-        expectation: "a spec file whose median test is within 100 ms passes, unnamed",
-        runs: [[timed("within.spec.ts", "a", 50), timed("within.spec.ts", "b", 90), timed("within.spec.ts", "c", 400)]],
-        holds: (result, failure) => failure === "" && result?.over === 0 && !isOver(result, "within.spec.ts")
-      },
-      {
-        expectation: "a spec file whose median test is over 100 ms and its margin of 20% fails, named",
-        runs: [[timed("over.spec.ts", "a", 130), timed("over.spec.ts", "b", 130)], [timed("within.spec.ts", "a", 10)]],
-        holds: (result, failure) => failure === "" && result?.over === 1 && isOver(result, "over.spec.ts") && !isOver(result, "within.spec.ts")
-      },
-      {
-        expectation: "a spec file inside the margin passes",
-        runs: [[timed("margin.spec.ts", "a", 115)]],
-        holds: (result, failure) => failure === "" && result?.over === 0
-      },
-      {
-        expectation: "each test's time is its median over the runs, not its slowest run",
-        runs: [[timed("runs.spec.ts", "a", 90)], [timed("runs.spec.ts", "a", 900)], [timed("runs.spec.ts", "a", 95)]],
-        holds: (result, failure) => failure === "" && result?.over === 0
-      },
-      {
-        expectation: "a test over 1 second is listed with its time, though its file is within the budget",
-        runs: [[timed("listed.spec.ts", "fast", 10), timed("listed.spec.ts", "slow", 1500), timed("listed.spec.ts", "quick", 20)]],
-        holds: (result, failure) => failure === "" && result?.over === 0
+      new TimingCase(
+        "a spec file whose median test is within 100 ms passes, unnamed",
+        [[timed("within.spec.ts", "a", 50), timed("within.spec.ts", "b", 90), timed("within.spec.ts", "c", 400)]],
+        (result, failure) => failure === "" && result?.over === 0 && !isOver(result, "within.spec.ts")
+      ),
+      new TimingCase(
+        "a spec file whose median test is over 100 ms and its margin of 20% fails, named",
+        [[timed("over.spec.ts", "a", 130), timed("over.spec.ts", "b", 130)], [timed("within.spec.ts", "a", 10)]],
+        (result, failure) => failure === "" && result?.over === 1 && isOver(result, "over.spec.ts") && !isOver(result, "within.spec.ts")
+      ),
+      new TimingCase(
+        "a spec file inside the margin passes",
+        [[timed("margin.spec.ts", "a", 115)]],
+        (result, failure) => failure === "" && result?.over === 0
+      ),
+      new TimingCase(
+        "each test's time is its median over the runs, not its slowest run",
+        [[timed("runs.spec.ts", "a", 90)], [timed("runs.spec.ts", "a", 900)], [timed("runs.spec.ts", "a", 95)]],
+        (result, failure) => failure === "" && result?.over === 0
+      ),
+      new TimingCase(
+        "a test over 1 second is listed with its time, though its file is within the budget",
+        [[timed("listed.spec.ts", "fast", 10), timed("listed.spec.ts", "slow", 1500), timed("listed.spec.ts", "quick", 20)]],
+        (result, failure) => failure === "" && result?.over === 0
           && result.lines.some(t => t.includes(`listed.spec.ts › ${AngularTimingScript.SUITE} › slow, 1500 ms`))
-      },
-      {
-        expectation: "a failed test's time is left out",
-        runs: [[timed("failed.spec.ts", "a", 10), timed("failed.spec.ts", "b", 5000, AngularTimingScript.FAILED)]],
-        holds: (result, failure) => failure === "" && result?.over === 0 && !result.lines.some(t => t.includes("failed.spec.ts ›"))
-      },
-      {
-        expectation: "a spec file missing from a run is judged on the runs that hold it",
-        runs: [[timed("missing.spec.ts", "a", 300)], [timed("other.spec.ts", "a", 10)]],
-        holds: (result, failure) => failure === "" && result?.over === 1 && isOver(result, "missing.spec.ts")
-      },
-      {
-        expectation: "a run that wrote no report fails, naming the report",
-        runs: [[timed("within.spec.ts", "a", 10)], null],
-        holds: (_, failure) => failure.includes("run-2.json is missing")
-      }
+      ),
+      new TimingCase(
+        "a failed test's time is left out",
+        [[timed("failed.spec.ts", "a", 10), timed("failed.spec.ts", "b", 5000, AngularTimingScript.FAILED)]],
+        (result, failure) => failure === "" && result?.over === 0 && !result.lines.some(t => t.includes("failed.spec.ts ›"))
+      ),
+      new TimingCase(
+        "a spec file missing from a run is judged on the runs that hold it",
+        [[timed("missing.spec.ts", "a", 300)], [timed("other.spec.ts", "a", 10)]],
+        (result, failure) => failure === "" && result?.over === 1 && isOver(result, "missing.spec.ts")
+      ),
+      new TimingCase(
+        "a run that wrote no report fails, naming the report",
+        [[timed("within.spec.ts", "a", 10)], null],
+        (_, failure) => failure.includes("run-2.json is missing")
+      )
     ];
   }
 
-  private static async runCaseAsync(check: ITimingCase): Promise<boolean> {
+  private static async runCaseAsync(check: TimingCase): Promise<boolean> {
     const temporary = new TemporaryFolder();
     const folder = await temporary.createAsync(process.platform, AngularTimingScript.TEMPORARY_PREFIX);
     try {
@@ -173,7 +161,7 @@ export abstract class AngularTimingScript extends Script {
     }
   }
 
-  private static report(folder: string, tests: readonly ITimedTest[]): string {
+  private static report(folder: string, tests: readonly TimedTest[]): string {
     const files = [...new Set(tests.map(t => t.file))];
     return JSON.stringify({
       testResults: files.map(file => ({

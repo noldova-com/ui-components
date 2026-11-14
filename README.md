@@ -180,15 +180,16 @@ Like the Kit bundles, the Kit copies and the Kit manifest checks, it runs on Lin
 
 The kit's and the docs site's specs have one hang limit, 30 seconds for each test and each hook, set in `src/noldova.ui.components.angular/vitest.config.mts`; no spec sets its own, and `src/noldova.ui.components.angular/tests/hang-limit.spec.ts` checks that the run uses it.
 The limit is at least three times the slowest test in main's runs: over the "Build and test" runs of 1d54803, 2f26351, b2316e9, e86e8b0 and 8af4e86, the slowest took 8.1 seconds, on Windows arm64, so 30 seconds is 3.7 times it.
-A test's time there includes its `beforeEach` and `afterEach` hooks, and no spec has a `beforeAll` or `afterAll`, so the figure covers the hooks too.
+A test's time there includes its `beforeEach` and `afterEach` hooks, so the figure covers them too.
+The one `beforeAll` is the media reset in `src/noldova.ui.components.angular/tests/shared-page.setup.ts`, which runs once in every kit spec file under the same limit and is outside the figure; no spec has an `afterAll`.
 Every poll is bounded at half the limit, 15 seconds, as [Fixed pauses](#fixed-pauses) says, so a poll that never passes fails first, with what it waited for, and stops; the hang-limit spec shows a hung `vi.waitFor` and a hung `expect.poll` failing on their bound with their own message.
 A test that reaches either limit is a bug to fix, never a reason to raise it; Vitest names the test, and for a test that reaches the hang limit, the limit and the command it was waiting on.
 
 ### Poll and test limits
 
-The poll and test limits check, `src/noldova.ui.components.angular/scripts/checks/poll-bound-check.ts`, reads every TypeScript file under the kit's `tests` and `src/testing` and the docs site's `tests`, with strings and comments read as blanks, and fails, naming the file and line, on a `vi.waitFor` call that doesn't pass `HangLimitFixture.wait`, on a `timeout` key, such as a poll's or a test's own limit, on `vi.setConfig`, and on a test, suite or hook given a number as its limit.
+The poll and test limits check, `src/noldova.ui.components.angular/scripts/checks/poll-bound-check.ts`, reads every TypeScript file under the kit's `tests` and `src/testing` and the docs site's `tests`, with strings and comments read as blanks, and fails, naming the file and line, on a `vi.waitFor` or `vi.waitUntil` call that doesn't pass `HangLimitFixture.wait`, on a `timeout` key, such as a poll's or a test's own limit, on `vi.setConfig`, and on a test, suite or hook given anything after its callback, or a number last, as its limit.
 The hang-limit spec alone is left out, since it shows a hung poll with a short bound of its own.
-It first tests itself on small sources, the shared bound passed, missing, in a string or overridden, a poll's and a test's own limits, a regular expression and a comment, and fails when that test does.
+It first tests itself on small sources, the shared bound passed, missing, in a string or overridden, for `vi.waitFor` and `vi.waitUntil`, a poll's and a test's own limits, as a number, a name or an expression after the callback, a regular expression and a comment, and fails when that test does.
 
 ### Time per file
 
@@ -231,7 +232,7 @@ The docs site's page specs check the desktop and phone widths; only the tables' 
 ### Fixed pauses
 
 Angular specs poll with Vitest's `vi.waitFor` and `expect.poll`, and pause for no fixed time but the two waits below.
-Every poll has one bound, half the [hang limit](#hang-limit): `vitest.config.mts` gives it to `expect.poll`, and each `vi.waitFor`, which takes no bound from the config, passes `HangLimitFixture.wait`, from `src/noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.ts`, which reads it from there; the [poll and test limits](#poll-and-test-limits) check holds every poll to it.
+Every poll has one bound, half the [hang limit](#hang-limit): `vitest.config.mts` gives it to `expect.poll`, and each `vi.waitFor` or `vi.waitUntil`, which take no bound from the config, passes `HangLimitFixture.wait`, from `src/noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.ts`, which reads it from there; the [poll and test limits](#poll-and-test-limits) check holds every poll to it.
 
 - The one real deadline a spec waits out is 20 ms: `src/noldova.ui.components.angular/tests/fixtures/live-region.fixture.spec.ts` checks that `LiveRegionFixture.spokenAsync` fails, naming its limit, when the region speaks nothing within it.
 - `LayoutTraceFixture.startAsync`, in `src/noldova.ui.components.angular/tests/fixtures/layout-trace.fixture.ts`, tries again every 50 ms, for up to 10 seconds, while the browser refuses its trace because a spec file in another tab is tracing. The browser tells only the tab that started a trace when it ends, so there is no event to wait for. A spec waits only while another trace runs.

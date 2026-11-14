@@ -11,6 +11,7 @@ import path from "node:path";
 import type { Writable } from "node:stream";
 
 import type { ICheck } from "./interfaces/i-check.ts";
+import { PollBoundFinding } from "./poll-bound-finding.ts";
 
 export class PollBoundCheck implements ICheck {
   private static readonly FOLDERS: readonly string[] = [
@@ -22,12 +23,16 @@ export class PollBoundCheck implements ICheck {
   private static readonly EXEMPT: string = "src/noldova.ui.components.angular/tests/hang-limit.spec.ts";
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
   private static readonly SHARED_BOUND: string = "HangLimitFixture.wait";
-  private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*waitFor\s*\(/gu;
+  private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*wait(?:For|Until)\s*\(/gu;
   /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
   private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
   private static readonly SET_CONFIG: RegExp = /(?<![\w$.])vi\s*\.\s*setConfig\s*\(/gu;
   private static readonly TEST_CALL: RegExp = /(?<![\w$.])(?:it|test|describe|beforeEach|afterEach|beforeAll|afterAll)(?:\s*\.\s*(?:only|skip|concurrent|sequential|fails))*\s*\(/gu;
   private static readonly NUMBER: RegExp = /^\d[\d_]*(?:\.\d+)?$/u;
+  /** The start of a callback: a function, an arrow from one name, or a parenthesized list an arrow follows. */
+  private static readonly FUNCTION_START: RegExp = /^(?:async\s+)?(?:function\b|[\w$]+\s*=>)/u;
+  private static readonly LIST_START: RegExp = /^(?:async\s*)?\(/u;
+  private static readonly ARROW_AFTER_LIST: RegExp = /^\s*(?::[^=]*)?=>/u;
   /** A "/" that starts a regular expression rather than a division follows one of these, or nothing but spaces from the line's start. */
   private static readonly BEFORE_REGEX: RegExp = /(?:^|[(,=:[!&|?{};+\-*%<>~^]|\breturn|\btypeof|\bcase)\s*$/u;
   private static readonly NOT_LINE_END: RegExp = /[^\n]/gu;
@@ -53,7 +58,14 @@ export class PollBoundCheck implements ICheck {
     ["// vi.waitFor(() => check()) and { timeout: 5 } in a comment\n/* it(\"x\", () => {}, 5); */", 0],
     ["const text = `vi.waitFor(() => ${check()})`;", 0],
     ["const html = `<ul>${items.map(t => `<li>${t}, { timeout: 5 }</li>`).join(\"\")}</ul>`;\nawait vi.waitFor(() => check());", 1],
-    ["public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };", 0]  ];
+    ["public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };", 0],
+    ["await vi.waitUntil(() => ready());", 1],
+    ["await vi.waitUntil(() => ready(), HangLimitFixture.wait);", 0],
+    ["it(\"waits\", async () => {\n  await run();\n}, LIMIT);", 1],
+    ["afterEach(async (): Promise<void> => {\n  await close();\n}, 2 * 30_000);", 1],
+    ["describe(\"group\", function () {\n  it(\"runs\", () => {});\n}, { timeout: LIMIT });", 2],
+    ["it(\"reads\", check);", 0]
+  ];
 
   private readonly root: string;
 
@@ -78,8 +90,8 @@ export class PollBoundCheck implements ICheck {
           continue;
         read++;
         const text = await readFile(path.join(this.root, folder, file), PollBoundCheck.ENCODING);
-        for (const [line, problem] of PollBoundCheck.findingsOf(text))
-          findings.push(`${name}:${line} ${problem}`);
+        for (const finding of PollBoundCheck.findingsOf(text))
+          findings.push(`${name}:${finding.line} ${finding.problem}`);
       }
     }
     for (const finding of findings)
@@ -89,26 +101,29 @@ export class PollBoundCheck implements ICheck {
   }
 
   /** Each finding in the text, as its line, from 1, and what is wrong there; strings and comments are read as blanks. */
-  private static findingsOf(text: string): ReadonlyArray<readonly [number, string]> {
+  private static findingsOf(text: string): readonly PollBoundFinding[] {
     const code = PollBoundCheck.blankStringsAndComments(text);
     const lineOf = (index: number): number => code.slice(0, index).split("\n").length;
-    const findings: [number, string][] = [];
+    const findings: PollBoundFinding[] = [];
     for (const match of code.matchAll(PollBoundCheck.WAIT_FOR)) {
       const open = match.index + match[0].length - 1;
       const call = code.slice(open, PollBoundCheck.closeOf(code, open));
       if (!call.includes(PollBoundCheck.SHARED_BOUND))
-        findings.push([lineOf(match.index), "calls vi.waitFor without the shared bound; pass HangLimitFixture.wait, which vitest.config.mts sets below the test's limit."]);
+        findings.push(new PollBoundFinding(lineOf(match.index), "polls with vi.waitFor or vi.waitUntil without the shared bound; pass HangLimitFixture.wait, which vitest.config.mts sets below the test's limit."));
     }
     for (const match of code.matchAll(PollBoundCheck.OWN_TIMEOUT))
-      findings.push([lineOf(match.index), "sets a limit of its own; polls take the shared bound and tests the one hang limit, both from vitest.config.mts."]);
+      findings.push(new PollBoundFinding(lineOf(match.index), "sets a limit of its own; polls take the shared bound and tests the one hang limit, both from vitest.config.mts."));
     for (const match of code.matchAll(PollBoundCheck.SET_CONFIG))
-      findings.push([lineOf(match.index), "changes the run's limits with vi.setConfig; they come from vitest.config.mts alone."]);
+      findings.push(new PollBoundFinding(lineOf(match.index), "changes the run's limits with vi.setConfig; they come from vitest.config.mts alone."));
     for (const match of code.matchAll(PollBoundCheck.TEST_CALL)) {
       const open = match.index + match[0].length - 1;
-      if (PollBoundCheck.NUMBER.test(PollBoundCheck.lastArgumentOf(code, open)))
-        findings.push([lineOf(match.index), "gives a test or hook a limit of its own; the one hang limit comes from vitest.config.mts."]);
+      const values = PollBoundCheck.argumentsOf(code, open);
+      const callback = values.findIndex(t => PollBoundCheck.isFunction(t));
+      const last = values.at(-1) ?? "";
+      if ((callback !== -1 && callback < values.length - 1) || PollBoundCheck.NUMBER.test(last))
+        findings.push(new PollBoundFinding(lineOf(match.index), "gives a test or hook a limit of its own; the one hang limit comes from vitest.config.mts."));
     }
-    return findings.sort(([left], [right]) => left - right);
+    return findings.sort((left, right) => left.line - right.line);
   }
 
   /** The text with the inside of each string, template and regular expression, and each comment, turned to spaces, keeping its lines. */
@@ -204,9 +219,10 @@ export class PollBoundCheck implements ICheck {
     return code.length;
   }
 
-  /** The call's last argument, trimmed, for the "(" at open. */
-  private static lastArgumentOf(code: string, open: number): string {
+  /** The call's arguments, each trimmed, for the "(" at open. */
+  private static argumentsOf(code: string, open: number): readonly string[] {
     const close = PollBoundCheck.closeOf(code, open) - 1;
+    const values: string[] = [];
     let depth = 0;
     let start = open + 1;
     for (let index = open + 1; index < close; index++) {
@@ -215,9 +231,25 @@ export class PollBoundCheck implements ICheck {
         depth++;
       else if (char === ")" || char === "]" || char === "}")
         depth--;
-      else if (char === "," && depth === 0 && code.slice(index + 1, close).trim() !== "")
+      else if (char === "," && depth === 0) {
+        values.push(code.slice(start, index).trim());
         start = index + 1;
+      }
     }
-    return code.slice(start, close).trim();
+    const last = code.slice(start, close).trim();
+    if (last !== "")
+      values.push(last);
+    return values;
+  }
+
+  /** Whether the argument is a function written in place: a function expression or an arrow. */
+  private static isFunction(value: string): boolean {
+    if (PollBoundCheck.FUNCTION_START.test(value))
+      return true;
+    const list = PollBoundCheck.LIST_START.exec(value);
+    if (list === null)
+      return false;
+    const open = list.index + list[0].length - 1;
+    return PollBoundCheck.ARROW_AFTER_LIST.test(value.slice(PollBoundCheck.closeOf(value, open)));
   }
 }
