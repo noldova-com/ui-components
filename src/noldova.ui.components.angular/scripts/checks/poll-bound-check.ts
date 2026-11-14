@@ -27,12 +27,11 @@ export class PollBoundCheck implements ICheck {
   /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
   private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
   private static readonly SET_CONFIG: RegExp = /(?<![\w$.])vi\s*\.\s*setConfig\s*\(/gu;
-  private static readonly TEST_CALL: RegExp = /(?<![\w$.])(?:it|test|describe|beforeEach|afterEach|beforeAll|afterAll)(?:\s*\.\s*(?:only|skip|concurrent|sequential|fails))*\s*\(/gu;
-  private static readonly NUMBER: RegExp = /^\d[\d_]*(?:\.\d+)?$/u;
-  /** The start of a callback: a function, an arrow from one name, or a parenthesized list an arrow follows. */
-  private static readonly FUNCTION_START: RegExp = /^(?:async\s+)?(?:function\b|[\w$]+\s*=>)/u;
-  private static readonly LIST_START: RegExp = /^(?:async\s*)?\(/u;
-  private static readonly ARROW_AFTER_LIST: RegExp = /^\s*(?::[^=]*)?=>/u;
+  private static readonly TEST_CALL: RegExp = /(?<![\w$.])(?<name>it|test|describe|beforeEach|afterEach|beforeAll|afterAll)(?:\s*\.\s*(?:only|skip|concurrent|sequential|fails))*\s*\(/gu;
+  /** A hook takes its callback alone, so any second argument is a limit or options. */
+  private static readonly HOOKS: ReadonlySet<string> = new Set(["beforeEach", "afterEach", "beforeAll", "afterAll"]);
+  /** A test or suite takes its title and its callback, so any third argument is a limit or options, as are options before the callback. */
+  private static readonly TEST_ARGUMENTS: number = 2;
   /** A "/" that starts a regular expression rather than a division follows one of these, or nothing but spaces from the line's start. */
   private static readonly BEFORE_REGEX: RegExp = /(?:^|[(,=:[!&|?{};+\-*%<>~^]|\breturn|\btypeof|\bcase)\s*$/u;
   private static readonly NOT_LINE_END: RegExp = /[^\n]/gu;
@@ -51,7 +50,7 @@ export class PollBoundCheck implements ICheck {
     ["it(\"waits (a while)\", async () => {\n  await run();\n}, 60_000);", 1],
     ["it(\"waits (a while)\", async () => {\n  await run();\n});", 0],
     ["it(\"reads { timeout: 5 } and ( in its title\", () => {\n  expect(/\\(/u.test(text)).toBe(true);\n  expect(a / b).toBe(c);\n});", 0],
-    ["test(\"slow\", { timeout: 60_000 }, async () => {});", 1],
+    ["test(\"slow\", { timeout: 60_000 }, async () => {});", 2],
     ["it.skip(\"slow\", () => {}, 5000);", 1],
     ["beforeEach(async () => {\n  await load();\n}, 60_000);", 1],
     ["vi.setConfig({ testTimeout: 60_000 });", 1],
@@ -64,7 +63,10 @@ export class PollBoundCheck implements ICheck {
     ["it(\"waits\", async () => {\n  await run();\n}, LIMIT);", 1],
     ["afterEach(async (): Promise<void> => {\n  await close();\n}, 2 * 30_000);", 1],
     ["describe(\"group\", function () {\n  it(\"runs\", () => {});\n}, { timeout: LIMIT });", 2],
-    ["it(\"reads\", check);", 0]
+    ["it(\"reads\", check);", 0],
+    ["it(\"waits\", run, LIMIT);", 1],
+    ["beforeAll(reset, LIMIT);", 1],
+    ["beforeAll(reset);", 0]
   ];
 
   private readonly root: string;
@@ -117,10 +119,8 @@ export class PollBoundCheck implements ICheck {
       findings.push(new PollBoundFinding(lineOf(match.index), "changes the run's limits with vi.setConfig; they come from vitest.config.mts alone."));
     for (const match of code.matchAll(PollBoundCheck.TEST_CALL)) {
       const open = match.index + match[0].length - 1;
-      const values = PollBoundCheck.argumentsOf(code, open);
-      const callback = values.findIndex(t => PollBoundCheck.isFunction(t));
-      const last = values.at(-1) ?? "";
-      if ((callback !== -1 && callback < values.length - 1) || PollBoundCheck.NUMBER.test(last))
+      const allowed = PollBoundCheck.HOOKS.has(match.groups?.["name"] ?? "") ? 1 : PollBoundCheck.TEST_ARGUMENTS;
+      if (PollBoundCheck.argumentsOf(code, open).length > allowed)
         findings.push(new PollBoundFinding(lineOf(match.index), "gives a test or hook a limit of its own; the one hang limit comes from vitest.config.mts."));
     }
     return findings.sort((left, right) => left.line - right.line);
@@ -240,16 +240,5 @@ export class PollBoundCheck implements ICheck {
     if (last !== "")
       values.push(last);
     return values;
-  }
-
-  /** Whether the argument is a function written in place: a function expression or an arrow. */
-  private static isFunction(value: string): boolean {
-    if (PollBoundCheck.FUNCTION_START.test(value))
-      return true;
-    const list = PollBoundCheck.LIST_START.exec(value);
-    if (list === null)
-      return false;
-    const open = list.index + list[0].length - 1;
-    return PollBoundCheck.ARROW_AFTER_LIST.test(value.slice(PollBoundCheck.closeOf(value, open)));
   }
 }
