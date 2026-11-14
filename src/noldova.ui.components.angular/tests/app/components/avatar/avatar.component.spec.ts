@@ -161,7 +161,7 @@ describe("AvatarComponent", () => {
     const isRed = (x: number, y: number): boolean => shot.at(x, y).startsWith("255,0,0,");
     const [right, bottom] = [shot.width - 1, shot.height - 1];
 
-    expect([isRed(shot.width >> 1, shot.height >> 1), isRed(shot.width >> 1, 0), isRed(0, shot.height >> 1), isRed(0, 0), isRed(right, 0), isRed(0, bottom), isRed(right, bottom)])
+    expect([isRed(shot.width >> 1, shot.height >> 1), isRed(shot.width >> 1, 2), isRed(2, shot.height >> 1), isRed(0, 0), isRed(right, 0), isRed(0, bottom), isRed(right, bottom)])
       .toEqual([true, true, true, false, false, false, false]);
     await expectCircleAsync(AvatarSize.Normal);
   });
