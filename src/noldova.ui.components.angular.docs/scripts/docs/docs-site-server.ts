@@ -17,6 +17,8 @@ export class DocsSiteServer {
   private static readonly INDEX_FILE: string = "index.html";
   private static readonly OK_STATUS: number = 200;
   private static readonly NOT_FOUND_STATUS: number = 404;
+  private static readonly FAILED_STATUS: number = 500;
+  private static readonly ABSENT_CODES: readonly string[] = ["ENOENT", "EISDIR", "ENOTDIR"];
   private static readonly CONTENT_TYPE: string = "Content-Type";
   private static readonly DEFAULT_TYPE: string = "application/octet-stream";
   private static readonly TYPES: ReadonlyMap<string, string> = new Map([
@@ -60,9 +62,14 @@ export class DocsSiteServer {
 
   private async serveAsync(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const file = this.fileOf(request.url ?? String());
-    const content = file === null ? null : await readFile(file).catch(() => null);
+    let status = DocsSiteServer.NOT_FOUND_STATUS;
+    const content = file === null ? null : await readFile(file).catch((error: unknown) => {
+      if (!(error instanceof Error && "code" in error && typeof error.code === "string" && DocsSiteServer.ABSENT_CODES.includes(error.code)))
+        status = DocsSiteServer.FAILED_STATUS;
+      return null;
+    });
     if (file === null || content === null) {
-      response.writeHead(DocsSiteServer.NOT_FOUND_STATUS);
+      response.writeHead(status);
       response.end();
       return;
     }

@@ -27,6 +27,7 @@ export class DocsSiteCheck implements ICheck {
   private static readonly ERROR_TYPE: string = "error";
   private static readonly OK_STATUS: number = 200;
   private static readonly LOAD_TIMEOUT: number = 15000;
+  private static readonly TIMEOUT_ERROR: string = "TimeoutError";
   private static readonly IMAGE_TYPE: string = "image/";
   private static readonly ICONS: string =
     "Promise.all([...document.querySelectorAll('link[rel=icon], link[rel=apple-touch-icon]')].map(t => fetch(t.href).then(r => ({ link: t.getAttribute('href') ?? '', status: r.status, type: r.headers.get('content-type') ?? '' })))).then(t => JSON.stringify({ icons: t }))";
@@ -111,10 +112,16 @@ export class DocsSiteCheck implements ICheck {
       try {
         await page.waitForFunction(DocsSiteCheck.SETTLED, undefined, { timeout: DocsSiteCheck.LOAD_TIMEOUT });
       }
-      catch {
+      catch (error) {
+        if (!DocsSiteCheck.isTimeout(error))
+          throw error;
         findings.push(DocsSiteCheck.unsettled(link));
       }
-      const isHighlighted = await page.waitForFunction(DocsSiteCheck.HIGHLIGHTED, undefined, { timeout: DocsSiteCheck.LOAD_TIMEOUT }).then(() => true, () => false);
+      const isHighlighted = await page.waitForFunction(DocsSiteCheck.HIGHLIGHTED, undefined, { timeout: DocsSiteCheck.LOAD_TIMEOUT }).then(() => true, (error: unknown) => {
+        if (!DocsSiteCheck.isTimeout(error))
+          throw error;
+        return false;
+      });
       const shown = JsonFields.parse(String(await page.evaluate(DocsSiteCheck.SHOWN)), link);
       if (!isHighlighted)
         findings.push(DocsSiteCheck.unhighlighted(link, shown.count("plainCode")));
@@ -144,6 +151,10 @@ export class DocsSiteCheck implements ICheck {
       findings.push(DocsSiteCheck.wordsBroken(link, width, words));
     if (names.length > 0)
       findings.push(DocsSiteCheck.namesWrapped(link, width, names));
+  }
+
+  private static isTimeout(error: unknown): boolean {
+    return error instanceof Error && error.name === DocsSiteCheck.TIMEOUT_ERROR;
   }
 
   private static collectErrors(page: ISitePage, errors: string[]): void {

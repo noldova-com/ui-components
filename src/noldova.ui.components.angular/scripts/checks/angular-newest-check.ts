@@ -186,8 +186,10 @@ export class AngularNewestCheck implements ICheck {
       const value: unknown = result.output.trim().length === 0 ? [] : JSON.parse(result.output);
       return { value, failure: null };
     }
-    catch {
-      return { value: null, failure: `${asked} wrote no JSON: ${result.text}` };
+    catch (error: unknown) {
+      if (error instanceof SyntaxError)
+        return { value: null, failure: `${asked} wrote no JSON: ${result.text}` };
+      throw error;
     }
   }
 }

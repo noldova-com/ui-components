@@ -38,6 +38,8 @@ export class PackageManifest {
     catch (error) {
       if (error instanceof Error && "code" in error && error.code === PackageManifest.MISSING_CODE)
         throw new CommandFailedException(`${file} is missing; every package needs it to build.`, { cause: error });
+      if (!(error instanceof SyntaxError))
+        throw error;
       throw new CommandFailedException(`${file} could not be read as JSON.`, { cause: error });
     }
     if (typeof manifest !== "object" || manifest === null || !("name" in manifest) || typeof manifest.name !== "string")

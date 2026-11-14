@@ -83,6 +83,7 @@ class FileTally {
 export class CoverageMerge {
   private static readonly COVERAGE_FILE: string = "coverage-final.json";
   private static readonly ENCODING: BufferEncoding = "utf8";
+  private static readonly MISSING_CODE: string = "ENOENT";
   private static readonly SEPARATOR: RegExp = /\\/gu;
 
   private readonly root: string;
@@ -94,16 +95,20 @@ export class CoverageMerge {
   }
 
   public async mergeAsync(partsFolder: string, parts: number, output: string): Promise<void> {
-    const entries = await fs.readdir(partsFolder, { withFileTypes: true }).catch(() => []);
+    const entries = await fs.readdir(partsFolder, { withFileTypes: true }).catch((error: unknown) => {
+      if (error instanceof Error && "code" in error && error.code === CoverageMerge.MISSING_CODE)
+        return [];
+      throw error;
+    });
     const names = entries.filter(t => t.isDirectory()).map(t => t.name).sort();
     if (names.length !== parts)
       throw new CommandFailedException(CoverageMerge.partsMissing(partsFolder, names, parts));
     const files: Map<string, JsonFields[]> = new Map();
     for (const name of names) {
       const source = path.join(partsFolder, name, CoverageMerge.COVERAGE_FILE);
-      const text = await fs.readFile(source, CoverageMerge.ENCODING).catch(() => null);
-      if (text === null)
-        throw new CommandFailedException(CoverageMerge.partUnread(name, source));
+      const text = await fs.readFile(source, CoverageMerge.ENCODING).catch((error: unknown) => {
+        throw new CommandFailedException(CoverageMerge.partUnread(name, source), { cause: error });
+      });
       const report = JsonFields.parse(text, source);
       for (const key of report.names()) {
         const data = report.object(key);

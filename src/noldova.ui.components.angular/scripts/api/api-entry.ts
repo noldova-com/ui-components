@@ -15,6 +15,7 @@ export class ApiEntry {
   public static readonly MAIN: ApiEntry = new ApiEntry(".", "index");
 
   private static readonly MANIFEST_FILE: string = "package.json";
+  private static readonly MISSING_CODE: string = "ENOENT";
   private static readonly EXPORTS_FIELD: string = "exports";
   private static readonly TYPES_FIELD: string = "types";
   private static readonly RELATIVE_PREFIX: string = "./";
@@ -39,6 +40,8 @@ export class ApiEntry {
       manifest = JSON.parse(await readFile(path.join(root, file), "utf8"));
     }
     catch (error) {
+      if (!(error instanceof SyntaxError || error instanceof Error && "code" in error && error.code === ApiEntry.MISSING_CODE))
+        throw error;
       throw new ApiException(`${file} could not be read as JSON, so the entries whose declarations are checked are unknown.`, { cause: error });
     }
     const fields = ApiEntry.isRecord(manifest) ? manifest : {};

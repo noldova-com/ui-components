@@ -86,7 +86,10 @@ export class MentionValue {
     try {
       const decoded = decodeURIComponent(id);
       return String.isNullOrWhitespace(decoded) ? null : decoded;
-    } catch {
+    }
+    catch (error) {
+      if (!(error instanceof URIError))
+        throw error;
       return null;
     }
   }
