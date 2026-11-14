@@ -1,6 +1,7 @@
 {
   "name": "@noldova/ui.components.angular",
   "version": "__VERSION__",
+  "description": "Noldova's interface kit: design tokens, fonts and Angular components.",
   "type": "module",
   "license": "MIT",
   "repository": {
