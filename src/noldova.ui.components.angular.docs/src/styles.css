@@ -11,7 +11,6 @@
   scroll-padding-block-start: var(--nol-docs-header-height, 0px);
 }
 
-/* The site's own text is 14px, the kit's 0.8125rem panel text scaled by 14 / 13, with the sizes and spaces that follow it, as a larger panel size scales the kit; the examples keep the kit's own. */
 :root {
   --nol-docs-scale: calc(14 / 13);
   --nol-docs-kit-text-panel: var(--nol-text-panel);

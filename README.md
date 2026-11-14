@@ -15,7 +15,7 @@ The package is at `0.0.x` for now, and its API may change from one version to th
 npm install @noldova/ui.components.angular
 ```
 
-The kit's peers, Angular and RxJS, install at the exact versions it names, and its two CONTEXT packages within the range it names, from the version it builds and tests with to the next minor, as [the package's README](src/noldova.ui.components.angular/README.md) says.
+The kit's peers, Angular and RxJS, install at the exact versions it names, and its two CONTEXT packages within the range it names, as [the package's README](src/noldova.ui.components.angular/README.md) says.
 [The package's README](src/noldova.ui.components.angular/README.md) says what an app needs and how to use code highlighting, Markdown, time formats, themes and the testing helpers; its type declarations document every export.
 
 To report a bug or ask for a change, open an issue in this repository, as the organization's [contributing guide](https://github.com/noldova-com/.github/blob/main/CONTRIBUTING.md) says.
@@ -181,6 +181,9 @@ The organization's testing standard has each spec file finish in under 1 second;
 A file's time is the one CI reports in its run of the whole suite, or one a machine reports when it runs the spec files one at a time, with Vitest's `fileParallelism` off; a whole-suite run on a busy machine measures its load rather than the file.
 `src/noldova.ui.components.angular/tests/app/models/markdown.reader.spec.ts` may take about 3 seconds.
 Its streaming specs read the whole text after every length they stream, through the reader's real paragraph step and margin, `markdownParagraphStep` and `markdownParagraphMargin`, 1000 and 500 characters, which stay as they are.
+Two kinds of spec keep their time down by what they render.
+The Gallery's Focus and Hover specs, `gallery-state-focus-sections.spec.ts` and `gallery-state-hover-sections.spec.ts`, render each of the kit's sections alone, with the others stood in for: the whole Gallery took about half of a test's 15-second limit to render on macOS x64.
+The docs site's page specs check the desktop and phone widths; only the tables' fit, in `component-page.component.spec.ts` and `docs-shell.component.spec.ts`, runs at every width the site promises, on every page that holds a table or may gain one.
 
 ### Fixed pauses
 

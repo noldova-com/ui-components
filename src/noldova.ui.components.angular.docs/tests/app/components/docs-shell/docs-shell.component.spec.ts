@@ -55,7 +55,6 @@ describe("DocsShellComponent", () => {
     });
   });
 
-  // Getting started has no table today; the spec keeps any it gains to its section, as the component pages' table-fit spec does.
   describe.each([
     [DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
     [768, 1024],
