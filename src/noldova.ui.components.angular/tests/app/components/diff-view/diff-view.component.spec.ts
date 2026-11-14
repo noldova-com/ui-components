@@ -46,6 +46,7 @@ import { provideCodeHighlighting } from "../../../../src/app/services/provide-co
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const firstHunk = new DiffHunk("h1", 10, 3, 10, 4, [
   new DiffContextLine(10, 10, "const a = 1;"),
@@ -798,7 +799,7 @@ describe("DiffViewComponent", () => {
       await vi.waitFor(() => {
         fixture.detectChanges();
         expect(cells().flatMap(t => tokensIn(t)).length).toBeGreaterThan(0);
-      });
+      }, HangLimitFixture.wait);
     }
 
     it("colors that side a task later, never in its first render, and colors a view shown again from the tokens kept for it, tokenizing nothing", async () => {
@@ -843,7 +844,7 @@ describe("DiffViewComponent", () => {
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(tokensIn(cells()[3] as HTMLElement).length).toBe(2);
-    });
+    }, HangLimitFixture.wait);
 
     expect(cells().map(t => tokensIn(t))).toEqual([[["if", "keyword"], ["ready", "keyword"]], [["stop", "keyword"]], [], [["go", "keyword"], ["now", "keyword"]]]);
     expect(all(".nol-diff-code").map(t => t.childNodes.length)).toEqual([1, 1, 1, 1]);
@@ -897,7 +898,7 @@ describe("DiffViewComponent", () => {
     TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockRejectedValue(failure);
     await renderAsync(t => t.files.set([modified]));
-    await vi.waitFor(() => expect(errors.length).toBe(4));
+    await vi.waitFor(() => expect(errors.length).toBe(4), HangLimitFixture.wait);
 
     expect([new Set(errors), tokensIn(DomFixture.host(fixture)), all(".nol-diff-code").map(t => t.textContent)]).toEqual([
       new Set([failure]), [], ["const a = 1;", "const b = 1;", "const b = 2;", "const c = 3;", "return a;", "old();", "next();"]

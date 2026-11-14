@@ -18,6 +18,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MarkdownViewComponent],
@@ -58,7 +59,7 @@ describe("MarkdownViewComponent's math", () => {
   }
 
   async function drawnAsync(count: number): Promise<void> {
-    await vi.waitFor(() => expect(view().querySelectorAll(".nol-markdown-math .katex").length).toBe(count));
+    await vi.waitFor(() => expect(view().querySelectorAll(".nol-markdown-math .katex").length).toBe(count), HangLimitFixture.wait);
   }
 
   beforeEach(() => {
@@ -163,7 +164,7 @@ describe("MarkdownViewComponent's math", () => {
     fixture = TestBed.createComponent(MathHostComponent);
     fixture.componentInstance.text.set("Area $x^2$");
     fixture.detectChanges();
-    await vi.waitFor(() => expect(view().querySelector(".nol-markdown-math")).not.toBeNull());
+    await vi.waitFor(() => expect(view().querySelector(".nol-markdown-math")).not.toBeNull(), HangLimitFixture.wait);
     const waiting = DomFixture.one(view(), ".nol-markdown-math").textContent;
 
     finish(real);
@@ -179,7 +180,7 @@ describe("MarkdownViewComponent's math", () => {
     const report = vi.spyOn(TestBed.inject(ErrorHandler), "handleError").mockImplementation(() => undefined);
 
     await renderAsync("Area $x^2$ and $y$");
-    await vi.waitFor(() => expect(report).toHaveBeenCalledWith(failure));
+    await vi.waitFor(() => expect(report).toHaveBeenCalledWith(failure), HangLimitFixture.wait);
     await fixture.whenStable();
 
     expect([formulas().map(t => t.textContent), view().querySelectorAll(".katex").length, report.mock.calls]).toEqual([["$x^2$", "$y$"], 0, [[failure]]]);
@@ -278,7 +279,7 @@ describe("MarkdownViewComponent's math", () => {
       host.text.set(step);
       host.streaming.set(isStreaming);
       await fixture.whenStable();
-      await vi.waitFor(() => expect(TestBed.inject(MarkdownMathRenderer).isLoaded()).toBe(true));
+      await vi.waitFor(() => expect(TestBed.inject(MarkdownMathRenderer).isLoaded()).toBe(true), HangLimitFixture.wait);
       seen.push([formulas().length === 0 ? "text" : view().querySelectorAll(".nol-markdown-math .katex").length === 1 ? "formula" : "source",
         view().getBoundingClientRect().height]);
     }

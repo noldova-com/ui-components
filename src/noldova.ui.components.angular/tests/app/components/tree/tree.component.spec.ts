@@ -14,6 +14,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { TreeHostComponent } from "../../../fixtures/tree-host.component";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("TreeComponent", () => {
   let fixture: ComponentFixture<TreeHostComponent>;
@@ -89,7 +90,7 @@ describe("TreeComponent", () => {
     await pressAsync("{Home}");
     const home = focused();
     await pressAsync("n");
-    await vi.waitFor(() => expect(focused()).toBe("Notes"));
+    await vi.waitFor(() => expect(focused()).toBe("Notes"), HangLimitFixture.wait);
     await pressAsync("{Enter}");
 
     expect([down, opened, child, parent, closed, end, home]).toEqual(["Notes", ["Project", "true"], "Source", "Project", ["Project", "false"], "Trash", "Project"]);

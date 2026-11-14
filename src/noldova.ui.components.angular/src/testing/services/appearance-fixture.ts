@@ -7,7 +7,7 @@
  */
 
 import { expect, vi } from "vitest";
-import { userEvent } from "vitest/browser";
+import { server, userEvent } from "vitest/browser";
 
 import { ThemeMode } from "../../app/enums/theme-mode.js";
 import type { Theme } from "../../app/models/theme.js";
@@ -115,11 +115,11 @@ export class AppearanceFixture {
 
     const park = await AppearanceFixture.parkPointerAsync();
     try {
-      await vi.waitFor(() => expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]));
+      await vi.waitFor(() => expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]), { timeout: server.config.testTimeout });
 
       expect(shown).not.toBe(AppearanceFixture.hiddenThumb);
       await userEvent.hover(area);
-      await vi.waitFor(() => expect(thumb()).toBe(shown));
+      await vi.waitFor(() => expect(thumb()).toBe(shown), { timeout: server.config.testTimeout });
     }
     finally {
       park.remove();

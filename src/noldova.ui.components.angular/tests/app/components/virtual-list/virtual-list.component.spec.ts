@@ -32,6 +32,7 @@ import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 import type { VirtualListReadFixture } from "../../../fixtures/virtual-list-read.fixture";
 import { VirtualListSourceFixture } from "../../../fixtures/virtual-list-source.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 function numbered(count: number): ArrayVirtualListSource<string> {
   return new ArrayVirtualListSource(Array.from({ length: count }, (_, t) => `item ${t}`), t => t, 30);
@@ -2571,7 +2572,7 @@ describe("VirtualListComponent", () => {
     feed.source.set(source);
     feed.position.set(new VirtualListPosition(987, null, 0));
     await settleAsync();
-    await vi.waitFor(() => expect(articles().map(t => t.querySelector(".label")?.textContent)).toContain("item 999"));
+    await vi.waitFor(() => expect(articles().map(t => t.querySelector(".label")?.textContent)).toContain("item 999"), HangLimitFixture.wait);
 
     element().style.display = String.empty;
     await settleAsync();

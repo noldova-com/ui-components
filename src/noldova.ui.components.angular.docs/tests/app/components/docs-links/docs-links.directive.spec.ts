@@ -17,6 +17,7 @@ import { userEvent } from "vitest/browser";
 import { DocsLinksDirective } from "../../../../src/app/components/docs-links/docs-links.directive.js";
 import { Resources } from "../../../../src/resources.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
+import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
 
 @Component({
   selector: "test-page",
@@ -45,7 +46,7 @@ describe("DocsLinksDirective", () => {
     const fixture = TestBed.createComponent(DocsLinksHostComponent);
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
-    await vi.waitFor(() => expect(DocsFixture.all(host, "a").length).toBe(5));
+    await vi.waitFor(() => expect(DocsFixture.all(host, "a").length).toBe(5), HangLimitFixture.wait);
     return host;
   };
 
@@ -70,7 +71,7 @@ describe("DocsLinksDirective", () => {
 
     click(DocsFixture.byText(host, "a", "button"));
 
-    await vi.waitFor(() => expect(router().url).toBe("/components/button"));
+    await vi.waitFor(() => expect(router().url).toBe("/components/button"), HangLimitFixture.wait);
     expect(open).not.toHaveBeenCalled();
   });
 
@@ -80,7 +81,7 @@ describe("DocsLinksDirective", () => {
 
     DocsFixture.byText(host, "a", "states").dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "Enter" }));
 
-    await vi.waitFor(() => expect(router().url).toBe("/components/button#states"));
+    await vi.waitFor(() => expect(router().url).toBe("/components/button#states"), HangLimitFixture.wait);
     expect(open).not.toHaveBeenCalled();
   });
 
@@ -105,7 +106,7 @@ describe("DocsLinksDirective", () => {
 
     try {
       await userEvent.click(DocsFixture.byText(host, "a", "button"), { button: "middle" });
-      await vi.waitFor(() => expect(clicks.length).toBe(1));
+      await vi.waitFor(() => expect(clicks.length).toBe(1), HangLimitFixture.wait);
     } finally {
       document.removeEventListener("auxclick", record);
     }

@@ -17,6 +17,7 @@ import { CodeHighlighter } from "../../../src/app/services/code-highlighter";
 import { CodeHighlightingFixture } from "../../../src/testing/models/code-highlighting-fixture";
 import { CodeHighlighterFixture } from "../../fixtures/code-highlighter.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter", () => {
   const { signal, typescript, tokenizing } = CodeHighlighterFixture;
@@ -61,10 +62,10 @@ describe("CodeHighlighter", () => {
     const atOnce = [texts(highlighter.tokens(code(1000), typescript)), texts(highlighter.tokens(code(1001), typescript))];
     let waited: readonly CodeToken[] | undefined;
     void highlighter.tokensAsync(code(1001), typescript, signal).then(t => waited = t);
-    await vi.waitFor(() => expect(source.timerCount).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(source.timerCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
     const meanwhile = [waited, tokenized()];
     source.advance(0);
-    await vi.waitFor(() => expect(waited).toBeDefined(), { interval: 1 });
+    await vi.waitFor(() => expect(waited).toBeDefined(), { ...HangLimitFixture.wait, interval: 1 });
 
     expect([atOnce, meanwhile]).toEqual([[["let", "a"], undefined], [undefined, 1]]);
     expect([texts(waited), highlighter.tokens(code(1001), typescript) === waited, tokenized()]).toEqual([["let", "a"], true, 2]);
@@ -76,7 +77,7 @@ describe("CodeHighlighter", () => {
     const highlighter = TestBed.inject(CodeHighlighter);
     const controller = new AbortController();
     const tokens = highlighter.tokensAsync(`let a;${" ".repeat(995)}`, typescript, controller.signal);
-    await vi.waitFor(() => expect(source.timerCount).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(source.timerCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
     const tokenized = tokenizing(highlighter);
 
     controller.abort();

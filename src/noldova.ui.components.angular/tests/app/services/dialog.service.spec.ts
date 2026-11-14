@@ -18,6 +18,7 @@ import { AppearanceFixture } from "../../../src/testing/services/appearance-fixt
 import { DomFixture } from "../../fixtures/dom.fixture";
 import { MotionFixture } from "../../fixtures/motion.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 @Component({
   template: `<button type="button" class="inside">Keep working</button><button type="button" class="other">Look elsewhere</button>`
@@ -49,7 +50,7 @@ describe("DialogService", () => {
   afterEach(async () => {
     for (const reference of references.reverse())
       reference.close();
-    await vi.waitFor(() => expect(document.querySelector(".inside")).toBeNull());
+    await vi.waitFor(() => expect(document.querySelector(".inside")).toBeNull(), HangLimitFixture.wait);
     for (const element of [opener, live, inert, popover])
       element.remove();
   });
@@ -57,7 +58,7 @@ describe("DialogService", () => {
   async function openAsync(): Promise<DialogRef<unknown, OpenDialogComponent>> {
     const reference = TestBed.inject(DialogService).open(OpenDialogComponent, ".inside");
     references.push(reference);
-    await vi.waitFor(() => expect(document.activeElement).toBe(insideOf(references.length - 1)));
+    await vi.waitFor(() => expect(document.activeElement).toBe(insideOf(references.length - 1)), HangLimitFixture.wait);
     return reference;
   }
 
@@ -115,7 +116,7 @@ describe("DialogService", () => {
 
   it("focuses no control in a dialog when none matches its first focus, leaving the focus on the dialog itself", async () => {
     references.push(TestBed.inject(DialogService).open(OpenDialogComponent, ".missing"));
-    await vi.waitFor(() => expect(document.activeElement?.getAttribute("role")).toBe("dialog"));
+    await vi.waitFor(() => expect(document.activeElement?.getAttribute("role")).toBe("dialog"), HangLimitFixture.wait);
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     expect([document.activeElement?.getAttribute("role"), document.querySelectorAll(".inside:focus, .other:focus").length]).toEqual(["dialog", 0]);

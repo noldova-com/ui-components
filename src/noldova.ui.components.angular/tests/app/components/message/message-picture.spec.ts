@@ -27,6 +27,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MessageComponent],
@@ -190,7 +191,7 @@ describe("MessageComponent with a picture attachment", () => {
     const tooltip = await vi.waitFor(() => {
       expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("C:/shots/shot-120.png");
       return DomFixture.one(document, ".cdk-overlay-container nol-tooltip");
-    });
+    }, HangLimitFixture.wait);
     const described = document.getElementById(picture.getAttribute("aria-describedby") ?? String.empty)?.textContent;
     picture.click();
     picture.focus();

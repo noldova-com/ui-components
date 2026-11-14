@@ -20,6 +20,7 @@ import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ChipComponent],
@@ -108,7 +109,7 @@ describe("ChipComponent", () => {
     tooltip(".key").show();
     expect(shown()).toBeNull();
     tooltip(".long").show();
-    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Ctrl+Alt+Shift+Page Down"));
+    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Ctrl+Alt+Shift+Page Down"), HangLimitFixture.wait);
   });
 
   it("cuts a warning too long for its container at its end with an ellipsis inside it, and shows the whole warning in a tooltip", async () => {
@@ -123,7 +124,7 @@ describe("ChipComponent", () => {
     expect(box.right).toBeLessThanOrEqual(container.right + 0.5);
     expect([text.scrollWidth > text.clientWidth, getComputedStyle(text).textOverflow, getComputedStyle(text).whiteSpace]).toEqual([true, "ellipsis", "nowrap"]);
     fixture.debugElement.query(By.css(".long-warning [data-truncates]")).injector.get(TooltipDirective).show();
-    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Same account as Agent 1"));
+    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Same account as Agent 1"), HangLimitFixture.wait);
   });
 
   it("keeps a cut key's whole height inside the chip, so its descenders are not clipped", async () => {
@@ -146,9 +147,9 @@ describe("ChipComponent", () => {
     await userEvent.tab();
 
     expect(document.activeElement).toBe(owner);
-    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Ctrl+Alt+Shift+Page Down"));
+    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("Ctrl+Alt+Shift+Page Down"), HangLimitFixture.wait);
     await userEvent.tab();
-    await vi.waitFor(() => expect(shown()).toBeNull());
+    await vi.waitFor(() => expect(shown()).toBeNull(), HangLimitFixture.wait);
     await userEvent.click(owner);
     await fixture.whenStable();
     expect(document.activeElement).toBe(owner);
@@ -311,7 +312,7 @@ describe("ChipComponent", () => {
     AppearanceFixture.expectPixels(DomFixture.one(long, ".nol-chip-dot").getBoundingClientRect().width, AppearanceFixture.measureLook("chip-dot"));
     expect([text.scrollWidth > text.clientWidth, getComputedStyle(text).textOverflow, getComputedStyle(text).whiteSpace]).toEqual([true, "ellipsis", "nowrap"]);
     fixture.debugElement.query(By.css(".long-on [data-truncates]")).injector.get(TooltipDirective).show();
-    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("The second agent of the team"));
+    await vi.waitFor(() => expect(shown()?.textContent?.trim()).toBe("The second agent of the team"), HangLimitFixture.wait);
   });
 
   it("keeps an on chip's border and dot in the text color under forced colors", async () => {

@@ -14,6 +14,7 @@ import { CodeTokenKind } from "../../../../src/app/enums/code-token-kind";
 import { CodeHighlighterTokens } from "../../../../src/app/models/code-highlighter-tokens";
 import { CodeToken } from "../../../../src/app/models/code-token";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -43,14 +44,14 @@ describe("CodeBlockComponent", () => {
       await vi.waitFor(() => {
         harness.fixture.detectChanges();
         expect(answers.has(code)).toBe(true);
-      }, { interval: 1 });
+      }, { ...HangLimitFixture.wait, interval: 1 });
     }
 
     answers.get("let newer;")?.([new CodeToken(4, "newer", CodeTokenKind.Variable)]);
     await vi.waitFor(() => {
       harness.fixture.detectChanges();
       expect(tokens()).toEqual([["newer", "variable"]]);
-    }, { interval: 1 });
+    }, { ...HangLimitFixture.wait, interval: 1 });
     answers.get("let older;")?.([new CodeToken(4, "older", CodeTokenKind.Type)]);
     await harness.fixture.whenStable();
 
@@ -83,7 +84,7 @@ describe("CodeBlockComponent", () => {
     await vi.waitFor(() => {
       harness.fixture.detectChanges();
       expect(answers.length).toBe(1);
-    }, { interval: 1 });
+    }, { ...HangLimitFixture.wait, interval: 1 });
     const code = find(".nol-code-block-body > code");
     const text = code.firstChild?.firstChild ?? code;
     getSelection()?.setBaseAndExtent(text, 4, text, 12);
@@ -92,7 +93,7 @@ describe("CodeBlockComponent", () => {
     await vi.waitFor(() => {
       harness.fixture.detectChanges();
       expect(tokens()).toEqual([["let", "keyword"]]);
-    }, { interval: 1 });
+    }, { ...HangLimitFixture.wait, interval: 1 });
 
     expect([getSelection()?.toString(), tokenSpans()]).toEqual(["selected", 1]);
     getSelection()?.removeAllRanges();

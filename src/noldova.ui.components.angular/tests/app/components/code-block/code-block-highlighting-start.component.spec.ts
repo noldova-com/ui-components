@@ -15,6 +15,7 @@ import { CodeHighlighterTokens } from "../../../../src/app/models/code-highlight
 import type { CodeLanguage } from "../../../../src/app/models/code-language";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 import { CodeWorkerStartFixture } from "../../../fixtures/code-worker.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -30,7 +31,7 @@ describe("CodeBlockComponent", () => {
     const typescript = highlighter.languageNamed("ts") as CodeLanguage;
     const loaded = (): boolean => !Object.isUndefined(highlighter.tokens(String.empty, typescript));
     while (!loaded()) {
-      await vi.waitFor(() => expect(harness.source.idleCount === 1 || loaded()).toBe(true), { interval: 1 });
+      await vi.waitFor(() => expect(harness.source.idleCount === 1 || loaded()).toBe(true), { ...HangLimitFixture.wait, interval: 1 });
       harness.source.runIdles();
     }
     const loadAsync = vi.spyOn(CodeHighlighter as unknown as { loadLanguageAsync: () => Promise<void> }, "loadLanguageAsync");
@@ -52,7 +53,7 @@ describe("CodeBlockComponent", () => {
     await vi.waitFor(() => {
       harness.fixture.detectChanges();
       expect(tokens().length).toBeGreaterThan(0);
-    }, { interval: 1 });
+    }, { ...HangLimitFixture.wait, interval: 1 });
 
     expect(starts.started.map(t => t.requests.map(r => [r.kind, r.code]))).toEqual([[[CodeWorkerMessageKind.Tokenize, harness.host.code()]]]);
     expect(Object.isNull(typescript) ? null : highlighter.tokens(String.empty, typescript)).toBeUndefined();

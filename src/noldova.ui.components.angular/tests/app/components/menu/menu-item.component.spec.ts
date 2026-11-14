@@ -27,6 +27,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FocusRecordFixture } from "../../../fixtures/focus-record.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [AvatarComponent, MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -167,7 +168,7 @@ describe("MenuItemComponent", () => {
 
   async function focusDisabledAsync(): Promise<void> {
     await userEvent.keyboard("{Tab}{ArrowDown}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(row("iconic")));
+    await vi.waitFor(() => expect(document.activeElement).toBe(row("iconic")), HangLimitFixture.wait);
   }
 
   function outline(name: string): string[] {
@@ -355,7 +356,7 @@ describe("MenuItemComponent", () => {
 
   it("shows no fill on a disabled row under the pointer", async () => {
     await userEvent.hover(row("iconic"));
-    await vi.waitFor(() => expect(row("iconic").matches(":hover")).toBe(true));
+    await vi.waitFor(() => expect(row("iconic").matches(":hover")).toBe(true), HangLimitFixture.wait);
 
     expect(getComputedStyle(row("iconic"), "::before").backgroundColor).toBe("rgba(0, 0, 0, 0)");
   });
@@ -364,12 +365,12 @@ describe("MenuItemComponent", () => {
     await ForcedColorsFixture.activateAsync();
     try {
       await userEvent.hover(row("iconic"));
-      await vi.waitFor(() => expect(row("iconic").matches(":hover")).toBe(true));
+      await vi.waitFor(() => expect(row("iconic").matches(":hover")).toBe(true), HangLimitFixture.wait);
       const hovered = getComputedStyle(row("iconic"), "::before").outlineStyle;
       await focusDisabledAsync();
       const disabled = outline("iconic");
       await userEvent.keyboard("{ArrowUp}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row("plain")));
+      await vi.waitFor(() => expect(document.activeElement).toBe(row("plain")), HangLimitFixture.wait);
       const enabled = outline("plain");
 
       expect(hovered).toBe("none");
@@ -509,9 +510,9 @@ describe("MenuItemComponent", () => {
     AppearanceFixture.expectTruncates(part("described", ".nol-menu-item-label"));
     expect(fitting).toBeUndefined();
     tooltipOf("described", ".nol-menu-item-description").show();
-    await vi.waitFor(() => expect(shownTooltip()).toBe(description));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(description), HangLimitFixture.wait);
     tooltipOf("described", ".nol-menu-item-label").show();
-    await vi.waitFor(() => expect(shownTooltip()).toBe(label));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(label), HangLimitFixture.wait);
   });
 
   it("shows the label and description of an item the keys rest on in one tooltip beside the menu at its row while either is cut, both or the description alone, hides it on Escape, and shows none while they fit", async () => {
@@ -542,13 +543,13 @@ describe("MenuItemComponent", () => {
     await againAsync("described");
     expect(part("described", ".nol-menu-item-label").scrollWidth).toBeLessThanOrEqual(part("described", ".nol-menu-item-label").clientWidth);
     AppearanceFixture.expectTruncates(part("described", ".nol-menu-item-description"));
-    await vi.waitFor(() => expect(shownTooltip()).toBe(`Rename, ${description}`));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(`Rename, ${description}`), HangLimitFixture.wait);
 
     fixture.componentInstance.label.set(label);
     fixture.detectChanges();
     await againAsync("described");
     AppearanceFixture.expectTruncates(part("described", ".nol-menu-item-label"));
-    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`), HangLimitFixture.wait);
     await fixture.whenStable();
     await new Promise(resolve => requestAnimationFrame(resolve));
     const menu = DomFixture.one(fixture.nativeElement, "nol-menu").getBoundingClientRect();
@@ -562,14 +563,14 @@ describe("MenuItemComponent", () => {
     expect(shownTooltip()).toBeUndefined();
     expect(part("valued", ".nol-menu-item-label").scrollWidth).toBeLessThanOrEqual(part("valued", ".nol-menu-item-label").clientWidth);
     await userEvent.keyboard("{ArrowUp}");
-    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`), HangLimitFixture.wait);
     await userEvent.keyboard("{Escape}");
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
     expect(document.activeElement).toBe(row("described"));
 
     await userEvent.keyboard("{ArrowDown}{ArrowUp}");
-    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(`${label}, ${description}`), HangLimitFixture.wait);
     await userEvent.keyboard("{Tab}");
     await settledAsync();
     expect([shownTooltip(), fixture.nativeElement.contains(document.activeElement)]).toEqual([undefined, false]);
@@ -602,20 +603,20 @@ describe("MenuItemComponent", () => {
     DomFixture.host(fixture).before(start);
     onTestFinished(() => start.remove());
     start.focus();
-    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again once the focus leaves it").toBe(0));
+    await vi.waitFor(() => expect(DomFixture.one(fixture.nativeElement, "nol-menu").tabIndex, "the menu takes a Tab again once the focus leaves it").toBe(0), HangLimitFixture.wait);
 
     record.mark("before the Tab");
     await userEvent.keyboard("{Tab}");
     record.mark("after the Tab");
-    await record.expectAsync(() => vi.waitFor(() => expect(document.activeElement).toBe(row("plain"))));
-    await vi.waitFor(() => expect(shownTooltip()).toBe(label));
+    await record.expectAsync(() => vi.waitFor(() => expect(document.activeElement).toBe(row("plain")), HangLimitFixture.wait));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(label), HangLimitFixture.wait);
     row("plain").blur();
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
 
     await userEvent.keyboard("{Shift}");
     row("plain").focus();
-    await vi.waitFor(() => expect(shownTooltip()).toBe(label));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(label), HangLimitFixture.wait);
   });
 
   for (const mode of AppearanceFixture.modes)
@@ -818,7 +819,7 @@ describe("MenuItemComponent's key-focus tooltip in a popup menu", () => {
     await settledAsync();
     const cut = DomFixture.one(document, ".cdk-overlay-container .cut");
     expect(document.activeElement).toBe(cut);
-    await vi.waitFor(() => expect(shownTooltip()).toBe(popup.componentInstance.label));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(popup.componentInstance.label), HangLimitFixture.wait);
     return cut;
   }
 
@@ -839,7 +840,7 @@ describe("MenuItemComponent's key-focus tooltip in a popup menu", () => {
     const cut = await openOnCutRowAsync();
 
     await userEvent.hover(DomFixture.one(document, ".cdk-overlay-container .parent"));
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull());
+    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
     await settledAsync();
     expect(shownTooltip()).toBeUndefined();
     expect(document.activeElement).toBe(cut);
@@ -861,11 +862,11 @@ describe("MenuItemComponent's key-focus tooltip on a submenu trigger outside any
     const tooltip = (): HTMLElement | null => document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip");
 
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(tooltip()?.textContent?.trim()).toBe(alone.componentInstance.label));
+    await vi.waitFor(() => expect(tooltip()?.textContent?.trim()).toBe(alone.componentInstance.label), HangLimitFixture.wait);
 
     expect(document.activeElement).toBe(DomFixture.one(alone.nativeElement, ".alone"));
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
   });
 });
 
@@ -901,7 +902,7 @@ describe("MenuItemComponent with a tooltip of its own", () => {
     const label = DomFixture.one(rows.nativeElement, ".fits .nol-menu-item-label");
 
     await userEvent.hover(label);
-    await vi.waitFor(() => expect(shownTooltip()).toBe("Signed in elsewhere"));
+    await vi.waitFor(() => expect(shownTooltip()).toBe("Signed in elsewhere"), HangLimitFixture.wait);
 
     const [across, above] = placement(DomFixture.one(rows.nativeElement, ".fits"));
     expect(across).toBeCloseTo(0, 0);
@@ -914,7 +915,7 @@ describe("MenuItemComponent with a tooltip of its own", () => {
     const label = DomFixture.one(rows.nativeElement, ".cut .nol-menu-item-label");
 
     await userEvent.hover(label);
-    await vi.waitFor(() => expect(shownTooltip()).toBe(rows.componentInstance.label));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(rows.componentInstance.label), HangLimitFixture.wait);
 
     const [across, above] = placement(label);
     expect(across).toBeCloseTo(0, 0);

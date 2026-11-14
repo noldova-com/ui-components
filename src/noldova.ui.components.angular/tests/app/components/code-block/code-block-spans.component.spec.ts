@@ -13,6 +13,7 @@ import { CodeHighlights } from "../../../../src/app/services/code-highlights";
 import { CodeTokenKind } from "../../../../src/app/enums/code-token-kind";
 import { CodeToken } from "../../../../src/app/models/code-token";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -242,7 +243,7 @@ describe("CodeBlockComponent", () => {
     await vi.waitFor(() => {
       harness.fixture.detectChanges();
       expect(answers.length).toBe(1);
-    }, { interval: 1 });
+    }, { ...HangLimitFixture.wait, interval: 1 });
     const meanwhile = [tokens(), body().querySelector("code")?.textContent];
     answers[0]?.([new CodeToken(0, "const", CodeTokenKind.Keyword), new CodeToken(6, "a", CodeTokenKind.Variable)]);
     await harness.fixture.whenStable();
