@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import CommandFailedException from "../command-failed.exception.ts";
+import { AngularTestTimingResult } from "./angular-test-timing-result.ts";
 import { JsonFields } from "./json-fields.ts";
 
 // Judges spec files by their tests' times over several runs, as the testing standard asks of component specs: each test's time is the median
@@ -19,6 +21,7 @@ export class AngularTestTiming {
   private static readonly MARGIN: number = 0.2;
   private static readonly SLOW_TEST_MILLISECONDS: number = 1_000;
   private static readonly TEXT_ENCODING: BufferEncoding = "utf8";
+  private static readonly MISSING_CODE: string = "ENOENT";
   private static readonly IDENTITY_SEPARATOR: string = " › ";
   private static readonly PASSED: string = "passed";
   private static readonly FILES_FIELD: string = "testResults";
@@ -43,7 +46,7 @@ export class AngularTestTiming {
   }
 
   public async readAsync(report: string): Promise<void> {
-    const files = JsonFields.parse(await fs.readFile(report, AngularTestTiming.TEXT_ENCODING), report).objects(AngularTestTiming.FILES_FIELD);
+    const files = JsonFields.parse(await AngularTestTiming.readReportAsync(report), report).objects(AngularTestTiming.FILES_FIELD);
     for (const file of files) {
       const name = path.relative(this.folder, file.text(AngularTestTiming.FILE_NAME_FIELD)).split(path.sep).join(path.posix.sep);
       const tests = this.times.get(name) ?? new Map<string, number[]>();
@@ -57,8 +60,7 @@ export class AngularTestTiming {
     }
   }
 
-  // Returns the lines to print and the number of files over the budget.
-  public judge(): { readonly lines: readonly string[]; readonly over: number } {
+  public judge(): AngularTestTimingResult {
     const lines: string[] = [];
     let over = 0;
     for (const [file, tests] of [...this.times].sort(([left], [right]) => left.localeCompare(right))) {
@@ -74,7 +76,18 @@ export class AngularTestTiming {
       }
     }
     lines.push(AngularTestTiming.formatSummary(this.times.size, over));
-    return { lines, over };
+    return new AngularTestTimingResult(lines, over);
+  }
+
+  private static async readReportAsync(report: string): Promise<string> {
+    try {
+      return await fs.readFile(report, AngularTestTiming.TEXT_ENCODING);
+    }
+    catch (error) {
+      if (!(error instanceof Error) || !("code" in error) || error.code !== AngularTestTiming.MISSING_CODE)
+        throw error;
+      throw new CommandFailedException(`${report} is missing: the test run wrote no JSON report there.`, { cause: error });
+    }
   }
 
   private static formatOver(file: string, median: number, tests: number): string {

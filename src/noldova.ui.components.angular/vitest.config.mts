@@ -24,9 +24,12 @@ const aliasOf = (name: string, target: string): { find: string | RegExp; replace
 
 const cacheDir = fileURLToPath(new URL("../../node_modules/.vite", import.meta.url));
 
-// The specs' one hang limit, for tests, hooks and polls alike: at least three times the slowest test in main's runs on any target, as README's Checks
-// gives it. A test that reaches it is a bug to fix, never a reason to raise it.
+// The specs' one hang limit, for tests and hooks: at least three times the slowest test in main's runs on any target, as README's Checks gives it. A
+// test's time there includes its beforeEach and afterEach hooks, and no spec has a beforeAll or afterAll. A test that reaches it is a bug to fix,
+// never a reason to raise it.
 const hangLimit = 30_000;
+// Every poll's bound: half the hang limit, so a poll that never passes fails first, naming what it waited for, and stops before the test's limit.
+const pollLimit = hangLimit / 2;
 
 // The Angular builder makes each test project from this file's test, resolve, optimizeDeps and plugins alone, so the project's Vite cache comes from a plugin;
 // "pre" sets it before Vitest adds its vitest/<project> folder under it.
@@ -38,7 +41,7 @@ export default defineConfig({
   test: {
     api: { port: 24315 },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
-    expect: { poll: { timeout: hangLimit } },
+    expect: { poll: { timeout: pollLimit } },
     hookTimeout: hangLimit,
     testTimeout: hangLimit,
     coverage: {

@@ -8,8 +8,14 @@
 
 import { server } from "vitest/browser";
 
-// A poll carries no limit of its own: every vi.waitFor waits up to the run's one hang limit, which vitest.config.mts sets, so only that limit
-// ends a hung poll, and the test that reached it is named. expect.poll takes the same limit from vitest.config.mts.
+// vi.waitFor takes no bound from the config, so every call passes this one: expect.poll's bound from vitest.config.mts, below the test's limit.
 export class HangLimitFixture {
-  public static readonly wait: { readonly timeout: number } = { timeout: server.config.testTimeout };
+  public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };
+
+  private static readPollLimit(): number {
+    const limit = server.config.expect.poll?.timeout;
+    if (limit === undefined)
+      throw new Error("vitest.config.mts sets no expect.poll timeout, the bound of every poll in the specs.");
+    return limit;
+  }
 }

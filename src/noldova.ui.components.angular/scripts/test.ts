@@ -18,6 +18,7 @@ import { KitCopiesCheck } from "./checks/kit-copies-check.ts";
 import { KitManifestCheck } from "./checks/kit-manifest-check.ts";
 import { NativeElementAssertionCheck } from "./checks/native-element-assertion-check.ts";
 import { OnPushCheck } from "./checks/on-push-check.ts";
+import { PollBoundCheck } from "./checks/poll-bound-check.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
 import { ProcessRunner } from "./processes/process-runner.ts";
@@ -26,7 +27,7 @@ import Script from "./script.ts";
 
 export class Test extends Script {
   private static readonly BLANK_LINE: string = "";
-  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the Kit bundles, the Kit copies, the Kit manifest and Angular's newest skipped for a filtered run.";
+  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the poll and test limits check, the Kit bundles, the Kit copies, the Kit manifest and Angular's newest skipped for a filtered run.";
   private static readonly NO_TEST_MATCHED: string = "No test matched the filters.";
   private static readonly KIT_CHECK_PLATFORM: NodeJS.Platform = "linux";
   private static readonly KIT_CHECK_ARCHITECTURE: NodeJS.Architecture = "x64";
@@ -75,6 +76,7 @@ export class Test extends Script {
     if (!isFiltered && (shard === null || shard.part === 1)) {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
+      await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));
         await this.runCheckAsync(new KitCopiesCheck(Test.ROOT, new ProcessRunner(), new TemporaryFolder()));
