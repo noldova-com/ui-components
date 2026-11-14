@@ -120,8 +120,14 @@ describe("ToolCallComponent", () => {
     await fixture.whenStable();
   }
 
-  async function scrollWithAsync(key: string): Promise<number> {
+  // Presses the key with the output first at from, so each key starts where it has room to scroll, whatever an earlier key left.
+  async function scrollWithAsync(key: string, from: number): Promise<number> {
     const area = output();
+    if (Math.abs(area.scrollTop - from) >= 1) {
+      const placed = new Promise(resolve => area.addEventListener("scrollend", resolve, { once: true }));
+      area.scrollTo({ top: from, behavior: "instant" });
+      await placed;
+    }
     const before = area.scrollTop;
     const seen: number[] = [];
     let hasEnded = false;
@@ -799,10 +805,11 @@ describe("ToolCallComponent", () => {
     AppearanceFixture.apply();
     await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
     output().focus();
+    const bottom = output().scrollHeight - output().clientHeight;
     const moves: number[] = [];
 
-    for (const key of ["{ArrowDown}", "{PageDown}", "{PageUp}", "{ArrowUp}"])
-      moves.push(await scrollWithAsync(key));
+    for (const [key, from] of [["{ArrowDown}", 0], ["{PageDown}", 0], ["{PageUp}", bottom], ["{ArrowUp}", bottom]] as const)
+      moves.push(await scrollWithAsync(key, from));
     await userEvent.keyboard("{ArrowLeft}{ArrowRight}{Escape}{Home}");
     toggle().focus();
     await userEvent.keyboard("{Escape}");
