@@ -9,11 +9,13 @@
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { ConfigurationTableDensity } from "../../../../src/app/enums/configuration-table-density";
 import type { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 describe("ConfigurationTableComponent", () => {
   let fixture: ComponentFixture<ConfigurationTableHostComponent>;
@@ -47,7 +49,40 @@ describe("ConfigurationTableComponent", () => {
     return bottom;
   };
 
-  afterEach(() => AppearanceFixture.reset());
+  const contentEdges = (cell: HTMLElement): { top: number; left: number; right: number; bottom: number } => {
+    const start = document.createElement("div");
+    const end = document.createElement("div");
+    cell.prepend(start);
+    cell.append(end);
+    const edges = start.getBoundingClientRect();
+    const bottom = end.getBoundingClientRect().top;
+    start.remove();
+    end.remove();
+    return { top: edges.top, left: edges.left, right: edges.right, bottom };
+  };
+  const expectCompactGeometry = (): void => {
+    const space = AppearanceFixture.measureLook("space-1");
+    const line = AppearanceFixture.measureLook("border-width");
+    const explanation = box(".nol-configuration-table-explanation");
+
+    AppearanceFixture.expectPixels(explanation.top - Math.max(box(".nol-configuration-table-heading").bottom, box(".add").bottom), space);
+    AppearanceFixture.expectPixels(box("table").top - explanation.bottom, space);
+    for (const cell of cells()) {
+      const edges = contentEdges(cell);
+      const outer = cell.getBoundingClientRect();
+      const isHeader = cell.parentElement?.parentElement?.tagName === "THEAD";
+      AppearanceFixture.expectPixels(edges.top - outer.top, isHeader ? space : space * 1.5 + line / 2);
+      AppearanceFixture.expectPixels(edges.left - outer.left, cell.previousElementSibling === null ? 0 : space * 1.5);
+      AppearanceFixture.expectPixels(outer.right - edges.right, cell.nextElementSibling === null ? 0 : space * 1.5);
+    }
+    for (const tallest of [...DomFixture.all(DomFixture.host(fixture), "thead th").filter(t => (t.textContent ?? "").trim() !== ""), find(".short td:last-child")])
+      AppearanceFixture.expectPixels(tallest.getBoundingClientRect().bottom - contentEdges(tallest).bottom, (tallest.tagName === "TH" ? space : space * 1.5) + line / 2);
+  };
+
+  afterEach(async () => {
+    AppearanceFixture.reset();
+    await ForcedColorsFixture.resetAsync();
+  });
 
   it("shows its heading as a heading of the level it is given, the third by default, and names the table with it", async () => {
     await renderAsync();
@@ -142,6 +177,58 @@ describe("ConfigurationTableComponent", () => {
           .toEqual(["500", strong, AppearanceFixture.readColor(theme, mode, "text"), AppearanceFixture.readColor(theme, mode, "text")]);
         expect([...fixture.nativeElement.querySelectorAll("th")].map((t: HTMLElement) => getComputedStyle(t).color)).toEqual([strong, strong, strong, strong]);
       });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws its compact density from the ${theme.id} theme's first space step in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        await changeAsync(t => t.density.set(ConfigurationTableDensity.Compact));
+
+        expectCompactGeometry();
+        expect(getComputedStyle(find(".nol-configuration-table-explanation")).color).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        expect(cells().map(t => getComputedStyle(t).verticalAlign)).toEqual(cells().map(() => "top"));
+        AppearanceFixture.expectPixels(box(".short .remove").top - box(".short td").top, AppearanceFixture.measureLook("space-1") * 1.5 + AppearanceFixture.measureLook("border-width") / 2);
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps its compact geometry under forced colors in ${mode} mode`, async () => {
+      await renderAsync(undefined, mode);
+      await ForcedColorsFixture.activateAsync();
+      await changeAsync(t => t.density.set(ConfigurationTableDensity.Compact));
+
+      expectCompactGeometry();
+      expect(getComputedStyle(find(".nol-configuration-table-explanation")).color).toBe(ForcedColorsFixture.resolve("CanvasText"));
+    });
+
+  it("keeps its compact parts a step apart when its actions wrap under an explanation with no heading", async () => {
+    await renderAsync();
+    await changeAsync(t => {
+      t.density.set(ConfigurationTableDensity.Compact);
+      t.heading.set("");
+      t.label.set("Environment variables");
+      t.explanation.set("Each variable is set for the programs the shell starts, after the system's own, and a project's variables come after these.");
+    });
+    const space = AppearanceFixture.measureLook("space-1");
+    await changeAsync(t => t.width.set(`calc(var(--nol-text-field-width) + ${AppearanceFixture.measureLook("space-4") + box(".add").width - 1}px)`));
+    const explanation = box(".nol-configuration-table-explanation");
+    const add = box(".add");
+
+    expect(add.top).toBeGreaterThanOrEqual(explanation.bottom);
+    AppearanceFixture.expectPixels(add.top - explanation.bottom, space);
+    AppearanceFixture.expectPixels(box("table").top - add.bottom, space);
+  });
+
+  it("keeps its normal density when the density is bound to Normal", async () => {
+    await renderAsync();
+    await changeAsync(t => t.density.set(ConfigurationTableDensity.Compact));
+    await changeAsync(t => t.density.set(ConfigurationTableDensity.Normal));
+    const space = AppearanceFixture.measureLook("space-2");
+
+    expect(find("nol-configuration-table").classList.contains("nol-configuration-table-compact")).toBe(false);
+    AppearanceFixture.expectPixels(box("table").top - box(".nol-configuration-table-explanation").bottom, AppearanceFixture.measureLook("space-3"));
+    for (const cell of cells().filter(t => t.previousElementSibling !== null))
+      AppearanceFixture.expectPixels(contentEdges(cell).left - cell.getBoundingClientRect().left, space);
+  });
 
   it("puts the first cell's text and the last cell's button on the ends of the lines, with no outer padding", async () => {
     await renderAsync();

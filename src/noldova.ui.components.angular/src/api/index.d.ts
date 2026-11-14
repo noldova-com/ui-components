@@ -257,6 +257,33 @@ export declare enum ChipKind {
 }
 
 /**
+ * The spacing of a {@link ConfigurationTableComponent}, from the theme's
+ * space steps.
+ */
+export declare enum ConfigurationTableDensity {
+  /**
+   * The heading's row, the explanation and the table 0.75rem apart, the
+   * explanation in `text`, and 0.5rem cell padding with the cells lined up
+   * on their first line's baseline; the default.
+   */
+  Normal = "Normal",
+
+  /**
+   * For a settings form that needs the table tighter: the heading's row, the
+   * explanation and the table 0.25rem apart, as are actions that wrap under
+   * an explanation with no heading, the explanation in
+   * `text-muted`, the header's cells padded 0.25rem above and below and
+   * 0.375rem at their sides, the body's cells 0.375rem on every side, and
+   * every cell at the top of its row. The outer side of each row's first and
+   * last cells keeps no padding. A row's text and its buttons both start at
+   * the row's top, so the text no longer sits level with the buttons'
+   * labels; the columns, the hovered row's band and the lines are the
+   * normal look's.
+   */
+  Compact = "Compact"
+}
+
+/**
  * The size of a {@link DialogComponent}. Every size stays within the window,
  * below its top row and above its status bar.
  */
@@ -3427,6 +3454,12 @@ export declare class ConfigurationTableComponent {
    * none when empty, the default.
    */
   public readonly explanation: InputSignal<string>;
+
+  /**
+   * The table's spacing, its `density` input, normal or compact; normal
+   * when not bound.
+   */
+  public readonly density: InputSignal<ConfigurationTableDensity>;
 }
 
 /**

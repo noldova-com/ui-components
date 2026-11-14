@@ -9,6 +9,11 @@
 .nol-configuration-table {
   --nol-configuration-table-focus-room: calc(var(--nol-border-width) * 3);
   --nol-configuration-table-row-room: var(--nol-space-2);
+  --nol-configuration-table-cell-padding: var(--nol-space-2);
+  --nol-configuration-table-header-cell-padding: var(--nol-space-2);
+  --nol-configuration-table-cell-alignment: baseline;
+  --nol-configuration-table-explanation-color: var(--nol-text);
+  --nol-configuration-table-header-row-gap: var(--nol-space-2);
 
   display: flex;
   flex-direction: column;
@@ -16,11 +21,21 @@
   min-width: 0;
 }
 
+.nol-configuration-table-compact {
+  --nol-configuration-table-cell-padding: calc(var(--nol-space-1) * 1.5);
+  --nol-configuration-table-header-cell-padding: var(--nol-space-1) calc(var(--nol-space-1) * 1.5);
+  --nol-configuration-table-cell-alignment: top;
+  --nol-configuration-table-explanation-color: var(--nol-text-muted);
+  --nol-configuration-table-header-row-gap: var(--nol-space-1);
+
+  gap: var(--nol-space-1);
+}
+
 .nol-configuration-table-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--nol-space-2) var(--nol-space-4);
+  gap: var(--nol-configuration-table-header-row-gap) var(--nol-space-4);
 }
 
 .nol-configuration-table-header-explained {
@@ -44,7 +59,7 @@
 
 .nol-configuration-table-explanation {
   margin: 0;
-  color: var(--nol-text);
+  color: var(--nol-configuration-table-explanation-color);
 }
 
 .nol-configuration-table-header > .nol-configuration-table-explanation {
@@ -124,10 +139,10 @@
 }
 
 .nol-configuration-table-grid > :is(thead, tbody, tfoot) > tr > :is(th, td) {
-  padding: var(--nol-space-2);
+  padding: var(--nol-configuration-table-cell-padding);
   border-bottom: var(--nol-border-width) solid var(--nol-card-border);
   text-align: start;
-  vertical-align: baseline;
+  vertical-align: var(--nol-configuration-table-cell-alignment);
   white-space: nowrap;
 }
 
@@ -168,6 +183,7 @@
 }
 
 .nol-configuration-table-grid > thead > tr > th {
+  padding: var(--nol-configuration-table-header-cell-padding);
   color: var(--nol-text-strong);
   font-weight: var(--nol-weight-emphasis);
 }

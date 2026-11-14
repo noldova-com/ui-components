@@ -414,7 +414,7 @@ describe("ComponentPageComponent", () => {
         "table[aria-label=\"Note authors\"] th.nol-configuration-table-row-actions[aria-label=\"Actions\"]",
         "td.nol-configuration-table-row-actions:not([aria-label]) button.nol-icon-button[aria-label=\"Remove Ada Park\"]", "table.nol-configuration-table-grid[aria-label=\"Shortcuts\"]"],
       keys: [],
-      inputs: ["heading", "label", "level", "explanation"],
+      inputs: ["heading", "label", "level", "explanation", "density"],
       outputs: []
     },
     MessageComponent: {

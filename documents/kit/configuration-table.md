@@ -1,6 +1,6 @@
 # Configuration table
 
-**Scope:** The kit's configuration table: its default geometry, the text role it uses, and its surface and behavior.
+**Scope:** The kit's configuration table: its default geometry, the text role it uses, its surface and behavior, and its compact density.
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
@@ -24,3 +24,7 @@ When the table can shrink no further even so, as with more controls than its wid
 Once wrapping couldn't make the table fit in some room, it stays on one line, with the same content, until it has 1.5rem more room than that, or more by the room it lost since it last wrapped, if that is more, but only as far as the scrollbars around it grew since then, those of every area that scrolls up and down around it and the window's, as when the wrapped, taller table brings a scrollbar into the owner's area, an area around it or the page; room lost otherwise, as when a panel opens beside it, holds by 1.5rem; so the two layouts never take turns. A change of its content lets it try again at once.
 A table with shares scrolls sideways inside the component instead, with the same room, while the heading's row and the explanation stay in place.
 The row under the pointer shows a band in `hover` behind its cells, reaching past the table's ends while the text stays on the heading's line, so the owner leaves at least 0.5rem beside the component; under forced colors a 1px dashed `Highlight` line runs just inside the band's edges instead, 0.5rem past the table's ends so it stays clear of the text, with no fill. The header's row has no hover.
+
+## Compact density
+
+An owner that needs the table tighter, such as a settings form, gives the component `density` `Compact`: the heading's row, the explanation and the table 0.25rem apart; the explanation in `text-muted`; the header's cells padded 0.25rem above and below and 0.375rem at their sides, and the body's cells 0.375rem on every side, except on the outer side of each row's first and last cells; every cell at the top of its row, so a row's text and its buttons both start at the row's top, below its padding, rather than the text sitting level with the buttons' labels; the heading's row, when its actions wrap under the explanation, keeps them 0.25rem below it. The columns' widths, the hovered row's band, the actions' spacing and the lines stay the default geometry's, under forced colors too, where the explanation takes the system's text color.
