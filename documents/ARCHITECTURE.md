@@ -57,6 +57,7 @@ The code rules only this repository has; [Noldova's standards](https://github.co
 - **Test helpers:** a package's public test helpers live in `src/testing/`, a second source tree beside `src/app/` that uses the same concept categories.
   Only the package's testing entry, `src/api/testing.ts`, imports it, so an app's bundle never takes the helpers.
   The build refuses any other entry that reaches it or imports `vitest`.
+  It compiles that entry on its own, with `tsconfig.testing.json`, which adds the Node.js types Vitest's declarations use, so the other entries' code never sees them.
 - **Foundation value checks:** the kit's production code uses context.core's additions to the global `Object` and `String` constructors.
   The value checks are `Object.isUndefined`, `Object.isNull`, `Object.isNullOrUndefined`, `Object.isString`, `Object.isNumber`, `Object.isBigInt`, `Object.isBoolean`, `Object.isObject`, `Object.isFunction`, `String.isNullOrEmpty` and `String.isNullOrWhitespace`, and the empty string is `String.empty`.
   They replace comparisons with `undefined` and `null`, comparisons of a `typeof` result, and `""`.
