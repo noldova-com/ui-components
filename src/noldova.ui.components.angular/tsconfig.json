@@ -3,7 +3,6 @@
   "compileOnSave": false,
   "compilerOptions": {
     "verbatimModuleSyntax": false,
-    "skipLibCheck": true,
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve",
