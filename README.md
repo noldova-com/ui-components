@@ -15,7 +15,7 @@ The package is at `0.0.x` for now, and its API may change from one version to th
 npm install @noldova/ui.components.angular
 ```
 
-The kit's peers, Angular and RxJS, install at the exact versions it names, and its two CONTEXT packages within the range it names, from the version it builds and tests with to the next minor, as [the package's README](src/noldova.ui.components.angular/README.md) says.
+The kit's peers, Angular and RxJS, install at the exact versions it names, and its two CONTEXT packages within the range it names, as [the package's README](src/noldova.ui.components.angular/README.md) says.
 [The package's README](src/noldova.ui.components.angular/README.md) says what an app needs and how to use code highlighting, Markdown, time formats, themes and the testing helpers; its type declarations document every export.
 
 To report a bug or ask for a change, open an issue in this repository, as the organization's [contributing guide](https://github.com/noldova-com/.github/blob/main/CONTRIBUTING.md) says.
@@ -49,7 +49,7 @@ npm test
 
 `npm run build:components` builds every components package, the kit today, `npm run build:docs` builds every docs site, the kit's docs site today, and `npm run build` builds everything, running `npm run build:components` then `npm run build:docs`.
 `npm run build` passes what follows `--` to `npm run build:components` alone, and with anything after `--` it runs no `npm run build:docs`, since each option the kit's build takes builds nothing; so `npm run build --silent -- --list-copies` prints the kit's list below.
-`npm run build:docs` builds no kit: a docs site builds from the kit `npm run build:components` installs at the root, and fails with a line saying to run `npm run build:components` first when it isn't built.
+`npm run build:docs` builds no kit, and needs `npm run build:components` first, as [the docs site](documents/DOCS-SITE.md#commands) says.
 The kit's build builds it each time: it compiles it, packs it into `_packages/` as `noldova-ui.components.angular-<version>.tgz`, at the version `version.json` holds, and installs the archive at the root without saving it.
 It installs the npm packages first when `node_modules` is missing, and the browser for the Angular tests.
 Each archive's `package.json` records the commit it was built from as `gitHead` when the clone has no changed tracked files and no untracked files that Git doesn't ignore, and leaves it out otherwise.
@@ -58,7 +58,7 @@ The kit's build also refuses an entry other than the testing entry that reaches 
 At the root, `npm run test:docs` runs the docs site's tests as `npm run docs:test` does, on any platform, after `npm run build`.
 `npm run build:components --silent -- --list-copies`, or `npm run build --silent -- --list-copies`, builds nothing and prints each file the build copies into the kit from outside its package, one per line, with tabs between its source, the package's name and its path inside the package, and then `end of copies`.
 `npm run build:components --silent -- --inputs` builds nothing and prints each folder outside the package that the kit's stylesheets load files from, one per line.
-Before it builds, the build checks the kit's `package.json`: its name, the version `__VERSION__`, its dependencies, development dependencies and peers as objects, every dependency pinned, any CONTEXT dependency at an exact version, and each CONTEXT peer at `>=<its exact development dependency> <the next minor>`, or the next major from 1.0, such as `>=0.0.2 <0.1.0`.
+Before it builds, the build checks the kit's `package.json`: its name, the version `__VERSION__`, its dependencies, development dependencies and peers as objects, every dependency pinned, any CONTEXT dependency at an exact version, and each CONTEXT peer at the range the kit's [README](src/noldova.ui.components.angular/README.md#what-an-app-needs) sets, from its exact development dependency.
 
 The build loads the installed kit in Node.js without a bundler, after `@angular/compiler`, which partially compiled components need when they load unbuilt, and type-checks it with NodeNext resolution and `skipLibCheck` off, from `src/noldova.ui.components.angular/tests/fixtures/node-load/`.
 It loads every entry but the testing entry, which imports Vitest and so loads only inside its test runner; that entry's declarations are type-checked.
@@ -85,7 +85,7 @@ The CI run passes two options, which the organization's shared workflow gives ev
 npm test -- --skip-test-details --skip-coverage-details
 ```
 
-The kit's test script accepts both without changing its output, and refuses every other option.
+The kit's test script accepts both without changing its output; besides them it takes only one `--shard=<part>/<parts>` and filters, as above, and refuses any other option.
 
 ## Checks
 
@@ -101,7 +101,8 @@ A pull request adds no lines to [CHANGELOG.md](CHANGELOG.md), since each version
 | Build and test / Linux x64, Linux arm64, Windows x64, Windows arm64, macOS x64 (1 of 2), macOS x64 (2 of 2), macOS arm64 (1 of 2), macOS arm64 (2 of 2) | One job per target of `.github`'s shared `build-and-test.yml`, and two on each macOS target, whose tests take the longest, each running its half of the kit's spec files with `npm test -- --shard=<part>/2`, each on the GitHub-hosted runner the shared settings name for it: `npm run build` builds, packs and installs the kit, then builds the docs site; the toolchain is the Node.js and npm versions the shared settings name, Node.js 24.21.0 with npm 11.19.0 today; `.gitattributes` holds `* text=auto eol=lf`, and every tracked text file uses LF line endings and ends with exactly one newline; `npm test` runs the whole suite but the docs site, and the build and the tests leave every tracked file unchanged; a second build of the commit, in another folder, packs a byte-identical archive; and the archive passes the release's own check at the version `version.json` holds, in part 1 of a split target. |
 | Build and test / Merge the parts of macOS x64, Merge the parts of macOS arm64 | With the caller's `shard-outputs: _build/angular-coverage`, each part keeps its coverage report, and one Linux x64 job per split target, with nothing installed, runs `npm run test:merge` on that target's parts, so macOS meets the kit's coverage requirement as the unsplit targets do. |
 | Build and test / Separate test | One Linux x64 job builds as the targets do, the docs site included, then runs the docs site's tests, with their coverage and the built-site check, as `npm run test:docs`. |
-| Build and test / All targets | Every target's jobs, each part of a split one, the plan, the merges of the parts and the separate test passed, and the shared settings named the versions and a runner for each target; it reports even when a job before it failed or was skipped, so `main` can require it. |
+| Build and test / End-to-end test | The shared workflow's end-to-end job, which runs only for a caller that names an `end-to-end` test; this repository names none, so it's skipped. |
+| Build and test / All targets | Every target's jobs, each part of a split one, the plan, the merges of the parts and the separate test passed, and the end-to-end test passed or was skipped, and the shared settings named the versions and a runner for each target; it reports even when a job before it failed or was skipped, so `main` can require it. |
 
 ### Coverage
 
@@ -116,7 +117,7 @@ The repository's automation, in each package's `scripts/`, has no coverage requi
 
 ### OnPush strategies
 
-Since Angular 22, a component without a `changeDetection` uses the OnPush strategy, so a component, an example or a spec here never writes `changeDetection: ChangeDetectionStrategy.OnPush`; it writes a strategy only to choose `Eager`, with the reason.
+A component, an example or a spec here writes a change detection strategy only as [Noldova's Angular standard](https://github.com/noldova-com/.github/blob/main/standards/stacks/ANGULAR.md) says, and the check below holds the code to it.
 The OnPush strategies check, `src/noldova.ui.components.angular/scripts/checks/on-push-check.ts`, reads every TypeScript file, `.ts` and `.mts`, that git tracks under `src`, and fails on each `changeDetection` key, bare or quoted, whose value isn't `ChangeDetectionStrategy.Eager`, however its line is split, and on a shorthand `{ changeDetection }`, naming the file and line.
 It first tests its own pattern on `ChangeDetectionStrategy.Eager` with and without spaces, which it accepts, and on other values, a quoted key and a shorthand, which it refuses, and fails when that test does.
 
@@ -180,6 +181,9 @@ The organization's testing standard has each spec file finish in under 1 second;
 A file's time is the one CI reports in its run of the whole suite, or one a machine reports when it runs the spec files one at a time, with Vitest's `fileParallelism` off; a whole-suite run on a busy machine measures its load rather than the file.
 `src/noldova.ui.components.angular/tests/app/models/markdown.reader.spec.ts` may take about 3 seconds.
 Its streaming specs read the whole text after every length they stream, through the reader's real paragraph step and margin, `markdownParagraphStep` and `markdownParagraphMargin`, 1000 and 500 characters, which stay as they are.
+Two kinds of spec keep their time down by what they render.
+The Gallery's Focus and Hover specs, `gallery-state-focus-sections.spec.ts` and `gallery-state-hover-sections.spec.ts`, render each of the kit's sections alone, with the others stood in for: the whole Gallery took about half of a test's 15-second limit to render on macOS x64.
+The docs site's page specs check the desktop and phone widths; only the tables' fit, in `component-page.component.spec.ts` and `docs-shell.component.spec.ts`, runs at every width the site promises, on every page that holds a table or may gain one.
 
 ### Fixed pauses
 

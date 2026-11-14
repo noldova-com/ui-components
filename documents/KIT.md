@@ -11,7 +11,7 @@ What a theme holds is in the kit's [README](../src/noldova.ui.components.angular
 A shape is a named form of a kit control, such as the tab's `pill`.
 The kit implements every shape, and a theme only chooses among them.
 A theme's look value may refer to other tokens.
-A theme that changes a settings item's sides sets `settings-item-padding-inline` and builds `settings-item-padding` from it, as the default theme does with `var(--nol-settings-item-padding-inline)`, so the inline padding Desktop Core's Settings takes as its edge stays the item's.
+A theme that changes a settings item's sides sets `settings-item-padding-inline` and builds `settings-item-padding` from it, as the default theme does with `var(--nol-settings-item-padding-inline)`, so the inline padding an app's settings page takes as its edge stays the item's.
 The default theme defines the values in this document, and another theme gives its colors for both modes and the parts of the look it changes.
 
 Painting a theme sets each control's shape as an attribute on the element it paints, such as `data-nol-tab-shape="pill"`.
@@ -233,6 +233,7 @@ Its rows are xterm's at `--nol-line-terminal`, 1.3, the terminal's line height: 
 Text is Regular, 400, and emphasis, such as names, headings, titles, badges and matches, is `--nol-weight-emphasis`, Medium, 500; no control hard-codes an emphasis weight.
 Text set in capitals, such as an uppercase section header, is `--nol-text-small`, 0.75rem and never under 12px, as the label size, with `--nol-letter-spacing-caps`, 0.05em, between its letters; no control hard-codes either.
 The kit's fonts are Noldova Sans Regular, Italic, Medium, Medium Italic, Semibold and Semibold Italic, and Noldova Mono Regular, Medium and Semibold; Semibold, 600, `--nol-weight-strong`, stays for an app that asks for it and for the byline avatar's initial.
+Noldova Sans is derived from Inter and Noldova Mono from Inconsolata, kept in `assets/fonts`, and the icons are Material Symbols' rounded set, which `kit.css` imports from its package; the README's [License](../README.md#license) table records each font and icon set with its license and obligations, as [Noldova's code standard](https://github.com/noldova-com/.github/blob/main/standards/CODE.md#licenses) asks.
 
 Shadows are shared tokens: `--nol-shadow-large` is 0 0 0.75rem at 14% black, `--nol-shadow-xlarge` is 0 0 1.25rem at 15% black, and `--nol-widget-shadow` colors the select list's shadow.
 Overlays and drag ghosts take the shadow their row below gives them, and panel cards and cards take none.
