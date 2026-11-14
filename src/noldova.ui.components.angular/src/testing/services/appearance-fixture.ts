@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, vi } from "vitest";
-import { server, userEvent } from "vitest/browser";
+import { expect } from "vitest";
+import { userEvent } from "vitest/browser";
 
 import { ThemeMode } from "../../app/enums/theme-mode.js";
 import type { Theme } from "../../app/models/theme.js";
@@ -25,9 +25,6 @@ export class AppearanceFixture {
   public static readonly hiddenThumb: string = "rgba(0, 0, 0, 0)";
 
   private static readonly ROOT_SIZE: number = 16;
-  // vi.waitFor takes no bound from the config, so it takes expect.poll's, as the kit's own specs do; a product's run that sets none gets half its
-  // test limit, so the poll still fails before the test does.
-  private static readonly POLL_WAIT: { readonly timeout: number } = { timeout: server.config.expect.poll?.timeout ?? server.config.testTimeout / 2 };
   private static readonly PANEL_SIZE: number = 13;
   private static readonly SHAPE_ATTRIBUTE: string = "data-nol-tab-shape";
   private static readonly LAYOUT_TOLERANCE: number = 1 / 32;
@@ -118,11 +115,11 @@ export class AppearanceFixture {
 
     const park = await AppearanceFixture.parkPointerAsync();
     try {
-      await vi.waitFor(() => expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]), AppearanceFixture.POLL_WAIT);
+      await expect.poll(() => [area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]);
 
       expect(shown).not.toBe(AppearanceFixture.hiddenThumb);
       await userEvent.hover(area);
-      await vi.waitFor(() => expect(thumb()).toBe(shown), AppearanceFixture.POLL_WAIT);
+      await expect.poll(thumb).toBe(shown);
     }
     finally {
       park.remove();

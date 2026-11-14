@@ -21,10 +21,10 @@ export class PollBoundCheck implements ICheck {
   /** The spec that tests the bound itself, with a short one, so a hung poll ends in a moment. */
   private static readonly EXEMPT: string = "src/noldova.ui.components.angular/tests/hang-limit.spec.ts";
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
-  private static readonly SHARED_BOUNDS: readonly string[] = ["HangLimitFixture.wait", "AppearanceFixture.POLL_WAIT"];
+  private static readonly SHARED_BOUND: string = "HangLimitFixture.wait";
   private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*waitFor\s*\(/gu;
-  /** A timeout key, but not the shared bounds' own: their type's number, or the value their fixture reads from the config. */
-  private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)|server\.config\.expect\.poll\b))/gu;
+  /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
+  private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
   private static readonly SET_CONFIG: RegExp = /(?<![\w$.])vi\s*\.\s*setConfig\s*\(/gu;
   private static readonly TEST_CALL: RegExp = /(?<![\w$.])(?:it|test|describe|beforeEach|afterEach|beforeAll|afterAll)(?:\s*\.\s*(?:only|skip|concurrent|sequential|fails))*\s*\(/gu;
   private static readonly NUMBER: RegExp = /^\d[\d_]*(?:\.\d+)?$/u;
@@ -36,7 +36,7 @@ export class PollBoundCheck implements ICheck {
   private static readonly OWN_CASES: ReadonlyArray<readonly [string, number]> = [
     ["await vi.waitFor(() => check(), HangLimitFixture.wait);", 0],
     ["await vi.waitFor(() => check(), { ...HangLimitFixture.wait, interval: 50 });", 0],
-    ["await vi.waitFor(\n  () => check(),\n  AppearanceFixture.POLL_WAIT\n);", 0],
+    ["await vi.waitFor(\n  () => check(),\n  HangLimitFixture.wait\n);", 0],
     ["await vi.waitFor(() => check());", 1],
     ["await vi.waitFor(() => check(), { interval: 50 });", 1],
     ["await vi.waitFor(() => check(\"HangLimitFixture.wait\"));", 1],
@@ -53,9 +53,7 @@ export class PollBoundCheck implements ICheck {
     ["// vi.waitFor(() => check()) and { timeout: 5 } in a comment\n/* it(\"x\", () => {}, 5); */", 0],
     ["const text = `vi.waitFor(() => ${check()})`;", 0],
     ["const html = `<ul>${items.map(t => `<li>${t}, { timeout: 5 }</li>`).join(\"\")}</ul>`;\nawait vi.waitFor(() => check());", 1],
-    ["public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };", 0],
-    ["private static readonly POLL_WAIT: { readonly timeout: number } = { timeout: server.config.expect.poll?.timeout ?? server.config.testTimeout / 2 };", 0]
-  ];
+    ["public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };", 0]  ];
 
   private readonly root: string;
 
@@ -98,7 +96,7 @@ export class PollBoundCheck implements ICheck {
     for (const match of code.matchAll(PollBoundCheck.WAIT_FOR)) {
       const open = match.index + match[0].length - 1;
       const call = code.slice(open, PollBoundCheck.closeOf(code, open));
-      if (!PollBoundCheck.SHARED_BOUNDS.some(t => call.includes(t)))
+      if (!call.includes(PollBoundCheck.SHARED_BOUND))
         findings.push([lineOf(match.index), "calls vi.waitFor without the shared bound; pass HangLimitFixture.wait, which vitest.config.mts sets below the test's limit."]);
     }
     for (const match of code.matchAll(PollBoundCheck.OWN_TIMEOUT))

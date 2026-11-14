@@ -186,7 +186,7 @@ A test that reaches either limit is a bug to fix, never a reason to raise it; Vi
 
 ### Poll and test limits
 
-The poll and test limits check, `src/noldova.ui.components.angular/scripts/checks/poll-bound-check.ts`, reads every TypeScript file under the kit's `tests` and `src/testing` and the docs site's `tests`, with strings and comments read as blanks, and fails, naming the file and line, on a `vi.waitFor` call that passes neither `HangLimitFixture.wait` nor the appearance fixture's own copy of the bound, on a `timeout` key, such as a poll's or a test's own limit, on `vi.setConfig`, and on a test, suite or hook given a number as its limit.
+The poll and test limits check, `src/noldova.ui.components.angular/scripts/checks/poll-bound-check.ts`, reads every TypeScript file under the kit's `tests` and `src/testing` and the docs site's `tests`, with strings and comments read as blanks, and fails, naming the file and line, on a `vi.waitFor` call that doesn't pass `HangLimitFixture.wait`, on a `timeout` key, such as a poll's or a test's own limit, on `vi.setConfig`, and on a test, suite or hook given a number as its limit.
 The hang-limit spec alone is left out, since it shows a hung poll with a short bound of its own.
 It first tests itself on small sources, the shared bound passed, missing, in a string or overridden, a poll's and a test's own limits, a regular expression and a comment, and fails when that test does.
 
