@@ -348,12 +348,12 @@ describe("AvatarComponent", () => {
             });
             rooms.push([size, pair, room()]);
           }
-          await changeAsync(() => host.initials.set("IL"));
+          await changeAsync(() => host.initials.set("II"));
           kept.push([size, Math.abs(width() - natural())]);
         }
 
         expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's box and the circle inside the edge: ${JSON.stringify(rooms)}`).toEqual([]);
-        expect(kept.filter(([, t]) => t > 0.5), `how far "IL" is from its natural width: ${JSON.stringify(kept)}`).toEqual([]);
+        expect(kept.filter(([, t]) => t > 0.5), `how far "II" is from its natural width: ${JSON.stringify(kept)}`).toEqual([]);
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
