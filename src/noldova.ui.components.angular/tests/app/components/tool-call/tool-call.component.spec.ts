@@ -121,8 +121,13 @@ describe("ToolCallComponent", () => {
     await fixture.whenStable();
   }
 
-  async function scrollWithAsync(key: string): Promise<number> {
+  async function scrollWithAsync(key: string, startTop: number): Promise<number> {
     const area = output();
+    if (Math.abs(area.scrollTop - startTop) >= 1) {
+      const placed = new Promise(resolve => area.addEventListener("scrollend", resolve, { once: true }));
+      area.scrollTo({ top: startTop, behavior: "instant" });
+      await placed;
+    }
     const before = area.scrollTop;
     const seen: number[] = [];
     let hasEnded = false;
@@ -800,16 +805,31 @@ describe("ToolCallComponent", () => {
     AppearanceFixture.apply();
     await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
     output().focus();
+    const bottom = output().scrollHeight - output().clientHeight;
     const moves: number[] = [];
 
-    for (const key of ["{ArrowDown}", "{PageDown}", "{PageUp}", "{ArrowUp}"])
-      moves.push(await scrollWithAsync(key));
+    for (const [key, startTop] of [["{ArrowDown}", 0], ["{PageDown}", 0], ["{PageUp}", bottom], ["{ArrowUp}", bottom]] as const)
+      moves.push(await scrollWithAsync(key, startTop));
     await userEvent.keyboard("{ArrowLeft}{ArrowRight}{Escape}{Home}");
     toggle().focus();
     await userEvent.keyboard("{Escape}");
 
     expect(moves.map(Math.sign)).toEqual([1, 1, -1, -1]);
     expect(host.heard).toEqual(["ArrowLeft", "ArrowRight", "Escape", "Home", "Escape"]);
+  });
+
+  it("scrolls the output with Up after Down and Page Up have brought it back to its top, since Up starts from its own position", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+    output().focus();
+    const bottom = output().scrollHeight - output().clientHeight;
+
+    const down = await scrollWithAsync("{ArrowDown}", 0);
+    const pageUp = await scrollWithAsync("{PageUp}", output().scrollTop);
+    const topAfterPageUp = output().scrollTop;
+    const up = await scrollWithAsync("{ArrowUp}", bottom);
+
+    expect([Math.sign(down), Math.sign(pageUp), topAfterPageUp, Math.sign(up)]).toEqual([1, -1, 0, -1]);
   });
 
   it("shows a spinner and Loading output while its output loads, with no live region of its own", async () => {
