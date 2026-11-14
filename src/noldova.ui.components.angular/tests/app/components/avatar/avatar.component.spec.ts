@@ -69,11 +69,20 @@ describe("AvatarComponent", () => {
     const line = context.measureText(letters.innerText);
     context.font = `${font.fontStyle} ${font.fontWeight} 1000px ${font.fontFamily}`;
     const ink = context.measureText(letters.innerText);
-    const scale = drawn.width / ink.width;
-    const shrink = drawn.width / line.width;
-    const baseline = drawn.top + ((drawn.height / shrink - line.fontBoundingBoxAscent - line.fontBoundingBoxDescent) / 2 + line.fontBoundingBoxAscent) * shrink;
-    return roomAround([drawn.left - ink.actualBoundingBoxLeft * scale, drawn.left + ink.actualBoundingBoxRight * scale],
+    const shrink = drawn.width / letters.offsetWidth;
+    const scale = Number.parseFloat(font.fontSize) / 1000 * shrink;
+    const baseline = drawn.top + ((letters.offsetHeight - line.fontBoundingBoxAscent - line.fontBoundingBoxDescent) / 2 + line.fontBoundingBoxAscent) * shrink;
+    return roomAround([drawn.left - ink.actualBoundingBoxLeft * scale, drawn.right - (ink.width - ink.actualBoundingBoxRight) * scale],
       [baseline - ink.actualBoundingBoxAscent * scale, baseline + ink.actualBoundingBoxDescent * scale]);
+  };
+  const advance = (): readonly [laid: number, measured: number] => {
+    const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
+    const font = getComputedStyle(letters);
+    const context = document.createElement("canvas").getContext("2d");
+    if (context === null)
+      throw new Error("The canvas has no 2D context.");
+    context.font = `${font.fontStyle} ${font.fontWeight} 1000px ${font.fontFamily}`;
+    return [letters.offsetWidth, context.measureText(letters.innerText).width * Number.parseFloat(font.fontSize) / 1000];
   };
   const textRoom = (): number => {
     const range = document.createRange();
@@ -343,7 +352,7 @@ describe("AvatarComponent", () => {
       if (forced)
         await ForcedColorsFixture.activateAsync();
       try {
-        const rooms: (readonly [AvatarSize, string, number])[] = [];
+        const rooms: (readonly [AvatarSize, string, number, readonly number[]])[] = [];
         await document.fonts.ready;
         for (const size of [AvatarSize.Normal, AvatarSize.Small, ...forced ? [] : [AvatarSize.IconButton], AvatarSize.Byline])
           for (const pair of ["MW", "WW"]) {
@@ -351,10 +360,10 @@ describe("AvatarComponent", () => {
               t.initials.set(pair);
               t.size.set(size);
             });
-            rooms.push([size, pair, room()]);
+            rooms.push([size, pair, room(), advance()]);
           }
 
-        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's letters and the circle inside the edge: ${JSON.stringify(rooms)}`).toEqual([]);
+        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([]);
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
@@ -383,6 +392,7 @@ describe("AvatarComponent", () => {
         await ForcedColorsFixture.activateAsync();
       try {
         const drawn: (readonly [AvatarSize, string, string, boolean])[] = [];
+        const rooms: (readonly [number, readonly number[]])[] = [];
         await document.fonts.ready;
         for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline]) {
           await renderAsync(t => {
@@ -390,9 +400,10 @@ describe("AvatarComponent", () => {
             t.size.set(size);
           });
           drawn.push([size, shown() ?? "", drawnScale(), room() >= 1]);
+          rooms.push([room(), advance()]);
         }
 
-        expect(drawn).toEqual([AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline].map(t => [t, t === AvatarSize.Icon ? "R" : "RV", "", true]));
+        expect(drawn, `the room between the letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline].map(t => [t, t === AvatarSize.Icon ? "R" : "RV", "", true]));
       } finally {
         await ForcedColorsFixture.resetAsync();
       }

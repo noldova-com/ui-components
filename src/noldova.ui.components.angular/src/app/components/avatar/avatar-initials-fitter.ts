@@ -80,7 +80,7 @@ export class AvatarInitialsFitter {
     this.context.font = `${font.fontStyle} ${font.fontWeight} ${AvatarResources.avatarInitialsMeasureSize}px ${font.fontFamily}`;
     const ink = this.context.measureText(letters.innerText);
     const size = Number.parseFloat(font.fontSize) / AvatarResources.avatarInitialsMeasureSize;
-    return AvatarInitialsFitter.cornersOf([-width / 2 - ink.actualBoundingBoxLeft * size, -width / 2 + ink.actualBoundingBoxRight * size],
+    return AvatarInitialsFitter.cornersOf([-width / 2 - ink.actualBoundingBoxLeft * size, width / 2 - (ink.width - ink.actualBoundingBoxRight) * size],
       [baseline - ink.actualBoundingBoxAscent * size, baseline + ink.actualBoundingBoxDescent * size]);
   }
 
