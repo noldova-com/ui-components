@@ -51,16 +51,34 @@ describe("AvatarComponent", () => {
     AppearanceFixture.expectPixels(letter.left - box.left, box.right - letter.right);
     expect(Math.abs((letter.top - box.top) - (box.bottom - letter.bottom)), "the letter's gaps above and below, whose text line lands on a whole pixel").toBeLessThanOrEqual(1);
   };
-  const room = (): number => {
+  const roomAround = (across: readonly number[], down: readonly number[]): number => {
     const style = getComputedStyle(avatar());
     const box = avatar().getBoundingClientRect();
+    const radius = (box.width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)) / 2;
+    const [x, y] = [box.left + box.width / 2, box.top + box.height / 2];
+    return radius - Math.max(...across.flatMap(t => down.map(u => Math.hypot(t - x, u - y))));
+  };
+  const room = (): number => {
+    const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
+    const drawn = letters.getBoundingClientRect();
+    const font = getComputedStyle(letters);
+    const context = document.createElement("canvas").getContext("2d");
+    if (context === null)
+      throw new Error("The canvas has no 2D context.");
+    context.font = `${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+    const ink = context.measureText(letters.innerText);
+    const scale = drawn.width / ink.width;
+    const baseline = drawn.top + ((drawn.height / scale - ink.fontBoundingBoxAscent - ink.fontBoundingBoxDescent) / 2 + ink.fontBoundingBoxAscent) * scale;
+    return roomAround([drawn.left - ink.actualBoundingBoxLeft * scale, drawn.left + ink.actualBoundingBoxRight * scale],
+      [baseline - ink.actualBoundingBoxAscent * scale, baseline + ink.actualBoundingBoxDescent * scale]);
+  };
+  const textRoom = (): number => {
     const range = document.createRange();
     range.selectNodeContents(avatar());
     const letters = range.getBoundingClientRect();
-    const radius = (box.width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)) / 2;
-    const [x, y] = [box.left + box.width / 2, box.top + box.height / 2];
-    return radius - Math.max(...[letters.left, letters.right].flatMap(t => [letters.top, letters.bottom].map(u => Math.hypot(t - x, u - y))));
+    return roomAround([letters.left, letters.right], [letters.top, letters.bottom]);
   };
+  const drawnScale = (): string => DomFixture.one(avatar(), ".nol-avatar-initials").style.transform;
   const pixelsAsync = async (): Promise<{ width: number; height: number; at: (x: number, y: number) => string }> => {
     const shot = new Image();
     shot.src = `data:image/png;base64,${await page.screenshot({ element: avatar(), save: false })}`;
@@ -317,30 +335,14 @@ describe("AvatarComponent", () => {
   });
 
   for (const forced of [false, true])
-    it(`fits two wide initials, "MW" and "WW", at least 1px inside its inner circle at every size that shows two${forced ? ", under forced colors" : ""}, and leaves a pair that fits at its size's own text size`, async () => {
+    it(`fits two wide initials, "MW" and "WW", their letters at least 1px inside its inner circle at every size that shows two${forced ? ", under forced colors" : ""}`, async () => {
       AppearanceFixture.apply();
       if (forced)
         await ForcedColorsFixture.activateAsync();
       try {
-        const natural = (): number => {
-          const probe = document.body.appendChild(document.createElement("span"));
-          const font = getComputedStyle(avatar());
-          probe.style.cssText = `position: absolute; white-space: nowrap; font-family: ${font.fontFamily}; font-size: ${font.fontSize}; font-weight: ${font.fontWeight}; letter-spacing: ${font.letterSpacing}`;
-          probe.textContent = shown() ?? "";
-          const width = probe.getBoundingClientRect().width;
-          probe.remove();
-          return width;
-        };
-        const width = (): number => {
-          const range = document.createRange();
-          range.selectNodeContents(avatar());
-          return range.getBoundingClientRect().width;
-        };
-        const sizes = [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Byline];
         const rooms: (readonly [AvatarSize, string, number])[] = [];
         await document.fonts.ready;
-        const kept: (readonly [AvatarSize, number])[] = [];
-        for (const size of sizes) {
+        for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Byline])
           for (const pair of ["MW", "WW"]) {
             await renderAsync(t => {
               t.initials.set(pair);
@@ -348,16 +350,45 @@ describe("AvatarComponent", () => {
             });
             rooms.push([size, pair, room()]);
           }
-          await changeAsync(() => host.initials.set("II"));
-          kept.push([size, Math.abs(width() - natural())]);
-        }
 
-        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's box and the circle inside the edge: ${JSON.stringify(rooms)}`).toEqual([]);
-        expect(kept.filter(([, t]) => t > 0.5), `how far "II" is from its natural width: ${JSON.stringify(kept)}`).toEqual([]);
+        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's letters and the circle inside the edge: ${JSON.stringify(rooms)}`).toEqual([]);
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
     });
+
+  for (const forced of [false, true])
+    it(`draws ordinary initials, "RV", and the icon size's "R", at their own size at every size${forced ? ", under forced colors" : ""}, their letters at least 1px inside its circle`, async () => {
+      AppearanceFixture.apply();
+      if (forced)
+        await ForcedColorsFixture.activateAsync();
+      try {
+        const drawn: (readonly [AvatarSize, string, string, boolean])[] = [];
+        await document.fonts.ready;
+        for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline]) {
+          await renderAsync(t => {
+            t.initials.set("RV");
+            t.size.set(size);
+          });
+          drawn.push([size, shown() ?? "", drawnScale(), room() >= 1]);
+        }
+
+        expect(drawn).toEqual([AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline].map(t => [t, t === AvatarSize.Icon ? "R" : "RV", "", true]));
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  it("fits its initials' text box inside its circle when the browser gives no 2D canvas to measure their letters", async () => {
+    AppearanceFixture.apply();
+    await document.fonts.ready;
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    await renderAsync(t => t.initials.set("MW"));
+    const fitted = [drawnScale() !== "", textRoom() >= 1];
+    vi.restoreAllMocks();
+
+    expect(fitted).toEqual([true, true]);
+  });
 
   it("shows its initials on the server platform without starting a resize observer, as when a page is prerendered", async () => {
     const browserObserver = window.ResizeObserver;
@@ -383,7 +414,7 @@ describe("AvatarComponent", () => {
     await document.fonts.ready;
     await renderAsync(t => t.initials.set("AP"));
     const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
-    const drawn = letters.style.transform;
+    const drawn = drawnScale();
     avatar().style.fontSize = "2rem";
     await vi.waitFor(() => expect(letters.style.transform).not.toBe(drawn));
     const grown = room();
