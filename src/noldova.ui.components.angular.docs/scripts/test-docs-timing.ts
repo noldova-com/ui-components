@@ -14,7 +14,7 @@ import Config from "../../noldova.ui.components.angular/scripts/config.ts";
 import { DocsPreparation } from "./docs/docs-preparation.ts";
 
 export class TestDocsTiming extends AngularTimingScript {
-  private static readonly ROOT: string = path.resolve(Config.ROOT);
+  private static readonly REPOSITORY_ROOT: string = path.resolve(Config.ROOT);
   private static readonly ANGULAR_PROJECT: string = "docs";
   private static readonly OWNER: string = "the docs site's";
   private static readonly PLATFORM: NodeJS.Platform = "linux";
@@ -30,7 +30,7 @@ export class TestDocsTiming extends AngularTimingScript {
       return;
     }
 
-    await new DocsPreparation(TestDocsTiming.ROOT).prepareAsync(process.stdout);
+    await new DocsPreparation(TestDocsTiming.REPOSITORY_ROOT).prepareAsync(process.stdout);
     await this.runTimingAsync();
   }
 }
