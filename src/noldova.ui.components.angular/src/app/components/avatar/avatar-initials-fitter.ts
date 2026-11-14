@@ -32,11 +32,13 @@ export class AvatarInitialsFitter {
     const style = getComputedStyle(host);
     const frame = host.getBoundingClientRect();
     const radius = (frame.width - Number.parseFloat(style.borderLeftWidth) - Number.parseFloat(style.borderRightWidth)) / 2
-      - AvatarResources.avatarInitialsInset - AvatarResources.avatarInitialsSlack;
+      - AvatarResources.avatarInitialsInset;
     const scale = this.scales.get(letters) ?? 1;
     const shown = letters.getBoundingClientRect();
-    const offset: Point = [shown.left + shown.width / 2 - (frame.left + frame.width / 2), shown.top + shown.height / 2 - (frame.top + frame.height / 2)];
-    return Math.min(1, ...this.inkCorners(letters, shown.width / scale, shown.height / scale, scale).map(t => AvatarInitialsFitter.reach(t, offset, radius)));
+    const [right, below]: Point = [shown.left + shown.width / 2 - (frame.left + frame.width / 2), shown.top + shown.height / 2 - (frame.top + frame.height / 2)];
+    const least = Number.parseFloat(style.getPropertyValue(AvatarResources.avatarInitialsLeastProperty)) / Number.parseFloat(style.fontSize);
+    return Math.max(Number.isNaN(least) ? 0 : least, Math.min(1, ...this.inkCorners(letters, shown.width / scale, scale)
+      .map(t => AvatarInitialsFitter.reach(t, [right, below + Math.sign(t[1]) * AvatarResources.avatarInitialsSlack], radius))));
   }
 
   public apply(letters: HTMLElement, scale: number): void {
@@ -63,7 +65,7 @@ export class AvatarInitialsFitter {
     this.watched.delete(letters);
   }
 
-  private inkCorners(letters: HTMLElement, width: number, height: number, scale: number): readonly Point[] {
+  private inkCorners(letters: HTMLElement, width: number, scale: number): readonly Point[] {
     this.context ??= letters.ownerDocument.createElement("canvas").getContext("2d");
     if (Object.isNull(this.context)) {
       const text = letters.ownerDocument.createRange();
@@ -73,10 +75,13 @@ export class AvatarInitialsFitter {
     }
     const font = getComputedStyle(letters);
     this.context.font = `${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+    const line = this.context.measureText(letters.innerText);
+    const baseline = (line.fontBoundingBoxAscent - line.fontBoundingBoxDescent) / 2;
+    this.context.font = `${font.fontStyle} ${font.fontWeight} ${AvatarResources.avatarInitialsMeasureSize}px ${font.fontFamily}`;
     const ink = this.context.measureText(letters.innerText);
-    const baseline = (height - ink.fontBoundingBoxAscent - ink.fontBoundingBoxDescent) / 2 + ink.fontBoundingBoxAscent - height / 2;
-    return AvatarInitialsFitter.cornersOf([-width / 2 - ink.actualBoundingBoxLeft, -width / 2 + ink.actualBoundingBoxRight],
-      [baseline - ink.actualBoundingBoxAscent, baseline + ink.actualBoundingBoxDescent]);
+    const size = Number.parseFloat(font.fontSize) / AvatarResources.avatarInitialsMeasureSize;
+    return AvatarInitialsFitter.cornersOf([-width / 2 - ink.actualBoundingBoxLeft * size, -width / 2 + ink.actualBoundingBoxRight * size],
+      [baseline - ink.actualBoundingBoxAscent * size, baseline + ink.actualBoundingBoxDescent * size]);
   }
 
   private static cornersOf(across: readonly number[], down: readonly number[]): readonly Point[] {

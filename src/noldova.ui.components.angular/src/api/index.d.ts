@@ -2418,8 +2418,10 @@ export declare class ArrayVirtualListSource<T> extends VirtualListSource<T> {
  * else the one its color key chooses, or else the default pair,
  * `avatar-default`. Under forced colors it keeps a 1px `CanvasText` edge.
  * Initials whose letters, as drawn, reach past the circle inside its edge,
- * less 1px all round, are scaled down until they fit it, at every size;
- * initials that fit, such as most pairs and the icon size's one letter,
+ * less 1px all round, allowing for the line's snap to a whole pixel, are
+ * scaled down until they fit it, at every size, but never below the small
+ * text's 12px, at the icon size and, under forced colors, the icon button
+ * size; initials that fit, such as "RV" and the icon size's one letter,
  * keep their size.
  * Shown alone, it is an image named by its name, or by
  * its label; beside the name it shows, it is decorative and hidden from

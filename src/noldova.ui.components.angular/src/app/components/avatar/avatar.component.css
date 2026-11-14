@@ -38,6 +38,7 @@
   height: var(--nol-icon-button);
 
   @media (forced-colors: active) {
+    --nol-avatar-initials-least: 12px;
     font-size: var(--nol-text-small);
   }
 }
@@ -50,6 +51,7 @@
 }
 
 :host(.nol-avatar-icon) {
+  --nol-avatar-initials-least: 12px;
   width: var(--nol-icon);
   height: var(--nol-icon);
   font-size: var(--nol-text-small);

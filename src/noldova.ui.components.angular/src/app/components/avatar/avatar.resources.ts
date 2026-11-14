@@ -11,6 +11,8 @@ export class AvatarResources {
   public static readonly avatarAuthorHues: readonly string[] = ["default", "teal", "green", "amber", "orange", "red", "pink", "purple"];
   public static readonly avatarInitialsInset: number = 1;
   public static readonly avatarInitialsSlack: number = 0.5;
+  public static readonly avatarInitialsMeasureSize: number = 1000;
+  public static readonly avatarInitialsLeastProperty: string = "--nol-avatar-initials-least";
   public static formatAvatarInitialsFit(scale: number): string {
     return `scale(${scale})`;
   }

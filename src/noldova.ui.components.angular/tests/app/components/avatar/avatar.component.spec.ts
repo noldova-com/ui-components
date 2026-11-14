@@ -66,9 +66,12 @@ describe("AvatarComponent", () => {
     if (context === null)
       throw new Error("The canvas has no 2D context.");
     context.font = `${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
+    const line = context.measureText(letters.innerText);
+    context.font = `${font.fontStyle} ${font.fontWeight} 1000px ${font.fontFamily}`;
     const ink = context.measureText(letters.innerText);
     const scale = drawn.width / ink.width;
-    const baseline = drawn.top + ((drawn.height / scale - ink.fontBoundingBoxAscent - ink.fontBoundingBoxDescent) / 2 + ink.fontBoundingBoxAscent) * scale;
+    const shrink = drawn.width / line.width;
+    const baseline = drawn.top + ((drawn.height / shrink - line.fontBoundingBoxAscent - line.fontBoundingBoxDescent) / 2 + line.fontBoundingBoxAscent) * shrink;
     return roomAround([drawn.left - ink.actualBoundingBoxLeft * scale, drawn.left + ink.actualBoundingBoxRight * scale],
       [baseline - ink.actualBoundingBoxAscent * scale, baseline + ink.actualBoundingBoxDescent * scale]);
   };
@@ -315,7 +318,7 @@ describe("AvatarComponent", () => {
     }
   });
 
-  it("sets two initials at the icon button size in the small text size under forced colors, at least 1px inside its circle, and keeps the panel size otherwise", async () => {
+  it("sets two initials at the icon button size in the small text size under forced colors, never scaled under it, and keeps the panel size otherwise", async () => {
     AppearanceFixture.apply();
     await renderAsync(t => {
       t.initials.set("AP");
@@ -328,21 +331,21 @@ describe("AvatarComponent", () => {
 
       expect([shown(), normal]).toEqual(["AP", `${AppearanceFixture.toPixels(0.8125)}px`]);
       expect(style.fontSize).toBe(GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-small)"));
-      await vi.waitFor(() => expect(room()).toBeGreaterThanOrEqual(1));
+      await vi.waitFor(() => expect(drawnScale()).toBe(""));
     } finally {
       await ForcedColorsFixture.resetAsync();
     }
   });
 
   for (const forced of [false, true])
-    it(`fits two wide initials, "MW" and "WW", their letters at least 1px inside its inner circle at every size that shows two${forced ? ", under forced colors" : ""}`, async () => {
+    it(`fits two wide initials, "MW" and "WW", their letters at least 1px inside its inner circle at every size that shows two${forced ? ", under forced colors, but for the icon button's 12px floor" : ""}`, async () => {
       AppearanceFixture.apply();
       if (forced)
         await ForcedColorsFixture.activateAsync();
       try {
         const rooms: (readonly [AvatarSize, string, number])[] = [];
         await document.fonts.ready;
-        for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Byline])
+        for (const size of [AvatarSize.Normal, AvatarSize.Small, ...forced ? [] : [AvatarSize.IconButton], AvatarSize.Byline])
           for (const pair of ["MW", "WW"]) {
             await renderAsync(t => {
               t.initials.set(pair);
@@ -356,6 +359,22 @@ describe("AvatarComponent", () => {
         await ForcedColorsFixture.resetAsync();
       }
     });
+
+  it("keeps two wide initials at the small text's 12px at the icon button size under forced colors, though they then reach past the circle inside its edge", async () => {
+    AppearanceFixture.apply();
+    await ForcedColorsFixture.activateAsync();
+    try {
+      await document.fonts.ready;
+      await renderAsync(t => {
+        t.initials.set("MW");
+        t.size.set(AvatarSize.IconButton);
+      });
+
+      expect([getComputedStyle(avatar()).fontSize, drawnScale(), room() < 1]).toEqual([GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-small)"), "", true]);
+    } finally {
+      await ForcedColorsFixture.resetAsync();
+    }
+  });
 
   for (const forced of [false, true])
     it(`draws ordinary initials, "RV", and the icon size's "R", at their own size at every size${forced ? ", under forced colors" : ""}, their letters at least 1px inside its circle`, async () => {
