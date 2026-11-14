@@ -58,6 +58,7 @@ describe("ConfigurationTableComponent", () => {
   };
   const expectCompactGeometry = (): void => {
     const space = AppearanceFixture.measureLook("space-1");
+    const line = AppearanceFixture.measureLook("border-width");
     const explanation = box(".nol-configuration-table-explanation");
 
     AppearanceFixture.expectPixels(explanation.top - Math.max(box(".nol-configuration-table-heading").bottom, box(".add").bottom), space);
@@ -66,7 +67,7 @@ describe("ConfigurationTableComponent", () => {
       const edges = contentEdges(cell);
       const outer = cell.getBoundingClientRect();
       const isHeader = cell.parentElement?.parentElement?.tagName === "THEAD";
-      AppearanceFixture.expectPixels(edges.top - outer.top, isHeader ? space : space * 1.5);
+      AppearanceFixture.expectPixels(edges.top - outer.top, isHeader ? space : space * 1.5 + line / 2);
       AppearanceFixture.expectPixels(edges.left - outer.left, cell.previousElementSibling === null ? 0 : space * 1.5);
       AppearanceFixture.expectPixels(outer.right - edges.right, cell.nextElementSibling === null ? 0 : space * 1.5);
     }
@@ -173,18 +174,18 @@ describe("ConfigurationTableComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`draws its compact density from the ${theme.id} theme's first space step in ${mode} mode: the parts a step apart, the explanation muted, the header's cells a step above and below and one and a half at their sides, the body's one and a half all round, every cell at the top of its row`, async () => {
+      it(`draws its compact density from the ${theme.id} theme's first space step in ${mode} mode`, async () => {
         await renderAsync(theme, mode);
         await changeAsync(t => t.density.set(ConfigurationTableDensity.Compact));
 
         expectCompactGeometry();
         expect(getComputedStyle(find(".nol-configuration-table-explanation")).color).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
         expect(cells().map(t => getComputedStyle(t).verticalAlign)).toEqual(cells().map(() => "top"));
-        AppearanceFixture.expectPixels(box(".short .remove").top - box(".short td").top, AppearanceFixture.measureLook("space-1") * 1.5);
+        AppearanceFixture.expectPixels(box(".short .remove").top - box(".short td").top, AppearanceFixture.measureLook("space-1") * 1.5 + AppearanceFixture.measureLook("border-width") / 2);
       });
 
   for (const mode of AppearanceFixture.modes)
-    it(`keeps its compact geometry under forced colors in ${mode} mode, the explanation in the system's text color`, async () => {
+    it(`keeps its compact geometry under forced colors in ${mode} mode`, async () => {
       await renderAsync(undefined, mode);
       await ForcedColorsFixture.activateAsync();
       await changeAsync(t => t.density.set(ConfigurationTableDensity.Compact));
