@@ -23,6 +23,7 @@ export class AngularPackageBuilder {
   private static readonly CARRY_TIMEOUT: number = 300_000;
   private static readonly CARRY_SCRIPT: readonly string[] = ["scripts", "carry-docs.ts"];
   private static readonly PROJECT_FILE: string = "tsconfig.json";
+  private static readonly ENTRY_PROJECTS: ReadonlyMap<string, string> = new Map([["testing.ts", "tsconfig.testing.json"]]);
   private static readonly SOURCE_FOLDER: string = "src";
   private static readonly ENTRY_FOLDER: string = "api";
   private static readonly STYLES_FOLDER: string = "styles";
@@ -70,7 +71,6 @@ export class AngularPackageBuilder {
   }
 
   private async compileAsync(output: string): Promise<readonly string[]> {
-    const project = this.root;
     const source = path.join(this.directory, AngularPackageBuilder.SOURCE_FOLDER);
     const entries = path.join(source, AngularPackageBuilder.ENTRY_FOLDER);
     const files = existsSync(entries)
@@ -79,17 +79,28 @@ export class AngularPackageBuilder {
     if (files.length === 0)
       throw new CommandFailedException(`${this.describe(entries)} has no entry files to compile.`);
 
+    const groups = new Map<string, string[]>();
+    for (const file of files) {
+      const projectFile = AngularPackageBuilder.ENTRY_PROJECTS.get(path.basename(file)) ?? AngularPackageBuilder.PROJECT_FILE;
+      groups.set(projectFile, [...groups.get(projectFile) ?? [], file]);
+    }
+    for (const [projectFile, group] of groups)
+      await this.compileGroupAsync(output, source, projectFile, group);
+    return files;
+  }
+
+  private async compileGroupAsync(output: string, source: string, projectFile: string, files: readonly string[]): Promise<void> {
     const work = await mkdtemp(path.join(os.tmpdir(), AngularPackageBuilder.WORK_PREFIX));
     try {
       const configuration = path.join(work, AngularPackageBuilder.PROJECT_FILE);
       await writeFile(configuration, `${JSON.stringify({
-        extends: path.join(this.directory, AngularPackageBuilder.PROJECT_FILE),
-        compilerOptions: { rootDir: source, outDir: output, declaration: true, sourceMap: true, types: [] },
+        extends: path.join(this.directory, projectFile),
+        compilerOptions: { rootDir: source, outDir: output, declaration: true, sourceMap: true },
         angularCompilerOptions: { compilationMode: "partial" },
         files
       }, null, 2)}\n`, AngularPackageBuilder.ENCODING);
       const compiler = await this.locateCompilerAsync();
-      const result = await this.runner.captureAsync(process.execPath, [compiler, AngularPackageBuilder.PROJECT_OPTION, configuration], project, this.compileTimeout)
+      const result = await this.runner.captureAsync(process.execPath, [compiler, AngularPackageBuilder.PROJECT_OPTION, configuration], this.root, this.compileTimeout)
         .catch((error: unknown) => {
           if (error instanceof ProcessTimeoutException)
             throw new CommandFailedException(`Compiling ${this.describe(source)} with the Angular compiler did not finish within ${this.compileTimeout} ms.`, { cause: error });
@@ -101,7 +112,6 @@ export class AngularPackageBuilder {
     finally {
       await rm(work, { recursive: true, force: true });
     }
-    return files;
   }
 
   private async carryDocsAsync(output: string, entries: readonly string[]): Promise<void> {
