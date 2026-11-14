@@ -4,6 +4,15 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.11
+
+- `@noldova/ui.components.angular`: every `nol-avatar` is a circle, at the normal, small, icon button, icon and byline sizes; before, all but the byline size were rounded squares. Sizes and colors are unchanged. The image is clipped to the circle, the unavailable avatar's dimming covers it and the forced-colors edge runs round it, and initials are scaled so their letters fit inside the circle.
+- `@noldova/ui.components.angular`: `nol-configuration-table` takes an opt-in `density` input, `ConfigurationTableDensity.Normal` by default or `ConfigurationTableDensity.Compact`, a new enum. Compact puts the heading's row, the explanation and the table `space-1` (0.25rem) apart, draws the explanation in `text-muted`, gives the cells 0.375rem padding (the header's cells `space-1` above and below), keeping no padding on each row's outer sides, and sets every cell at the top of its row. Without the input, or with `Normal`, the table draws as before.
+- `@noldova/ui.components.angular`: `UiComponentsException`, new in the main entry, extends context's `Exception`, and the kit's seven exceptions (`CodeHighlightingException`, `DiffException`, `LinkReferenceException`, `MarkdownException`, `ThemeException`, `TreeMoveException`, `VirtualListException`) now extend it. Each is still an `Exception` with the same name, constructor and messages, so code that catches `Exception` or a specific exception behaves as before.
+- `@noldova/ui.components.angular`: decoding a `MarkdownLink` or a `MentionValue` handles only a broken encoding, `URIError`, and math rendering only a formula KaTeX can't read, its `ParseError`; any other error is now rethrown instead of being taken as one of those. In the testing entry, `KitStylesheetFixture` likewise handles only the page's `SecurityError` when it reads a stylesheet's rules, and only a network `TypeError` or its own deadline's `AbortError` when it asks a source's server.
+- `@noldova/ui.components.angular`: its peers `@noldova/context.core` and `@noldova/context.exceptions` need 0.0.7 or later, below 0.1.0, instead of 0.0.2 or later.
+- `@noldova/ui.components.angular`: the package has a description, which npm shows.
+
 ## 0.0.10
 
 - `@noldova/ui.components.angular`: `ng-template nolMessageSlot` takes `nolMessageSlotAttached`, false by default. An attached slot is drawn `space-1` (0.25rem) after the part before it instead of the `space-2` (0.5rem) gap between a message's parts, and the part after it stays `space-2` after it. A slot that is the message's first part, or that has only empty slots before it, is drawn as an unattached one. A slot's own roots keep `space-2` between them, and switching the input keeps the slot's view and the focus inside it. Each part of the message's content now has its own wrapper, spaced by a margin instead of the content's gap, and a slot that draws nothing, or has no template, still adds no gap.
