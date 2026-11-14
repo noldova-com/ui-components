@@ -10,6 +10,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { Component } from "@angular/core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
+import { ConfigurationTableDensity } from "../../enums/configuration-table-density.js";
 import { GallerySize } from "../../enums/gallery-size.js";
 import { ButtonComponent } from "../button/button.component.js";
 import { ConfigurationTableActionDirective } from "../configuration-table/configuration-table-action.directive.js";
@@ -35,7 +36,9 @@ export class GalleryConfigurationTableComponent {
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
+  protected readonly densities: typeof ConfigurationTableDensity = ConfigurationTableDensity;
   protected readonly wideTable: typeof GalleryResources.text.configurationWideTable = GalleryResources.text.configurationWideTable;
+  protected readonly compactTable: typeof GalleryResources.text.configurationCompactTable = GalleryResources.text.configurationCompactTable;
   protected readonly narrowTable: typeof GalleryResources.text.configurationNarrowTable = GalleryResources.text.configurationNarrowTable;
   protected readonly unheadedTable: typeof GalleryResources.text.configurationUnheadedTable = GalleryResources.text.configurationUnheadedTable;
 }

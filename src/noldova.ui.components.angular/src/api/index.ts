@@ -89,6 +89,7 @@ export { ButtonSize } from "../app/enums/button-size.js";
 export { ButtonVariant } from "../app/enums/button-variant.js";
 export { ChipKind } from "../app/enums/chip-kind.js";
 export { ChoiceRowType } from "../app/enums/choice-row-type.js";
+export { ConfigurationTableDensity } from "../app/enums/configuration-table-density.js";
 export { DialogSize } from "../app/enums/dialog-size.js";
 export { DiffExpandDirection } from "../app/enums/diff-expand-direction.js";
 export { DiffFileStatus } from "../app/enums/diff-file-status.js";

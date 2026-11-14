@@ -13,11 +13,12 @@ import { ConfigurationTableActionDirective } from "../../src/app/components/conf
 import { ConfigurationTableFillDirective } from "../../src/app/components/configuration-table/configuration-table-fill.directive";
 import { ConfigurationTableComponent } from "../../src/app/components/configuration-table/configuration-table.component";
 import { ConfigurationTableDirective } from "../../src/app/components/configuration-table/configuration-table.directive";
+import { ConfigurationTableDensity } from "../../src/app/enums/configuration-table-density";
 
 @Component({
   imports: [ButtonComponent, ConfigurationTableActionDirective, ConfigurationTableComponent, ConfigurationTableDirective, ConfigurationTableFillDirective],
   template: `
-    <nol-configuration-table [style.width]="width()" [heading]="heading()" [label]="label()" [level]="level()" [explanation]="explanation()">
+    <nol-configuration-table [style.width]="width()" [heading]="heading()" [label]="label()" [level]="level()" [explanation]="explanation()" [density]="density()">
       @if (hasAction()) {
         <button type="button" class="add" nol-button nolConfigurationTableAction>Add</button>
       }
@@ -40,6 +41,7 @@ export class ConfigurationTableHostComponent {
   public readonly level = signal(3);
   public readonly explanation = signal("Each variable is set for the programs the shell starts.");
   public readonly hasAction = signal(true);
+  public readonly density = signal(ConfigurationTableDensity.Normal);
   public readonly fillMinWidth = signal<number | null>(null);
   public readonly value = signal("A value that is far too long to fit the width of its cell, so its row grows to hold it");
 }

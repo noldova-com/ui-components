@@ -10,6 +10,9 @@ LICENSE file in the root directory of this source tree.
   <nol-gallery-cell [caption]="text.defaultState">
     <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: wideTable }" />
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.configurationCompactCaption">
+    <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: compactTable }" />
+  </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
     <ng-container [ngTemplateOutlet]="configurationTable" [ngTemplateOutletContext]="{ $implicit: narrowTable }" />
   </nol-gallery-cell>
@@ -56,7 +59,7 @@ LICENSE file in the root directory of this source tree.
 
 <ng-template #configurationTable let-table>
   <div class="nol-gallery-table-holder" [class.nol-gallery-narrow]="table.isNarrow">
-    <nol-configuration-table class="nol-gallery-table" [heading]="table.heading" [level]="4" [label]="table.label" [explanation]="table.explanation">
+    <nol-configuration-table class="nol-gallery-table" [heading]="table.heading" [level]="4" [label]="table.label" [explanation]="table.explanation" [density]="table.isCompact ? densities.Compact : densities.Normal">
       @if (table.hasAdd) {
         <button type="button" nol-button nolConfigurationTableAction [variant]="variants.Secondary">{{ text.configurationAdd }}</button>
       }
