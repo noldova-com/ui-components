@@ -21,6 +21,7 @@ export default abstract class Script {
   private static readonly NPM_EXECUTABLE_PATH_VARIABLE: string = "npm_execpath";
   private static readonly NPM_EXECUTABLE_PATH_UNAVAILABLE: string = "npm_execpath is unavailable. Run the bootstrap through npm.";
   private static readonly PACKAGE_MANIFEST_PATH: string = "typescript/package.json";
+  private static readonly MISSING_CODE: string = "ENOENT";
   private static readonly STEP_DONE: string = " Done.";
   private static readonly STEP_FAILED: string = " Failed.";
   private static readonly TYPESCRIPT_COMPILER_DIRECTORY_NAME: string = "bin";
@@ -109,8 +110,10 @@ export default abstract class Script {
       await fs.access(path);
       return true;
     }
-    catch {
-      return false;
+    catch (error) {
+      if (error instanceof Error && "code" in error && error.code === Script.MISSING_CODE)
+        return false;
+      throw error;
     }
   }
 

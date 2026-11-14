@@ -9,10 +9,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import CommandFailedException from "../command-failed.exception.ts";
 import { JsonFields } from "./json-fields.ts";
 
 export class AngularCoverageReport {
   private static readonly ENCODING: BufferEncoding = "utf8";
+  private static readonly MISSING_CODE: string = "ENOENT";
 
   private readonly folder: string;
   private readonly file: string;
@@ -29,16 +31,24 @@ export class AngularCoverageReport {
   }
 
   public async listUnhitAsync(): Promise<readonly string[]> {
-    const text = await fs.readFile(this.path, AngularCoverageReport.ENCODING).catch(() => null);
-    if (text === null)
-      return [];
+    let text: string;
+    try {
+      text = await fs.readFile(this.path, AngularCoverageReport.ENCODING);
+    }
+    catch (error) {
+      if (!(error instanceof Error && "code" in error))
+        throw error;
+      return error.code === AngularCoverageReport.MISSING_CODE ? [] : [this.unreadableCoverage(error.message)];
+    }
     try {
       const report = JsonFields.parse(text, this.file);
       const unhit = report.names().flatMap(t => this.unhitIn(report.object(t)));
       return unhit.length === 0 ? [] : [this.unhitCoverage(unhit.length), ...unhit.map(t => `  ${t}`)];
     }
     catch (error) {
-      return [this.unreadableCoverage(error instanceof Error ? error.message : String(error))];
+      if (!(error instanceof CommandFailedException))
+        throw error;
+      return [this.unreadableCoverage(error.message)];
     }
   }
 

@@ -182,6 +182,30 @@ describe("KitStylesheetFixture", () => {
     expect(reported(failure).slice(1)).toEqual([`Missing Face 400 normal: ${addressOf("missing-face.woff2")} did not answer within 5000 ms`]);
   });
 
+  it("rethrows an error other than a network failure or its own deadline that asking a source's server raises", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    const broken = new RangeError("The request broke.");
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(broken);
+
+    await expect(KitStylesheetFixture.ensureAsync()).rejects.toBe(broken);
+  });
+
+  it("rethrows an error other than the page's refusal that reading a stylesheet's rules raises", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    const broken = new TypeError("The rules broke.");
+    const unreadable = {
+      href: "https://fonts.example/faces.css",
+      get cssRules(): CSSRuleList {
+        throw broken;
+      }
+    };
+    vi.spyOn(document, "styleSheets", "get").mockReturnValue([unreadable] as unknown as StyleSheetList);
+
+    await expect(KitStylesheetFixture.ensureAsync()).rejects.toBe(broken);
+  });
+
   it("reads a face's source against its stylesheet's own address, and skips a stylesheet whose rules the page may not read", async () => {
     page.forEach(t => t.media = "");
     const faces = sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);

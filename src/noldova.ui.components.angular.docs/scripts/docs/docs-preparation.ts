@@ -18,6 +18,7 @@ import { DocsSourceGenerator } from "./docs-source-generator.ts";
 export class DocsPreparation {
   private static readonly DEPENDENCIES_FOLDER: string = "node_modules";
   private static readonly KIT_PACKAGE: string = "@noldova/ui.components.angular";
+  private static readonly MISSING_CODE: string = "ENOENT";
 
   private readonly root: string;
 
@@ -30,6 +31,8 @@ export class DocsPreparation {
       await access(path.join(this.root, DocsPreparation.DEPENDENCIES_FOLDER));
     }
     catch (error) {
+      if (!(error instanceof Error && "code" in error && error.code === DocsPreparation.MISSING_CODE))
+        throw error;
       throw new CommandFailedException(`The docs site builds against the kit's source with the root's packages, which are not installed; run npm ci first.`, { cause: error });
     }
     await this.requireBuiltKitAsync();
@@ -46,7 +49,11 @@ export class DocsPreparation {
   // npm links the kit's workspace at the root until npm run build:components unpacks the packed kit there, so a link, or nothing, means the kit isn't built.
   private async requireBuiltKitAsync(): Promise<void> {
     const kit = path.join(this.root, DocsPreparation.DEPENDENCIES_FOLDER, ...DocsPreparation.KIT_PACKAGE.split("/"));
-    const built = await lstat(kit).then(t => t.isDirectory(), () => false);
+    const built = await lstat(kit).then(t => t.isDirectory(), (error: unknown) => {
+      if (error instanceof Error && "code" in error && error.code === DocsPreparation.MISSING_CODE)
+        return false;
+      throw error;
+    });
     if (!built)
       throw new CommandFailedException(`The docs site builds with the kit npm run build:components installs at the root, which isn't built; run npm run build:components first.`);
   }

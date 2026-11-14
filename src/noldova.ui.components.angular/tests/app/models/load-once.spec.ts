@@ -44,13 +44,14 @@ describe("LoadOnce", () => {
     const idle = new LoadOnce<number>(1000, source);
     const failed = new LoadOnce<number>(1000, source);
     const loaded = new LoadOnce<number>(1000, source);
-    const failing = failed.getAsync(() => Promise.reject(new Error("Gone.")));
+    const failure = new Error("Gone.");
+    const failing = failed.getAsync(() => Promise.reject(failure));
 
     idle.whenLoaded(t => used.push(t));
     failed.whenLoaded(t => used.push(t));
     await loaded.getAsync(() => Promise.resolve(9));
     loaded.whenLoaded(t => used.push(t));
-    await failing.catch(() => undefined);
+    await expect(failing).rejects.toBe(failure);
     await Promise.resolve();
 
     expect(used).toEqual([9]);
@@ -60,11 +61,12 @@ describe("LoadOnce", () => {
     const idle = new LoadOnce<number>(1000, source);
     const failed = new LoadOnce<number>(1000, source);
     const loaded = new LoadOnce<number>(1000, source);
-    const failing = failed.getAsync(() => Promise.reject(new Error("Gone.")));
+    const failure = new Error("Gone.");
+    const failing = failed.getAsync(() => Promise.reject(failure));
     const loading = loaded.getAsync(() => Promise.resolve(10));
     const meanwhile = loaded.ifLoaded(t => t + 1);
     await loading;
-    await failing.catch(() => undefined);
+    await expect(failing).rejects.toBe(failure);
 
     expect([idle.ifLoaded(t => t + 1), failed.ifLoaded(t => t + 1), meanwhile, loaded.ifLoaded(t => t + 1)]).toEqual([undefined, undefined, undefined, 11]);
   });

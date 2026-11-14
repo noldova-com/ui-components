@@ -67,4 +67,16 @@ describe("MentionChip", () => {
     for (const start of [-1, 1.5])
       expect(() => new MentionChip("p-1", "@Ada", start)).toThrow(ArgumentOutOfRangeException);
   });
+
+  it("rethrows an error other than a broken encoding that decoding a mention's id raises", () => {
+    const failure = new TypeError("Decoding failed.");
+    vi.stubGlobal("decodeURIComponent", () => {
+      throw failure;
+    });
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+
+    expect(() => MentionValue.parse("[@Ada](mention:p-1)")).toThrow(failure);
+  });
 });
