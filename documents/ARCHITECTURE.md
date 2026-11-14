@@ -67,14 +67,4 @@ The code rules only this repository has; [Noldova's standards](https://github.co
   The kit's exceptions are `CodeHighlightingException`, exported from the `code-highlighting` entry, and `DiffException`, `LinkReferenceException`, `MarkdownException`, `ThemeException`, `TreeMoveException` and `VirtualListException`, exported with the base from the main entry; a new one extends the base too.
 - **Comments:** only the license header is allowed in source, tests, scripts, styles, templates and workflows, with the API documentation in each entry's `src/api/<entry>.d.ts` and, in a workflow, the release version beside each action pinned to a commit SHA, which the security standard requires.
   The kit's build carries that documentation onto the declarations the Angular compiler writes for each entry, and fails when the two declare different exports or members; the root build compares the installed kit's declarations with them too.
-- **License headers:** TypeScript, JavaScript, CSS, HTML and YAML files hold the header of the organization's code standard, and an HTML template's header takes exactly this form:
-
-  ```html
-  <!--
-  @license
-  Copyright (c) Noldova.
-
-  This source code is licensed under the license found in the
-  LICENSE file in the root directory of this source tree.
-  -->
-  ```
+- **License headers:** every file whose format allows comments starts with the header of [Noldova's code standard](https://github.com/noldova-com/.github/blob/main/standards/CODE.md#licenses), in that format's form, but the docs site's trademark SVGs, `favicon.svg` and `assets/noldova-wordmark.svg`, whose header says they are Noldova's trademark and not under the MIT License, as the README's [Trademarks](../README.md#trademarks) says.
