@@ -63,14 +63,12 @@ describe("GalleryContentComponent", () => {
     fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
     const content = DomFixture.host(fixture);
     content.style.width = "calc(var(--nol-settings-content-width) - 2 * var(--nol-settings-content-inset))";
-    await new Promise(resolve => requestAnimationFrame(resolve));
     const cells = [...content.querySelectorAll<HTMLElement>(".nol-gallery-specimen[aria-label=\"Code block\"] nol-gallery-cell")];
     const width = (element: Element | null): number => element?.getBoundingClientRect().width ?? Number.NaN;
     const body = DomFixture.one(cell("Default"), ".nol-code-block-body");
+    const fills = (): (string | boolean | null)[][] => cells.map(t => [t.getAttribute("aria-label"), width(t.querySelector("nol-code-block")) === width(t.closest(".nol-gallery-specimen"))]);
 
-    const fills = cells.map(t => [t.getAttribute("aria-label"), width(t.querySelector("nol-code-block")) === width(t.closest(".nol-gallery-specimen"))]);
-
-    expect(fills).toEqual([["Default", true], ["Word wrap on", true], ["No language", true], ["Run offered", true], ["Run running", true], ["Output under Run", true], ["Run ended", true], ["Copy refused", true], ["Focus", true], ["Long text", false]]);
+    await DomChangeFixture.untilAsync(() => expect(fills()).toEqual([["Default", true], ["Word wrap on", true], ["No language", true], ["Run offered", true], ["Run running", true], ["Output under Run", true], ["Run ended", true], ["Copy refused", true], ["Focus", true], ["Long text", false]]));
     expect(getComputedStyle(content).getPropertyValue("--nol-settings-content-width")).not.toBe("");
     expect(body.scrollWidth).toBeGreaterThan(body.clientWidth);
   });
@@ -88,10 +86,9 @@ describe("GalleryContentComponent", () => {
 
     for (const width of ["40rem", "8rem"]) {
       content.style.width = width;
-      await new Promise(resolve => requestAnimationFrame(resolve));
 
       expect(cells().map(t => t.getAttribute("aria-label"))).toEqual(["Letters, code, documents, data and archives", "Glyph on a square, scripts", "Glyph, other kinds", "Any other file", "Folder, as the app says"]);
-      expect([width, overflows()]).toEqual([width, []]);
+      await DomChangeFixture.untilAsync(() => expect([width, overflows()]).toEqual([width, []]));
     }
   });
 

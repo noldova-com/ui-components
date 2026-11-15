@@ -247,15 +247,27 @@ Specs poll only where no signal serves:
 - A layout that has stopped moving fires no event, and the shape it settles into isn't known before, so `LayoutSettleFixture.settledAsync`, in `src/noldova.ui.components.angular/tests/fixtures/layout-settle.fixture.ts`, reads what a spec names of it once a pass of the spec's own, a frame and a stable fixture, until a pass leaves it as it was, and fails at the shared bound, naming what it waited on and its last shape: `tool-call.component.spec.ts`'s nested calls' classes, and the feed's rows and scroll in `diff-view.component.spec.ts` and `virtual-list-kit-rows.spec.ts`.
 - The hang-limit spec polls for a condition that never holds, to show the bound ending it.
 
-Specs wait a fixed number of frames only to show that something doesn't change, or doesn't happen, which no event signals; each count covers the frames the code it checks runs in:
+Specs wait a fixed number of frames to show that something doesn't change or doesn't happen, which no event signals; to let a paint land before they read pixels, which no event signals either; or to make a step start in a frame of its own.
+Each count covers the frames the code it checks runs in.
+Some specs still wait a fixed number of frames for a change, where the list says so; those move to the change's own signal in [#160](https://github.com/noldova-com/ui-components/issues/160).
 
-- `dialog.component.spec.ts`, three frames: a press with a secondary button or from Close starts no drag, a pointer past the window's edge moves the dialog no further, and a drag doesn't move it while it is maximized.
-- `select.component.spec.ts`, five frames after its value is in view, so no later scroll takes it out, and two after a press on a disabled option, which changes nothing.
-- `mention-field-chips.spec.ts`, three frames after a full box's field gets shorter: no resize loop error, and no scroll or width change.
-- `tool-call.component.spec.ts`, three frames: a long title keeps its toggle a span, and a cut title with no tooltip side opens none.
-- `menu-group.component.spec.ts`, two frames, so the spec's two focus moves start in a frame of their own, and two after them, keeping the scroll the first one made.
-- `configuration-table.directive.spec.ts`, twelve frames after a table fits: its narrow layout doesn't flip back and forth.
-- `gallery-feed.component.spec.ts`, `gallery-message.component.spec.ts`, `gallery-virtual-feed.component.spec.ts` and `virtual-list-focus-ring.component.spec.ts`, three passes of a stable fixture and two frames: their callers read several states at once and that no timer is left, after the feed has measured, corrected its scroll and rendered, with nothing more to come.
+- `dialog.component.spec.ts`: a press with a secondary button or from Close starts no drag, a pointer past the window's edge moves the dialog no further, and a drag doesn't move it while it is maximized.
+- `select.component.spec.ts`: its value's option stays in view, and a press on a disabled option changes nothing.
+- `mention-field-chips.spec.ts`: a full box's field getting shorter raises no resize loop error and changes no scroll or width.
+- `tool-call.component.spec.ts`: a long title keeps its toggle a span, and a cut title with no tooltip side opens none.
+- `quick-input.component.spec.ts`: Tab away and a blur show no tooltip.
+- `diff-view.component.spec.ts`: the forced-color highlights and the selection are painted before the spec reads their pixels.
+- `checkbox.component.spec.ts`, `choice-row.component.spec.ts`, `switch.component.spec.ts` and `radio.component.spec.ts`: a disabled control keeps focus, and a key or a click changes nothing.
+- `message-column.component.spec.ts`: no tooltip opens without a description.
+- `configuration-table.directive.spec.ts`: a short value stays wide and a table doesn't go on to its narrowest, a destroyed table changes no class, and a fitted table's layout doesn't flip again; two frames let pending fits drain before an observer starts.
+- `menu-group.component.spec.ts`: two focus moves start in a frame of their own and keep the scroll the first made, and a settled box is the first one painted; its other waits are in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- `virtual-list.component.spec.ts`: a part's or a revealed row's top, the scroll, the view and a held jump stay the same in every sampled frame, and no loading line or blank row shows; other waits pace simulated drags, wheels and smooth scrolls frame by frame. Its waits for a change are in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- `anchored-overlay.spec.ts`: a settled box is the first one, no reposition follows an open, and a resize reports no lost anchor; its wait for a reposition is in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- `tree-drag-session-zoom.spec.ts`: zoom leaves the drawn size unchanged; its other wait is in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- `tab.component.spec.ts`, `tooltip.directive.spec.ts`, `menu-item.component.spec.ts`, `menu-trigger.directive.spec.ts`, `context-menu-trigger.directive.spec.ts`, `menu-group-action.directive.spec.ts` and `dialog.service.spec.ts`: no tooltip, menu or submenu opens, and an open one stays, where nothing should change; their waits for a tooltip, a menu, a backdrop or focus to arrive are in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- `message.component.spec.ts`, `message-run.component.spec.ts` and `message-shell-runs.component.spec.ts`: no tooltip without a description, no extra scroll space, and expanded text staying expanded; their waits for a measure, a class or a tooltip are in [#160](https://github.com/noldova-com/ui-components/issues/160).
+- The code block's specs (`code-block-settled-layout`, `-settled-pixels`, `-spans`, `-lines`, `-token-colors`, `-code-size`, `-code-size-dark`): a token's ink, its ranges and the lines' heights stay the same; their waits for highlights, layout or scroll are in [#160](https://github.com/noldova-com/ui-components/issues/160), as are `code-block-streaming` and `code-block-scrollbar`'s and `code-highlights.spec.ts`'s.
+- `gallery-feed`, `gallery-message`, `gallery-navigation` and `gallery-virtual-feed` specs, `virtual-list-focus-ring.component.spec.ts`, `virtual-list-spinner.component.spec.ts` and `menu-item-chevron.component.spec.ts`: their waits for a render, a ring or a layout are in [#160](https://github.com/noldova-com/ui-components/issues/160), with the focus ring's checks that keys show no ring.
 
 `AppearanceFixture.expectThumbRevealsOnHoverAsync`, from the testing entry, waits until the scroll area shows no scroll's reveal, which `[data-nol-scrolling]` keeps for a second after a scroll, and runs no transition, checking again as the attribute goes and as the transitions end; the testing entry can't read the specs' bound, so it fails at a limit of its own, the same 15 seconds, naming what still ran.
 

@@ -589,13 +589,13 @@ describe("QuickInputComponent", () => {
     await narrowAsync("20rem", long);
 
     await pressAsync("End");
-    await new Promise(resolve => requestAnimationFrame(resolve));
-    await new Promise(resolve => requestAnimationFrame(resolve));
 
     await DomChangeFixture.untilAsync(() => expect(tooltip()).toBe(`${DomFixture.at(long, long.length - 1).title}, ${path}`));
     const list = DomFixture.one(root(), "[role=listbox]");
-    const last = DomFixture.at(options(), long.length - 1).getBoundingClientRect();
-    expect([list.scrollTop > 0, last.top >= list.getBoundingClientRect().top - 0.5, last.bottom <= list.getBoundingClientRect().bottom + 0.5]).toEqual([true, true, true]);
+    await DomChangeFixture.untilAsync(() => {
+      const last = DomFixture.at(options(), long.length - 1).getBoundingClientRect();
+      expect([list.scrollTop > 0, last.top >= list.getBoundingClientRect().top - 0.5, last.bottom <= list.getBoundingClientRect().bottom + 0.5]).toEqual([true, true, true]);
+    });
     expectOutsideList();
   });
 

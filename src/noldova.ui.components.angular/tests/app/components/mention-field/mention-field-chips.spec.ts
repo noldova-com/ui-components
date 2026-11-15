@@ -608,8 +608,10 @@ describe("MentionFieldDirective's chips", () => {
 
       expect(errors).toEqual([]);
       expect(stale).toEqual([0, width]);
-      expect(backdrop.getBoundingClientRect().height).toBeCloseTo(own.clientHeight, 0);
-      expect(backdrop.getBoundingClientRect().bottom).toBeCloseTo(own.getBoundingClientRect().bottom - own.clientTop, 0);
+      await DomChangeFixture.untilAsync(() => {
+        expect(backdrop.getBoundingClientRect().height).toBeCloseTo(own.clientHeight, 0);
+        expect(backdrop.getBoundingClientRect().bottom).toBeCloseTo(own.getBoundingClientRect().bottom - own.clientTop, 0);
+      });
     }
     finally {
       window.removeEventListener("error", listen);

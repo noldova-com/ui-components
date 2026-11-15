@@ -324,8 +324,7 @@ describe("DialogComponent", () => {
       AppearanceFixture.apply();
       const opened = await openAsync();
       const backdrop = opened.overlayRef.backdropElement as HTMLElement;
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true);
+      await DomChangeFixture.untilAsync(() => expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true));
       backdrop.getAnimations().forEach(t => t.finish());
 
       if (means === "Escape")

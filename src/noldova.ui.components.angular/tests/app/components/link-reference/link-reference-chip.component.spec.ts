@@ -46,6 +46,7 @@ import { CommandKeyFixture } from "../../../fixtures/command-key.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 class TestReferences implements ILinkReferenceSource {
@@ -173,13 +174,14 @@ describe("LinkReferenceChipComponent", () => {
   async function shownAsync(): Promise<HTMLElement> {
     await DomChangeFixture.untilAsync(() => expect(card()).not.toBeNull());
     await fixture.whenStable();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await LayoutSettleFixture.settledAsync("the card's place", () => JSON.stringify(shownCard().getBoundingClientRect()),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
     return shownCard();
   }
 
   async function pointAsync(point: DOMPointReadOnly): Promise<void> {
     await userEvent.hover(document.documentElement, { position: { x: point.x, y: point.y } });
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await fixture.whenStable();
   }
 
   async function focusAsync(): Promise<HTMLElement> {
