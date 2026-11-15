@@ -360,9 +360,9 @@ describe("SelectComponent", () => {
     AppearanceFixture.expectTruncates(title);
     await expect.element(page.getByRole("option", { name: long })).toBeVisible();
     await userEvent.hover(options()[1] as HTMLElement);
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(long);
+    await expect.poll(tooltip).toBe(long);
     await userEvent.hover(options()[0] as HTMLElement);
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
   });
 
   for (const mode of AppearanceFixture.modes)
@@ -505,24 +505,24 @@ describe("SelectComponent", () => {
     await openAsync();
 
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(long);
+    await expect.poll(tooltip).toBe(long);
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     await userEvent.keyboard("a");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(long);
+    await expect.poll(tooltip).toBe(long);
     await userEvent.keyboard("s");
-    await expect.poll(() => active(), { timeout: 3000 }).toBe("System");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(() => active()).toBe("System");
+    await expect.poll(tooltip).toBeUndefined();
   });
 
   it("hides a shown option's tooltip on the first Escape, keeping its list open and focused, and closes on the second", async () => {
     renderLong();
     await openAsync();
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(long);
+    await expect.poll(tooltip).toBe(long);
 
     await userEvent.keyboard("{Escape}");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     const first = [list() !== null, document.activeElement === list(), active()];
     await userEvent.keyboard("{Escape}");
     await expect.poll(() => list()).toBeNull();

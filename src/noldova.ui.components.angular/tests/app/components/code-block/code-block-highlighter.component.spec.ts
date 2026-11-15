@@ -11,6 +11,7 @@ import { TestBed } from "@angular/core/testing";
 import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
 import { CodeToken } from "../../../../src/app/models/code-token";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -66,7 +67,7 @@ describe("CodeBlockComponent", () => {
     harness.host.isShown.set(true);
     harness.fixture.detectChanges();
     const first = [plain(), tokenize.mock.calls.length];
-    await vi.waitFor(() => expect(harness.source.timerCount).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(harness.source.timerCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
     harness.source.advance(0);
     await harness.fixture.whenStable();
 

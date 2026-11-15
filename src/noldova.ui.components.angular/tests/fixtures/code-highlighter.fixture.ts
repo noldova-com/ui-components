@@ -14,6 +14,7 @@ import { CodeLanguage } from "../../src/app/models/code-language";
 import type { CodeToken } from "../../src/app/models/code-token";
 import { CodeHighlighter } from "../../src/app/services/code-highlighter";
 import type { TestTimeSource } from "./test-time-source";
+import { HangLimitFixture } from "./hang-limit.fixture";
 
 export interface ICodeHighlighterStatics {
   startAsync(shared: unknown): Promise<unknown>;
@@ -97,7 +98,7 @@ export class CodeHighlighterFixture {
     const loaded = (): boolean => languages.every(t => !Object.isUndefined(highlighter.tokens(String.empty, t)));
     let steps = 0;
     while (!loaded()) {
-      await vi.waitFor(() => expect(source.idleCount === 1 || loaded()).toBe(true), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount === 1 || loaded()).toBe(true), { ...HangLimitFixture.wait, interval: 1 });
       if (source.idleCount === 1) {
         source.runIdles();
         steps++;

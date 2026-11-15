@@ -23,6 +23,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const path = "src/noldova.ui.components.angular/src/app/components/quick-input/quick-input.component.ts";
 const many: readonly QuickInputItem[] = Array.from({ length: 30 }, (_, index) => new QuickInputItem(`notes.command${index}`, `Command ${index}`, null, null, null));
@@ -224,7 +225,7 @@ describe("QuickInputComponent", () => {
   it("is a combobox over a listbox of options with the first one active, and focuses its field", async () => {
     const list = DomFixture.one(DomFixture.host(fixture), "[role=listbox]");
 
-    await vi.waitFor(() => expect(document.activeElement).toBe(field()));
+    await vi.waitFor(() => expect(document.activeElement).toBe(field()), HangLimitFixture.wait);
     expect([field().getAttribute("role"), field().getAttribute("aria-autocomplete"), field().getAttribute("aria-expanded")]).toEqual(["combobox", "list", "true"]);
     expect(field().getAttribute("aria-controls")).toBe(list.id);
     expect([field().getAttribute("aria-label"), field().placeholder, list.getAttribute("aria-label")]).toEqual(["Search commands", "Search commands", "Search commands"]);
@@ -543,21 +544,21 @@ describe("QuickInputComponent", () => {
     expect(tooltip()).toBeUndefined();
 
     await inputAsync("o");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
     expectOutsideList();
     await pressAsync("ArrowDown");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     await pressAsync("ArrowUp");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
 
     const first = await pressAsync("Escape");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     expect([first.defaultPrevented, host.dismissals, activeIndex()]).toEqual([true, 0, 0]);
     await userEvent.type(field(), "p");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
     expect(activeIndex()).toBe(0);
     await pressAsync("Escape");
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     await pressAsync("Escape");
     expect(host.dismissals).toBe(1);
   });
@@ -573,12 +574,12 @@ describe("QuickInputComponent", () => {
 
     field().focus();
     await inputAsync("o");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
     field().blur();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     await new Promise(resolve => requestAnimationFrame(resolve));
     expect(tooltip()).toBeUndefined();
   });
@@ -591,7 +592,7 @@ describe("QuickInputComponent", () => {
     await new Promise(resolve => requestAnimationFrame(resolve));
     await new Promise(resolve => requestAnimationFrame(resolve));
 
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(`${DomFixture.at(long, long.length - 1).title}, ${path}`);
+    await expect.poll(tooltip).toBe(`${DomFixture.at(long, long.length - 1).title}, ${path}`);
     const list = DomFixture.one(root(), "[role=listbox]");
     const last = DomFixture.at(options(), long.length - 1).getBoundingClientRect();
     expect([list.scrollTop > 0, last.top >= list.getBoundingClientRect().top - 0.5, last.bottom <= list.getBoundingClientRect().bottom + 0.5]).toEqual([true, true, true]);
@@ -601,22 +602,22 @@ describe("QuickInputComponent", () => {
   it("shows a hovered option's tooltip while it is cut short, outside its list, in place of the one the keys showed", async () => {
     await narrowAsync("20rem", [opened(), new QuickInputItem("notes.model", "Use the model aurela-lyra-5-5 for every new conversation in this workspace", "smart_toy", "Models", null)]);
     await inputAsync("o");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
 
     await userEvent.hover(DomFixture.at(options(), 1));
 
-    await expect.poll(tooltip, { timeout: 3000 }).toBe("Use the model aurela-lyra-5-5 for every new conversation in this workspace, Models");
+    await expect.poll(tooltip).toBe("Use the model aurela-lyra-5-5 for every new conversation in this workspace, Models");
     expectOutsideList();
   });
 
   it("chooses a result clicked while the keys' tooltip shows, and hides that tooltip", async () => {
     await narrowAsync("20rem", [opened(), new QuickInputItem("notes.sync", "Sync", null, "Notes", null)]);
     await inputAsync("o");
-    await expect.poll(tooltip, { timeout: 3000 }).toBe(openedText);
+    await expect.poll(tooltip).toBe(openedText);
 
     await userEvent.click(DomFixture.at(options(), 1));
 
-    await expect.poll(tooltip, { timeout: 3000 }).toBeUndefined();
+    await expect.poll(tooltip).toBeUndefined();
     expect(host.chosen).toEqual(["notes.sync"]);
   });
 

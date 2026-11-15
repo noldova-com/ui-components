@@ -29,6 +29,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [TooltipDirective],
@@ -150,7 +151,7 @@ describe("TooltipDirective", () => {
   }
 
   async function shownAsync(): Promise<HTMLElement> {
-    await vi.waitFor(() => expect(tooltip()).not.toBeNull());
+    await vi.waitFor(() => expect(tooltip()).not.toBeNull(), HangLimitFixture.wait);
     await fixture.whenStable();
     await new Promise(resolve => requestAnimationFrame(resolve));
     return tooltip() ?? anchor();
@@ -210,7 +211,7 @@ describe("TooltipDirective", () => {
       isShownAt.push(tooltip() === shown);
     }
     await pointAsync(new DOMPoint(Math.max(box.right, target.right) + gap() * 4, inGap.y));
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
 
     expect(target.top - box.bottom).toBeCloseTo(gap(), 0);
     expect(isShownAt).toEqual([true, true, true, true, true]);
@@ -243,7 +244,7 @@ describe("TooltipDirective", () => {
     const box = shown.getBoundingClientRect();
 
     await pointAsync(new DOMPoint(box.left + box.width / 2, box.top - gap() * 4));
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
 
     expect(isShownOnTooltip).toBe(true);
   });
@@ -252,7 +253,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(anchor());
     await shownAsync();
     anchor().dispatchEvent(new PointerEvent("pointerleave"));
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
 
     host.tooltip().show();
     await shownAsync();
@@ -274,7 +275,7 @@ describe("TooltipDirective", () => {
       });
       const isShownAfterLeave = tooltip() !== null;
       await pointAsync(new DOMPoint(point.x, point.y + gap() * 20));
-      await vi.waitFor(() => expect(tooltip()).toBeNull());
+      await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
 
       expect(passes).toEqual([]);
       expect(isShownAfterLeave).toBe(true);
@@ -337,7 +338,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(anchor());
     await shownAsync();
     await userEvent.hover(fixture.nativeElement.querySelector(".other"));
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
 
     host.tooltip().show();
     await shownAsync();
@@ -367,12 +368,12 @@ describe("TooltipDirective", () => {
     let state: unknown[] = [];
     try {
       await userEvent.hover(image);
-      await vi.waitFor(() => expect(tooltip()?.textContent?.trim()).toBe("shot.png"));
+      await vi.waitFor(() => expect(tooltip()?.textContent?.trim()).toBe("shot.png"), HangLimitFixture.wait);
       const box = image.getBoundingClientRect();
       image.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2, clientX: box.left + 10, clientY: box.top + 10 }));
       await menuHost.whenStable();
       DomFixture.one(document, ".open").click();
-      await vi.waitFor(() => expect(document.activeElement).toBe(inside()));
+      await vi.waitFor(() => expect(document.activeElement).toBe(inside()), HangLimitFixture.wait);
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
       await new Promise(resolve => requestAnimationFrame(resolve));
@@ -395,7 +396,7 @@ describe("TooltipDirective", () => {
     try {
       DomFixture.one(DomFixture.host(opener), ".opener").focus();
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(close()));
+      await vi.waitFor(() => expect(document.activeElement).toBe(close()), HangLimitFixture.wait);
       await opener.whenStable();
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
@@ -423,7 +424,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(later.nativeElement.querySelector(".anchor"));
     await shownAsync();
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
     document.removeEventListener("keydown", listen);
     later.destroy();
 
@@ -469,7 +470,7 @@ describe("TooltipDirective", () => {
     host.tooltip().show();
     await shownAsync();
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(tooltip()).toBeNull());
+    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
   });
 
   it("does not show on a focus that does not come from the keyboard", async () => {
@@ -477,7 +478,7 @@ describe("TooltipDirective", () => {
     const watching = TestBed.inject(FocusMonitor).monitor(anchor()).subscribe(t => origins.push(t));
 
     anchor().focus();
-    await vi.waitFor(() => expect(origins).toEqual(["program"]));
+    await vi.waitFor(() => expect(origins).toEqual(["program"]), HangLimitFixture.wait);
     watching.unsubscribe();
 
     expect(tooltip()).toBeNull();
@@ -521,7 +522,7 @@ describe("TooltipDirective", () => {
 
   it("describes the anchor with its description alone where its text is the anchor's name, and where it shows only while its text is truncated", async () => {
     const descriptionAsync = async (expected: string): Promise<void> => {
-      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Split")).toBe(expected));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Split")).toBe(expected), HangLimitFixture.wait);
     };
     update(() => {
       host.text.set("split");
@@ -856,7 +857,7 @@ describe("TooltipDirective on a named host", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const descriptionsAsync = async (hint: string, tab: string, closing: string, pinning: string): Promise<(string | null)[]> => {
-      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Open")).toBe(hint));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Open")).toBe(hint), HangLimitFixture.wait);
       return Promise.all([tab, "Open", closing, pinning].map(name => AccessibilityFixture.descriptionAsync("button", name)));
     };
     const first = await descriptionsAsync("Open a file (Ctrl+O)", "New tab", "Close tab", "Pin tab");
@@ -891,11 +892,11 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.renaming.set("Rename tab");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"), HangLimitFixture.wait);
 
     fixture.componentInstance.renaming.set("Rename");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("describes the host with its fixed text only while the element its aria-labelledby names says something else, as that text changes and changes back", async () => {
@@ -904,11 +905,11 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.copying.set("Copy link");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy link")).toBe("Copy"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy link")).toBe("Copy"), HangLimitFixture.wait);
 
     fixture.componentInstance.copying.set("Copy");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("follows aria-labelledby moved to another element, and that element's text as it changes", async () => {
@@ -917,24 +918,24 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.sharedBy.set("share-new");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share link")).toBe("Share"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share link")).toBe("Share"), HangLimitFixture.wait);
 
     fixture.componentInstance.sharing.set("Share");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("describes the host once while its name changes and its text stays another name", async () => {
     await renderAsync();
     fixture.componentInstance.renaming.set("Rename tab");
     fixture.detectChanges();
-    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"), HangLimitFixture.wait);
     const describes = vi.spyOn(TestBed.inject(AriaDescriber), "describe");
 
     for (const name of ["Rename this tab", "Rename the tab", "Rename it"]) {
       fixture.componentInstance.renaming.set(name);
       fixture.detectChanges();
-      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", name)).toBe("Rename"));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", name)).toBe("Rename"), HangLimitFixture.wait);
     }
 
     expect(describes).not.toHaveBeenCalled();

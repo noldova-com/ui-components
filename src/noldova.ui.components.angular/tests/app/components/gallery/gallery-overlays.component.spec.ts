@@ -10,6 +10,7 @@ import { GalleryOverlaysComponent } from "../../../../src/app/components/gallery
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("GalleryOverlaysComponent", () => {
   afterEach(() => {
@@ -54,7 +55,7 @@ describe("GalleryOverlaysComponent", () => {
     trigger.click();
     await fixture.whenStable();
 
-    await vi.waitFor(() => expect(document.activeElement?.textContent).toContain("Large model"));
+    await vi.waitFor(() => expect(document.activeElement?.textContent).toContain("Large model"), HangLimitFixture.wait);
     expect(document.querySelectorAll(".cdk-overlay-container nol-menu-group").length).toBe(2);
   });
 

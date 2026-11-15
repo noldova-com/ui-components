@@ -9,6 +9,7 @@
 import { expect, onTestFinished, vi } from "vitest";
 
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
+import { HangLimitFixture } from "./hang-limit.fixture";
 
 export class OverlayWrapperFixture {
   public static readonly scrollbar: number = 15;
@@ -38,6 +39,6 @@ export class OverlayWrapperFixture {
     await vi.waitFor(() => {
       const rect = element.getBoundingClientRect();
       expect([Math.round(rect.width), Math.round(rect.right) <= Math.round(box.right - margin)]).toEqual([Math.round(cap), true]);
-    });
+    }, HangLimitFixture.wait);
   }
 }

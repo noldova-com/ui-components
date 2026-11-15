@@ -15,6 +15,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OpacityFixture } from "../../../fixtures/opacity.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ToolbarButtonComponent],
@@ -153,7 +154,7 @@ describe("ToolbarButtonComponent", () => {
 
   async function focusAsync(): Promise<void> {
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(button()));
+    await vi.waitFor(() => expect(document.activeElement).toBe(button()), HangLimitFixture.wait);
     expect(button().matches(":focus-visible")).toBe(true);
   }
 

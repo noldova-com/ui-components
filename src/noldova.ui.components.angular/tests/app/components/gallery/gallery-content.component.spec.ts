@@ -15,6 +15,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("GalleryContentComponent", () => {
   let fixture: ComponentFixture<GalleryContentComponent>;
@@ -127,7 +128,7 @@ describe("GalleryContentComponent", () => {
     await vi.waitFor(async () => {
       await fixture.whenStable();
       expect(items()).toHaveLength(4);
-    }, { timeout: 5000 });
+    }, HangLimitFixture.wait);
 
     expect(items().map(t => [t.textContent, t.querySelector(".nol-markdown-task-mark")?.getAttribute("aria-label")])).toEqual([["Read the notes module", "Done"],
       ["Add a weekly reminder", "Not done"], ["Run the tests", "Not done"], ["Review the change", "Not done"]]);

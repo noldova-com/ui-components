@@ -17,6 +17,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [AvatarComponent],
@@ -226,7 +227,7 @@ describe("AvatarComponent", () => {
 
   async function failAsync(address: string): Promise<void> {
     await changeAsync(() => host.image.set(address));
-    await vi.waitFor(() => expect(avatar().querySelector("img")).toBeNull());
+    await vi.waitFor(() => expect(avatar().querySelector("img")).toBeNull(), HangLimitFixture.wait);
     await fixture.whenStable();
   }
 
@@ -271,7 +272,7 @@ describe("AvatarComponent", () => {
     await DomFixture.oneOf(avatar(), "img", HTMLImageElement).decode();
     await changeAsync(() => host.image.set(failing));
     const retried = avatar().querySelector("img")?.getAttribute("src");
-    await vi.waitFor(() => expect(avatar().querySelector("img")).toBeNull());
+    await vi.waitFor(() => expect(avatar().querySelector("img")).toBeNull(), HangLimitFixture.wait);
 
     expect([retried, shown()]).toEqual([failing, "A"]);
   });
@@ -341,7 +342,7 @@ describe("AvatarComponent", () => {
 
       expect([shown(), normal]).toEqual(["AP", `${AppearanceFixture.toPixels(0.8125)}px`]);
       expect(style.fontSize).toBe(GalleryFixture.colorOf(document.body, "font-size", "var(--nol-text-small)"));
-      await vi.waitFor(() => expect(drawnScale()).toBe(""));
+      await vi.waitFor(() => expect(drawnScale()).toBe(""), HangLimitFixture.wait);
     } finally {
       await ForcedColorsFixture.resetAsync();
     }
@@ -450,10 +451,10 @@ describe("AvatarComponent", () => {
     const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
     const drawn = drawnScale();
     avatar().style.fontSize = "2rem";
-    await vi.waitFor(() => expect(letters.style.transform).not.toBe(drawn));
+    await vi.waitFor(() => expect(letters.style.transform).not.toBe(drawn), HangLimitFixture.wait);
     const grown = room();
     avatar().style.fontSize = "";
-    await vi.waitFor(() => expect(letters.style.transform).toBe(drawn));
+    await vi.waitFor(() => expect(letters.style.transform).toBe(drawn), HangLimitFixture.wait);
 
     expect([drawn, grown >= 1]).toEqual(["", true]);
   });
@@ -560,7 +561,7 @@ describe("AvatarComponent", () => {
         for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline]) {
           await changeAsync(() => host.size.set(size));
           await expectCircleAsync(size);
-          await vi.waitFor(() => expect(room(), `the room between the ${size} avatar's initials and its circle`).toBeGreaterThanOrEqual(1));
+          await vi.waitFor(() => expect(room(), `the room between the ${size} avatar's initials and its circle`).toBeGreaterThanOrEqual(1), HangLimitFixture.wait);
         }
       } finally {
         await ForcedColorsFixture.resetAsync();

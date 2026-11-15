@@ -21,6 +21,7 @@ import { CodeHighlighterWorkerFixture } from "../../fixtures/code-highlighter-wo
 import { CodeHighlighterFixture, type ICodeHighlighterStatics } from "../../fixtures/code-highlighter.fixture";
 import { CodeWorkerStartFixture } from "../../fixtures/code-worker.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlightingFixture", () => {
   const { signal, typescript, idleStepsAsync } = CodeHighlighterFixture;
@@ -77,7 +78,7 @@ describe("CodeHighlightingFixture", () => {
     const before = loaded(injector, ["json"]);
 
     bed.source.runIdles();
-    await vi.waitFor(() => expect(loaded(injector, ["json"])).toEqual([true]), { interval: 1 });
+    await vi.waitFor(() => expect(loaded(injector, ["json"])).toEqual([true]), { ...HangLimitFixture.wait, interval: 1 });
 
     expect([before, loaded(injector, ["ini"]), bed.loadedOnPage(TestBed.inject(CodeHighlighter))]).toEqual([[false], [false], false]);
   });
@@ -92,11 +93,11 @@ describe("CodeHighlightingFixture", () => {
 
     highlighter.preload(["json"]);
     bed.source.runIdles();
-    await vi.waitFor(() => expect(bed.errors.length).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(bed.errors.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
     const failed = loaded(injector, ["json"]);
     highlighter.preload(["json"]);
     bed.source.runIdles();
-    await vi.waitFor(() => expect(starts.started[0]?.scope.answers.length).toBe(3), { interval: 1 });
+    await vi.waitFor(() => expect(starts.started[0]?.scope.answers.length).toBe(3), { ...HangLimitFixture.wait, interval: 1 });
     await highlighter.tokensAsync("1", CodeHighlighterWorkerFixture.json, signal);
 
     expect([failed, loaded(injector, ["json"]), starts.started[0]?.scope.answers.map(t => [t.kind, Object.isNull(t.error)]), bed.errors.length])

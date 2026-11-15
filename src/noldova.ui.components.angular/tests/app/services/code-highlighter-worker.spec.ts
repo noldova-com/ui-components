@@ -16,6 +16,7 @@ import { CodeTokenizer } from "../../../src/app/models/code-tokenizer";
 import { provideCodeHighlightingWorker } from "../../../src/app/services/provide-code-highlighting-worker";
 import { CodeHighlighterWorkerFixture } from "../../fixtures/code-highlighter-worker.fixture";
 import { CodeWorkerStartFixture } from "../../fixtures/code-worker.fixture";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter with a highlighting worker", () => {
   const { signal, json, off, sent } = CodeHighlighterWorkerFixture;
@@ -107,7 +108,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
     const tokens = highlighter.tokensAsync("1", json, controller.signal);
     controller.abort();
     const cancelled = await tokens;
-    await vi.waitFor(() => expect(bed.errors.length).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(bed.errors.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
     const held = await highlighter.tokensAsync("1", json, signal);
 
     expect([cancelled, held, bed.messages()]).toEqual([[], [], [[failure.message, failure]]]);

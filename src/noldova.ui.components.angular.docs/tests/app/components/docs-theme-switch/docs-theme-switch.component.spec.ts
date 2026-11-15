@@ -13,6 +13,7 @@ import { userEvent } from "vitest/browser";
 
 import { DocsThemeSwitchComponent } from "../../../../src/app/components/docs-theme-switch/docs-theme-switch.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
+import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
 
 describe("DocsThemeSwitchComponent", () => {
   const renderAsync = async (): Promise<HTMLElement> => {
@@ -62,13 +63,13 @@ describe("DocsThemeSwitchComponent", () => {
     const host = await renderAsync();
 
     await userEvent.click(DocsFixture.byText(host, "[role=radio]", "Dark"));
-    await vi.waitFor(() => expect(checked(host)).toEqual(["Dark"]));
+    await vi.waitFor(() => expect(checked(host)).toEqual(["Dark"]), HangLimitFixture.wait);
     expect(document.documentElement.getAttribute(DocsFixture.MODE_ATTRIBUTE)).toBe("Dark");
     expect(getComputedStyle(document.documentElement).colorScheme).toBe("dark");
     expect(localStorage.getItem(DocsFixture.STORAGE_KEY)).toBe("Dark");
 
     await userEvent.click(DocsFixture.byText(host, "[role=radio]", "System"));
-    await vi.waitFor(() => expect(checked(host)).toEqual(["System"]));
+    await vi.waitFor(() => expect(checked(host)).toEqual(["System"]), HangLimitFixture.wait);
     expect(document.documentElement.getAttribute(DocsFixture.MODE_ATTRIBUTE)).toBeNull();
     expect(localStorage.getItem(DocsFixture.STORAGE_KEY)).toBeNull();
   });
@@ -81,7 +82,7 @@ describe("DocsThemeSwitchComponent", () => {
 
     await userEvent.click(DocsFixture.byText(host, "[role=radio]", "Dark"));
 
-    await vi.waitFor(() => expect(checked(host)).toEqual(["Dark"]));
+    await vi.waitFor(() => expect(checked(host)).toEqual(["Dark"]), HangLimitFixture.wait);
     expect(document.documentElement.getAttribute(DocsFixture.MODE_ATTRIBUTE)).toBe("Dark");
     expect(keep).toHaveBeenCalledWith(DocsFixture.STORAGE_KEY, "Dark");
   });
@@ -96,14 +97,14 @@ describe("DocsThemeSwitchComponent", () => {
 
     await userEvent.click(DocsFixture.byText(host, "[role=radio]", "Dark"));
 
-    await vi.waitFor(() => expect(handleError).toHaveBeenCalledWith(expect.any(TypeError)));
+    await vi.waitFor(() => expect(handleError).toHaveBeenCalledWith(expect.any(TypeError)), HangLimitFixture.wait);
   });
 
   it("shows the mode the page painted before it rendered", async () => {
     DocsFixture.setMode("Light");
     const host = await renderAsync();
 
-    await vi.waitFor(() => expect(checked(host)).toEqual(["Light"]));
+    await vi.waitFor(() => expect(checked(host)).toEqual(["Light"]), HangLimitFixture.wait);
   });
 
   it.each([["Dark", "Dark"], ["Light", "Light"], ["Purple", null]])("has the page shell paint a kept %s before its body", async (stored, painted) => {

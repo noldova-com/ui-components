@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, vi } from "vitest";
+import { expect } from "vitest";
 import { userEvent } from "vitest/browser";
 
 import { ThemeMode } from "../../app/enums/theme-mode.js";
@@ -115,11 +115,11 @@ export class AppearanceFixture {
 
     const park = await AppearanceFixture.parkPointerAsync();
     try {
-      await vi.waitFor(() => expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]));
+      await expect.poll(() => [area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]);
 
       expect(shown).not.toBe(AppearanceFixture.hiddenThumb);
       await userEvent.hover(area);
-      await vi.waitFor(() => expect(thumb()).toBe(shown));
+      await expect.poll(thumb).toBe(shown);
     }
     finally {
       park.remove();

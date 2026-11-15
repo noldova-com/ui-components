@@ -18,6 +18,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuBarComponent, MenuBarItemComponent, MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -87,7 +88,7 @@ describe("MenuBarComponent", () => {
     await fixture.whenStable();
     const opened = [item("file").getAttribute("aria-expanded"), open("file")?.isConnected];
     const anchor = item("file").getBoundingClientRect();
-    await vi.waitFor(() => expect(open("file")?.getBoundingClientRect().top).toBeCloseTo(anchor.bottom, 0));
+    await vi.waitFor(() => expect(open("file")?.getBoundingClientRect().top).toBeCloseTo(anchor.bottom, 0), HangLimitFixture.wait);
     const panel = open("file")?.getBoundingClientRect() ?? anchor;
 
     item("file").click();

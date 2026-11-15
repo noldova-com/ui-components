@@ -34,6 +34,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MarkdownViewComponent],
@@ -1219,7 +1220,7 @@ describe("MarkdownViewComponent", () => {
       framesOf(80);
       const code = DomFixture.one(shownView(), "nol-code-block code");
       const colored = (): string[] => [...code.querySelectorAll(".nol-code-line > span")].map(t => String(t.textContent));
-      await vi.waitFor(() => expect(colored().length).toBeGreaterThan(0));
+      await vi.waitFor(() => expect(colored().length).toBeGreaterThan(0), HangLimitFixture.wait);
 
       expect([cut.length < "Introconst first = 1;\nconst sec".length, code.textContent, textsOfReveal("p"), visible(), colored().filter(t => t === "const")])
         .toEqual([true, "const first = 1;\nconst second = 2;", ["Intro", "The end comes mid-wor"], "Introconst first = 1;\nconst second = 2;The end comes mid-wor", ["const", "const"]]);
@@ -1311,7 +1312,7 @@ describe("MarkdownViewComponent", () => {
       expect([parsed.length, changed.length, visible().length > 0]).toEqual([100, 700, true]);
       expect(Math.max(...parsed)).toBeLessThanOrEqual(2 * section(100).length);
       expect(Math.max(...changed)).toBeLessThanOrEqual(2 * drawn / sections);
-    }, 60_000);
+    });
   });
 
   describe("with the app's image template", () => {
@@ -1387,7 +1388,7 @@ describe("MarkdownViewComponent", () => {
       const grown = pictures()[0];
       images.componentInstance.streaming.set(false);
       await images.whenStable();
-      await vi.waitFor(() => expect([shown().querySelector("strong")?.hidden, shown().querySelector("strong")?.textContent]).toEqual([false, "more"]));
+      await vi.waitFor(() => expect([shown().querySelector("strong")?.hidden, shown().querySelector("strong")?.textContent]).toEqual([false, "more"]), HangLimitFixture.wait);
 
       expect([drawn?.isConnected, grown === drawn, pictures()[0] === drawn, shown().querySelector("strong")?.textContent]).toEqual([true, true, true, "more"]);
     });
