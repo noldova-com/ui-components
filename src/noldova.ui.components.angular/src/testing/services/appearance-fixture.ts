@@ -12,6 +12,7 @@ import { userEvent } from "vitest/browser";
 import { ThemeMode } from "../../app/enums/theme-mode.js";
 import type { Theme } from "../../app/models/theme.js";
 import { Typography } from "../../app/models/typography.js";
+import { ScrollRevealResources } from "../../app/services/scroll-reveal.resources.js";
 import { ThemePainter } from "../../app/services/theme-painter.js";
 import { TypographyPainter } from "../../app/services/typography-painter.js";
 import { DefaultTheme } from "../../app/models/default-theme.js";
@@ -29,6 +30,8 @@ export class AppearanceFixture {
   private static readonly SHAPE_ATTRIBUTE: string = "data-nol-tab-shape";
   private static readonly LAYOUT_TOLERANCE: number = 1 / 32;
   private static readonly PIXEL_LENGTH: RegExp = /^-?[\d.]+px$/;
+  // Half the 30-second limit the kit's specs run under, the bound of each of their waits, so a wait that never ends fails first.
+  private static readonly SETTLE_LIMIT: number = 15_000;
 
   public static apply(theme: Theme = DefaultTheme.theme, mode: ThemeMode = ThemeMode.Light, panelSize: number = AppearanceFixture.PANEL_SIZE): void {
     const root = document.documentElement;
@@ -115,12 +118,12 @@ export class AppearanceFixture {
 
     const park = await AppearanceFixture.parkPointerAsync();
     try {
-      await AppearanceFixture.transitionsEndAsync(area);
+      await AppearanceFixture.settledAsync(area);
       expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]);
 
       expect(shown).not.toBe(AppearanceFixture.hiddenThumb);
       await userEvent.hover(area);
-      await AppearanceFixture.transitionsEndAsync(area);
+      await AppearanceFixture.settledAsync(area);
       expect(thumb()).toBe(shown);
     }
     finally {
@@ -148,10 +151,35 @@ export class AppearanceFixture {
     return (lighter + 0.05) / (darker + 0.05);
   }
 
-  // The thumb's color is a transitioning custom property, which moves with no change to the document, so this waits for the element's own
-  // transitions to end, the ones a later change starts included; reading them brings the element's style up to date first.
-  private static async transitionsEndAsync(element: Element): Promise<void> {
-    for (let running = element.getAnimations(); running.length > 0; running = element.getAnimations())
-      await Promise.allSettled(running.map(t => t.finished));
+  // Waits until a scroll area shows no scroll's reveal, which [data-nol-scrolling] keeps for a second after a scroll, and runs no transition,
+  // such as its thumb's color, which moves with no change to the document. It checks again as the attribute goes and as the running
+  // transitions end, and fails at its limit, naming what still ran.
+  private static settledAsync(area: Element): Promise<void> {
+    const attribute = ScrollRevealResources.scrollingAttribute;
+    return new Promise((resolve, reject) => {
+      const check = (): void => {
+        if (area.hasAttribute(attribute))
+          return;
+        const running = area.getAnimations();
+        if (running.length > 0) {
+          void Promise.allSettled(running.map(t => t.finished)).then(check);
+          return;
+        }
+        stop();
+        resolve();
+      };
+      const mutations = new MutationObserver(check);
+      const deadline = setTimeout(() => {
+        stop();
+        const still = area.hasAttribute(attribute) ? `showed a scroll's reveal, [${attribute}]` : "ran a transition";
+        reject(new Error(`The scroll area still ${still} after ${AppearanceFixture.SETTLE_LIMIT} ms.`));
+      }, AppearanceFixture.SETTLE_LIMIT);
+      const stop = (): void => {
+        clearTimeout(deadline);
+        mutations.disconnect();
+      };
+      mutations.observe(area, { attributeFilter: [attribute] });
+      check();
+    });
   }
 }

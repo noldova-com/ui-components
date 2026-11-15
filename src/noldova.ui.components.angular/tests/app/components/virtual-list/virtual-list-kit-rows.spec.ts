@@ -29,6 +29,7 @@ import { ToolCallViews } from "../../../../src/app/models/tool-call-views";
 import { provideCodeHighlighting } from "../../../../src/app/services/provide-code-highlighting";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 const call = new ToolCall("call-1", "Read main.ts", ToolCallKind.Read, ToolCallStatus.Succeeded, { output: Array.from({ length: 60 }, (_, t) => `line ${t + 1}`).join("\n") });
 const failed = new ToolCall("call-3", "Read b.ts", ToolCallKind.Read, ToolCallStatus.Succeeded, { outputState: ToolCallOutputState.Failed });
@@ -104,15 +105,11 @@ describe("VirtualListComponent with the kit's rows", () => {
   const fromEnd = (): number => viewport().scrollHeight - viewport().clientHeight - viewport().scrollTop;
 
   async function settleAsync(): Promise<void> {
-    let last = String.empty;
-    for (let pass = 0; pass < 20; pass++) {
-      await fixture.whenStable();
-      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      const shape = `${root().querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`;
-      if (shape === last)
-        return;
-      last = shape;
-    }
+    await LayoutSettleFixture.settledAsync("the list's rows and scroll",
+      () => `${root().querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`, async () => {
+        await fixture.whenStable();
+        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+      });
   }
 
   const cases: readonly (readonly [string, string, string])[] = [

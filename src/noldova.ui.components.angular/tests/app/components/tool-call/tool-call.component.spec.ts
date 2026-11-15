@@ -37,6 +37,7 @@ import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
@@ -1252,13 +1253,10 @@ describe("ToolCallComponent", () => {
   }
 
   async function settleAsync(): Promise<void> {
-    const snapshot = (): string => findAll("nol-tool-call").map(t => t.className).join("|");
-    let before: string;
-    do {
-      before = snapshot();
+    await LayoutSettleFixture.settledAsync("the tool calls' classes", () => findAll("nol-tool-call").map(t => t.className).join("|"), async () => {
       await new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve)));
       await fixture.whenStable();
-    } while (snapshot() !== before);
+    });
   }
 
   function expectFitsPanel(fitted: HTMLElement = card()): void {

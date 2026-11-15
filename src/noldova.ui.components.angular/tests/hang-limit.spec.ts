@@ -10,6 +10,7 @@ import { server } from "vitest/browser";
 
 import { ChangeSignalFixture } from "./fixtures/change-signal.fixture";
 import { HangLimitFixture } from "./fixtures/hang-limit.fixture";
+import { LayoutSettleFixture } from "./fixtures/layout-settle.fixture";
 
 describe("The specs' hang limit", () => {
   // A short bound stands in for the shared one, so the hung poll ends in a moment; the shared one ends the same way, halfway to the test's limit.
@@ -38,5 +39,13 @@ describe("The specs' hang limit", () => {
     const checks = check.mock.calls.length;
     changes.fire();
     expect(check).toHaveBeenCalledTimes(checks);
+  });
+
+  it("fails a wait for a layout that never settles once its bound runs out, naming what it waited on and its last shape", async () => {
+    let read = 0;
+    const frameAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => resolve()));
+
+    await expect(LayoutSettleFixture.settledAsync("the moving row", () => String(read++), frameAsync, shortBound))
+      .rejects.toThrow(new RegExp(`^the moving row kept changing for ${shortBound} ms; it last read \\d+\\.$`, "u"));
   });
 });
