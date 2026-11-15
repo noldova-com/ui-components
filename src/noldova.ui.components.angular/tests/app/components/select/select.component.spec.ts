@@ -296,22 +296,24 @@ describe("SelectComponent", () => {
       fixture.detectChanges();
 
       await openAsync(25);
-      await framesAsync(5);
-      const field = button().getBoundingClientRect();
-      const box = (list() as HTMLElement).getBoundingClientRect();
-      const option = (options()[19] as HTMLElement).getBoundingClientRect();
       const style = getComputedStyle(list() as HTMLElement);
       const most = RowFillFixture.heightOf("dropdown-row-height") * 10.5 + Number.parseFloat(style.paddingTop) * 2 + Number.parseFloat(style.borderTopWidth) * 2;
       const near = (a: number, b: number): boolean => Math.abs(a - b) <= 0.5;
+      const box = await DomChangeFixture.untilAsync(() => {
+        const field = button().getBoundingClientRect();
+        const placed = (list() as HTMLElement).getBoundingClientRect();
+        const option = (options()[19] as HTMLElement).getBoundingClientRect();
+        expect({
+          start: Math.round(placed.left - field.left),
+          side: near(placed.top, field.bottom) ? "below" : near(placed.bottom, field.top) ? "above" : "beside",
+          inside: placed.top >= 0 && placed.bottom <= window.innerHeight && placed.left >= 0 && placed.right <= window.innerWidth,
+          capped: placed.height <= most + 0.5,
+          scrolls: (list() as HTMLElement).scrollHeight > (list() as HTMLElement).clientHeight,
+          shown: option.top >= placed.top && option.bottom <= placed.bottom
+        }).toEqual({ start: 0, side, inside: true, capped: true, scrolls: true, shown: true });
+        return placed;
+      });
 
-      expect({
-        start: Math.round(box.left - field.left),
-        side: near(box.top, field.bottom) ? "below" : near(box.bottom, field.top) ? "above" : "beside",
-        inside: box.top >= 0 && box.bottom <= window.innerHeight && box.left >= 0 && box.right <= window.innerWidth,
-        capped: box.height <= most + 0.5,
-        scrolls: (list() as HTMLElement).scrollHeight > (list() as HTMLElement).clientHeight,
-        shown: option.top >= box.top && option.bottom <= box.bottom
-      }).toEqual({ start: 0, side, inside: true, capped: true, scrolls: true, shown: true });
       if (top === 0)
         AppearanceFixture.expectPixels(box.height, most);
     });

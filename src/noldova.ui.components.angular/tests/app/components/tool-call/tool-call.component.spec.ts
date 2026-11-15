@@ -1519,9 +1519,20 @@ describe("ToolCallComponent", () => {
     const titleToggle = view.nativeElement.querySelectorAll(".nol-tool-call-toggle")[depth] as HTMLElement;
     await userEvent.hover(titleToggle);
     await view.whenStable();
-    for (let frame = 0; frame < 3; frame++)
-      await new Promise(resolve => requestAnimationFrame(resolve));
-    return [titleToggle, document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip"), view];
+    const query = (): HTMLElement | null => document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip");
+    if (side === null) {
+      for (let frame = 0; frame < 3; frame++)
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      return [titleToggle, query(), view];
+    }
+    const tooltip = await DomChangeFixture.untilAsync(() => {
+      const shown = query();
+      expect(shown, "the title's tooltip").not.toBeNull();
+      return shown;
+    });
+    const placed = (): string => JSON.stringify(tooltip?.getBoundingClientRect());
+    await LayoutSettleFixture.settledAsync("the title tooltip's place", placed, () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+    return [titleToggle, tooltip, view];
   }
 
   it("places its cut title's tooltip a gap above the toggle when its caller leaves it unbound, and a gap beside the header's row at the end, its nested card's too", async () => {

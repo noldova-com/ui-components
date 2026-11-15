@@ -247,6 +247,16 @@ Specs poll only where no signal serves:
 - A layout that has stopped moving fires no event, and the shape it settles into isn't known before, so `LayoutSettleFixture.settledAsync`, in `src/noldova.ui.components.angular/tests/fixtures/layout-settle.fixture.ts`, reads what a spec names of it once a pass of the spec's own, a frame and a stable fixture, until a pass leaves it as it was, and fails at the shared bound, naming what it waited on and its last shape: `tool-call.component.spec.ts`'s nested calls' classes, and the feed's rows and scroll in `diff-view.component.spec.ts` and `virtual-list-kit-rows.spec.ts`.
 - The hang-limit spec polls for a condition that never holds, to show the bound ending it.
 
+Specs wait a fixed number of frames only to show that something doesn't change, or doesn't happen, which no event signals; each count covers the frames the code it checks runs in:
+
+- `dialog.component.spec.ts`, three frames: a press with a secondary button or from Close starts no drag, a pointer past the window's edge moves the dialog no further, and a drag doesn't move it while it is maximized.
+- `select.component.spec.ts`, five frames after its value is in view, so no later scroll takes it out, and two after a press on a disabled option, which changes nothing.
+- `mention-field-chips.spec.ts`, three frames after a full box's field gets shorter: no resize loop error, and no scroll or width change.
+- `tool-call.component.spec.ts`, three frames: a long title keeps its toggle a span, and a cut title with no tooltip side opens none.
+- `menu-group.component.spec.ts`, two frames, so the spec's two focus moves start in a frame of their own, and two after them, keeping the scroll the first one made.
+- `configuration-table.directive.spec.ts`, twelve frames after a table fits: its narrow layout doesn't flip back and forth.
+- `gallery-feed.component.spec.ts`, `gallery-message.component.spec.ts`, `gallery-virtual-feed.component.spec.ts` and `virtual-list-focus-ring.component.spec.ts`, three passes of a stable fixture and two frames: their callers read several states at once and that no timer is left, after the feed has measured, corrected its scroll and rendered, with nothing more to come.
+
 `AppearanceFixture.expectThumbRevealsOnHoverAsync`, from the testing entry, waits until the scroll area shows no scroll's reveal, which `[data-nol-scrolling]` keeps for a second after a scroll, and runs no transition, checking again as the attribute goes and as the transitions end; the testing entry can't read the specs' bound, so it fails at a limit of its own, the same 15 seconds, naming what still ran.
 
 A hovered tooltip opens after a 500 ms rest, so a spec that hovers an anchor to check what its tooltip shows provides `TooltipFixture.atOnce`, from the testing entry, `src/noldova.ui.components.angular/src/testing/models/tooltip-fixture.ts`, which opens it, and a hovered link reference chip's card, at once; the rest itself is checked on a test time source, in the tooltip's own spec.
