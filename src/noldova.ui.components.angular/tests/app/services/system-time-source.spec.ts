@@ -8,7 +8,6 @@
 
 import { SystemTimeSource } from "../../../src/app/services/system-time-source";
 import { SystemTimeSourceResources } from "../../../src/app/services/system-time-source.resources";
-import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("SystemTimeSource", () => {
   it("reads the system's time", () => {
@@ -29,14 +28,21 @@ describe("SystemTimeSource", () => {
     const source = new SystemTimeSource();
     let calls = 0;
     let later = 0;
-    const cancel = source.every(() => calls++, 5);
-    const watcher = source.every(() => later++, 5);
+    const changes = new ChangeSignalFixture();
+    const cancel = source.every(() => {
+      calls++;
+      changes.fire();
+    }, 5);
+    const watcher = source.every(() => {
+      later++;
+      changes.fire();
+    }, 5);
 
-    await vi.waitFor(() => expect(calls).toBeGreaterThanOrEqual(2), HangLimitFixture.wait);
+    await changes.untilAsync(() => expect(calls).toBeGreaterThanOrEqual(2));
     cancel();
     const stopped = calls;
     const mark = later;
-    await vi.waitFor(() => expect(later).toBeGreaterThanOrEqual(mark + 3), HangLimitFixture.wait);
+    await changes.untilAsync(() => expect(later).toBeGreaterThanOrEqual(mark + 3));
     watcher();
 
     expect(calls).toBe(stopped);
@@ -45,11 +51,16 @@ describe("SystemTimeSource", () => {
   it("calls back once after its delay, and not at all once cancelled", async () => {
     const source = new SystemTimeSource();
     const calls: string[] = [];
-    source.after(() => calls.push("once"), 5);
-    source.after(() => calls.push("cancelled"), 5)();
-    source.after(() => calls.push("later"), 20);
+    const changes = new ChangeSignalFixture();
+    const call = (name: string) => (): void => {
+      calls.push(name);
+      changes.fire();
+    };
+    source.after(call("once"), 5);
+    source.after(call("cancelled"), 5)();
+    source.after(call("later"), 20);
 
-    await vi.waitFor(() => expect(calls).toContain("later"), HangLimitFixture.wait);
+    await changes.untilAsync(() => expect(calls).toContain("later"));
 
     expect(calls).toEqual(["once", "later"]);
   });
@@ -57,10 +68,15 @@ describe("SystemTimeSource", () => {
   it("calls back on the next frame, and not at all once cancelled", async () => {
     const source = new SystemTimeSource();
     const calls: string[] = [];
-    source.frame(() => calls.push("cancelled"))();
-    source.frame(() => calls.push("frame"));
+    const changes = new ChangeSignalFixture();
+    const call = (name: string) => (): void => {
+      calls.push(name);
+      changes.fire();
+    };
+    source.frame(call("cancelled"))();
+    source.frame(call("frame"));
 
-    await vi.waitFor(() => expect(calls).toContain("frame"), HangLimitFixture.wait);
+    await changes.untilAsync(() => expect(calls).toContain("frame"));
 
     expect(calls).toEqual(["frame"]);
   });
@@ -98,10 +114,15 @@ describe("SystemTimeSource", () => {
       const source = new SystemTimeSource();
       const after = vi.spyOn(source, "after");
       const calls: string[] = [];
-      source.idle(() => calls.push("cancelled"))();
-      source.idle(() => calls.push("idle"));
+      const changes = new ChangeSignalFixture();
+      const call = (name: string) => (): void => {
+        calls.push(name);
+        changes.fire();
+      };
+      source.idle(call("cancelled"))();
+      source.idle(call("idle"));
 
-      await vi.waitFor(() => expect(calls).toContain("idle"), HangLimitFixture.wait);
+      await changes.untilAsync(() => expect(calls).toContain("idle"));
 
       expect([calls, after.mock.calls.map(t => t[1])]).toEqual([["idle"], [SystemTimeSourceResources.idleFallbackDelay, SystemTimeSourceResources.idleFallbackDelay]]);
     } finally {

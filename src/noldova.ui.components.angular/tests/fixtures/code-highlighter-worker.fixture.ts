@@ -17,6 +17,7 @@ import { CodeLanguage } from "../../src/app/models/code-language";
 import { CodeHighlighter } from "../../src/app/services/code-highlighter";
 import { Resources } from "../../src/resources";
 import type { CodeWorkerFixture } from "./code-worker.fixture";
+import { ChangeSignalFixture } from "./change-signal.fixture";
 import { TestTimeSource } from "./test-time-source";
 
 export class CodeHighlighterWorkerFixture {
@@ -27,13 +28,15 @@ export class CodeHighlighterWorkerFixture {
   public static readonly offFailure: readonly unknown[] = [Resources.formatCodeWorkerFailure(Resources.codeWorkerStartFailure), CodeHighlighterWorkerFixture.off];
   public readonly source: TestTimeSource = new TestTimeSource();
   public readonly errors: unknown[] = [];
+  // Fires on each error the error handler is given.
+  public readonly changes: ChangeSignalFixture = new ChangeSignalFixture();
 
   public constructor() {
     TestBed.configureTestingModule({
       providers: [
         { provide: CodeHighlighterTokens.tokenizeTimeLimit, useValue: 0 },
         { provide: ClockTokens.timeSource, useValue: this.source },
-        { provide: ErrorHandler, useValue: { handleError: (error: unknown) => this.errors.push(error) } }
+        { provide: ErrorHandler, useValue: { handleError: (error: unknown) => this.report(error) } }
       ]
     });
   }
@@ -60,5 +63,10 @@ export class CodeHighlighterWorkerFixture {
 
   public messages(): unknown[] {
     return this.errors.map(t => t instanceof CodeHighlightingException ? [t.message, t.cause] : t);
+  }
+
+  private report(error: unknown): void {
+    this.errors.push(error);
+    this.changes.fire();
   }
 }

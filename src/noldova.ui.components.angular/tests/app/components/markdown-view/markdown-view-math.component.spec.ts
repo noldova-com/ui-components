@@ -15,10 +15,11 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { MarkdownMathRenderer } from "../../../../src/app/services/markdown-math.renderer";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MarkdownViewComponent],
@@ -59,7 +60,7 @@ describe("MarkdownViewComponent's math", () => {
   }
 
   async function drawnAsync(count: number): Promise<void> {
-    await vi.waitFor(() => expect(view().querySelectorAll(".nol-markdown-math .katex").length).toBe(count), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(view().querySelectorAll(".nol-markdown-math .katex").length).toBe(count));
   }
 
   beforeEach(() => {
@@ -164,7 +165,7 @@ describe("MarkdownViewComponent's math", () => {
     fixture = TestBed.createComponent(MathHostComponent);
     fixture.componentInstance.text.set("Area $x^2$");
     fixture.detectChanges();
-    await vi.waitFor(() => expect(view().querySelector(".nol-markdown-math")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(view().querySelector(".nol-markdown-math")).not.toBeNull());
     const waiting = DomFixture.one(view(), ".nol-markdown-math").textContent;
 
     finish(real);
@@ -177,10 +178,11 @@ describe("MarkdownViewComponent's math", () => {
     statics.module = null;
     const failure = new Error("KaTeX's chunk did not load.");
     vi.spyOn(statics, "importAsync").mockRejectedValue(failure);
-    const report = vi.spyOn(TestBed.inject(ErrorHandler), "handleError").mockImplementation(() => undefined);
+    const reported = new ChangeSignalFixture();
+    const report = vi.spyOn(TestBed.inject(ErrorHandler), "handleError").mockImplementation(() => reported.fire());
 
     await renderAsync("Area $x^2$ and $y$");
-    await vi.waitFor(() => expect(report).toHaveBeenCalledWith(failure), HangLimitFixture.wait);
+    await reported.untilAsync(() => expect(report).toHaveBeenCalledWith(failure));
     await fixture.whenStable();
 
     expect([formulas().map(t => t.textContent), view().querySelectorAll(".katex").length, report.mock.calls]).toEqual([["$x^2$", "$y$"], 0, [[failure]]]);
@@ -279,7 +281,7 @@ describe("MarkdownViewComponent's math", () => {
       host.text.set(step);
       host.streaming.set(isStreaming);
       await fixture.whenStable();
-      await vi.waitFor(() => expect(TestBed.inject(MarkdownMathRenderer).isLoaded()).toBe(true), HangLimitFixture.wait);
+      expect(await TestBed.inject(MarkdownMathRenderer).loadAsync()).toBe(true);
       seen.push([formulas().length === 0 ? "text" : view().querySelectorAll(".nol-markdown-math .katex").length === 1 ? "formula" : "source",
         view().getBoundingClientRect().height]);
     }

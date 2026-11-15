@@ -93,11 +93,11 @@ describe("CodeHighlightingFixture", () => {
 
     highlighter.preload(["json"]);
     bed.source.runIdles();
-    await vi.waitFor(() => expect(bed.errors.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
+    await bed.changes.untilAsync(() => expect(bed.errors.length).toBe(1));
     const failed = loaded(injector, ["json"]);
     highlighter.preload(["json"]);
     bed.source.runIdles();
-    await vi.waitFor(() => expect(starts.started[0]?.scope.answers.length).toBe(3), { ...HangLimitFixture.wait, interval: 1 });
+    await starts.changes.untilAsync(() => expect(starts.started[0]?.scope.answers.length).toBe(3));
     await highlighter.tokensAsync("1", CodeHighlighterWorkerFixture.json, signal);
 
     expect([failed, loaded(injector, ["json"]), starts.started[0]?.scope.answers.map(t => [t.kind, Object.isNull(t.error)]), bed.errors.length])

@@ -48,6 +48,8 @@ import type { ClipboardWriterFixture } from "../../../../src/testing/services/cl
 import { Resources } from "../../../../src/resources";
 import { MessageResources } from "../../../../src/app/components/message/message.resources";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
@@ -742,11 +744,11 @@ describe("MessageComponent", () => {
     });
     const shown = [text("time"), find("time").getAttribute("aria-label"), text(".nol-message-label")];
     await userEvent.hover(find("time"));
-    const tooltip = await vi.waitFor(() => {
+    const tooltip = await DomChangeFixture.untilAsync(() => {
       const tip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
       expect(tip).toBeTruthy();
       return tip;
-    }, HangLimitFixture.wait);
+    });
     await userEvent.unhover(find("time"));
     await changeAsync(() => host.twentyFourHour.set(false));
 
@@ -764,11 +766,11 @@ describe("MessageComponent", () => {
     });
     const shown = [text("time"), find("time").getAttribute("aria-label"), text(".nol-message-label")];
     await userEvent.hover(find("time"));
-    const tooltip = await vi.waitFor(() => {
+    const tooltip = await DomChangeFixture.untilAsync(() => {
       const tip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
       expect(tip).toBeTruthy();
       return tip;
-    }, HangLimitFixture.wait);
+    });
     await userEvent.unhover(find("time"));
     await changeAsync(() => formats.set(new TimeFormats(t => `${t.getHours()}.${String(t.getMinutes()).padStart(2, "0")}`)));
     const changed = [text("time"), find("time").getAttribute("aria-label")];
@@ -893,11 +895,11 @@ describe("MessageComponent", () => {
         const button = find(".nol-message-attachment");
 
         await userEvent.hover(button);
-        const shown = await vi.waitFor(() => {
+        const shown = await DomChangeFixture.untilAsync(() => {
           const tooltip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip");
           expect(tooltip?.textContent?.trim()).toBe("/repo/docs/notes.txt");
           return tooltip as HTMLElement;
-        }, HangLimitFixture.wait);
+        });
         await framesAsync();
         const box = shown.getBoundingClientRect();
         const target = button.getBoundingClientRect();
@@ -936,7 +938,7 @@ describe("MessageComponent", () => {
     const source = "Area $x^2$ and \\(y\\)\n\n$$\n\\frac{a}{b}\n$$";
     await renderAsync(t => t.blocks.set([new MessageText(source)]));
     const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
-    await vi.waitFor(() => expect(fixture.nativeElement.querySelectorAll(".nol-markdown-math .katex").length).toBe(3), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(fixture.nativeElement.querySelectorAll(".nol-markdown-math .katex").length).toBe(3));
 
     find(".nol-message-copy").click();
     await fixture.whenStable();
@@ -954,7 +956,7 @@ describe("MessageComponent", () => {
     const copy = find(".nol-message-copy");
     const named = copy.getAttribute("aria-label");
     await userEvent.hover(copy);
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Copy message"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Copy message"));
 
     copy.click();
     await fixture.whenStable();
@@ -964,21 +966,25 @@ describe("MessageComponent", () => {
 
   it("says when its text couldn't be copied, reports a failure to copy, and tells the app nothing", async () => {
     const errors: unknown[] = [];
+    const reported = new ChangeSignalFixture();
     const failure = new Error("Denied.");
-    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => {
+      errors.push(error);
+      reported.fire();
+    } } });
     const source = provideTimeSource();
     await renderAsync();
     const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
 
     clipboard.answer = (): Promise<boolean> => Promise.resolve(false);
     find(".nol-message-copy").click();
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       fixture.detectChanges();
       expect(find(".nol-message-copy").getAttribute("aria-label")).toBe("Couldn't copy");
-    }, HangLimitFixture.wait);
+    });
     clipboard.answer = (): Promise<boolean> => Promise.reject(failure);
     find(".nol-message-copy").click();
-    await vi.waitFor(() => expect(errors).toEqual([failure]), HangLimitFixture.wait);
+    await reported.untilAsync(() => expect(errors).toEqual([failure]));
     fixture.detectChanges();
     const refused = find(".nol-message-copy").getAttribute("aria-label");
     source.advance(Resources.copyFeedbackDuration);

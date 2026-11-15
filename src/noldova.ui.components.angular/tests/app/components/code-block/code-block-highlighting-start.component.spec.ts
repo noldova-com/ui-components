@@ -14,6 +14,7 @@ import { CodeWorkerMessageKind } from "../../../../src/app/enums/code-worker-mes
 import { CodeHighlighterTokens } from "../../../../src/app/models/code-highlighter-tokens";
 import type { CodeLanguage } from "../../../../src/app/models/code-language";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture";
 import { CodeWorkerStartFixture } from "../../../fixtures/code-worker.fixture";
 import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
@@ -49,11 +50,12 @@ describe("CodeBlockComponent", () => {
     const highlighter = TestBed.inject(CodeHighlighter);
     const typescript = highlighter.languageNamed("ts");
 
+    const changes = CodeHighlightsFixture.watch();
     await renderAsync();
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       harness.fixture.detectChanges();
       expect(tokens().length).toBeGreaterThan(0);
-    }, { ...HangLimitFixture.wait, interval: 1 });
+    });
 
     expect(starts.started.map(t => t.requests.map(r => [r.kind, r.code]))).toEqual([[[CodeWorkerMessageKind.Tokenize, harness.host.code()]]]);
     expect(Object.isNull(typescript) ? null : highlighter.tokens(String.empty, typescript)).toBeUndefined();

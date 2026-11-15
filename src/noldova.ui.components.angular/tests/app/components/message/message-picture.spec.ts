@@ -25,9 +25,9 @@ import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MessageComponent],
@@ -188,10 +188,10 @@ describe("MessageComponent with a picture attachment", () => {
     const named = (await AccessibilityFixture.namesAsync("button")).filter(t => t.includes("shot-"));
 
     await userEvent.hover(picture);
-    const tooltip = await vi.waitFor(() => {
+    const tooltip = await DomChangeFixture.untilAsync(() => {
       expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("C:/shots/shot-120.png");
       return DomFixture.one(document, ".cdk-overlay-container nol-tooltip");
-    }, HangLimitFixture.wait);
+    });
     const described = document.getElementById(picture.getAttribute("aria-describedby") ?? String.empty)?.textContent;
     picture.click();
     picture.focus();

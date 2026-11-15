@@ -14,7 +14,7 @@ import { CodeTokenKind } from "../../../../src/app/enums/code-token-kind";
 import { CodeHighlighterTokens } from "../../../../src/app/models/code-highlighter-tokens";
 import { CodeToken } from "../../../../src/app/models/code-token";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
+import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -35,23 +35,27 @@ describe("CodeBlockComponent", () => {
 
   it("never lets the tokens of older code that arrive after those of newer code land", async () => {
     const answers = new Map<string, (tokens: readonly CodeToken[]) => void>();
+    const changes = CodeHighlightsFixture.watch();
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(code => code.startsWith("let ")
-      ? new Promise(resolve => answers.set(code, resolve))
+      ? new Promise(resolve => {
+        answers.set(code, resolve);
+        changes.fire();
+      })
       : Promise.resolve([]));
     await renderAsync();
     for (const code of ["let older;", "let newer;"]) {
       harness.host.code.set(code);
-      await vi.waitFor(() => {
+      await changes.untilAsync(() => {
         harness.fixture.detectChanges();
         expect(answers.has(code)).toBe(true);
-      }, { ...HangLimitFixture.wait, interval: 1 });
+      });
     }
 
     answers.get("let newer;")?.([new CodeToken(4, "newer", CodeTokenKind.Variable)]);
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       harness.fixture.detectChanges();
       expect(tokens()).toEqual([["newer", "variable"]]);
-    }, { ...HangLimitFixture.wait, interval: 1 });
+    });
     answers.get("let older;")?.([new CodeToken(4, "older", CodeTokenKind.Type)]);
     await harness.fixture.whenStable();
 
@@ -76,24 +80,28 @@ describe("CodeBlockComponent", () => {
 
   it("keeps a selection in its code when the code's tokens arrive and it settles into spans", async () => {
     const answers: ((tokens: readonly CodeToken[]) => void)[] = [];
+    const changes = CodeHighlightsFixture.watch();
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(code => code === "let selected;"
-      ? new Promise(resolve => answers.push(resolve))
+      ? new Promise(resolve => {
+        answers.push(resolve);
+        changes.fire();
+      })
       : Promise.resolve([]));
     await renderAsync();
     harness.host.code.set("let selected;");
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       harness.fixture.detectChanges();
       expect(answers.length).toBe(1);
-    }, { ...HangLimitFixture.wait, interval: 1 });
+    });
     const code = find(".nol-code-block-body > code");
     const text = code.firstChild?.firstChild ?? code;
     getSelection()?.setBaseAndExtent(text, 4, text, 12);
 
     answers[0]?.([new CodeToken(0, "let", CodeTokenKind.Keyword)]);
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       harness.fixture.detectChanges();
       expect(tokens()).toEqual([["let", "keyword"]]);
-    }, { ...HangLimitFixture.wait, interval: 1 });
+    });
 
     expect([getSelection()?.toString(), tokenSpans()]).toEqual(["selected", 1]);
     getSelection()?.removeAllRanges();
