@@ -15,9 +15,9 @@ import { PopoverTriggerDirective } from "../../../../src/app/components/popover/
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [PopoverDirective, PopoverTriggerDirective],
@@ -58,7 +58,7 @@ describe("PopoverTriggerDirective", () => {
   async function openAsync(): Promise<HTMLElement> {
     trigger().click();
     await fixture.whenStable();
-    await vi.waitFor(() => expect(surface()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(surface()).not.toBeNull());
     return surface() as HTMLElement;
   }
 
@@ -83,7 +83,7 @@ describe("PopoverTriggerDirective", () => {
     await renderAsync();
 
     const popover = await openAsync();
-    await vi.waitFor(() => expect(document.activeElement).toBe(popover), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
 
     expect([popover.getAttribute("role"), popover.getAttribute("aria-label"), popover.tabIndex]).toEqual(["dialog", "Details", -1]);
     expect([trigger().getAttribute("aria-expanded"), fixture.componentInstance.opens, fixture.componentInstance.trigger()?.isOpen()]).toEqual(["true", 1, true]);
@@ -119,7 +119,7 @@ describe("PopoverTriggerDirective", () => {
   it("closes on Escape and returns focus to the trigger, but not on other keys", async () => {
     await renderAsync();
     const popover = await openAsync();
-    await vi.waitFor(() => expect(document.activeElement).toBe(popover), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
 
     popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
     await fixture.whenStable();
@@ -133,7 +133,7 @@ describe("PopoverTriggerDirective", () => {
   it("keeps an Escape that something inside it already handled, and returns focus to the trigger when it is closed from inside", async () => {
     await renderAsync();
     const popover = await openAsync();
-    await vi.waitFor(() => expect(document.activeElement).toBe(popover), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
 
     const handled = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
     handled.preventDefault();
@@ -148,7 +148,7 @@ describe("PopoverTriggerDirective", () => {
   it("moves the focus to its control by Tab, and closes on a Tab past its last control, returning focus to the trigger", async () => {
     await renderAsync();
     const popover = await openAsync();
-    await vi.waitFor(() => expect(document.activeElement).toBe(popover), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
 
     await userEvent.keyboard("{Tab}");
     const first = [surface() !== null, document.activeElement === popover.querySelector(".inside")];
@@ -162,7 +162,7 @@ describe("PopoverTriggerDirective", () => {
     it(`closes on a Shift+Tab from ${from}, before its first control, returning focus to the trigger`, async () => {
       await renderAsync();
       const popover = await openAsync();
-      await vi.waitFor(() => expect(document.activeElement).toBe(popover), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
       if (from === "its first control")
         await userEvent.keyboard("{Tab}");
       const before = [surface() !== null, document.activeElement === popover.querySelector(".inside")];
@@ -223,7 +223,7 @@ describe("PopoverTriggerDirective", () => {
     const popover = await openAsync();
     const gap = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5;
 
-    await vi.waitFor(() => expect(trigger().getBoundingClientRect().top - popover.getBoundingClientRect().bottom).toBeCloseTo(gap, 1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(trigger().getBoundingClientRect().top - popover.getBoundingClientRect().bottom).toBeCloseTo(gap, 1));
     expect(popover.getBoundingClientRect().right).toBeCloseTo(trigger().getBoundingClientRect().right, 1);
     fixture.destroy();
 
@@ -233,7 +233,7 @@ describe("PopoverTriggerDirective", () => {
     anchor.setAttribute("data-nol-chrome", "top");
     const below = await openAsync();
 
-    await vi.waitFor(() => expect(below.getBoundingClientRect().top - trigger().getBoundingClientRect().bottom).toBeCloseTo(gap, 1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(below.getBoundingClientRect().top - trigger().getBoundingClientRect().bottom).toBeCloseTo(gap, 1));
     expect(below.getBoundingClientRect().left).toBeCloseTo(trigger().getBoundingClientRect().left, 1);
   });
 
@@ -242,7 +242,7 @@ describe("PopoverTriggerDirective", () => {
     const popover = await openAsync();
     popover.append(Object.assign(document.createElement("div"), { style: "height: 200vh; flex: none" }));
 
-    await vi.waitFor(() => expect(popover.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(popover.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight));
 
     expect([popover.getBoundingClientRect().top >= 0, getComputedStyle(popover).overflowY, popover.scrollHeight > popover.clientHeight]).toEqual([true, "auto", true]);
   });

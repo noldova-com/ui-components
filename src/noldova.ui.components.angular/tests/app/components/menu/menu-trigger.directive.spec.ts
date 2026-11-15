@@ -21,10 +21,10 @@ import { ToolbarDirective } from "../../../../src/app/components/toolbar/toolbar
 import { TooltipDirective } from "../../../../src/app/components/tooltip/tooltip.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -178,7 +178,7 @@ describe("MenuTriggerDirective", () => {
     controls.push(state());
     await openAsync();
     await userEvent.hover(row("beta"));
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     await settledAsync();
     const beta = row("beta");
     const betaOpen = [beta.getAttribute("aria-controls") === menu("submenu")?.id, beta.getAttribute("aria-expanded")];
@@ -209,7 +209,7 @@ describe("MenuTriggerDirective", () => {
     trigger().click();
     await settledAsync();
 
-    await vi.waitFor(() => expect(menu("root")?.getBoundingClientRect().right).toBeCloseTo(trigger().getBoundingClientRect().right, 0), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("root")?.getBoundingClientRect().right).toBeCloseTo(trigger().getBoundingClientRect().right, 0));
   });
 
   it("moves through its rows with the arrow keys, Home, End and type-ahead, skipping nothing", async () => {
@@ -220,7 +220,7 @@ describe("MenuTriggerDirective", () => {
       visited.push(focused());
     }
     await userEvent.keyboard("g");
-    await vi.waitFor(() => expect(focused()).toBe("gamma"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(focused()).toBe("gamma"));
 
     expect(visited).toEqual(["alpha", "beta", "gamma", "delta", "alpha", "delta", "alpha", "delta"]);
   });
@@ -344,7 +344,7 @@ describe("MenuTriggerDirective", () => {
     await userEvent.click(trigger());
     await settledAsync();
     await userEvent.hover(row("beta"));
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     await settledAsync();
     const parent = menu("root")?.getBoundingClientRect();
     const child = menu("submenu")?.getBoundingClientRect();
@@ -539,11 +539,11 @@ describe("MenuTriggerDirective in an OnPush host", () => {
   it("names no menu in aria-controls once a submenu's row closes its menus, after clicks with no change detection between them", async () => {
     const trigger = DomFixture.one(DomFixture.host(fixture), ".trigger");
     trigger.click();
-    await vi.waitFor(() => expect(menu("root")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("root")).not.toBeNull());
     DomFixture.one(DomFixture.present(menu("root")), ".beta").click();
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     DomFixture.one(DomFixture.present(menu("submenu")), ".one").click();
-    await vi.waitFor(() => expect(menu("root")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("root")).toBeNull());
     await fixture.whenStable();
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     await fixture.whenStable();

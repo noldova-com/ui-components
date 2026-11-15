@@ -14,9 +14,9 @@ import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item
 import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
 import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -110,19 +110,19 @@ describe("MenuItemComponent's chevron", () => {
   it("still opens its submenu with the arrow key toward its side, Enter and the pointer without its chevron", async () => {
     row("zoom").focus();
     await userEvent.keyboard("{ArrowRight}");
-    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(submenu()).not.toBeNull());
     expect(row("zoom").getAttribute("aria-expanded")).toBe("true");
     await userEvent.keyboard("{ArrowLeft}");
-    await vi.waitFor(() => expect(submenu()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(submenu()).toBeNull());
     expect(document.activeElement).toBe(row("zoom"));
 
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(submenu()).not.toBeNull());
     await userEvent.keyboard("{ArrowLeft}");
-    await vi.waitFor(() => expect(submenu()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(submenu()).toBeNull());
 
     await userEvent.click(row("zoom"));
-    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(submenu()).not.toBeNull());
     expect(row("zoom").getAttribute("aria-expanded")).toBe("true");
   });
 });

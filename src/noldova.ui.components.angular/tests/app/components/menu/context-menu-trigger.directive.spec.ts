@@ -20,9 +20,9 @@ import { MenuComponent } from "../../../../src/app/components/menu/menu.componen
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ContextMenuTriggerDirective, MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -239,13 +239,13 @@ describe("ContextMenuTriggerDirective", () => {
     key({ key: "ContextMenu" });
     await settledAsync();
     const more = DomFixture.one(DomFixture.present(menu()), ".more");
-    await vi.waitFor(() => expect(more.matches(":hover")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(more.matches(":hover")).toBe(true));
     await settledAsync();
     const stillBackground = getComputedStyle(more, "::before").backgroundColor;
     const isSubmenuOpenWhileStill = menu("submenu") !== null;
 
     await userEvent.hover(more, { position: { x: 8, y: 4 } });
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
 
     expect(isSubmenuOpenWhileStill).toBe(false);
     expect(stillBackground).toBe("rgba(0, 0, 0, 0)");
@@ -262,7 +262,7 @@ describe("ContextMenuTriggerDirective", () => {
     document.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, screenX: 3, screenY: 3, clientX: 3, clientY: 3 }));
     key({ key: "ContextMenu" });
     await settledAsync();
-    await vi.waitFor(() => expect(menu()?.querySelector(".more")?.matches(":hover")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu()?.querySelector(".more")?.matches(":hover")).toBe(true));
     await settledAsync();
 
     expect(menu("submenu")).toBeNull();
@@ -277,11 +277,11 @@ describe("ContextMenuTriggerDirective", () => {
     await userEvent.hover(document.documentElement, { position: { x: measured.left + measured.width / 2, y: measured.top + measured.height / 2 } });
     key({ key: "ContextMenu" });
     await settledAsync();
-    await vi.waitFor(() => expect(menu()?.querySelector(".more")?.matches(":hover")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu()?.querySelector(".more")?.matches(":hover")).toBe(true));
     const alpha = DomFixture.one(DomFixture.present(menu()), ".alpha");
 
     await userEvent.hover(alpha);
-    await vi.waitFor(() => expect(getComputedStyle(alpha, "::before").backgroundColor).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "hover")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(getComputedStyle(alpha, "::before").backgroundColor).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "hover")));
     await settledAsync();
 
     expect(menu("submenu")).toBeNull();
@@ -322,7 +322,7 @@ describe("ContextMenuTriggerDirective", () => {
     controls.push(state());
     await openAsync();
     await userEvent.keyboard("{End}{ArrowRight}");
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     await userEvent.keyboard("{Enter}");
     await settledAsync();
     controls.push(state());
@@ -352,7 +352,7 @@ describe("ContextMenuTriggerDirective", () => {
     key({ key: "ContextMenu" });
     await settledAsync();
     fixture.nativeElement.querySelector(".other").focus();
-    await vi.waitFor(() => expect(menu()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu()).toBeNull());
     key({ key: "ContextMenu" });
     await settledAsync();
 
@@ -384,7 +384,7 @@ describe("ContextMenuTriggerDirective", () => {
     key({ key: "ContextMenu" });
     await settledAsync();
     await userEvent.keyboard("{End}{ArrowRight}");
-    await vi.waitFor(() => expect(menu("submenu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     await userEvent.keyboard("{Enter}");
     await settledAsync();
 
@@ -492,9 +492,9 @@ describe("ContextMenuTriggerDirective around a menu trigger", () => {
   }
 
   async function closeWithEscapeAsync(): Promise<void> {
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu.actions")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu.actions")).not.toBeNull());
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu.actions")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu.actions")).toBeNull());
     fixture.detectChanges();
     await fixture.whenStable();
   }
@@ -535,7 +535,7 @@ describe("ContextMenuTriggerDirective with a menu longer than its room", () => {
 
   it("is cut short to its room and brings its checked row, which takes the focus, into its view", async () => {
     await userEvent.click(DomFixture.one(fixture.nativeElement, ".area"), { button: "right", position: { x: 20, y: 20 } });
-    await vi.waitFor(() => expect(document.activeElement?.classList.contains("row-58")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("row-58")).toBe(true));
     await new Promise(resolve => requestAnimationFrame(resolve));
     const pane = DomFixture.one(document, ".cdk-overlay-container nol-menu.long").getBoundingClientRect();
     const checked = DomFixture.one(document, ".cdk-overlay-container .row-58").getBoundingClientRect();
@@ -576,7 +576,7 @@ describe("ContextMenuTriggerDirective in an OnPush host", () => {
   }
 
   async function closedAsync(path: string): Promise<string | null> {
-    await vi.waitFor(() => expect(menu(), `${path}, the page ${document.hasFocus() ? "has" : "doesn't have"} the focus`).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(menu(), `${path}, the page ${document.hasFocus() ? "has" : "doesn't have"} the focus`).toBeNull());
     await fixture.whenStable();
     return area().getAttribute("aria-controls");
   }

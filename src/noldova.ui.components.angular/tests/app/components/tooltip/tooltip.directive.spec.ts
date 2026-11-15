@@ -25,11 +25,12 @@ import { OverlayBoundsService } from "../../../../src/app/services/overlay-bound
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [TooltipDirective],
@@ -151,7 +152,7 @@ describe("TooltipDirective", () => {
   }
 
   async function shownAsync(): Promise<HTMLElement> {
-    await vi.waitFor(() => expect(tooltip()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
     await fixture.whenStable();
     await new Promise(resolve => requestAnimationFrame(resolve));
     return tooltip() ?? anchor();
@@ -211,7 +212,7 @@ describe("TooltipDirective", () => {
       isShownAt.push(tooltip() === shown);
     }
     await pointAsync(new DOMPoint(Math.max(box.right, target.right) + gap() * 4, inGap.y));
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
     expect(target.top - box.bottom).toBeCloseTo(gap(), 0);
     expect(isShownAt).toEqual([true, true, true, true, true]);
@@ -244,7 +245,7 @@ describe("TooltipDirective", () => {
     const box = shown.getBoundingClientRect();
 
     await pointAsync(new DOMPoint(box.left + box.width / 2, box.top - gap() * 4));
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
     expect(isShownOnTooltip).toBe(true);
   });
@@ -253,7 +254,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(anchor());
     await shownAsync();
     anchor().dispatchEvent(new PointerEvent("pointerleave"));
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
     host.tooltip().show();
     await shownAsync();
@@ -275,7 +276,7 @@ describe("TooltipDirective", () => {
       });
       const isShownAfterLeave = tooltip() !== null;
       await pointAsync(new DOMPoint(point.x, point.y + gap() * 20));
-      await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
       expect(passes).toEqual([]);
       expect(isShownAfterLeave).toBe(true);
@@ -338,7 +339,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(anchor());
     await shownAsync();
     await userEvent.hover(fixture.nativeElement.querySelector(".other"));
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
     host.tooltip().show();
     await shownAsync();
@@ -368,12 +369,12 @@ describe("TooltipDirective", () => {
     let state: unknown[] = [];
     try {
       await userEvent.hover(image);
-      await vi.waitFor(() => expect(tooltip()?.textContent?.trim()).toBe("shot.png"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(tooltip()?.textContent?.trim()).toBe("shot.png"));
       const box = image.getBoundingClientRect();
       image.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2, clientX: box.left + 10, clientY: box.top + 10 }));
       await menuHost.whenStable();
       DomFixture.one(document, ".open").click();
-      await vi.waitFor(() => expect(document.activeElement).toBe(inside()), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(inside()));
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
       await new Promise(resolve => requestAnimationFrame(resolve));
@@ -396,7 +397,7 @@ describe("TooltipDirective", () => {
     try {
       DomFixture.one(DomFixture.host(opener), ".opener").focus();
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(close()), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(close()));
       await opener.whenStable();
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
@@ -424,7 +425,7 @@ describe("TooltipDirective", () => {
     await userEvent.hover(later.nativeElement.querySelector(".anchor"));
     await shownAsync();
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
     document.removeEventListener("keydown", listen);
     later.destroy();
 
@@ -470,7 +471,7 @@ describe("TooltipDirective", () => {
     host.tooltip().show();
     await shownAsync();
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(tooltip()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
   });
 
   it("does not show on a focus that does not come from the keyboard", async () => {
@@ -478,7 +479,7 @@ describe("TooltipDirective", () => {
     const watching = TestBed.inject(FocusMonitor).monitor(anchor()).subscribe(t => origins.push(t));
 
     anchor().focus();
-    await vi.waitFor(() => expect(origins).toEqual(["program"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(origins).toEqual(["program"]));
     watching.unsubscribe();
 
     expect(tooltip()).toBeNull();

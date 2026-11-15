@@ -14,8 +14,8 @@ import { DialogComponent } from "../../../../src/app/components/dialog/dialog.co
 import { DialogDescriptionDirective } from "../../../../src/app/components/dialog/dialog-description.directive";
 import { DialogTokens } from "../../../../src/app/models/dialog-tokens";
 import { DialogService } from "../../../../src/app/services/dialog.service";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [DialogComponent, DialogDescriptionDirective],
@@ -67,14 +67,14 @@ describe("DialogDescriptionDirective", () => {
   afterEach(async () => {
     for (const reference of references)
       reference.close();
-    await vi.waitFor(() => expect(document.querySelector("[role='dialog']")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("[role='dialog']")).toBeNull());
   });
 
   async function openAsync<T>(component: new () => T): Promise<[DialogRef<unknown, T>, HTMLElement]> {
     const reference = TestBed.inject(DialogService).open(component);
     references.push(reference as DialogRef<unknown, unknown>);
     const dialogs = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>("[role='dialog']")];
-    await vi.waitFor(() => expect(dialogs().length === references.length && document.activeElement?.closest("[role='dialog']") === dialogs().at(-1)).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(dialogs().length === references.length && document.activeElement?.closest("[role='dialog']") === dialogs().at(-1)).toBe(true));
     return [reference, dialogs().at(-1) as HTMLElement];
   }
 
@@ -87,7 +87,7 @@ describe("DialogDescriptionDirective", () => {
     const [reference, dialog] = await openAsync(DescribedDialogComponent);
     const named = [document.getElementById(dialog.getAttribute("aria-labelledby") ?? "")?.textContent, describedBy(dialog)];
     (reference.componentInstance as DescribedDialogComponent).isDescribed.set(false);
-    await vi.waitFor(() => expect(document.querySelector("[nolDialogDescription]")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("[nolDialogDescription]")).toBeNull());
 
     expect(named).toEqual(["Remove this teammate?", "Their tasks and history are removed with them."]);
     expect(dialog.hasAttribute("aria-describedby")).toBe(false);
@@ -116,12 +116,12 @@ describe("DialogDescriptionDirective", () => {
     const component = reference.componentInstance as LaterDescribedDialogComponent;
     component.isFirstDescribed.set(true);
     component.isSecondDescribed.set(true);
-    await vi.waitFor(() => expect(dialog.getAttribute("aria-describedby")?.split(" ").length).toBe(2), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(dialog.getAttribute("aria-describedby")?.split(" ").length).toBe(2));
     const ids = (dialog.getAttribute("aria-describedby") as string).split(" ");
     const named = ids.map(t => document.getElementById(t)?.textContent);
     component.isFirstDescribed.set(false);
     component.isSecondDescribed.set(false);
-    await vi.waitFor(() => expect(document.querySelector("[nolDialogDescription]")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("[nolDialogDescription]")).toBeNull());
 
     expect([before, named, new Set(ids).size]).toEqual([false, ["Running tasks stop.", "Drafts are kept."], 2]);
     expect(dialog.hasAttribute("aria-describedby")).toBe(false);
@@ -132,13 +132,13 @@ describe("DialogDescriptionDirective", () => {
     const component = reference.componentInstance as LaterDescribedDialogComponent;
     component.isFirstDescribed.set(true);
     component.isSecondDescribed.set(true);
-    await vi.waitFor(() => expect(dialog.querySelectorAll("[nolDialogDescription]").length).toBe(2), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(dialog.querySelectorAll("[nolDialogDescription]").length).toBe(2));
     const second = dialog.querySelectorAll("[nolDialogDescription]")[1]?.id;
     component.isFirstDescribed.set(false);
-    await vi.waitFor(() => expect(dialog.querySelectorAll("[nolDialogDescription]").length).toBe(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(dialog.querySelectorAll("[nolDialogDescription]").length).toBe(1));
     const remaining = dialog.getAttribute("aria-describedby");
     component.isSecondDescribed.set(false);
-    await vi.waitFor(() => expect(dialog.querySelector("[nolDialogDescription]")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(dialog.querySelector("[nolDialogDescription]")).toBeNull());
 
     expect([remaining, dialog.hasAttribute("aria-describedby")]).toEqual([second, false]);
   });
