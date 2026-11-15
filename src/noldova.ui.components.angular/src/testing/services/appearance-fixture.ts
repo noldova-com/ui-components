@@ -115,11 +115,13 @@ export class AppearanceFixture {
 
     const park = await AppearanceFixture.parkPointerAsync();
     try {
-      await expect.poll(() => [area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]);
+      await AppearanceFixture.transitionsEndAsync(area);
+      expect([area.matches(":hover"), thumb()]).toEqual([false, AppearanceFixture.hiddenThumb]);
 
       expect(shown).not.toBe(AppearanceFixture.hiddenThumb);
       await userEvent.hover(area);
-      await expect.poll(thumb).toBe(shown);
+      await AppearanceFixture.transitionsEndAsync(area);
+      expect(thumb()).toBe(shown);
     }
     finally {
       park.remove();
@@ -144,5 +146,12 @@ export class AppearanceFixture {
     };
     const [lighter = 0, darker = 0] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
     return (lighter + 0.05) / (darker + 0.05);
+  }
+
+  // The thumb's color is a transitioning custom property, which moves with no change to the document, so this waits for the element's own
+  // transitions to end, the ones a later change starts included; reading them brings the element's style up to date first.
+  private static async transitionsEndAsync(element: Element): Promise<void> {
+    for (let running = element.getAnimations(); running.length > 0; running = element.getAnimations())
+      await Promise.allSettled(running.map(t => t.finished));
   }
 }

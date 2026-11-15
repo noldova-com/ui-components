@@ -18,9 +18,9 @@ import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { MentionFieldResources } from "../../../../src/app/components/mention-field/mention-field.resources";
 import { CommandKeyFixture } from "../../../fixtures/command-key.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const chat = new MentionCandidate("agent 7", "Chat Bot");
 const ada = new MentionCandidate("p-1", "Ada", { note: "away" });
@@ -127,7 +127,7 @@ describe("MentionFieldDirective's chips", () => {
   }
 
   async function selectionAsync(start: number, end: number = start): Promise<void> {
-    await vi.waitFor(() => expect([field().selectionStart, field().selectionEnd]).toEqual([start, end]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect([field().selectionStart, field().selectionEnd]).toEqual([start, end]));
   }
 
   function offsetAt(x: number, y: number): number | undefined {
@@ -334,7 +334,7 @@ describe("MentionFieldDirective's chips", () => {
     field().value = `Hi ${field().value}`;
     placeCaret(0);
 
-    await vi.waitFor(() => expect(fixture.nativeElement.querySelector(".nol-mention-backdrop")?.textContent).toBe("Hi `@Ada` ok​"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(fixture.nativeElement.querySelector(".nol-mention-backdrop")?.textContent).toBe("Hi `@Ada` ok​"));
     await pressAsync("!");
 
     expect([chips().map(t => [t.textContent, t.parentElement?.classList.contains("nol-mention-code")]), host.value()])
@@ -495,7 +495,7 @@ describe("MentionFieldDirective's chips", () => {
 
     backdrop.before(spacer);
 
-    await vi.waitFor(() => expect(backdrop.getBoundingClientRect().top).toBeCloseTo(field().getBoundingClientRect().top + field().clientTop, 1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(backdrop.getBoundingClientRect().top).toBeCloseTo(field().getBoundingClientRect().top + field().clientTop, 1));
     expect(field().getBoundingClientRect().top - before).toBeCloseTo(20, 1);
   });
 
@@ -525,10 +525,10 @@ describe("MentionFieldDirective's chips", () => {
 
       DomFixture.one(root, ".card").before(spacer);
       DomFixture.one(root, ".card").style.paddingInlineStart = "12px";
-      await vi.waitFor(() => expect(gap()).toEqual([expect.closeTo(0, 1), expect.closeTo(0, 1)]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(gap()).toEqual([expect.closeTo(0, 1), expect.closeTo(0, 1)]));
       const moved = own.getBoundingClientRect();
       scroller.scrollTop = 16;
-      await vi.waitFor(() => expect(gap()).toEqual([expect.closeTo(0, 1), expect.closeTo(0, 1)]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(gap()).toEqual([expect.closeTo(0, 1), expect.closeTo(0, 1)]));
 
       expect([moved.left - start.left, moved.top - start.top, own.getBoundingClientRect().top - moved.top]).toEqual([expect.closeTo(12, 1), expect.closeTo(24, 1),
         expect.closeTo(-16, 1)]);
@@ -561,13 +561,13 @@ describe("MentionFieldDirective's chips", () => {
       scroller.style.overflowAnchor = "none";
 
       scroller.scrollTop = half;
-      await vi.waitFor(onField, HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(onField);
       const scrolled = await drawnAsync();
       const scrolledCopy = backdrop.getBoundingClientRect();
       const block = document.createElement("div");
       block.style.height = `${scroller.clientHeight}px`;
       card.prepend(block);
-      await vi.waitFor(onField, HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(onField);
       const moved = await drawnAsync();
       const movedCopy = backdrop.getBoundingClientRect();
       const box = scroller.getBoundingClientRect();
@@ -593,7 +593,7 @@ describe("MentionFieldDirective's chips", () => {
       const own = DomFixture.oneOf(root, "textarea", HTMLTextAreaElement);
       const backdrop = DomFixture.one(root, ".nol-mention-backdrop");
       const scroller = DomFixture.one(root, ".scroller");
-      await vi.waitFor(() => expect(backdrop.getBoundingClientRect().height).toBeCloseTo(own.clientHeight, 0), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(backdrop.getBoundingClientRect().height).toBeCloseTo(own.clientHeight, 0));
       const width = own.clientWidth;
       window.addEventListener("error", listen);
       const framesAsync = async (): Promise<void> => {
@@ -642,7 +642,7 @@ describe("MentionFieldDirective's chips", () => {
     try {
       document.documentElement.style.fontSize = "20px";
 
-      await vi.waitFor(() => expect(getComputedStyle(backdrop).fontSize).toBe("20px"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(backdrop).fontSize).toBe("20px"));
       const chip = (chips()[0] as HTMLElement).getBoundingClientRect();
       expect([getComputedStyle(field()).fontSize, offsetAt(chip.right - 1, chip.top + chip.height / 2)]).toEqual(["20px", field().value.indexOf(" lll")]);
     }

@@ -33,11 +33,12 @@ import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const START: Date = new Date("2026-10-13T09:00:00Z");
 const END: Date = new Date(START.getTime() + 1200);
@@ -131,17 +132,19 @@ describe("ToolCallComponent", () => {
     const before = area.scrollTop;
     const seen: number[] = [];
     let hasEnded = false;
+    const ended = new ChangeSignalFixture();
     const see = (): void => {
       seen.push(area.scrollTop);
     };
     const end = (): void => {
       hasEnded = true;
+      ended.fire();
     };
     area.addEventListener("scroll", see);
     area.addEventListener("scrollend", end, { once: true });
     try {
       await userEvent.keyboard(key);
-      await expect.poll(() => hasEnded).toBe(true);
+      await ended.untilAsync(() => expect(hasEnded).toBe(true));
     }
     catch (error) {
       throw new Error(scrollFailure(key, before, area.scrollTop, seen), { cause: error });
@@ -369,7 +372,7 @@ describe("ToolCallComponent", () => {
     await renderAsync(new ToolCall("call-1", title, ToolCallKind.Read, ToolCallStatus.Succeeded, { note }), t => t.width.set("16rem"));
     const named = page.getByRole("button", { name: `${title} · ${note}`, exact: true }).element();
     await userEvent.hover(toggle());
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(`${title} · ${note}`), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(`${title} · ${note}`));
     const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
     await userEvent.unhover(toggle());
 
@@ -636,7 +639,7 @@ describe("ToolCallComponent", () => {
         await renderAsync(new ToolCall("call-1", text, ToolCallKind.Read, ToolCallStatus.Succeeded, { outputState: ToolCallOutputState.None }), t => t.width.set("16rem"));
         const title = (): HTMLElement => find(".nol-tool-call-title");
         const twistie = (): string => getComputedStyle(find(".nol-tool-call-twistie")).visibility;
-        await expect.poll(() => toggle().tagName).toBe("BUTTON");
+        await DomChangeFixture.untilAsync(() => expect(toggle().tagName).toBe("BUTTON"));
 
         expect([title().scrollWidth > title().clientWidth, getComputedStyle(title()).textOverflow, twistie(), toggle().getAttribute("aria-expanded")])
           .toEqual([true, "ellipsis", "visible", "false"]);
@@ -648,13 +651,13 @@ describe("ToolCallComponent", () => {
         expect([title().scrollWidth <= title().clientWidth, box(title()).height > line * 1.5]).toEqual([true, true]);
 
         await changeAsync(() => host.width.set("30rem"));
-        await expect.poll(() => toggle().tagName).toBe("SPAN");
+        await DomChangeFixture.untilAsync(() => expect(toggle().tagName).toBe("SPAN"));
 
         expect([title().scrollWidth > title().clientWidth, twistie(), body().hidden]).toEqual([false, "hidden", true]);
         AppearanceFixture.expectPixels(box(title()).height, line);
 
         await changeAsync(() => host.width.set("16rem"));
-        await expect.poll(() => toggle().tagName).toBe("BUTTON");
+        await DomChangeFixture.untilAsync(() => expect(toggle().tagName).toBe("BUTTON"));
 
         expect([twistie(), body().hidden, toggle().getAttribute("aria-expanded"), box(title()).height > line * 1.5]).toEqual(["visible", true, "true", true]);
       }
@@ -971,7 +974,7 @@ describe("ToolCallComponent", () => {
     for (const cancel of cancels) {
       const tooltip = cancel.injector.get(TooltipDirective);
       tooltip.show();
-      await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Stop"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Stop"));
       tooltip.hide();
     }
     view.destroy();
@@ -1109,7 +1112,7 @@ describe("ToolCallComponent", () => {
     });
     const closed = [find(".nol-tool-call-title").textContent, toggle().textContent?.trim().endsWith(shown), find(".nol-tool-call-cancel").getAttribute("aria-label")];
     await userEvent.hover(toggle());
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(title), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(title));
     const tooltip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
     await userEvent.unhover(toggle());
     await clickAsync(toggle());
@@ -1129,9 +1132,9 @@ describe("ToolCallComponent", () => {
       t.width.set("16rem");
       t.shownTitles.set(new Map([["call-1", long]]));
     });
-    await expect.poll(() => toggle().tagName).toBe("BUTTON");
+    await DomChangeFixture.untilAsync(() => expect(toggle().tagName).toBe("BUTTON"));
     await changeAsync(() => host.shownTitles.set(new Map([["call-1", "a.ts"]])));
-    await expect.poll(() => toggle().tagName).toBe("SPAN");
+    await DomChangeFixture.untilAsync(() => expect(toggle().tagName).toBe("SPAN"));
     await changeAsync(() => host.call.set(callOfTitle(long)));
     for (let frame = 0; frame < 3; frame++)
       await new Promise(resolve => requestAnimationFrame(resolve));
@@ -1291,7 +1294,7 @@ describe("ToolCallComponent", () => {
         const source = provideTimeSource();
         AppearanceFixture.apply(theme);
         await renderAsync(narrowCallOf(source, isRunning), t => t.width.set("var(--nol-dock-min-size)"));
-        await vi.waitFor(() => expect(card().classList.contains(folds[0] as string)).toBe(true), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(card().classList.contains(folds[0] as string)).toBe(true));
         await fixture.whenStable();
 
         for (const mode of AppearanceFixture.modes) {
@@ -1308,7 +1311,7 @@ describe("ToolCallComponent", () => {
         }
         const tooltip = fixture.debugElement.query(By.css(".nol-tool-call-toggle")).injector.get(TooltipDirective);
         tooltip.show();
-        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(longTitle), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe(longTitle));
         tooltip.hide();
       });
 
@@ -1406,7 +1409,7 @@ describe("ToolCallComponent", () => {
       AppearanceFixture.apply(theme);
       await renderAsync(narrowCallOf(source, true), t => t.width.set("var(--nol-dock-min-size)"));
       find(".frame").dir = "rtl";
-      await vi.waitFor(() => expect(card().classList.contains(folds[0] as string)).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(card().classList.contains(folds[0] as string)).toBe(true));
       await fixture.whenStable();
 
       expectFitsPanel();
@@ -1467,9 +1470,9 @@ describe("ToolCallComponent", () => {
       await resizeAsync((points[0] ?? Number.NaN) + 1);
       const frame = find(".frame");
       frame.style.setProperty("--nol-space-2", "1rem");
-      await vi.waitFor(() => expect(foldsOf(card().className)).not.toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(foldsOf(card().className)).not.toEqual([]));
       frame.style.removeProperty("--nol-space-2");
-      await vi.waitFor(() => expect(foldsOf(card().className)).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(foldsOf(card().className)).toEqual([]));
       classes.disconnect();
 
       expect(ends).toEqual([0, folds.length]);

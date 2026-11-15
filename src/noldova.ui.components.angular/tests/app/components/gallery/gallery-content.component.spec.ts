@@ -13,9 +13,9 @@ import { ClipboardWriter } from "../../../../src/app/services/clipboard-writer";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("GalleryContentComponent", () => {
   let fixture: ComponentFixture<GalleryContentComponent>;
@@ -125,10 +125,8 @@ describe("GalleryContentComponent", () => {
     fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
     const typed = DomFixture.one(DomFixture.host(fixture), ".nol-gallery-specimen[aria-label=\"Plan\"] nol-gallery-cell[aria-label=\"Typed task list\"] nol-markdown-view");
     const items = (): Element[] => [...typed.querySelectorAll("li.nol-markdown-task")];
-    await vi.waitFor(async () => {
-      await fixture.whenStable();
-      expect(items()).toHaveLength(4);
-    }, HangLimitFixture.wait);
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(items()).toHaveLength(4));
 
     expect(items().map(t => [t.textContent, t.querySelector(".nol-markdown-task-mark")?.getAttribute("aria-label")])).toEqual([["Read the notes module", "Done"],
       ["Add a weekly reminder", "Not done"], ["Run the tests", "Not done"], ["Review the change", "Not done"]]);

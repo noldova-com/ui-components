@@ -18,6 +18,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { MentionCandidate } from "../../../../src/app/models/mention-candidate";
 import { Announcer } from "../../../../src/app/services/announcer";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
@@ -121,7 +122,7 @@ describe("MentionFieldDirective", () => {
     await renderAsync();
     await userEvent.click(field());
     await userEvent.keyboard("Hi @al");
-    await expect.poll(() => names()).toEqual(["Alice", "Albert", "Alma"]);
+    await DomChangeFixture.untilAsync(() => expect(names()).toEqual(["Alice", "Albert", "Alma"]));
     await fixture.whenStable();
     const shown = list() as HTMLElement;
     const box = shown.getBoundingClientRect();

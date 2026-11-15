@@ -17,7 +17,7 @@ import versionFile from "../../../../../../version.json";
 import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
-import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
+import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
 describe("DocsShellComponent", () => {
   const renderAsync = async (url: string): Promise<ComponentFixture<DocsShellComponent>> => {
@@ -44,7 +44,7 @@ describe("DocsShellComponent", () => {
       await DocsFixture.viewAsync(width, height);
       const fixture = await renderAsync(url);
       const host = DocsFixture.host(fixture);
-      await vi.waitFor(() => expect(host.querySelectorAll("nol-code-block pre code").length).toBeGreaterThan(0), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(host.querySelectorAll("nol-code-block pre code").length).toBeGreaterThan(0));
 
       const edge = document.documentElement.clientWidth;
 
@@ -67,7 +67,7 @@ describe("DocsShellComponent", () => {
     it.each(["/", "/tokens"])("fits every table on %s inside its section, with no table scrolling sideways", async url => {
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
-      await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]));
       const tables = DocsFixture.all(host, "main table");
 
       expect(DocsFixture.overflowWidth()).toBe(0);
@@ -172,7 +172,7 @@ describe("DocsShellComponent", () => {
       };
       const resting = look();
       await userEvent.hover(version);
-      await vi.waitFor(() => expect(version.matches(":hover")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(version.matches(":hover")).toBe(true));
 
       expect([resting, look()]).toEqual([
         [resolve(header, "color", "var(--nol-text-muted)"), resolve(header, "font-size", "var(--nol-text-label)"), resolve(header, "line-height", "var(--nol-line-label)"), "none"],
@@ -184,7 +184,7 @@ describe("DocsShellComponent", () => {
       const version = DocsFixture.one(header, ".nol-docs-version");
       await userEvent.keyboard("{Shift}");
       version.focus();
-      await vi.waitFor(() => expect(version.matches(":focus-visible")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(version.matches(":focus-visible")).toBe(true));
       const style = getComputedStyle(version);
       return [style.outlineColor, style.outlineStyle, style.outlineWidth, style.outlineOffset];
     };
@@ -283,13 +283,13 @@ describe("DocsShellComponent", () => {
 
       for (const link of DocsFixture.all(header, ".nol-docs-header-link")) {
         await userEvent.hover(link);
-        await vi.waitFor(() => expect(outside(header, "[role=\"tooltip\"]").map(t => t.textContent?.trim())).toEqual([link.getAttribute("aria-label")]), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(outside(header, "[role=\"tooltip\"]").map(t => t.textContent?.trim())).toEqual([link.getAttribute("aria-label")]));
         const tip = outside(header, "[role=\"tooltip\"]")[0]?.getBoundingClientRect();
 
         expect(tip?.left).toBeGreaterThanOrEqual(0);
         expect(tip?.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
         await userEvent.unhover(link);
-        await vi.waitFor(() => expect(outside(header, "[role=\"tooltip\"]")).toEqual([]), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(outside(header, "[role=\"tooltip\"]")).toEqual([]));
       }
     });
 
@@ -351,7 +351,7 @@ describe("DocsShellComponent", () => {
     expect(getComputedStyle(button).display).toBe("none");
 
     await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
-    await vi.waitFor(() => expect(getComputedStyle(menu).display).toBe("none"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(getComputedStyle(menu).display).toBe("none"));
     expect(button.getBoundingClientRect().width).toBeGreaterThan(0);
     expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(button.getAttribute("aria-controls")).toBe(menu.id);
@@ -368,10 +368,10 @@ describe("DocsShellComponent", () => {
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
       const header = DocsFixture.one(host, ".nol-docs-header");
-      await vi.waitFor(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"));
       const before = header.getBoundingClientRect().height;
       window.scrollTo(0, document.documentElement.scrollHeight / 2);
-      await vi.waitFor(() => expect(window.scrollY).toBeGreaterThan(before), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(before));
       return { host, header, height: before };
     };
 
@@ -393,7 +393,7 @@ describe("DocsShellComponent", () => {
       const menu = DocsFixture.one(host, "nav#nol-docs-menu");
       if (width === DocsFixture.PHONE_WIDTH) {
         await userEvent.click(DocsFixture.one(host, "button.nol-docs-menu-button"));
-        await vi.waitFor(() => expect(menu.getBoundingClientRect().height).toBeGreaterThan(0), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(menu.getBoundingClientRect().height).toBeGreaterThan(0));
       }
       const expectInView = (): void => {
         const box = menu.getBoundingClientRect();
@@ -406,7 +406,7 @@ describe("DocsShellComponent", () => {
       expectInView();
       const scrolled = window.scrollY;
       window.scrollTo(0, scrolled + window.innerHeight / 2);
-      await vi.waitFor(() => expect(window.scrollY).toBeGreaterThan(scrolled), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(scrolled));
       expectInView();
       expect(menu.scrollHeight).toBeGreaterThan(menu.clientHeight);
       menu.scrollTop = menu.scrollHeight;
@@ -420,10 +420,10 @@ describe("DocsShellComponent", () => {
       const header = DocsFixture.one(host, ".nol-docs-header");
       const target = DocsFixture.one(host, "#nol-docs-page-api");
 
-      await vi.waitFor(() => {
+      await DomChangeFixture.untilAsync(() => {
         expect(window.scrollY).toBeGreaterThan(0);
         expect(Math.abs(target.getBoundingClientRect().top - header.getBoundingClientRect().bottom)).toBeLessThanOrEqual(1);
-      }, HangLimitFixture.wait);
+      });
       expect(header.getBoundingClientRect().top).toBe(0);
     });
   });
@@ -442,7 +442,7 @@ describe("DocsShellComponent", () => {
   it("takes the header height off the root when it goes", async () => {
     const fixture = await renderAsync("/");
     const root = document.documentElement;
-    await vi.waitFor(() => expect(root.style.getPropertyValue("--nol-docs-header-height")).not.toBe(String()), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(root.style.getPropertyValue("--nol-docs-header-height")).not.toBe(String()));
 
     fixture.destroy();
 
@@ -459,9 +459,9 @@ describe("DocsShellComponent", () => {
       await ForcedColorsFixture.activateAsync();
       const host = DocsFixture.host(await renderAsync("/components/radio"));
       const header = DocsFixture.one(host, ".nol-docs-header");
-      await vi.waitFor(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"));
       window.scrollTo(0, document.documentElement.scrollHeight / 2);
-      await vi.waitFor(() => expect(window.scrollY).toBeGreaterThan(0), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(0));
       const box = header.getBoundingClientRect();
 
       expect(box.top).toBe(0);
@@ -487,12 +487,12 @@ describe("DocsShellComponent", () => {
 
       await userEvent.keyboard("{Shift}");
       current.focus();
-      await vi.waitFor(() => expect(current.matches(":focus-visible")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(current.matches(":focus-visible")).toBe(true));
       expect(getComputedStyle(current).outlineColor).toBe(ForcedColorsFixture.resolve("HighlightText"));
       expect(getComputedStyle(current).outlineStyle).toBe("solid");
 
       await userEvent.hover(current);
-      await vi.waitFor(() => expect(current.matches(":hover")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(current.matches(":hover")).toBe(true));
       expect(getComputedStyle(current).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
       expect(getComputedStyle(current).color).toBe(ForcedColorsFixture.resolve("HighlightText"));
     };
@@ -503,7 +503,7 @@ describe("DocsShellComponent", () => {
         await ForcedColorsFixture.activateAsync();
         const host = DocsFixture.host(await renderAsync("/components/radio"));
         const nav = DocsFixture.one(host, "nav");
-        await vi.waitFor(() => expect(getComputedStyle(nav).display).toBe("grid"), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(getComputedStyle(nav).display).toBe("grid"));
 
         await expectCurrentMarkedAsync(nav);
       });
@@ -518,7 +518,7 @@ describe("DocsShellComponent", () => {
 
         button.focus();
         await userEvent.keyboard("{Enter}");
-        await vi.waitFor(() => expect(getComputedStyle(nav).display).toBe("grid"), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(getComputedStyle(nav).display).toBe("grid"));
 
         await expectCurrentMarkedAsync(nav);
       });
@@ -542,13 +542,13 @@ describe("DocsShellComponent", () => {
       expect(button.getBoundingClientRect().left).toBeGreaterThanOrEqual(header.getBoundingClientRect().left);
 
       await userEvent.click(button);
-      await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("true"));
       expect(menu.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
       expect(menu.getBoundingClientRect().bottom).toBeLessThanOrEqual(main.getBoundingClientRect().top);
       expect(DocsFixture.overflowWidth()).toBe(0);
 
       await userEvent.click(button);
-      await vi.waitFor(() => expect(getComputedStyle(menu).display).toBe("none"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(menu).display).toBe("none"));
       expect(button.getAttribute("aria-expanded")).toBe("false");
     });
   });
@@ -562,16 +562,16 @@ describe("DocsShellComponent", () => {
 
     button.focus();
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("true"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("true"));
     await userEvent.keyboard(" ");
-    await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("false"));
 
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(getComputedStyle(menu).display).toBe("grid"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(getComputedStyle(menu).display).toBe("grid"));
     DocsFixture.byText(menu, "a", "Button").focus();
     await userEvent.keyboard("{Escape}");
 
-    await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("false"));
     expect(document.activeElement).toBe(button);
   });
 
@@ -584,10 +584,10 @@ describe("DocsShellComponent", () => {
       const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
       await userEvent.click(button);
-      await vi.waitFor(() => expect(getComputedStyle(menu).display).toBe("grid"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(menu).display).toBe("grid"));
       await userEvent.click(DocsFixture.byText(menu, "a", link));
 
-      await vi.waitFor(() => expect(document.activeElement?.tagName).toBe("H1"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.tagName).toBe("H1"));
       expect(document.activeElement?.textContent?.trim()).toBe(title);
       expect(button.getAttribute("aria-expanded")).toBe("false");
       expect(getComputedStyle(menu).display).toBe("none");
@@ -599,7 +599,7 @@ describe("DocsShellComponent", () => {
     const link = DocsFixture.byText(DocsFixture.one(host, "nav"), "a", "Button");
 
     await userEvent.click(link);
-    await vi.waitFor(() => expect(heading(fixture)).toBe("Button"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
 
     expect(document.activeElement).toBe(link);
   });
@@ -613,7 +613,7 @@ describe("DocsShellComponent", () => {
     expect(DocsFixture.all(nav, "nol-section-header").map(t => t.textContent?.trim())).toEqual(["Inputs", "Choices", "Overlays and menus", "Content", "Status", "Layout"]);
     await userEvent.click(DocsFixture.byText(nav, "a", "Button"));
 
-    await vi.waitFor(() => expect(heading(fixture)).toBe("Button"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
     expect(DocsFixture.byText(nav, "a", "Button").getAttribute("aria-current")).toBe("page");
     expect(DocsFixture.byText(nav, "a", "Getting started").getAttribute("aria-current")).toBeNull();
   });
@@ -624,10 +624,10 @@ describe("DocsShellComponent", () => {
     const field = DocsFixture.one(host, "input[type=search]");
 
     await userEvent.fill(field, "variant");
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-search-result").map(t => t.textContent?.trim())).toEqual(["Button"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-search-result").map(t => t.textContent?.trim())).toEqual(["Button"]));
     await userEvent.click(DocsFixture.byText(host, ".nol-docs-search-result", "Button"));
 
-    await vi.waitFor(() => expect(heading(fixture)).toBe("Button"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
     expect(host.querySelector(".nol-docs-search-results")).toBeNull();
   });
 
@@ -651,7 +651,7 @@ describe("DocsShellComponent", () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
-      await vi.waitFor(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, host.querySelector(".nol-docs-states .nol-gallery-specimen") !== null]).toEqual([true, true]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, host.querySelector(".nol-docs-states .nol-gallery-specimen") !== null]).toEqual([true, true]));
       return host;
     };
 
@@ -673,7 +673,7 @@ describe("DocsShellComponent", () => {
       expect(Math.round(pixels(DocsFixture.one(host, "main h1")))).toBe(28);
       expect(kit.map(pixels).map(Math.round)).toEqual([13, 13, 12]);
       if (width >= DocsFixture.DESKTOP_WIDTH)
-        await vi.waitFor(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(14), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(14));
     });
 
     it("draws the site's own code blocks at 13px with lines one and a half times as tall, leaving the kit's code block in an example at its 12px and code in the text at the site's code size", async () => {
@@ -730,7 +730,7 @@ describe("DocsShellComponent", () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync("/components/button"));
-      await vi.waitFor(() => expect(host.querySelectorAll(".nol-docs-outline-link").length).toBeGreaterThan(0), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(host.querySelectorAll(".nol-docs-outline-link").length).toBeGreaterThan(0));
       return host;
     };
 

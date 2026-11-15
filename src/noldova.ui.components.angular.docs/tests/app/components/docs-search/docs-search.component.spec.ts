@@ -12,7 +12,7 @@ import { userEvent } from "vitest/browser";
 
 import { DocsSearchComponent } from "../../../../src/app/components/docs-search/docs-search.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
-import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
+import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
 describe("DocsSearchComponent", () => {
   const renderAsync = async (): Promise<HTMLElement> => {
@@ -41,7 +41,7 @@ describe("DocsSearchComponent", () => {
     const host = await renderAsync();
 
     await userEvent.type(field(host), "variant");
-    await vi.waitFor(() => expect(results(host)).toEqual(["Button"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(results(host)).toEqual(["Button"]));
     expect(DocsFixture.one(host, ".nol-docs-search-result").getAttribute("href")).toBe("/components/button");
   });
 
@@ -49,7 +49,7 @@ describe("DocsSearchComponent", () => {
     const host = await renderAsync();
 
     await userEvent.type(field(host), "zzzz-no-such-term");
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-search-empty").length).toBe(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-search-empty").length).toBe(1));
   });
 
   const options = (host: HTMLElement): readonly HTMLElement[] => DocsFixture.all(host, ".nol-docs-search-option");
@@ -61,7 +61,7 @@ describe("DocsSearchComponent", () => {
   const typedAsync = async (host: HTMLElement, text: string): Promise<void> => {
     await userEvent.hover(field(host));
     await userEvent.type(field(host), text);
-    await vi.waitFor(() => expect(options(host).length).toBeGreaterThan(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(options(host).length).toBeGreaterThan(1));
   };
 
   it("names the results list as the field's popup, open only while it shows", async () => {
@@ -81,15 +81,15 @@ describe("DocsSearchComponent", () => {
     await userEvent.keyboard("{ArrowUp}");
     expect([selected(host), field(host).getAttribute("aria-activedescendant")]).toEqual([[], null]);
     await userEvent.keyboard("{ArrowDown}");
-    await vi.waitFor(() => expect(selected(host)).toEqual([0]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(selected(host)).toEqual([0]));
     expect(field(host).getAttribute("aria-activedescendant")).toBe(options(host)[0]?.id);
     await userEvent.keyboard("{ArrowDown}");
-    await vi.waitFor(() => expect(selected(host)).toEqual([1]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(selected(host)).toEqual([1]));
     expect(field(host).getAttribute("aria-activedescendant")).toBe(options(host)[1]?.id);
     await userEvent.keyboard("{ArrowUp}{ArrowUp}{ArrowUp}");
-    await vi.waitFor(() => expect(selected(host)).toEqual([0]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(selected(host)).toEqual([0]));
     await userEvent.keyboard("{ArrowDown}".repeat(last + 2));
-    await vi.waitFor(() => expect(selected(host)).toEqual([last]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(selected(host)).toEqual([last]));
     expect(document.activeElement).toBe(field(host));
   });
 
@@ -99,8 +99,8 @@ describe("DocsSearchComponent", () => {
     const link = DocsFixture.all(host, ".nol-docs-search-result")[1]?.getAttribute("href");
 
     await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
-    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe(link), HangLimitFixture.wait);
-    await vi.waitFor(() => expect(host.querySelector(".nol-docs-search-results")).toBeNull(), HangLimitFixture.wait);
+    await DocsFixture.routedAsync(TestBed.inject(Router), link);
+    await DomChangeFixture.untilAsync(() => expect(host.querySelector(".nol-docs-search-results")).toBeNull());
     expect(field(host).value).toBe("");
   });
 
@@ -121,10 +121,10 @@ describe("DocsSearchComponent", () => {
     await typedAsync(host, "button");
 
     await userEvent.keyboard("{ArrowDown}{Escape}");
-    await vi.waitFor(() => expect(host.querySelector(".nol-docs-search-results")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(host.querySelector(".nol-docs-search-results")).toBeNull());
     expect([field(host).value, field(host).getAttribute("aria-expanded"), field(host).getAttribute("aria-activedescendant")]).toEqual(["button", "false", null]);
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(field(host).value).toBe(""), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(field(host).value).toBe(""));
   });
 
   it("opens the closed results again on the down arrow", async () => {
@@ -132,6 +132,6 @@ describe("DocsSearchComponent", () => {
     await typedAsync(host, "button");
 
     await userEvent.keyboard("{Escape}{ArrowDown}");
-    await vi.waitFor(() => expect(selected(host)).toEqual([0]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(selected(host)).toEqual([0]));
   });
 });
