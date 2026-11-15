@@ -55,7 +55,6 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { RevealedTextFixture } from "../../../fixtures/revealed-text.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 class FeedRow {
   public readonly id: string;
@@ -1279,15 +1278,14 @@ describe("MessageComponent", () => {
       const feed = TestBed.createComponent(MessageFeedHostComponent);
       const row = (): HTMLElement | undefined => DomFixture.host(feed).querySelectorAll<HTMLElement>("nol-message")[1];
       const measuredAsync = async (step: string): Promise<number[]> => {
-        let measured: number[] = [];
-        await vi.waitFor(async () => {
-          await feed.whenStable();
+        await feed.whenStable();
+        return DomChangeFixture.untilAsync(() => {
           const shown = row();
           const height = shown?.closest(`[${Resources.virtualListRowAttribute}]`)?.getBoundingClientRect().height ?? 0;
-          measured = [height, Math.abs(Number(shown?.dataset["height"]) - height)];
+          const measured = [height, Math.abs(Number(shown?.dataset["height"]) - height)];
           expect(measured[1], `the list's height for ${step} to match the row's`).toBeLessThanOrEqual(0.5);
-        }, { ...HangLimitFixture.wait, interval: 20 });
-        return measured;
+          return measured;
+        });
       };
       const reply = Array.from({ length: 12 }, (_, index) => `Paragraph ${index + 1} of the reply.`).join("\n\n");
       feed.componentInstance.source.replace(1, [new FeedRow("b", [new MessageText("Start")], MessageStatus.Streaming)]);
