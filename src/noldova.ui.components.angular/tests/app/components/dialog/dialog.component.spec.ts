@@ -23,10 +23,10 @@ import { DialogService } from "../../../../src/app/services/dialog.service";
 import { OverlayBoundsService } from "../../../../src/app/services/overlay-bounds.service";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [DialogComponent, ButtonComponent],
@@ -106,7 +106,7 @@ describe("DialogComponent", () => {
   afterEach(async () => {
     reference?.close();
     reference = null;
-    await vi.waitFor(() => expect(document.querySelector("nol-dialog")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-dialog")).toBeNull());
     opener.remove();
     AppearanceFixture.reset();
     await ForcedColorsFixture.resetAsync();
@@ -116,21 +116,21 @@ describe("DialogComponent", () => {
   async function openAsync(): Promise<DialogRef<unknown, DialogHostComponent>> {
     const opened = TestBed.inject(DialogService).open(DialogHostComponent, "[data-wait]");
     reference = opened;
-    await vi.waitFor(() => expect(document.activeElement?.matches("[data-wait]")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.matches("[data-wait]")).toBe(true));
     return opened;
   }
 
   async function openLargeAsync(): Promise<DialogRef<unknown, LargeDialogHostComponent>> {
     const opened = TestBed.inject(DialogService).open(LargeDialogHostComponent, ".nol-dialog-close");
     reference = opened;
-    await vi.waitFor(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true));
     return opened;
   }
 
   async function openMediumAsync(): Promise<DialogRef<unknown, MediumDialogHostComponent>> {
     const opened = TestBed.inject(DialogService).open(MediumDialogHostComponent, "[data-save]");
     reference = opened;
-    await vi.waitFor(() => expect(document.activeElement?.hasAttribute("data-save")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.hasAttribute("data-save")).toBe(true));
     return opened;
   }
 
@@ -198,7 +198,7 @@ describe("DialogComponent", () => {
     const wait = document.querySelector("[data-wait]");
     const close = document.querySelector(".nol-dialog-close");
 
-    await vi.waitFor(() => expect(document.activeElement).toBe(wait), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(wait));
     await userEvent.tab();
     const afterLast = document.activeElement;
     await userEvent.tab({ shift: true });
@@ -223,7 +223,7 @@ describe("DialogComponent", () => {
   it("tells its owner when Escape is pressed, leaves closing to it and returns focus to the opener once closed", async () => {
     AppearanceFixture.apply();
     const opened = await openAsync();
-    await vi.waitFor(() => expect(document.activeElement).toBe(document.querySelector("[data-wait]")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(document.querySelector("[data-wait]")));
 
     await userEvent.keyboard("{Escape}");
     const isOpenAfterEscape = document.querySelector("nol-dialog") !== null;
@@ -233,7 +233,7 @@ describe("DialogComponent", () => {
 
     expect(dismissals).toBe(1);
     expect(isOpenAfterEscape).toBe(true);
-    await vi.waitFor(() => expect(document.activeElement).toBe(opener), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
   });
 
   for (const theme of AppearanceFixture.themes)
@@ -347,11 +347,11 @@ describe("DialogComponent", () => {
     AppearanceFixture.apply();
     const large = await openLargeAsync();
     large.componentInstance?.title.set(title);
-    await vi.waitFor(() => expect(document.querySelector(".nol-dialog-title")?.textContent).toBe(title), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".nol-dialog-title")?.textContent).toBe(title));
 
     AppearanceFixture.expectTruncates(DomFixture.one(document, ".nol-dialog-title"));
     reference?.close();
-    await vi.waitFor(() => expect(document.querySelector("nol-dialog")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-dialog")).toBeNull());
     await openAsync();
     const plain = DomFixture.one(document, ".nol-dialog-title");
     expect([plain.hasAttribute("data-truncates"), getComputedStyle(plain).whiteSpace]).toEqual([false, "normal"]);
@@ -362,7 +362,7 @@ describe("DialogComponent", () => {
     const opened = await openAsync();
     const close = DomFixture.oneOf(document, ".nol-dialog-header .nol-dialog-close", HTMLButtonElement);
     await userEvent.hover(close);
-    await vi.waitFor(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"));
 
     await userEvent.click(page.getByRole("button", { name: "Close" }));
 
@@ -379,11 +379,11 @@ describe("DialogComponent", () => {
     };
     const ringAsync = async (openAsync: () => Promise<void>): Promise<readonly [boolean, string]> => {
       await openAsync();
-      await vi.waitFor(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true));
       const close = document.activeElement as HTMLElement;
       const ring = [close.matches(":focus-visible"), getComputedStyle(close, "::before").outlineStyle] as const;
       reference?.close();
-      await vi.waitFor(() => expect(document.querySelector("nol-dialog")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-dialog")).toBeNull());
       return ring;
     };
 
@@ -423,7 +423,7 @@ describe("DialogComponent", () => {
         };
         const short = await measureAsync();
         opened.componentInstance?.title.set(long);
-        await vi.waitFor(() => expect(title.textContent).toBe(long), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(title.textContent).toBe(long));
         const wrapped = await measureAsync();
 
         expect(title.getBoundingClientRect().height - parseFloat(getComputedStyle(title).paddingTop) - parseFloat(getComputedStyle(title).paddingBottom)).toBeGreaterThan(line * 1.5);
@@ -464,9 +464,9 @@ describe("DialogComponent", () => {
     await userEvent.keyboard("{Escape}");
     const afterHandledEscape = opened.componentInstance?.dismissals;
     TestBed.inject(FocusMonitor).focusVia(DomFixture.one(document, ".nol-dialog-close"), "keyboard");
-    await vi.waitFor(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"));
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(document.querySelector("nol-tooltip")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")).toBeNull());
     const afterTooltipEscape = opened.componentInstance?.dismissals;
     await userEvent.keyboard("{Escape}");
 
@@ -480,10 +480,10 @@ describe("DialogComponent", () => {
     const opened = await openLargeAsync();
     DomFixture.oneOf(document, ".nol-dialog-maximize", HTMLButtonElement).focus();
     await userEvent.hover(page.getByRole("button", { name: "Close" }));
-    await vi.waitFor(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe("Close"));
 
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(document.querySelector("nol-tooltip")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")).toBeNull());
     const afterTooltipEscape = opened.componentInstance?.dismissals;
     await userEvent.keyboard("{Escape}");
 
@@ -493,7 +493,7 @@ describe("DialogComponent", () => {
   it("ends a large dialog's title bar with its own controls, Maximize and Close, each named and with a tooltip that doesn't describe it again, and fills the overlay bounds until Restore", async () => {
     AppearanceFixture.apply();
     reference = TestBed.inject(DialogService).open(ControlledDialogHostComponent, ".nol-dialog-close");
-    await vi.waitFor(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true));
     const dialog = DomFixture.one(document, "nol-dialog");
     const controls = [...dialog.querySelectorAll<HTMLButtonElement>(".nol-dialog-header button")];
     const names = (): readonly (string | null)[] => controls.map(t => t.getAttribute("aria-label"));
@@ -505,7 +505,7 @@ describe("DialogComponent", () => {
     const overlay = TestBed.inject(OverlayBoundsService).boundsFor(dialog);
     for (const control of controls.slice(1)) {
       await userEvent.hover(control);
-      await vi.waitFor(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe(control.getAttribute("aria-label")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-tooltip")?.textContent?.trim()).toBe(control.getAttribute("aria-label")));
     }
     const described = controls.slice(1).map(t => t.hasAttribute("aria-describedby"));
     const large = bounds();
@@ -513,11 +513,11 @@ describe("DialogComponent", () => {
     const largeGlyph = glyph();
 
     await userEvent.click(page.getByRole("button", { name: "Maximize" }));
-    await vi.waitFor(() => expect(names()).toEqual(["Pin", "Restore", "Close"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(names()).toEqual(["Pin", "Restore", "Close"]));
     const maximized = bounds();
     const maximizedGlyph = glyph();
     await userEvent.click(page.getByRole("button", { name: "Restore" }));
-    await vi.waitFor(() => expect(names()).toEqual(largeNames), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(names()).toEqual(largeNames));
 
     expect(largeNames).toEqual(["Pin", "Maximize", "Close"]);
     expect(described).toEqual([false, false]);
@@ -656,7 +656,7 @@ describe("DialogComponent", () => {
       await page.viewport(width, height);
       AppearanceFixture.apply();
       await openAsync();
-      await vi.waitFor(() => expect(document.activeElement?.hasAttribute("data-wait")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.hasAttribute("data-wait")).toBe(true));
       const dialog = DomFixture.one(document, "nol-dialog");
       const rectangle = dialog.getBoundingClientRect();
       const overlay = TestBed.inject(OverlayBoundsService).boundsFor(dialog);
@@ -668,12 +668,12 @@ describe("DialogComponent", () => {
   it("fills its overlay wrapper less the gaps while maximized, not the viewport, as it must beside a classic scrollbar", async () => {
     AppearanceFixture.apply();
     reference = TestBed.inject(DialogService).open(ControlledDialogHostComponent, ".nol-dialog-close");
-    await vi.waitFor(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("nol-dialog-close")).toBe(true));
     const wrapper = document.querySelector(".nol-dialog-pane")?.parentElement as HTMLElement;
     wrapper.style.margin = "0";
     wrapper.style.width = "calc(100% - 15px)";
     await userEvent.click(page.getByRole("button", { name: "Maximize" }));
-    await vi.waitFor(() => expect(page.getByRole("button", { name: "Restore" }).query()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(page.getByRole("button", { name: "Restore" }).query()).not.toBeNull());
     const dialog = DomFixture.one(document, "nol-dialog").getBoundingClientRect();
     const box = wrapper.getBoundingClientRect();
     const overlay = TestBed.inject(OverlayBoundsService).boundsFor(DomFixture.one(document, "nol-dialog"));
@@ -721,10 +721,10 @@ describe("DialogComponent", () => {
     }
 
     async function expectAtAsync(left: number, top: number): Promise<void> {
-      await vi.waitFor(() => {
+      await DomChangeFixture.untilAsync(() => {
         AppearanceFixture.expectPixels(shown().left, left);
         AppearanceFixture.expectPixels(shown().top, top);
-      }, HangLimitFixture.wait);
+      });
     }
 
     it("moves as far as the pointer goes, touch included, never from its buttons or a secondary button, and opens centred again", async () => {
@@ -746,7 +746,7 @@ describe("DialogComponent", () => {
       const press = drag(title, moved);
       await expectAtAsync(start.left + 60, start.top - 40);
       opened.close();
-      await vi.waitFor(() => expect(document.querySelector("nol-dialog")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-dialog")).toBeNull());
       await openAsync();
 
       expect([unmoved.left, unmoved.top, press.defaultPrevented, capture.mock.calls, getComputedStyle(header()).touchAction]).toEqual([start.left, start.top, true, [[7]], "none"]);
@@ -764,10 +764,10 @@ describe("DialogComponent", () => {
         await expectAtAsync(overlay().left, overlay().top);
         drag(middleOf(".nol-dialog-title"), new DOMPoint(window.innerWidth - 1, window.innerHeight - 1));
 
-        await vi.waitFor(() => {
+        await DomChangeFixture.untilAsync(() => {
           AppearanceFixture.expectPixels(shown().right, overlay().right);
           AppearanceFixture.expectPixels(shown().bottom, overlay().bottom);
-        }, HangLimitFixture.wait);
+        });
       });
 
     it("stays inside the overlay bounds when the window shrinks after a drag", async () => {
@@ -776,14 +776,14 @@ describe("DialogComponent", () => {
       await openAsync();
       holdCapture();
       drag(middleOf(".nol-dialog-title"), new DOMPoint(window.innerWidth - 1, window.innerHeight - 1));
-      await vi.waitFor(() => AppearanceFixture.expectPixels(shown().bottom, overlay().bottom), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => AppearanceFixture.expectPixels(shown().bottom, overlay().bottom));
 
       await page.viewport(700, 450);
 
-      await vi.waitFor(() => {
+      await DomChangeFixture.untilAsync(() => {
         AppearanceFixture.expectPixels(shown().right, overlay().right);
         AppearanceFixture.expectPixels(shown().bottom, overlay().bottom);
-      }, HangLimitFixture.wait);
+      });
       expect([shown().left >= overlay().left, shown().top >= overlay().top]).toEqual([true, true]);
     });
 
@@ -796,7 +796,7 @@ describe("DialogComponent", () => {
 
       pointer(header(), "pointerdown", title);
       pointer(header(), "pointermove", new DOMPoint(window.innerWidth - 1, title.y));
-      await vi.waitFor(() => AppearanceFixture.expectPixels(shown().right, overlay().right), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => AppearanceFixture.expectPixels(shown().right, overlay().right));
       const atEdge = shown();
       pointer(header(), "pointermove", new DOMPoint(window.innerWidth + 30, title.y));
       await framesAsync();
@@ -840,7 +840,7 @@ describe("DialogComponent", () => {
       await expectAtAsync(start.left + 50, start.top + 30);
 
       await userEvent.click(page.getByRole("button", { name: "Maximize" }));
-      await vi.waitFor(() => expect(page.getByRole("button", { name: "Restore" }).query()).not.toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(page.getByRole("button", { name: "Restore" }).query()).not.toBeNull());
       await framesAsync();
       const maximized = shown();
       const press = drag(middleOf(".nol-dialog-title"), new DOMPoint(middleOf(".nol-dialog-title").x - 70, middleOf(".nol-dialog-title").y + 40));

@@ -20,9 +20,9 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [IconButtonComponent, MenuComponent, MenuGroupActionDirective, MenuGroupComponent, MenuItemComponent, MenuTriggerDirective],
@@ -165,7 +165,7 @@ describe("MenuGroupActionDirective", () => {
       reached.push(focused());
     }
     await userEvent.keyboard("r");
-    await vi.waitFor(() => expect(focused()).toBe("refresh"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(focused()).toBe("refresh"));
 
     expect(reached).toEqual(["refresh", "default", "refresh", "low"]);
   });

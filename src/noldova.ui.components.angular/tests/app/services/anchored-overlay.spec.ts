@@ -16,9 +16,9 @@ import { OverlayAnchoring } from "../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../src/app/models/overlay-side";
 import { AnchoredOverlay } from "../../../src/app/services/anchored-overlay";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../fixtures/dom.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 @Component({
   template: `<div class="content" [style.width.px]="120" [style.height.px]="height()"></div>`
@@ -135,7 +135,7 @@ describe("AnchoredOverlay", () => {
 
     content.instance.height.set(5000);
     content.changeDetectorRef.detectChanges();
-    await vi.waitFor(() => expect(overlay.placement?.maxHeight ?? 0).toBeGreaterThan(0), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(overlay.placement?.maxHeight ?? 0).toBeGreaterThan(0));
     const limit = overlay.placement?.maxHeight ?? 0;
 
     expect(overlay.element.style.maxHeight).toBe(`${limit}px`);
@@ -300,7 +300,7 @@ describe("AnchoredOverlay", () => {
 
     const scroller = DomFixture.one(DomFixture.host(fixture), ".scroller");
     scroller.scrollTop = 120;
-    await vi.waitFor(() => expect(scrolls).toBe(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(scrolls).toBe(1));
 
     expect(scrollsAfterOthers).toBe(0);
     expect(overlay.isOpen).toBe(true);
@@ -314,7 +314,7 @@ describe("AnchoredOverlay", () => {
     DomFixture.one(DomFixture.host(fixture), ".scroller").scrollTop = 120;
     TestBed.inject(ApplicationRef).tick();
     const before = [reposition.mock.calls.length, scrolls];
-    await vi.waitFor(() => expect(scrolls).toBe(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(scrolls).toBe(1));
 
     expect(before).toEqual([1, 0]);
     expect(overlay.isOpen).toBe(true);
@@ -330,7 +330,7 @@ describe("AnchoredOverlay", () => {
     const lossesAfterResize = losses;
 
     DomFixture.one(DomFixture.host(fixture), ".scroller").style.display = "none";
-    await vi.waitFor(() => expect(losses).toBe(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(losses).toBe(1));
 
     expect(lossesAfterResize).toBe(0);
   });

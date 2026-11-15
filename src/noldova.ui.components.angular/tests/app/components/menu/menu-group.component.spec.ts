@@ -24,8 +24,8 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuGroupComponent, MenuItemComponent],
@@ -231,7 +231,7 @@ describe("MenuGroupComponent with maxRows", () => {
     scrolling = TestBed.createComponent(ScrollingGroupHostComponent);
     scrolling.componentInstance.checked.set(checked);
     await scrolling.whenStable();
-    await vi.waitFor(() => expect(rows().style.maxHeight).not.toBe(""), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(rows().style.maxHeight).not.toBe(""));
   }
 
   afterEach(() => {
@@ -245,7 +245,7 @@ describe("MenuGroupComponent with maxRows", () => {
 
   async function pressAsync(key: string, focused: string): Promise<void> {
     await userEvent.keyboard(key);
-    await vi.waitFor(() => expect(document.activeElement).toBe(get(focused)), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(get(focused)));
   }
 
   for (const mode of AppearanceFixture.modes)
@@ -330,7 +330,7 @@ describe("MenuGroupComponent with maxRows", () => {
 
     scrolling.componentInstance.maxRows.set(9);
     await scrolling.whenStable();
-    await vi.waitFor(() => AppearanceFixture.expectPixels(rows().getBoundingClientRect().height, edges(".row-8").bottom - edges(".row-0").top), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => AppearanceFixture.expectPixels(rows().getBoundingClientRect().height, edges(".row-8").bottom - edges(".row-0").top));
 
     expect(rows().getBoundingClientRect().height - before).toBeGreaterThan(line);
   });
@@ -411,7 +411,7 @@ describe("MenuGroupComponent opened from its trigger", () => {
 
   async function shownAsync(): Promise<void> {
     await opened.whenStable();
-    await vi.waitFor(() => expect(rows()?.style.maxHeight).not.toBe(""), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(rows()?.style.maxHeight).not.toBe(""));
     await new Promise(t => requestAnimationFrame(() => requestAnimationFrame(t)));
   }
 
@@ -457,7 +457,7 @@ describe("MenuGroupComponent opened from its trigger", () => {
       expectInView(10);
       AppearanceFixture.expectPixels((rows() as HTMLElement).scrollTop, (rows() as HTMLElement).scrollHeight - (rows() as HTMLElement).clientHeight);
       await userEvent.keyboard("{ArrowUp}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(9)), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(9)));
       expectInView(9);
     });
 
@@ -510,7 +510,7 @@ describe("MenuGroupComponent opened from its trigger", () => {
       expect(document.activeElement).toBe(row(9));
       expectInView(9);
       await userEvent.keyboard("d");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(10)), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(10)));
     });
 
   it("goes on from the row its owner marks with the arrows, Home and End", async () => {
@@ -653,16 +653,16 @@ describe("MenuComponent with a submenu declared among its rows", () => {
     const trigger = DomFixture.one(DomFixture.host(nested), ".outer");
     trigger.focus();
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("first")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("first")));
     await userEvent.keyboard("{ArrowDown}{ArrowRight}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("inner-checked")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("inner-checked")));
     trigger.focus();
     await userEvent.keyboard("{ArrowDown}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("first")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("first")));
     const isInnerOpen = !Object.isNull(item("inner-checked"));
     await userEvent.keyboard("{ArrowDown}");
 
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("more")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("more")));
     expect(isInnerOpen).toBe(true);
   });
 
@@ -672,11 +672,11 @@ describe("MenuComponent with a submenu declared among its rows", () => {
     const trigger = DomFixture.one(nested.nativeElement, ".outer");
     trigger.focus();
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("first")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("first")));
 
     await userEvent.keyboard("{ArrowDown}{ArrowRight}");
 
-    await vi.waitFor(() => expect(document.activeElement).toBe(item("inner-first")), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(item("inner-first")));
   });
 });
 
