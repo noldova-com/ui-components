@@ -14,7 +14,7 @@ import { CodeHighlights } from "../../src/app/services/code-highlights";
 import { CodeHighlightsFixture } from "./code-highlights.fixture";
 
 describe("CodeHighlightsFixture", () => {
-  it("signals each time the page's highlights add a text's tokens or take them back, still adding and taking them back", () => {
+  it("signals once each call that adds a text's tokens or takes them back has returned, still adding and taking them back", async () => {
     const changes = CodeHighlightsFixture.watch();
     const highlights = TestBed.inject(CodeHighlights);
     const heard: number[] = [];
@@ -23,8 +23,12 @@ describe("CodeHighlightsFixture", () => {
     changes.listen(() => heard.push(keyword() - before));
 
     const remove = highlights.add(document.createTextNode("let a;"), [new CodeToken(0, "let", CodeTokenKind.Keyword)]);
+    const heardInCall = [...heard];
+    await Promise.resolve();
     remove();
+    heardInCall.push(...heard.slice(1));
+    await Promise.resolve();
 
-    expect(heard).toEqual([1, 0]);
+    expect([heardInCall, heard]).toEqual([[], [1, 0]]);
   });
 });
