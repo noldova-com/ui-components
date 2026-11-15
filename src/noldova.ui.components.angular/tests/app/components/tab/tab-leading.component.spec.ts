@@ -19,10 +19,10 @@ import { TabStatus } from "../../../../src/app/models/tab-status";
 import { TabResources } from "../../../../src/app/components/tab/tab.resources";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const picture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAEklEQVR42mPQz3/9HxkzkC4AAEovKIGTGfmDAAAAAElFTkSuQmCC";
 const broken = "data:image/png;base64,AAAA";
@@ -93,7 +93,7 @@ describe("TabComponent's leading parts", () => {
   const isShown = (element: HTMLElement): boolean => getComputedStyle(element).visibility === "visible";
 
   async function loadedAsync(): Promise<void> {
-    await vi.waitFor(() => expect(part(".nol-tab-image").classList.contains("nol-tab-image-loaded")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(part(".nol-tab-image").classList.contains("nol-tab-image-loaded")).toBe(true));
     fixture.detectChanges();
   }
 
@@ -128,7 +128,7 @@ describe("TabComponent's leading parts", () => {
     const withoutImage = [glyph.textContent, isShown(glyph), maybe(".nol-tab-image-picture"), getComputedStyle(glyph).fontSize, glyph.getBoundingClientRect().width, getComputedStyle(glyph).color];
     update(() => host.image.set(broken));
     const whileLoading = isShown(part(".nol-tab-image-glyph"));
-    await vi.waitFor(() => expect(DomFixture.oneOf(tab(), ".nol-tab-image-picture", HTMLImageElement).complete).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.oneOf(tab(), ".nol-tab-image-picture", HTMLImageElement).complete).toBe(true));
     fixture.detectChanges();
     const afterFailing = [isShown(part(".nol-tab-image-glyph")), isShown(part(".nol-tab-image-picture"))];
     update(() => host.image.set(picture));
@@ -144,7 +144,7 @@ describe("TabComponent's leading parts", () => {
   it("shows the kit's glyph in the place of an image given without one, while it loads and after it fails", async () => {
     render(t => t.image.set(broken));
     const whileLoading = [part(".nol-tab-image-glyph").textContent, isShown(part(".nol-tab-image-glyph")), part(".nol-tab-image").getBoundingClientRect().width];
-    await vi.waitFor(() => expect(DomFixture.oneOf(tab(), ".nol-tab-image-picture", HTMLImageElement).complete).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.oneOf(tab(), ".nol-tab-image-picture", HTMLImageElement).complete).toBe(true));
     fixture.detectChanges();
     const afterFailing = [isShown(part(".nol-tab-image-glyph")), isShown(part(".nol-tab-image-picture"))];
     update(() => host.image.set(picture));
@@ -278,7 +278,7 @@ describe("TabComponent's leading parts", () => {
       const box = marker.getBoundingClientRect();
       const image = part(".nol-tab-image").getBoundingClientRect();
       await userEvent.hover(marker);
-      await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).not.toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).not.toBeNull());
 
       expect([marker.textContent, box.width, box.height, getComputedStyle(marker).fontSize, getComputedStyle(marker).color, marker.getAttribute("aria-hidden")])
         .toEqual(["subdirectory_arrow_right", pixels(0.875), pixels(0.875), `${pixels(0.875)}px`, color(mode, "accent"), "true"]);

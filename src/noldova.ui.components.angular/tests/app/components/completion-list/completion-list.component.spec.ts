@@ -13,10 +13,10 @@ import { userEvent } from "vitest/browser";
 import { CompletionListComponent } from "../../../../src/app/components/completion-list/completion-list.component";
 import { CompletionChoice } from "../../../../src/app/models/completion-choice";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   selector: "test-completion-host",
@@ -144,7 +144,7 @@ describe("CompletionListComponent", () => {
 
   it("fills a row under the pointer as it fills the active row", async () => {
     await userEvent.hover(option(2));
-    await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(option(2).matches(":hover")).toBe(true));
 
     expect(RowFillFixture.colorOf(option(2))).toBe(RowFillFixture.colorOf(option(0)));
   });
@@ -206,7 +206,7 @@ describe("CompletionListComponent", () => {
     await ForcedColorsFixture.activateAsync();
     try {
       await userEvent.hover(option(2));
-      await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(option(2).matches(":hover")).toBe(true));
       const outline = (index: number): string[] => {
         const fill = getComputedStyle(option(index), "::before");
         return [fill.outlineStyle, fill.outlineWidth, fill.outlineColor, fill.outlineOffset];

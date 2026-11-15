@@ -8,6 +8,7 @@
 
 import { server } from "vitest/browser";
 
+import { DomChangeFixture } from "./fixtures/dom-change.fixture";
 import { HangLimitFixture } from "./fixtures/hang-limit.fixture";
 
 describe("The specs' hang limit", () => {
@@ -27,5 +28,21 @@ describe("The specs' hang limit", () => {
 
     await expect(vi.waitFor(() => expect(isHung(), "the hung condition").toBe(false), { timeout: shortBound })).rejects.toThrow("the hung condition");
     await expect(expect.poll(isHung, { timeout: shortBound, message: "the hung condition" }).toBe(false)).rejects.toThrow("the hung condition");
+  });
+
+  it("fails a wait on the page's changes that never passes once its bound runs out, naming what it waited for, and checks nothing after", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    try {
+      const check = vi.fn(() => expect(root.textContent, "the hung condition").toBe("Ready"));
+
+      await expect(DomChangeFixture.untilAsync(check, shortBound)).rejects.toThrow("the hung condition");
+      const checks = check.mock.calls.length;
+      root.append("Ready");
+      await Promise.resolve();
+      expect(check).toHaveBeenCalledTimes(checks);
+    } finally {
+      root.remove();
+    }
   });
 });

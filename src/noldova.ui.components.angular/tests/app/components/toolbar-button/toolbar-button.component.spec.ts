@@ -12,10 +12,10 @@ import { userEvent } from "vitest/browser";
 
 import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-button/toolbar-button.component";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OpacityFixture } from "../../../fixtures/opacity.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ToolbarButtonComponent],
@@ -154,7 +154,7 @@ describe("ToolbarButtonComponent", () => {
 
   async function focusAsync(): Promise<void> {
     await userEvent.keyboard("{Tab}");
-    await vi.waitFor(() => expect(document.activeElement).toBe(button()), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(button()));
     expect(button().matches(":focus-visible")).toBe(true);
   }
 
