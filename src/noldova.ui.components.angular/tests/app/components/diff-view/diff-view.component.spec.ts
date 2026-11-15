@@ -48,6 +48,7 @@ import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 const firstHunk = new DiffHunk("h1", 10, 3, 10, 4, [
   new DiffContextLine(10, 10, "const a = 1;"),
@@ -1134,17 +1135,11 @@ describe("DiffViewComponent", () => {
     const feedFixture = TestBed.createComponent(DiffFeedHostComponent);
     const root = DomFixture.host(feedFixture);
     const viewport = (): HTMLElement => DomFixture.one(root, ".nol-virtual-list-viewport");
-    const settleAsync = async (): Promise<void> => {
-      let last = String.empty;
-      for (let pass = 0; pass < 10; pass++) {
+    const settleAsync = (): Promise<void> => LayoutSettleFixture.settledAsync("the feed's rows and scroll",
+      () => `${root.querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`, async () => {
         await feedFixture.whenStable();
         await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-        const shape = `${root.querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`;
-        if (shape === last)
-          return;
-        last = shape;
-      }
-    };
+      });
     const scrollAsync = async (top: number): Promise<void> => {
       viewport().dispatchEvent(new WheelEvent("wheel"));
       viewport().scrollTop = top;

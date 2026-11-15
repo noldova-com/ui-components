@@ -43,10 +43,11 @@ import { Resources } from "../../../../src/resources";
 import { LinkReferenceChipResources } from "../../../../src/app/components/link-reference/link-reference-chip.resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { CommandKeyFixture } from "../../../fixtures/command-key.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 class TestReferences implements ILinkReferenceSource {
   public readonly asked: string[] = [];
@@ -171,15 +172,16 @@ describe("LinkReferenceChipComponent", () => {
   }
 
   async function shownAsync(): Promise<HTMLElement> {
-    await vi.waitFor(() => expect(card()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).not.toBeNull());
     await fixture.whenStable();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await LayoutSettleFixture.settledAsync("the card's place", () => JSON.stringify(shownCard().getBoundingClientRect()),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
     return shownCard();
   }
 
   async function pointAsync(point: DOMPointReadOnly): Promise<void> {
     await userEvent.hover(document.documentElement, { position: { x: point.x, y: point.y } });
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await fixture.whenStable();
   }
 
   async function focusAsync(): Promise<HTMLElement> {
@@ -508,7 +510,7 @@ describe("LinkReferenceChipComponent", () => {
       isShownAt.push(card() === shown);
     }
     await pointAsync(new DOMPoint(box.right + pixels(4), inGap.y));
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
     expect(isShownAt).toEqual([true, true, true, true, true]);
   });
@@ -528,7 +530,7 @@ describe("LinkReferenceChipComponent", () => {
     await fixture.whenStable();
     const isSame = card() === shown && document.querySelectorAll("nol-link-reference-card").length === 1;
     chip().blur();
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     await userEvent.click(chip());
     await fixture.whenStable();
 
@@ -606,7 +608,7 @@ describe("LinkReferenceChipComponent", () => {
     frame.style.top = "200vh";
     fixture.nativeElement.dispatchEvent(new Event("scroll"));
 
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
   });
 
   it("leaves out the card's foot, age and title for an item that has none, and counts one file and no comments", async () => {
@@ -614,7 +616,7 @@ describe("LinkReferenceChipComponent", () => {
     const shown = await focusAsync();
     const parts = [shown.querySelector(".nol-link-reference-card-foot"), shown.querySelector(".nol-link-reference-card-age"), shown.querySelector(".nol-link-reference-card-title")];
     chip().blur();
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     await changeAsync(() => references.items.get(url)?.set(itemOf({ author: null, diff: new LinkReferenceDiff(1, 0, 1), comments: 0 })));
     const counted = await focusAsync();
 
@@ -695,7 +697,7 @@ describe("LinkReferenceChipComponent", () => {
       await userEvent.tab();
       const isOnActionAgain = document.activeElement === cardPart("action");
       await userEvent.tab();
-      await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
       expect([onAction, onChip, isOnActionAgain, document.activeElement === after]).toEqual([[true, true, true], [true, true], true, true]);
     }
@@ -723,7 +725,7 @@ describe("LinkReferenceChipComponent", () => {
     const isKept = card() === shown;
     cardPart("action").blur();
 
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     expect(isKept).toBe(true);
   });
 
@@ -737,7 +739,7 @@ describe("LinkReferenceChipComponent", () => {
     frame.style.top = "200vh";
     const scrolled = window.scrollY;
     fixture.nativeElement.dispatchEvent(new Event("scroll"));
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
     expect([isOnAction, document.activeElement === chip(), window.scrollY]).toEqual([true, true, scrolled]);
   });
@@ -772,7 +774,7 @@ describe("LinkReferenceChipComponent", () => {
     }
     const isKept = [card() === shown, document.activeElement === action];
     after.focus();
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
     expect([isKept, document.activeElement === after]).toEqual([[true, true], true]);
   });
@@ -817,7 +819,7 @@ describe("LinkReferenceChipComponent", () => {
     try {
       await focusAsync();
       await userEvent.tab();
-      await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
       expect(document.activeElement).toBe(after);
     }
@@ -842,7 +844,7 @@ describe("LinkReferenceChipComponent", () => {
       await renderAsync(linkedOf());
       await hoverAsync();
       await userEvent.click(cardLink(index));
-      await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
       clicked.push([...host.activated]);
       fixture.destroy();
     }
@@ -862,7 +864,7 @@ describe("LinkReferenceChipComponent", () => {
     await renderAsync(linkedOf());
     await hoverAsync();
     await userEvent.click(cardLink(4), { modifiers: [CommandKeyFixture.key] });
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     await hoverAsync();
     const linkMenu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: Resources.secondaryButton });
     cardLink(1).dispatchEvent(linkMenu);
@@ -879,11 +881,11 @@ describe("LinkReferenceChipComponent", () => {
     await renderAsync(linkedOf());
     await hoverAsync();
     await userEvent.click(cardLink(0));
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     const isOnChip = document.activeElement === chip();
     await hoverAsync();
     await userEvent.click(cardLink(1));
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
     expect([isOnChip, host.activated]).toEqual([true, [url, locationUrl]]);
   });
@@ -909,7 +911,7 @@ describe("LinkReferenceChipComponent", () => {
       const onChip = [document.activeElement === chip(), card() === shown];
       for (let index = 0; index <= linkedParts.length + 1; index++)
         await userEvent.tab();
-      await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
 
       expect(visited).toEqual([...linkedParts.map(([, href]) => [href, true, "solid"]), [actionUrl, true, "solid"]]);
       expect([isOnFirst, onChip, document.activeElement === after]).toEqual([true, [true, true], true]);
@@ -927,7 +929,7 @@ describe("LinkReferenceChipComponent", () => {
     const isKept = card() === shown;
     await pointAsync(new DOMPoint(1, 1));
 
-    await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
     expect(isKept).toBe(true);
   });
 
@@ -1016,7 +1018,7 @@ describe("LinkReferenceChipComponent", () => {
         const rects = [...names.map(t => cardPart(t)), ...pills, DomFixture.one(shown, "nol-avatar")].map(t => t.getBoundingClientRect())
           .map(t => [t.left - box.left, t.top - box.top, t.width, t.height]);
         fixture.destroy();
-        await vi.waitFor(() => expect(card()).toBeNull(), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(card()).toBeNull());
         return [[box.width, box.height], ...rects];
       };
       const plain = await rectsOfAsync(itemOf({ comments: 3 }));
@@ -1207,7 +1209,7 @@ describe("LinkReferenceChipComponent's card age", () => {
     fixture.componentInstance.references.set(references);
     await fixture.whenStable();
     await tabToChipAsync(fixture);
-    await vi.waitFor(() => expect(document.querySelector("nol-link-reference-card")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector("nol-link-reference-card")).not.toBeNull());
     const age = (): HTMLElement => DomFixture.one(document.body, ".nol-link-reference-card-age");
     const times = MessageTime.of("en-US", false);
     const first = age().textContent;

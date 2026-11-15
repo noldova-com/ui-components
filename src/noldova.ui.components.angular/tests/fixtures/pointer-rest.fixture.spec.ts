@@ -8,8 +8,8 @@
 
 import { userEvent } from "vitest/browser";
 
+import { DomChangeFixture } from "./dom-change.fixture";
 import { PointerRestFixture } from "./pointer-rest.fixture";
-import { HangLimitFixture } from "./hang-limit.fixture";
 
 describe("PointerRestFixture", () => {
   let cover: HTMLElement;
@@ -27,7 +27,7 @@ describe("PointerRestFixture", () => {
 
   it("leaves the pointer outside the page, over none of its elements", async () => {
     await userEvent.hover(cover);
-    await vi.waitFor(() => expect(cover.matches(":hover")).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(cover.matches(":hover")).toBe(true));
 
     await PointerRestFixture.leavePageAsync();
 
@@ -37,7 +37,7 @@ describe("PointerRestFixture", () => {
   it("hovers an element that covers the whole page, for the next test to start under", async () => {
     await userEvent.hover(cover);
 
-    await vi.waitFor(() => expect(hovered()).toContain(cover), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(hovered()).toContain(cover));
   });
 
   it("starts with nothing in the page under the pointer after a test that hovered", () => {

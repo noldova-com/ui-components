@@ -26,12 +26,12 @@ import { ThemePainter } from "../../src/app/services/theme-painter";
 import { TypographyPainter } from "../../src/app/services/typography-painter";
 import { Resources } from "../../src/resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../fixtures/dom-change.fixture";
 import { DomFixture } from "../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../fixtures/forced-colors.fixture";
 import { GalleryFixture } from "../fixtures/gallery.fixture";
 import { MotionFixture } from "../fixtures/motion.fixture";
 import { RowFillFixture } from "../fixtures/row-fill.fixture";
-import { HangLimitFixture } from "../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuSeparatorComponent],
@@ -126,7 +126,7 @@ describe("kit styles", () => {
   it("hide the live announcer's region from sight before any dialog has opened, so a long announcement neither shows nor makes the page scroll", async () => {
     const text = "A notification with a title and a text long enough to wrap onto several lines if it were laid out. ".repeat(20);
     void TestBed.inject(LiveAnnouncer).announce(text);
-    await vi.waitFor(() => expect(document.querySelector(".cdk-live-announcer-element")?.textContent).toBe(text), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-live-announcer-element")?.textContent).toBe(text));
     const region = DomFixture.one(document, ".cdk-live-announcer-element");
     const box = region.getBoundingClientRect();
 

@@ -18,7 +18,7 @@ import { MarkdownParser } from "../../src/app/services/markdown.parser";
 import { PointerFixture } from "../../src/testing/services/pointer-fixture";
 import { MotionFixture } from "./motion.fixture";
 import { GalleryFixture } from "./gallery.fixture";
-import { HangLimitFixture } from "./hang-limit.fixture";
+import { DomChangeFixture } from "./dom-change.fixture";
 
 export class GalleryStateFixture {
   private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility"];
@@ -98,7 +98,7 @@ export class GalleryStateFixture {
       for (const { element, shown, plain } of looks) {
         await PointerFixture.hoverAsync(element);
 
-        await vi.waitFor(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]), { ...HangLimitFixture.wait, interval: 5 });
+        await DomChangeFixture.untilAsync(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]));
         expect([GalleryStateFixture.name(element), shown]).not.toEqual([GalleryStateFixture.name(element), plain]);
       }
     } finally {

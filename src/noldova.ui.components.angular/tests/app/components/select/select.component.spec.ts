@@ -19,6 +19,7 @@ import { SelectOption } from "../../../../src/app/models/select-option";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
@@ -87,14 +88,14 @@ describe("SelectComponent", () => {
   async function openAsync(count = 3): Promise<void> {
     button().click();
     fixture.detectChanges();
-    await expect.poll(() => options().length).toBe(count);
+    await DomChangeFixture.untilAsync(() => expect(options().length).toBe(count));
   }
 
   async function openFromKeyboardAsync(): Promise<void> {
     button().focus();
     await userEvent.keyboard("{Enter}");
     fixture.detectChanges();
-    await expect.poll(() => options().length).toBe(3);
+    await DomChangeFixture.untilAsync(() => expect(options().length).toBe(3));
   }
 
   function renderDisabled(value: string): void {
@@ -136,7 +137,7 @@ describe("SelectComponent", () => {
     render();
 
     await page.getByRole("button", { name: "Mode, System" }).click();
-    await expect.poll(() => options().length).toBe(3);
+    await DomChangeFixture.untilAsync(() => expect(options().length).toBe(3));
     const opened = {
       expanded: button().getAttribute("aria-expanded"), focused: document.activeElement === list(), active: active(), role: list()?.getAttribute("role"),
       options: options().map(t => `${t.textContent?.trim()}:${t.getAttribute("role")}:${t.getAttribute("aria-selected")}`)
@@ -163,18 +164,18 @@ describe("SelectComponent", () => {
 
     await openAsync();
     await userEvent.keyboard("{ArrowUp}{Enter}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     await openAsync();
     await userEvent.keyboard("{Enter}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     await openAsync();
     await userEvent.keyboard("{ArrowDown}{a}");
     const stillOpen = list() !== null;
     await userEvent.keyboard("{ArrowUp} ");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     await openAsync();
     await userEvent.click(page.getByRole("option", { name: "Dark" }));
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
 
     expect(stillOpen).toBe(true);
     expect(fixture.componentInstance.changes).toEqual(["Dark"]);
@@ -187,7 +188,7 @@ describe("SelectComponent", () => {
       await openAsync();
       await closeAsync();
       fixture.detectChanges();
-      await expect.poll(() => list()).toBeNull();
+      await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     }
 
     expect(fixture.componentInstance.changes).toEqual([]);
@@ -201,7 +202,7 @@ describe("SelectComponent", () => {
     scroller.scrollTop = 40;
     scroller.dispatchEvent(new Event("scroll"));
 
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     expect(fixture.componentInstance.changes).toEqual([]);
   });
 
@@ -214,10 +215,10 @@ describe("SelectComponent", () => {
     const marked = options().map(t => t.getAttribute("aria-selected"));
     const opened = { focused: document.activeElement === list(), active: active(), fills: fills() };
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(() => active()).toBe("Light");
+    await DomChangeFixture.untilAsync(() => expect(active()).toBe("Light"));
     const moved = fills();
     await userEvent.click(page.getByRole("option", { name: "Dark" }));
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
 
     expect(marked).toEqual(["false", "false", "false"]);
     expect(opened).toEqual({ focused: true, active: undefined, fills: ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"] });
@@ -235,7 +236,7 @@ describe("SelectComponent", () => {
     await openAsync();
     const opened = fills().map(t => t === highlight);
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(() => active()).toBe("Light");
+    await DomChangeFixture.untilAsync(() => expect(active()).toBe("Light"));
 
     expect([opened, fills().map(t => t === highlight)]).toEqual([[false, false, false], [true, false, false]]);
   });
@@ -249,7 +250,7 @@ describe("SelectComponent", () => {
     await openFromKeyboardAsync();
     const opened = outline();
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(() => active()).toBe("Light");
+    await DomChangeFixture.untilAsync(() => expect(active()).toBe("Light"));
 
     expect([document.activeElement === list(), opened]).toEqual([true, ["solid", `${border}px`, AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "accent"), `${-border}px`]]);
     expect(outline()[0]).toBe("none");
@@ -279,7 +280,7 @@ describe("SelectComponent", () => {
     };
 
     await openAsync(60);
-    await expect.poll(isShown).toBe(true);
+    await DomChangeFixture.untilAsync(() => expect(isShown()).toBe(true));
     await framesAsync(5);
 
     expect([(list() as HTMLElement).scrollHeight > (list() as HTMLElement).clientHeight, active(), isShown()]).toEqual([true, "Option 58", true]);
@@ -295,22 +296,24 @@ describe("SelectComponent", () => {
       fixture.detectChanges();
 
       await openAsync(25);
-      await framesAsync(5);
-      const field = button().getBoundingClientRect();
-      const box = (list() as HTMLElement).getBoundingClientRect();
-      const option = (options()[19] as HTMLElement).getBoundingClientRect();
       const style = getComputedStyle(list() as HTMLElement);
       const most = RowFillFixture.heightOf("dropdown-row-height") * 10.5 + Number.parseFloat(style.paddingTop) * 2 + Number.parseFloat(style.borderTopWidth) * 2;
       const near = (a: number, b: number): boolean => Math.abs(a - b) <= 0.5;
+      const box = await DomChangeFixture.untilAsync(() => {
+        const field = button().getBoundingClientRect();
+        const placed = (list() as HTMLElement).getBoundingClientRect();
+        const option = (options()[19] as HTMLElement).getBoundingClientRect();
+        expect({
+          start: Math.round(placed.left - field.left),
+          side: near(placed.top, field.bottom) ? "below" : near(placed.bottom, field.top) ? "above" : "beside",
+          inside: placed.top >= 0 && placed.bottom <= window.innerHeight && placed.left >= 0 && placed.right <= window.innerWidth,
+          capped: placed.height <= most + 0.5,
+          scrolls: (list() as HTMLElement).scrollHeight > (list() as HTMLElement).clientHeight,
+          shown: option.top >= placed.top && option.bottom <= placed.bottom
+        }).toEqual({ start: 0, side, inside: true, capped: true, scrolls: true, shown: true });
+        return placed;
+      });
 
-      expect({
-        start: Math.round(box.left - field.left),
-        side: near(box.top, field.bottom) ? "below" : near(box.bottom, field.top) ? "above" : "beside",
-        inside: box.top >= 0 && box.bottom <= window.innerHeight && box.left >= 0 && box.right <= window.innerWidth,
-        capped: box.height <= most + 0.5,
-        scrolls: (list() as HTMLElement).scrollHeight > (list() as HTMLElement).clientHeight,
-        shown: option.top >= box.top && option.bottom <= box.bottom
-      }).toEqual({ start: 0, side, inside: true, capped: true, scrolls: true, shown: true });
       if (top === 0)
         AppearanceFixture.expectPixels(box.height, most);
     });
@@ -360,9 +363,9 @@ describe("SelectComponent", () => {
     AppearanceFixture.expectTruncates(title);
     await expect.element(page.getByRole("option", { name: long })).toBeVisible();
     await userEvent.hover(options()[1] as HTMLElement);
-    await expect.poll(tooltip).toBe(long);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBe(long));
     await userEvent.hover(options()[0] as HTMLElement);
-    await expect.poll(tooltip).toBeUndefined();
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeUndefined());
   });
 
   for (const mode of AppearanceFixture.modes)
@@ -493,7 +496,7 @@ describe("SelectComponent", () => {
         await openAsync();
         const unmarked = fills();
         await userEvent.keyboard("{ArrowDown}");
-        await expect.poll(() => active()).toBe("Light");
+        await DomChangeFixture.untilAsync(() => expect(active()).toBe("Light"));
 
         expect(unmarked).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"]);
         expect([fills()[0], getComputedStyle(options()[0] as Element).color])
@@ -505,27 +508,27 @@ describe("SelectComponent", () => {
     await openAsync();
 
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip).toBe(long);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBe(long));
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip).toBeUndefined();
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeUndefined());
     await userEvent.keyboard("a");
-    await expect.poll(tooltip).toBe(long);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBe(long));
     await userEvent.keyboard("s");
-    await expect.poll(() => active()).toBe("System");
-    await expect.poll(tooltip).toBeUndefined();
+    await DomChangeFixture.untilAsync(() => expect(active()).toBe("System"));
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeUndefined());
   });
 
   it("hides a shown option's tooltip on the first Escape, keeping its list open and focused, and closes on the second", async () => {
     renderLong();
     await openAsync();
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(tooltip).toBe(long);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBe(long));
 
     await userEvent.keyboard("{Escape}");
-    await expect.poll(tooltip).toBeUndefined();
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeUndefined());
     const first = [list() !== null, document.activeElement === list(), active()];
     await userEvent.keyboard("{Escape}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
 
     expect([first, document.activeElement]).toEqual([[true, true, long], button()]);
   });
@@ -551,7 +554,7 @@ describe("SelectComponent", () => {
     const reached: number[] = [];
     for (const [key, expected] of [["{ArrowDown}", 2], ["{ArrowUp}", 0], ["{End}", 3], ["{Home}", 0], ["d", 2]] as const) {
       await userEvent.keyboard(key);
-      await expect.poll(() => activeAt()).toBe(expected);
+      await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(expected));
       reached.push(activeAt());
     }
 
@@ -576,15 +579,15 @@ describe("SelectComponent", () => {
 
     await expect.element(page.getByRole("button", { name: "Mode, Dark, Pro", exact: true })).toBeVisible();
     await openAsync(4);
-    await expect.poll(() => activeAt()).toBe(1);
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(1));
     const opened = { marked: options().map(t => t.getAttribute("aria-selected")), fill: fills()[1] };
     await userEvent.keyboard("{Enter}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     await openAsync(4);
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(() => activeAt()).toBe(2);
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(2));
     await userEvent.keyboard("{ArrowUp}");
-    await expect.poll(() => activeAt()).toBe(0);
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(0));
 
     expect(opened).toEqual({ marked: ["false", "true", "false", "false"], fill: AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "list-active") });
     expect(fixture.componentInstance.changes).toEqual([]);
@@ -602,13 +605,13 @@ describe("SelectComponent", () => {
     };
 
     await openAsync(4);
-    await expect.poll(() => activeAt()).toBe(1);
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(1));
     const active = look();
     await userEvent.keyboard("{ArrowDown}");
-    await expect.poll(() => activeAt()).toBe(2);
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(2));
     const chosen = look();
     await userEvent.keyboard("{Escape}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     fixture.componentInstance.value.set("Light");
     fixture.detectChanges();
     await openAsync(4);
@@ -654,14 +657,14 @@ describe("SelectComponent", () => {
     const reached: number[] = [];
     for (const [key, expected] of [["{ArrowDown}", 1], ["{ArrowDown}", 3], ["{ArrowUp}", 1], ["{End}", 3], ["{Home}", 0], ["s", 3]] as const) {
       await userEvent.keyboard(key);
-      await expect.poll(() => activeAt()).toBe(expected);
+      await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(expected));
       reached.push(activeAt());
     }
     await userEvent.keyboard("{Enter}");
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
     await openAsync(4);
     await userEvent.click(page.getByRole("option", { name: "Dark" }));
-    await expect.poll(() => list()).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(list()).toBeNull());
 
     expect([groups, labels, reached]).toEqual([[["Dark", "Dim"], ["System"]], [["true", -1], ["true", -1]], [1, 3, 1, 3, 0, 3]]);
     expect(fixture.componentInstance.changes).toEqual(["System", "Dark"]);

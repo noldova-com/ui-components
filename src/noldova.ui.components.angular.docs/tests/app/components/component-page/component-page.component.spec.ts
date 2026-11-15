@@ -19,7 +19,7 @@ import { MessageResources } from "../../../../../noldova.ui.components.angular/s
 import { VirtualListResources } from "../../../../../noldova.ui.components.angular/src/app/components/virtual-list/virtual-list.resources.js";
 import { CopyState } from "../../../../../noldova.ui.components.angular/src/app/enums/copy-state.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
-import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
+import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
 describe("ComponentPageComponent", () => {
   const roleOf = (element: Element): string | undefined => element.tagName === "TH"
@@ -467,12 +467,12 @@ describe("ComponentPageComponent", () => {
     fixture.componentRef.setInput("page", content);
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       expect(host.textContent).not.toContain("Loading…");
       expect(DocsFixture.all(host, "nol-docs-example-view").length).toBe(content.examples.length);
       expect(host.querySelector(".nol-gallery-specimen")).not.toBeNull();
       expect(DocsFixture.all(host, "nol-code-block pre code").every(t => (t.textContent ?? "").length > 0)).toBe(true);
-    }, HangLimitFixture.wait);
+    });
     return host;
   };
 
@@ -513,7 +513,7 @@ describe("ComponentPageComponent", () => {
   const isStacked = (element: Element): boolean => element.closest(".nol-docs-table")?.classList.contains("nol-docs-stacked") === true;
 
   const fittedAsync = async (host: HTMLElement): Promise<void> => {
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-stacked-table").filter(t => t.offsetWidth > (t.parentElement?.clientWidth ?? 0)).map(t => t.getAttribute("aria-label"))).toEqual([]));
   };
 
   const activeLabel = (): string | undefined => document.activeElement?.querySelector(".nol-menu-item-label")?.textContent?.trim();
@@ -613,7 +613,7 @@ describe("ComponentPageComponent", () => {
       const host = await renderAsync(content);
       const specification = section(host, "Specification");
 
-      await vi.waitFor(() => expect(specification.textContent).toContain("Default geometry"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(specification.textContent).toContain("Default geometry"));
       expect(DocsFixture.all(specification, "h1").length).toBe(0);
     });
 
@@ -629,7 +629,7 @@ describe("ComponentPageComponent", () => {
         DocsFixture.setMode(mode);
         await DocsFixture.viewAsync(width, height);
         const host = await renderAsync(content);
-        await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
         const cells = DocsFixture.all(host, ".nol-docs-table th, .nol-docs-table td");
         const markdownCells = DocsFixture.all(host, ".nol-markdown-table th, .nol-markdown-table td");
         const api = ApiReference.find(content.componentName);
@@ -707,7 +707,7 @@ describe("ComponentPageComponent", () => {
         DocsFixture.setMode("Light");
         await DocsFixture.viewAsync(width, height);
         const host = await renderAsync(content);
-        await vi.waitFor(() => expect(section(host, "Specification").textContent).toContain("Default geometry"), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(section(host, "Specification").textContent).toContain("Default geometry"));
         await fittedAsync(host);
         const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
 
@@ -763,12 +763,12 @@ describe("ComponentPageComponent", () => {
 
       arrow.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(DocsFixture.all(document, "[role=\"menu\"] [role=\"menuitem\"]").length).toBe(2), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement?.getAttribute("role")).toBe("menuitem"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(document, "[role=\"menu\"] [role=\"menuitem\"]").length).toBe(2));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.getAttribute("role")).toBe("menuitem"));
       expect(arrow.getAttribute("aria-expanded")).toBe("true");
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(document.querySelector("[role=\"menu\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("[role=\"menu\"]")).toBeNull());
       expect(document.activeElement).toBe(arrow);
       expect(arrow.getAttribute("aria-expanded")).toBe("false");
     });
@@ -782,7 +782,7 @@ describe("ComponentPageComponent", () => {
 
       await userEvent.fill(field, "Reviewer");
 
-      await vi.waitFor(() => expect(examples.querySelector("nol-field-message[role=\"alert\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.querySelector("nol-field-message[role=\"alert\"]")).toBeNull());
       expect(field.getAttribute("aria-invalid")).toBeNull();
       expect(field.getAttribute("aria-describedby")).toBeNull();
     });
@@ -796,7 +796,7 @@ describe("ComponentPageComponent", () => {
       const disabled = DocsFixture.one(examples, "input[role=\"switch\"][aria-disabled=\"true\"]");
 
       await userEvent.click(sounds);
-      await vi.waitFor(() => expect(sounds.matches(":checked")).toBe(true), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(sounds.matches(":checked")).toBe(true));
 
       await userEvent.click(DocsFixture.one(examples, "label:has(input[role=\"switch\"][aria-disabled=\"true\"])"), { force: true });
       expect(disabled.matches(":checked")).toBe(true);
@@ -811,7 +811,7 @@ describe("ComponentPageComponent", () => {
 
       await userEvent.click(DocsFixture.byText(group, "label", "Rebase"));
 
-      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: rebase"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Chosen: rebase"));
       expect(group.querySelector("input:checked")?.closest("label")?.textContent?.trim()).toBe("Rebase");
     });
   });
@@ -824,7 +824,7 @@ describe("ComponentPageComponent", () => {
       DocsFixture.one(group, "[aria-checked=\"true\"]").focus();
       await userEvent.keyboard("{ArrowRight}");
 
-      await vi.waitFor(() => expect(DocsFixture.one(group, "[aria-checked=\"true\"]").textContent?.trim()).toBe("High"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(group, "[aria-checked=\"true\"]").textContent?.trim()).toBe("High"));
       expect(document.activeElement?.textContent?.trim()).toBe("High");
       expect(DocsFixture.all(group, "[tabindex=\"0\"]").map(t => t.textContent?.trim())).toEqual(["High"]);
     });
@@ -836,14 +836,14 @@ describe("ComponentPageComponent", () => {
       const button = DocsFixture.one(section(host, "Examples"), "button.nol-select-button[aria-label=\"Pace, Balanced\"]");
 
       await userEvent.click(button);
-      await vi.waitFor(() => expect(DocsFixture.all(document, "[role=\"listbox\"] [role=\"option\"]").length).toBe(3), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement?.getAttribute("role")).toBe("listbox"), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(document, "[role=\"listbox\"] [role=\"option\"]").length).toBe(3));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.getAttribute("role")).toBe("listbox"));
+      await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("true"));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(document.querySelector("[role=\"listbox\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("[role=\"listbox\"]")).toBeNull());
       expect(document.activeElement).toBe(button);
-      await vi.waitFor(() => expect(button.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("false"));
     });
 
     it("names its option groups and marks its disabled option", async () => {
@@ -851,14 +851,14 @@ describe("ComponentPageComponent", () => {
       const button = DocsFixture.one(section(host, "Examples"), "button.nol-select-button[aria-describedby=\"nol-docs-select-note\"]");
 
       await userEvent.click(button);
-      await vi.waitFor(() => expect(DocsFixture.all(document, "[role=\"listbox\"] [role=\"group\"][aria-labelledby]").length).toBe(2), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(document, "[role=\"listbox\"] [role=\"group\"][aria-labelledby]").length).toBe(2));
       const labels = DocsFixture.all(document, "[role=\"listbox\"] [role=\"group\"]").map(t => document.getElementById(t.getAttribute("aria-labelledby") ?? "")?.textContent?.trim());
 
       expect(labels).toEqual(["Europe", "Americas"]);
       expect(DocsFixture.all(document, "[role=\"listbox\"] [role=\"option\"][aria-disabled=\"true\"]").map(t => t.textContent?.trim())).toEqual(["Northern Europe"]);
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(document.querySelector("[role=\"listbox\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("[role=\"listbox\"]")).toBeNull());
     });
   });
 
@@ -869,17 +869,17 @@ describe("ComponentPageComponent", () => {
 
       trigger.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Note actions\"] [role=\"menuitem\"]").length).toBe(3), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(activeLabel()).toBe("Rename"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Note actions\"] [role=\"menuitem\"]").length).toBe(3));
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Rename"));
       expect(trigger.getAttribute("aria-expanded")).toBe("true");
 
       await userEvent.keyboard("{ArrowDown}{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Delete"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Delete"));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
       expect(document.activeElement).toBe(trigger);
-      await vi.waitFor(() => expect(trigger.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(trigger.getAttribute("aria-expanded")).toBe("false"));
     });
 
     it("gives the focus to the first row of the menu kept on the page, and runs its last row from the keyboard", async () => {
@@ -887,12 +887,12 @@ describe("ComponentPageComponent", () => {
       const menu = DocsFixture.one(section(host, "Examples"), "nol-menu[aria-label=\"Panel\"]");
 
       menu.focus();
-      await vi.waitFor(() => expect(activeLabel()).toBe("Open to the side"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Open to the side"));
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Show hidden files"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Show hidden files"));
       await userEvent.keyboard("{Enter}");
 
-      await vi.waitFor(() => expect(DocsFixture.one(menu, "[role=\"menuitemcheckbox\"]").getAttribute("aria-checked")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(menu, "[role=\"menuitemcheckbox\"]").getAttribute("aria-checked")).toBe("true"));
     });
   });
 
@@ -903,24 +903,24 @@ describe("ComponentPageComponent", () => {
 
       trigger.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Compact"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Compact"));
       expect(outside(host, "[role=\"menu\"][aria-label=\"View\"] [role=\"menuitemcheckbox\"]").map(t => t.getAttribute("aria-checked"))).toEqual(["false"]);
       expect(outside(host, "[role=\"menu\"][aria-label=\"View\"] [role=\"menuitemradio\"]").map(t => t.getAttribute("aria-checked"))).toEqual(["true", "false"]);
 
       await userEvent.keyboard("{ArrowDown}{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Theme"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Theme"));
       const row = DocsFixture.one(document, ".cdk-overlay-container [role=\"menuitem\"][aria-haspopup=\"menu\"]");
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Theme\"]").length).toBe(1), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(activeLabel()).toBe("Dark"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Theme\"]").length).toBe(1));
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Dark"));
       expect(row.getAttribute("aria-expanded")).toBe("true");
 
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Theme\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Theme\"]")).toEqual([]));
       expect(document.activeElement).toBe(row);
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
       expect(document.activeElement).toBe(trigger);
     });
   });
@@ -932,19 +932,19 @@ describe("ComponentPageComponent", () => {
 
       trigger.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"View options\"] [role=\"group\"]").length).toBe(2), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(activeLabel()).toBe("Date"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"View options\"] [role=\"group\"]").length).toBe(2));
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Date"));
       const labels = outside(host, "[role=\"menu\"][aria-label=\"View options\"] [role=\"group\"]")
         .map(t => document.getElementById(t.getAttribute("aria-labelledby") ?? "")?.textContent?.trim());
       expect(labels).toEqual(["Sort by", "Show"]);
 
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Size"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Size"));
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Hidden files"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Hidden files"));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
       expect(document.activeElement).toBe(trigger);
     });
   });
@@ -956,18 +956,18 @@ describe("ComponentPageComponent", () => {
 
       trigger.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Close"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Close"));
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Close others"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Close others"));
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Split right"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Split right"));
       const separators = outside(host, "[role=\"menu\"][aria-label=\"Tab actions\"] [role=\"separator\"]");
 
       expect(separators.length).toBe(1);
       expect(separators.map(t => t.getAttribute("tabindex"))).toEqual([null]);
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
       expect(document.activeElement).toBe(trigger);
     });
   });
@@ -980,14 +980,14 @@ describe("ComponentPageComponent", () => {
 
       DocsFixture.byText(bar, "button", "File").focus();
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(edit), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(edit));
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Edit\"] [role=\"menuitem\"]").length).toBe(2), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(activeLabel()).toBe("Undo"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Edit\"] [role=\"menuitem\"]").length).toBe(2));
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Undo"));
       expect(edit.getAttribute("aria-expanded")).toBe("true");
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
       expect(document.activeElement).toBe(edit);
     });
 
@@ -998,7 +998,7 @@ describe("ComponentPageComponent", () => {
       DocsFixture.byText(bar, "button", "Format").focus();
       await userEvent.keyboard("{ArrowLeft}");
 
-      await vi.waitFor(() => expect(document.activeElement).toBe(DocsFixture.byText(bar, "button", "Insert")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(DocsFixture.byText(bar, "button", "Insert")));
     });
   });
 
@@ -1010,13 +1010,13 @@ describe("ComponentPageComponent", () => {
 
       format.focus();
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Format\"] [role=\"menuitemcheckbox\"]").length).toBe(2), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(activeLabel()).toBe("Bold"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"][aria-label=\"Format\"] [role=\"menuitemcheckbox\"]").length).toBe(2));
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Bold"));
       expect(format.getAttribute("aria-expanded")).toBe("true");
 
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(format), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"menu\"]")).toEqual([]));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(format));
       expect(examples.textContent).toContain("Bold: On");
     });
   });
@@ -1028,25 +1028,25 @@ describe("ComponentPageComponent", () => {
       const opener = DocsFixture.byText(examples, "button", "Delete the note");
 
       await userEvent.click(opener);
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"][aria-modal=\"true\"]").length).toBe(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"][aria-modal=\"true\"]").length).toBe(1));
       const dialog = DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]");
       const cancel = DocsFixture.byText(dialog, "button", "Cancel");
       const remove = DocsFixture.byText(dialog, "button", "Delete");
       const close = DocsFixture.one(dialog, "button.nol-dialog-close");
       expect(document.getElementById(dialog.getAttribute("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Delete the note?");
-      await vi.waitFor(() => expect(document.getElementById(dialog.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe("The note and its history go for good."), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(cancel), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.getElementById(dialog.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe("The note and its history go for good."));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(cancel));
 
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(remove), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(remove));
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(close), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(close));
       await userEvent.keyboard("{Shift>}{Tab}{/Shift}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(remove), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(remove));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(opener), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
       expect(examples.textContent).toContain("Answer: Kept");
     });
 
@@ -1055,17 +1055,17 @@ describe("ComponentPageComponent", () => {
       const opener = DocsFixture.byText(section(host, "Examples"), "button", "Show the changes");
 
       await userEvent.click(opener);
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
       const dialog = DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]");
       const maximize = DocsFixture.one(dialog, "button.nol-dialog-maximize");
       expect(maximize.getAttribute("aria-label")).toBe("Maximize");
 
       await userEvent.click(maximize);
-      await vi.waitFor(() => expect(maximize.getAttribute("aria-label")).toBe("Restore"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(maximize.getAttribute("aria-label")).toBe("Restore"));
 
       await userEvent.click(DocsFixture.one(dialog, "button.nol-dialog-close"));
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(opener), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
     });
 
     it("opens a medium dialog 40rem wide on its Name field, and adds the typed name from Add", async () => {
@@ -1075,10 +1075,10 @@ describe("ComponentPageComponent", () => {
       const opener = DocsFixture.byText(examples, "button", "Add a teammate");
 
       await userEvent.click(opener);
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
       const dialog = DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]");
       const name = DocsFixture.one(dialog, "#nol-docs-teammate-name");
-      await vi.waitFor(() => expect(document.activeElement).toBe(name), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(name));
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       expect(Math.abs(DocsFixture.one(document, ".cdk-overlay-container nol-dialog").getBoundingClientRect().width - 40 * rem)).toBeLessThan(0.5);
       expect(dialog.querySelector("button.nol-dialog-maximize")).toBeNull();
@@ -1086,8 +1086,8 @@ describe("ComponentPageComponent", () => {
       await userEvent.clear(name);
       await userEvent.type(name, "Release checker");
       await userEvent.click(DocsFixture.byText(dialog, "button", "Add"));
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(opener), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
       expect(examples.textContent).toContain("Added: Release checker");
     });
 
@@ -1096,10 +1096,10 @@ describe("ComponentPageComponent", () => {
       const examples = section(host, "Examples");
 
       await userEvent.click(DocsFixture.byText(examples, "button", "Add a teammate"));
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
       await userEvent.click(DocsFixture.byText(DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]"), "button", "Cancel"));
 
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
       expect(examples.textContent).toContain("Added: No one yet");
     });
 
@@ -1108,10 +1108,10 @@ describe("ComponentPageComponent", () => {
       const examples = section(host, "Examples");
 
       await userEvent.click(DocsFixture.byText(examples, "button", "Delete the note"));
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]").length).toBe(1));
       await userEvent.click(DocsFixture.byText(DocsFixture.one(document, ".cdk-overlay-container [role=\"dialog\"]"), "button", "Delete"));
 
-      await vi.waitFor(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"dialog\"]")).toEqual([]));
       expect(examples.textContent).toContain("Answer: Deleted");
     });
   });
@@ -1124,11 +1124,11 @@ describe("ComponentPageComponent", () => {
 
       DocsFixture.byText(examples, "button", "Save").focus();
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(undo), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(outside(host, "[role=\"tooltip\"]").map(t => t.textContent?.trim())).toEqual(["Undo the last change (Ctrl+Z)"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(undo));
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"tooltip\"]").map(t => t.textContent?.trim())).toEqual(["Undo the last change (Ctrl+Z)"]));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(outside(host, "[role=\"tooltip\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "[role=\"tooltip\"]")).toEqual([]));
       expect(document.activeElement).toBe(undo);
     });
   });
@@ -1144,25 +1144,25 @@ describe("ComponentPageComponent", () => {
 
       field.focus();
       await userEvent.keyboard("{ArrowUp}");
-      await vi.waitFor(() => expect(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").getAttribute("aria-label")).toBe("/clear"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").getAttribute("aria-label")).toBe("/clear"));
       expect(field.getAttribute("aria-activedescendant")).toBe(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-selected=\"true\"]").id);
 
       await userEvent.fill(field, "/p");
-      await vi.waitFor(() => expect(labels()).toEqual(["/plan"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(labels()).toEqual(["/plan"]));
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /plan"), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(closed()).toEqual(shut), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Chosen: /plan"));
+      await DomChangeFixture.untilAsync(() => expect(closed()).toEqual(shut));
 
       await userEvent.fill(field, "/");
-      await vi.waitFor(() => expect([labels().length, field.getAttribute("aria-controls")]).toEqual([4, "nol-docs-completion-commands"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([labels().length, field.getAttribute("aria-controls")]).toEqual([4, "nol-docs-completion-commands"]));
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(closed()).toEqual(shut), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(closed()).toEqual(shut));
 
       await userEvent.fill(field, "/c");
-      await vi.waitFor(() => expect(labels()).toEqual(["/compact", "/clear"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(labels()).toEqual(["/compact", "/clear"]));
       await userEvent.click(DocsFixture.one(examples, "[aria-label=\"Commands\"] [aria-label=\"/compact, Shorten the conversation\"]"));
-      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: /compact"), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(closed()).toEqual(shut), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Chosen: /compact"));
+      await DomChangeFixture.untilAsync(() => expect(closed()).toEqual(shut));
       expect([document.activeElement, field instanceof HTMLInputElement ? field.value : null]).toEqual([field, "/compact"]);
     });
 
@@ -1172,7 +1172,7 @@ describe("ComponentPageComponent", () => {
       const field = DocsFixture.one(examples, "input[role=\"combobox\"][aria-label=\"Command\"]");
 
       await userEvent.fill(field, "/zz");
-      await vi.waitFor(() => expect(examples.querySelector("[aria-label=\"Commands\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.querySelector("[aria-label=\"Commands\"]")).toBeNull());
       await userEvent.keyboard("{ArrowDown}{Enter}");
 
       expect([field.getAttribute("aria-expanded"), field.hasAttribute("aria-controls"), field.hasAttribute("aria-activedescendant")]).toEqual(["false", false, false]);
@@ -1190,16 +1190,16 @@ describe("ComponentPageComponent", () => {
 
       field.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(DocsFixture.one(list, "[aria-selected=\"true\"] .nol-quick-input-title").textContent?.trim()).toBe("Reading list"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(list, "[aria-selected=\"true\"] .nol-quick-input-title").textContent?.trim()).toBe("Reading list"));
       expect(field.getAttribute("aria-activedescendant")).toBe(DocsFixture.one(list, "[aria-selected=\"true\"]").id);
 
       await userEvent.fill(field, "trip");
-      await vi.waitFor(() => expect(titles()).toEqual(["Trip plan"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(titles()).toEqual(["Trip plan"]));
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(examples.textContent).toContain("Opened: Trip plan"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Opened: Trip plan"));
 
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(titles().length).toBe(5), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(titles().length).toBe(5));
       expect(field.matches(":placeholder-shown")).toBe(true);
     });
 
@@ -1214,7 +1214,7 @@ describe("ComponentPageComponent", () => {
       expect(DocsFixture.all(list, "[role=\"group\"]").map(t => t.querySelectorAll("[role=\"option\"]").length)).toEqual([2, 2]);
 
       await userEvent.fill(field, "zoom");
-      await vi.waitFor(() => expect(headings()).toEqual(["View"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(headings()).toEqual(["View"]));
     });
 
     it("shows its empty text, and reports its list closed, while no result matches", async () => {
@@ -1224,7 +1224,7 @@ describe("ComponentPageComponent", () => {
 
       await userEvent.fill(field, "zzz");
 
-      await vi.waitFor(() => expect(DocsFixture.one(examples, ".nol-quick-input-empty").textContent?.trim()).toBe("No command matches."), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(examples, ".nol-quick-input-empty").textContent?.trim()).toBe("No command matches."));
       expect(field.getAttribute("aria-expanded")).toBe("false");
     });
   });
@@ -1237,11 +1237,11 @@ describe("ComponentPageComponent", () => {
 
       DocsFixture.one(toolbar, "button[aria-label=\"New note\"]").focus();
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(wrap), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(DocsFixture.all(toolbar, "[tabindex=\"0\"]").map(t => t.getAttribute("aria-label"))).toEqual(["Wrap lines"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(wrap));
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(toolbar, "[tabindex=\"0\"]").map(t => t.getAttribute("aria-label"))).toEqual(["Wrap lines"]));
 
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(wrap.getAttribute("aria-pressed")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(wrap.getAttribute("aria-pressed")).toBe("true"));
     });
 
     it("shares nothing while Share is unavailable, and shares once there is a note", async () => {
@@ -1255,9 +1255,9 @@ describe("ComponentPageComponent", () => {
       expect(preview.textContent).toContain("Shared: 0");
 
       await userEvent.click(DocsFixture.one(preview, "button[aria-label=\"New note\"]"));
-      await vi.waitFor(() => expect(share.getAttribute("aria-disabled")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(share.getAttribute("aria-disabled")).toBeNull());
       await userEvent.click(share);
-      await vi.waitFor(() => expect(preview.textContent).toContain("Shared: 1"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(preview.textContent).toContain("Shared: 1"));
     });
 
     it("fills Sort and the icon-only More with the toolbar hover while their menus are open, More square with no chevron, and idles both once the menu closes", async () => {
@@ -1271,12 +1271,12 @@ describe("ComponentPageComponent", () => {
         const closedBox = button.getBoundingClientRect();
         button.focus();
         await userEvent.keyboard("{Enter}");
-        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull(), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull());
         const openBox = button.getBoundingClientRect();
         const open = [button.getAttribute("aria-expanded"), getComputedStyle(button).backgroundColor === hover, button.getAttribute("aria-pressed"),
           button.querySelector(".nol-toolbar-button-chevron") !== null, Math.abs(openBox.width - closedBox.width) < 0.5, Math.abs(openBox.height - closedBox.height) < 0.5];
         await userEvent.keyboard("{Escape}");
-        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull(), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull());
         looks.push([name, idle === hover, ...open, getComputedStyle(button).backgroundColor === idle, Math.abs(closedBox.width - closedBox.height) < 0.5]);
       }
 
@@ -1289,8 +1289,8 @@ describe("ComponentPageComponent", () => {
       const host = await renderAsync(expectPage("ChipComponent"));
       const examples = section(host, "Examples");
 
-      await vi.waitFor(() => expect(DocsFixture.all(examples, "nol-chip.nol-chip-count, nol-chip.nol-chip-added, nol-chip.nol-chip-removed").map(t => t.textContent?.trim()))
-        .toEqual(["3", "99+", "+12", "−4"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(examples, "nol-chip.nol-chip-count, nol-chip.nol-chip-added, nol-chip.nol-chip-removed").map(t => t.textContent?.trim()))
+        .toEqual(["3", "99+", "+12", "−4"]));
     });
   });
 
@@ -1345,7 +1345,7 @@ describe("ComponentPageComponent", () => {
       const host = await renderAsync(expectPage("MeterComponent"));
       const examples = section(host, "Examples");
 
-      await vi.waitFor(() => expect(DocsFixture.one(examples, "nol-meter[aria-label=\"Weekly usage\"]").getAttribute("aria-valuetext")).toBe("42% · Nov 2"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(examples, "nol-meter[aria-label=\"Weekly usage\"]").getAttribute("aria-valuetext")).toBe("42% · Nov 2"));
       expect(DocsFixture.one(examples, "nol-meter[aria-label=\"Storage\"]").getAttribute("aria-valuetext")).toBe("30%");
     });
   });
@@ -1359,10 +1359,10 @@ describe("ComponentPageComponent", () => {
 
       toggle.focus();
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect([toggle.getAttribute("aria-expanded"), rows.querySelector("li")]).toEqual(["false", null]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([toggle.getAttribute("aria-expanded"), rows.querySelector("li")]).toEqual(["false", null]));
 
       await userEvent.keyboard(" ");
-      await vi.waitFor(() => expect([toggle.getAttribute("aria-expanded"), DocsFixture.all(rows, "li").length]).toEqual(["true", 2]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([toggle.getAttribute("aria-expanded"), DocsFixture.all(rows, "li").length]).toEqual(["true", 2]));
       expect(document.activeElement).toBe(toggle);
     });
   });
@@ -1376,13 +1376,13 @@ describe("ComponentPageComponent", () => {
 
       toggle.focus();
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect([toggle.getAttribute("aria-expanded"), rows.querySelector("li")]).toEqual(["false", null]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([toggle.getAttribute("aria-expanded"), rows.querySelector("li")]).toEqual(["false", null]));
 
       await userEvent.keyboard(" ");
-      await vi.waitFor(() => expect([toggle.getAttribute("aria-expanded"), DocsFixture.all(rows, "li").length]).toEqual(["true", 2]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([toggle.getAttribute("aria-expanded"), DocsFixture.all(rows, "li").length]).toEqual(["true", 2]));
 
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(DocsFixture.one(examples, "button[aria-label=\"New draft\"]")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(DocsFixture.one(examples, "button[aria-label=\"New draft\"]")));
     });
   });
 
@@ -1397,21 +1397,21 @@ describe("ComponentPageComponent", () => {
 
       wrap.focus();
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(DocsFixture.one(toolbar, "button.nol-code-block-copy")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(DocsFixture.one(toolbar, "button.nol-code-block-copy")));
       await userEvent.keyboard("{Home}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(wrap), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(wrap));
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect([wrap.getAttribute("aria-pressed"), block.classList.contains("nol-code-block-wrapped")]).toEqual(["true", true]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([wrap.getAttribute("aria-pressed"), block.classList.contains("nol-code-block-wrapped")]).toEqual(["true", true]));
 
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(run), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(DocsFixture.all(toolbar, "[tabindex=\"0\"]")).toEqual([run]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(run));
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(toolbar, "[tabindex=\"0\"]")).toEqual([run]));
       await userEvent.keyboard(" ");
-      await vi.waitFor(() => expect(examples.textContent).toContain("Ran git status --short in bash"), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(run.getAttribute("aria-label")).toBe("Run bash command again"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Ran git status --short in bash"));
+      await DomChangeFixture.untilAsync(() => expect(run.getAttribute("aria-label")).toBe("Run bash command again"));
 
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(wrap), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(wrap));
     });
   });
 
@@ -1424,16 +1424,16 @@ describe("ComponentPageComponent", () => {
 
       side.focus();
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(side.getAttribute("aria-valuenow")).toBe("120"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(side.getAttribute("aria-valuenow")).toBe("120"));
       expect(examples.textContent).toContain("Outline: 120 px");
       await userEvent.keyboard("{ArrowLeft}{ArrowLeft}");
-      await vi.waitFor(() => expect(side.getAttribute("aria-valuenow")).toBe("104"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(side.getAttribute("aria-valuenow")).toBe("104"));
 
       history.focus();
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(history.getAttribute("aria-valuenow")).toBe("40"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(history.getAttribute("aria-valuenow")).toBe("40"));
       await userEvent.keyboard("{ArrowUp}{ArrowUp}");
-      await vi.waitFor(() => expect(history.getAttribute("aria-valuenow")).toBe("56"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(history.getAttribute("aria-valuenow")).toBe("56"));
       expect(examples.textContent).toContain("History: 56 px");
     });
   });
@@ -1448,19 +1448,19 @@ describe("ComponentPageComponent", () => {
 
       notes.focus();
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(outline), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(outline));
       expect(outline.getAttribute("aria-selected")).toBe("false");
 
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect([outline.getAttribute("aria-selected"), outline.getAttribute("tabindex"), notes.getAttribute("tabindex")]).toEqual(["true", "0", "-1"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([outline.getAttribute("aria-selected"), outline.getAttribute("tabindex"), notes.getAttribute("tabindex")]).toEqual(["true", "0", "-1"]));
       expect(examples.textContent).toContain("Showing: Outline");
 
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(DocsFixture.one(strip, "nol-tab[aria-label=\"Tasks\"]")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(DocsFixture.one(strip, "nol-tab[aria-label=\"Tasks\"]")));
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(notes), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(notes));
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(document.activeElement?.getAttribute("aria-label")).toBe("Tasks"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.getAttribute("aria-label")).toBe("Tasks"));
     });
 
     it("closes the focused tab on Delete, and its owner selects the next one left", async () => {
@@ -1471,7 +1471,7 @@ describe("ComponentPageComponent", () => {
       DocsFixture.one(strip, "nol-tab[aria-label=\"Notes\"]").focus();
       await userEvent.keyboard("{Delete}");
 
-      await vi.waitFor(() => expect(DocsFixture.all(strip, "nol-tab").map(t => t.getAttribute("aria-label"))).toEqual(["Outline", "Tasks"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(strip, "nol-tab").map(t => t.getAttribute("aria-label"))).toEqual(["Outline", "Tasks"]));
       expect(DocsFixture.one(strip, "nol-tab[aria-selected=\"true\"]").getAttribute("aria-label")).toBe("Outline");
       expect(examples.textContent).toContain("Showing: Outline");
     });
@@ -1482,22 +1482,22 @@ describe("ComponentPageComponent", () => {
       const tab = (label: string): HTMLElement => DocsFixture.one(preview, `nol-tab[aria-label="${label}"]`);
       const closeAsync = async (label: string, count: number): Promise<void> => {
         DocsFixture.one(tab(label), "button.nol-tab-close").click();
-        await vi.waitFor(() => expect(DocsFixture.all(preview, "nol-tab").length).toBe(count), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(preview, "nol-tab").length).toBe(count));
       };
       const notes = tab("Notes");
 
       notes.focus();
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(tab("Tasks")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(tab("Tasks")));
       await userEvent.keyboard("{Home}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(notes), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(notes));
 
       await closeAsync("Outline", 2);
       expect(preview.textContent).toContain("Showing: Notes");
       await closeAsync("Notes", 1);
-      await vi.waitFor(() => expect(preview.textContent).toContain("Showing: Tasks"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(preview.textContent).toContain("Showing: Tasks"));
       await closeAsync("Tasks", 0);
-      await vi.waitFor(() => expect(preview.textContent).toContain("No note open"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(preview.textContent).toContain("No note open"));
     });
   });
 
@@ -1511,23 +1511,23 @@ describe("ComponentPageComponent", () => {
       const tree = DocsFixture.one(examples, "[role=\"tree\"][aria-label=\"Project files\"]");
 
       row(tree, "Project")?.focus();
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "Project")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "Project")));
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(row(tree, "Project")?.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(row(tree, "Project")?.getAttribute("aria-expanded")).toBe("false"));
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(row(tree, "Project")?.getAttribute("aria-expanded")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(row(tree, "Project")?.getAttribute("aria-expanded")).toBe("true"));
 
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "Source")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "Source")));
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(row(tree, "Source")?.getAttribute("aria-expanded")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(row(tree, "Source")?.getAttribute("aria-expanded")).toBe("true"));
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "App")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "App")));
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "Source")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "Source")));
 
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(row(tree, "Source")?.getAttribute("aria-expanded")).toBe("false"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(row(tree, "Source")?.getAttribute("aria-expanded")).toBe("false"));
       expect(examples.textContent).toContain("Opened: Source");
       expect(row(tree, "Source")?.getAttribute("aria-selected")).toBe("true");
     });
@@ -1539,11 +1539,11 @@ describe("ComponentPageComponent", () => {
         .map(t => t.textContent?.trim());
 
       row(tree, "Atlas")?.focus();
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "Atlas")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "Atlas")));
       await userEvent.keyboard("{Alt>}{ArrowDown}{/Alt}");
 
-      await vi.waitFor(() => expect(labels()).toEqual(["Books", "Field guide", "Atlas", "Articles", "Later"]), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement).toBe(row(tree, "Atlas")), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(labels()).toEqual(["Books", "Field guide", "Atlas", "Articles", "Later"]));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(tree, "Atlas")));
     });
   });
 
@@ -1556,18 +1556,18 @@ describe("ComponentPageComponent", () => {
 
       DocsFixture.one(list, "[role=\"option\"][tabindex=\"0\"]").focus();
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(position()).toBe("1000"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(position()).toBe("1000"));
       expect(document.activeElement?.textContent?.trim()).toBe("Note 1000");
       expect(list.contains(document.activeElement)).toBe(true);
 
       await userEvent.keyboard("{Home}");
-      await vi.waitFor(() => expect(position()).toBe("1"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(position()).toBe("1"));
       await userEvent.keyboard("{ArrowDown}");
-      await vi.waitFor(() => expect(position()).toBe("2"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(position()).toBe("2"));
 
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(examples.textContent).toContain("Chosen: Note 2"), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(document.activeElement?.getAttribute("aria-selected")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Chosen: Note 2"));
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement?.getAttribute("aria-selected")).toBe("true"));
     });
   });
 
@@ -1580,7 +1580,7 @@ describe("ComponentPageComponent", () => {
 
       expect(run.textContent).toContain("expected 3 items, received 2");
       expect(run.querySelectorAll("span").length).toBeGreaterThan(5);
-      await vi.waitFor(() => expect(log.scrollHeight - log.clientHeight - log.scrollTop).toBeLessThanOrEqual(1), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(log.scrollHeight - log.clientHeight - log.scrollTop).toBeLessThanOrEqual(1));
       expect(log.scrollHeight).toBeGreaterThan(log.clientHeight);
       expect(log.textContent).toContain("[40] synced note 40");
     });
@@ -1595,10 +1595,10 @@ describe("ComponentPageComponent", () => {
 
       expect(DocsFixture.one(table, "[role=\"heading\"]").textContent?.trim()).toBe("Note authors");
       await userEvent.click(DocsFixture.one(table, "button[aria-label=\"Remove Ada Park\"]"));
-      await vi.waitFor(() => expect(names()).toEqual(["Mia Lund"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(names()).toEqual(["Mia Lund"]));
 
       await userEvent.click(DocsFixture.byText(table, "button", "Add"));
-      await vi.waitFor(() => expect(names()).toEqual(["Mia Lund", "Author 2"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(names()).toEqual(["Mia Lund", "Author 2"]));
       expect(table.querySelector("button[aria-label=\"Remove Author 2\"]")).not.toBeNull();
     });
   });
@@ -1613,17 +1613,17 @@ describe("ComponentPageComponent", () => {
       expect(document.getElementById(article.getAttribute("aria-labelledby") ?? "")?.textContent).toContain("Guide");
       helpful.focus();
       await userEvent.keyboard("{ArrowRight}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(copy), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(copy));
       await userEvent.keyboard("{Home}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(helpful), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(helpful));
       await userEvent.keyboard("{End}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(copy), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(copy));
       await userEvent.keyboard("{ArrowLeft}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(helpful), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(helpful));
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(helpful.getAttribute("aria-pressed")).toBe("true"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(helpful.getAttribute("aria-pressed")).toBe("true"));
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(article), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(article));
     });
 
     it("shows a failed reply's error with Retry, and drops both once its owner tries again", async () => {
@@ -1632,8 +1632,8 @@ describe("ComponentPageComponent", () => {
 
       expect(failed.querySelector(".nol-message-error-text")?.textContent?.trim()).toBe("The connection closed before the reply ended.");
       await userEvent.click(DocsFixture.one(failed, "button.nol-message-retry"));
-      await vi.waitFor(() => expect(failed.querySelector(".nol-message-error")).toBeNull(), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(failed.textContent).toContain("in the note Weekly plan, under Monday."), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(failed.querySelector(".nol-message-error")).toBeNull());
+      await DomChangeFixture.untilAsync(() => expect(failed.textContent).toContain("in the note Weekly plan, under Monday."));
     });
 
     it("draws the stopped line attached under the reply's text, space-1 after it rather than space-2", async () => {
@@ -1655,11 +1655,11 @@ describe("ComponentPageComponent", () => {
 
       copy.focus();
       await userEvent.keyboard("{Shift>}{F10}{/Shift}");
-      await vi.waitFor(() => expect(activeLabel()).toBe("Quote"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(activeLabel()).toBe("Quote"));
       expect(outside(host, "nol-menu[aria-label=\"Message menu\"]").length).toBe(1);
       await userEvent.keyboard("{Escape}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(copy), HangLimitFixture.wait);
-      await vi.waitFor(() => expect(outside(host, "nol-menu[aria-label=\"Message menu\"]")).toEqual([]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(copy));
+      await DomChangeFixture.untilAsync(() => expect(outside(host, "nol-menu[aria-label=\"Message menu\"]")).toEqual([]));
     });
 
     it("opens its owner's menu at the pointer on a right click, and shows the item picked from it", async () => {
@@ -1667,10 +1667,10 @@ describe("ComponentPageComponent", () => {
       const preview = DocsFixture.one(section(host, "Examples"), "nol-docs-message-menu-example");
 
       await userEvent.click(DocsFixture.one(preview, "nol-message"), { button: "right" });
-      await vi.waitFor(() => expect(DocsFixture.all(document, "[role=\"menu\"] [role=\"menuitem\"]").length).toBe(2), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(document, "[role=\"menu\"] [role=\"menuitem\"]").length).toBe(2));
       await userEvent.click(DocsFixture.byText(document, ".nol-menu-item-label", "Quote"));
 
-      await vi.waitFor(() => expect(document.querySelector("[role=\"menu\"]")).toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector("[role=\"menu\"]")).toBeNull());
       expect(preview.textContent).toContain("Chosen: Quote");
     });
   });
@@ -1686,9 +1686,9 @@ describe("ComponentPageComponent", () => {
 
       notes.focus();
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(guide), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(guide));
       await userEvent.keyboard("{Enter}");
-      await vi.waitFor(() => expect(examples.textContent).toContain("Opened https://example.com/guide"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Opened https://example.com/guide"));
       expect([location.href, document.activeElement]).toEqual([address, guide]);
     });
 

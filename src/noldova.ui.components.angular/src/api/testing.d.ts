@@ -346,10 +346,12 @@ export declare class AppearanceFixture {
   /**
    * Expects a scrolling area to hide its scrollbar thumb while the pointer is
    * elsewhere and to show it in the theme's color while the pointer is over
-   * it.
+   * it. Before reading each state it waits until the area shows no scroll's
+   * reveal, which stays for a second after a scroll, and runs no transition.
    *
    * @param area The scrolling area.
-   * @returns A promise that settles when both states were seen.
+   * @returns A promise that settles when both states were seen, and rejects,
+   * naming what still ran, when a wait runs past 15 seconds.
    * @example
    * ```ts
    * import { AppearanceFixture } from "@noldova/ui.components.angular/testing";

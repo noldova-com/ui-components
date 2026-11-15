@@ -16,7 +16,7 @@ import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
 import { DocsCatalog } from "../../../../src/app/models/docs-catalog.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
-import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
+import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
 describe("DocsOnThisPageComponent", () => {
   const radioSections = ["Examples", "Radios in a group, one of them disabled", "A radio on its own, bound to its owner", "States", "API", "Inputs", "Outputs",
@@ -42,10 +42,10 @@ describe("DocsOnThisPageComponent", () => {
   const targetOf = (link: HTMLElement): HTMLElement => DocsFixture.one(document, addressOf(link).hash);
 
   const settledAsync = async (host: HTMLElement): Promise<void> => {
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       expect(titles(host)).toEqual(radioSections);
       expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry");
-    }, HangLimitFixture.wait);
+    });
   };
 
   const depthOf = (link: HTMLElement): number =>
@@ -85,7 +85,7 @@ describe("DocsOnThisPageComponent", () => {
 
     for (const page of pages) {
       await TestBed.inject(Router).navigateByUrl(page.link);
-      await vi.waitFor(() => {
+      await DomChangeFixture.untilAsync(() => {
         const main = DocsFixture.one(host, "main");
         if (page.content !== null)
           expect(DocsFixture.all(main, "section[aria-labelledby=\"nol-docs-page-specification\"] nol-markdown-view .nol-markdown-blocks > *").length).toBeGreaterThan(0);
@@ -93,7 +93,7 @@ describe("DocsOnThisPageComponent", () => {
         expect(headings.length).toBeGreaterThan(0);
         expect(titles(host)).toEqual(headings.map(t => t.textContent?.trim()));
         expect(links(host).map(depthOf)).toEqual(headings.map(t => levelOf(t) - 2));
-      }, HangLimitFixture.wait);
+      });
       specificationCount += DocsFixture.all(DocsFixture.one(host, "main"), specificationHeadings).length;
     }
     expect(specificationCount).toBeGreaterThan(0);
@@ -102,14 +102,14 @@ describe("DocsOnThisPageComponent", () => {
   it("leaves out the headings an example's components render", async () => {
     const fixture = await renderAsync("/components/card");
     const host = DocsFixture.host(fixture);
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-example-preview h3").map(t => t.textContent?.trim())).toEqual(["Trip plan", "Reading list"]), HangLimitFixture.wait);
-    await vi.waitFor(() => expect(titles(host)).toContain("Specification"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-example-preview h3").map(t => t.textContent?.trim())).toEqual(["Trip plan", "Reading list"]));
+    await DomChangeFixture.untilAsync(() => expect(titles(host)).toContain("Specification"));
 
     expect(titles(host).filter(t => t === "Trip plan" || t === "Reading list")).toEqual([]);
 
     await TestBed.inject(Router).navigateByUrl("/components/markdown-view");
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-example-preview .nol-markdown-heading[role=heading]").map(t => t.textContent?.trim())).toContain("Pin a note"), HangLimitFixture.wait);
-    await vi.waitFor(() => expect(titles(host)).toContain("Surface and behavior"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-example-preview .nol-markdown-heading[role=heading]").map(t => t.textContent?.trim())).toContain("Pin a note"));
+    await DomChangeFixture.untilAsync(() => expect(titles(host)).toContain("Surface and behavior"));
 
     expect(titles(host)).not.toContain("Pin a note");
   });
@@ -122,16 +122,16 @@ describe("DocsOnThisPageComponent", () => {
     const target = targetOf(api);
 
     await userEvent.click(api);
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1);
       expect(current(host)).toEqual(["API"]);
-    }, HangLimitFixture.wait);
+    });
     expect(TestBed.inject(Router).url).toBe(`/components/radio#${target.id}`);
 
     window.scrollTo(0, 0);
-    await vi.waitFor(() => expect(current(host)).toEqual([]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(current(host)).toEqual([]));
     await userEvent.click(api);
-    await vi.waitFor(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1));
   });
 
   it("lands on the section an address's anchor names, just below the header, once the page above it has loaded", async () => {
@@ -141,11 +141,11 @@ describe("DocsOnThisPageComponent", () => {
     const target = DocsFixture.one(host, "#nol-docs-page-api");
     expect(document.documentElement.scrollHeight - target.getBoundingClientRect().top - window.scrollY).toBeGreaterThanOrEqual(window.innerHeight);
 
-    await vi.waitFor(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1));
     expect(window.scrollY).toBeGreaterThan(0);
 
     DocsFixture.one(host, "main h1").style.paddingBlockStart = "20rem";
-    await vi.waitFor(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1));
   });
 
   it("marks the section being read as the page scrolls, and the last one in view at the page's end", async () => {
@@ -156,10 +156,10 @@ describe("DocsOnThisPageComponent", () => {
 
     expect(current(host)).toEqual([]);
     window.scrollTo(0, states.getBoundingClientRect().top + window.scrollY);
-    await vi.waitFor(() => expect(current(host)).toEqual(["States"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(current(host)).toEqual(["States"]));
 
     window.scrollTo(0, document.documentElement.scrollHeight);
-    await vi.waitFor(() => expect(current(host)).toEqual(["Surface and behavior"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(current(host)).toEqual(["Surface and behavior"]));
   });
 
   it("marks the section being read in Highlight under forced colors, and the others in the link color", async () => {
@@ -168,7 +168,7 @@ describe("DocsOnThisPageComponent", () => {
     const host = DocsFixture.host(fixture);
     await settledAsync(host);
     window.scrollTo(0, DocsFixture.byText(host, "main h2", "States").getBoundingClientRect().top + window.scrollY);
-    await vi.waitFor(() => expect(current(host)).toEqual(["States"]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(current(host)).toEqual(["States"]));
     const marks = links(host).map(t => getComputedStyle(t).borderInlineStartColor);
 
     expect(marks.filter((_t, i) => radioSections[i] === "States")).toEqual([ForcedColorsFixture.resolve("Highlight")]);
@@ -181,13 +181,13 @@ describe("DocsOnThisPageComponent", () => {
     await settledAsync(host);
     const target = DocsFixture.one(host, "#nol-docs-page-api");
     expect(document.documentElement.scrollHeight - target.getBoundingClientRect().top - window.scrollY).toBeGreaterThanOrEqual(window.innerHeight);
-    await vi.waitFor(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(Math.abs(target.getBoundingClientRect().top - headerBottom(host))).toBeLessThanOrEqual(1));
 
     document.dispatchEvent(new WheelEvent("wheel", { bubbles: true }));
     window.scrollTo(0, 0);
     DocsFixture.one(host, "main h1").append(document.createTextNode(" "));
 
-    await vi.waitFor(() => expect(current(host)).toEqual([]), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(current(host)).toEqual([]));
     expect(window.scrollY).toBe(0);
   });
 
@@ -208,7 +208,7 @@ describe("DocsOnThisPageComponent", () => {
       expect(DocsFixture.overflowWidth()).toBe(0);
 
       await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
-      await vi.waitFor(() => expect(getComputedStyle(outline).display).toBe("none"), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(outline).display).toBe("none"));
       expect(main.getBoundingClientRect().right).toBe(document.documentElement.clientWidth);
       expect(DocsFixture.overflowWidth()).toBe(0);
     });
