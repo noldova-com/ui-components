@@ -17,9 +17,9 @@ import { TerminalOutputLine } from "../../../../src/app/models/terminal-output-l
 import { TerminalOutputRun } from "../../../../src/app/models/terminal-output-run";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const colored: readonly TerminalOutputLine[] = [
   new TerminalOutputLine("FAIL parser", false, [new TerminalOutputRun(4, 1, TerminalOutputRun.defaultColor, TerminalOutputStyle.Bold)]),
@@ -65,17 +65,17 @@ describe("TerminalOutputComponent", () => {
     AppearanceFixture.apply(DefaultTheme.theme, look === ThemeMode.Dark ? ThemeMode.Dark : ThemeMode.Light);
     fixture = TestBed.createComponent(TerminalOutputHostComponent);
     fixture.detectChanges();
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       fixture.detectChanges();
       expect(view().style.getPropertyValue("--nol-terminal-output-row")).not.toBe(String.empty);
       expect(spanOf("FAIL").getAttribute("style")).not.toContain("var(");
-    }, HangLimitFixture.wait);
+    });
     if (look === "forced colors") {
       await ForcedColorsFixture.activateAsync();
-      await vi.waitFor(() => {
+      await DomChangeFixture.untilAsync(() => {
         fixture.detectChanges();
         expect(spanOf("FAIL").getAttribute("style")).toContain("var(--nol-terminal-ansi-bright-red)");
-      }, HangLimitFixture.wait);
+      });
     }
   }
 
@@ -194,10 +194,10 @@ describe("TerminalOutputComponent", () => {
     await renderAsync(ThemeMode.Light);
     const light = getComputedStyle(spanOf("black")).color;
     AppearanceFixture.apply(DefaultTheme.theme, ThemeMode.Dark);
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       fixture.detectChanges();
       expect(getComputedStyle(spanOf("black")).color).not.toBe(light);
-    }, HangLimitFixture.wait);
+    });
 
     expect(spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)).toEqual([]);
   });
@@ -208,16 +208,16 @@ describe("TerminalOutputComponent", () => {
     const light = getComputedStyle(spanOf("black")).color;
     const lightBackground = getComputedStyle(body()).backgroundColor;
     scope.classList.add("nol-terminal-dark");
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       fixture.detectChanges();
       expect(getComputedStyle(spanOf("black")).color).not.toBe(light);
-    }, HangLimitFixture.wait);
+    });
     const dark = [getComputedStyle(body()).backgroundColor, spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)];
     scope.classList.remove("nol-terminal-dark");
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       fixture.detectChanges();
       expect(getComputedStyle(spanOf("black")).color).toBe(light);
-    }, HangLimitFixture.wait);
+    });
 
     expect(dark).toEqual([AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "terminal-dark-background"), []]);
     expect(getComputedStyle(body()).backgroundColor).toBe(lightBackground);

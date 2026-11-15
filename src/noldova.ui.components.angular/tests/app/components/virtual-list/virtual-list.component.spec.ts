@@ -26,13 +26,13 @@ import type { VirtualListSource } from "../../../../src/app/models/virtual-list-
 import { Resources } from "../../../../src/resources";
 import { VirtualListResources } from "../../../../src/app/components/virtual-list/virtual-list.resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FrameVirtualListSourceFixture } from "../../../fixtures/frame-virtual-list-source.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 import type { VirtualListReadFixture } from "../../../fixtures/virtual-list-read.fixture";
 import { VirtualListSourceFixture } from "../../../fixtures/virtual-list-source.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 function numbered(count: number): ArrayVirtualListSource<string> {
   return new ArrayVirtualListSource(Array.from({ length: count }, (_, t) => `item ${t}`), t => t, 30);
@@ -2572,7 +2572,7 @@ describe("VirtualListComponent", () => {
     feed.source.set(source);
     feed.position.set(new VirtualListPosition(987, null, 0));
     await settleAsync();
-    await vi.waitFor(() => expect(articles().map(t => t.querySelector(".label")?.textContent)).toContain("item 999"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(articles().map(t => t.querySelector(".label")?.textContent)).toContain("item 999"));
 
     element().style.display = String.empty;
     await settleAsync();

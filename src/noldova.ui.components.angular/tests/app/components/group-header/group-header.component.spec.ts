@@ -19,10 +19,10 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [GroupHeaderComponent, IconButtonComponent],
@@ -314,7 +314,7 @@ describe("GroupHeaderComponent", () => {
     tooltip().show();
     await fixture.whenStable();
     const cut = tooltip().isShown;
-    await vi.waitFor(() => expect(shownTooltip()).toBe(long), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBe(long));
     tooltip().hide();
 
     expect(cut).toBe(true);

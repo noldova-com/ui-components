@@ -16,9 +16,10 @@ import { ConfigurationTableDirective } from "../../../../src/app/components/conf
 import type { IScrollbarGutters } from "../../../../src/app/interfaces/i-scrollbar-gutters";
 import { ConfigurationTableTokens } from "../../../../src/app/models/configuration-table-tokens";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ButtonComponent, ConfigurationTableComponent, ConfigurationTableDirective, ConfigurationTableFillDirective],
@@ -197,7 +198,7 @@ describe("ConfigurationTableDirective", () => {
       t.width.set("288px");
     });
 
-    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(isNarrow()).toBe(true));
     expect(isNarrowest()).toBe(false);
     expectReflowed();
     expectWordsWhole();
@@ -220,7 +221,7 @@ describe("ConfigurationTableDirective", () => {
       t.width.set("200px");
     });
 
-    await vi.waitFor(() => expect(isNarrowest()).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(isNarrowest()).toBe(true));
     expect(isNarrow()).toBe(true);
     expectReflowed();
     expect(errors).toEqual([]);
@@ -238,7 +239,7 @@ describe("ConfigurationTableDirective", () => {
 
     await changeAsync(t => t.value.set("notes_archive_2026_a_folder_name_far_too_long_to_sit_on_one_line_of_this_table_and_more"));
 
-    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(isNarrow()).toBe(true));
     await frameAsync();
     expect(isNarrowest()).toBe(false);
     expectReflowed();
@@ -253,7 +254,7 @@ describe("ConfigurationTableDirective", () => {
       t.fillMinWidth.set(0);
       t.width.set("288px");
     });
-    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(isNarrow()).toBe(true));
     await frameAsync();
     await frameAsync();
     const changes: MutationRecord[] = [];
@@ -263,12 +264,16 @@ describe("ConfigurationTableDirective", () => {
     fixture.componentInstance.width.set("40rem");
     fixture.detectChanges();
     const request = window.requestAnimationFrame.bind(window);
+    const requested = new ChangeSignalFixture();
+    let isRequested = false;
     const requests = vi.spyOn(window, "requestAnimationFrame").mockImplementationOnce(callback => {
+      isRequested = true;
+      requested.fire();
       queueMicrotask(() => fixture.destroy());
       return request(callback);
     });
     try {
-      await vi.waitFor(() => expect(requests).toHaveBeenCalled(), HangLimitFixture.wait);
+      await requested.untilAsync(() => expect(isRequested, "a frame request").toBe(true));
     } finally {
       requests.mockRestore();
     }

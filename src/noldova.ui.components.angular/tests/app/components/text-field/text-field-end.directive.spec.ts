@@ -15,9 +15,9 @@ import { TextFieldComponent } from "../../../../src/app/components/text-field/te
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [TextFieldBoxComponent, TextFieldEndDirective, TextFieldComponent],
@@ -79,10 +79,10 @@ describe("TextFieldEndDirective", () => {
     AppearanceFixture.apply(theme, mode);
     fixture = TestBed.createComponent(TextFieldEndHostComponent);
     fixture.detectChanges();
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       for (const name of ["named", "invalid", "long", "glyph-long", "glyph-long-invalid", "locked", "mirrored"])
         AppearanceFixture.expectPixels(Number.parseFloat(measured(name)), end(name).getBoundingClientRect().width);
-    }, HangLimitFixture.wait);
+    });
   }
 
   function place(name: string): Placement {
@@ -216,7 +216,7 @@ describe("TextFieldEndDirective", () => {
 
     fixture.componentInstance.isShown.set(false);
     fixture.detectChanges();
-    await vi.waitFor(() => expect(measured("named")).toBe(""), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(measured("named")).toBe(""));
 
     const target = AppearanceFixture.measureLook("icon-button-target");
     const inset = Math.max(0, (AppearanceFixture.measureLook("field-height") - AppearanceFixture.measureLook("border-width") * 2 - target) / 2);
