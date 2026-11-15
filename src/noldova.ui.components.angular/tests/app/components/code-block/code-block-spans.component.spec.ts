@@ -13,7 +13,7 @@ import { CodeHighlights } from "../../../../src/app/services/code-highlights";
 import { CodeTokenKind } from "../../../../src/app/enums/code-token-kind";
 import { CodeToken } from "../../../../src/app/models/code-token";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
+import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -237,13 +237,17 @@ describe("CodeBlockComponent", () => {
       harness.host.code.set("const");
     });
     const answers: ((tokens: readonly CodeToken[]) => void)[] = [];
-    vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(() => new Promise(resolve => answers.push(resolve)));
+    const changes = CodeHighlightsFixture.watch();
+    vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(() => new Promise(resolve => {
+      answers.push(resolve);
+      queueMicrotask(() => changes.fire());
+    }));
 
     harness.host.code.set(grown);
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       harness.fixture.detectChanges();
       expect(answers.length).toBe(1);
-    }, { ...HangLimitFixture.wait, interval: 1 });
+    });
     const meanwhile = [tokens(), body().querySelector("code")?.textContent];
     answers[0]?.([new CodeToken(0, "const", CodeTokenKind.Keyword), new CodeToken(6, "a", CodeTokenKind.Variable)]);
     await harness.fixture.whenStable();

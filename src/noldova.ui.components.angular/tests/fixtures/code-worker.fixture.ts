@@ -17,12 +17,14 @@ import type { ITimeSource } from "../../src/app/interfaces/i-time-source";
 import { CodeTokenizer } from "../../src/app/models/code-tokenizer";
 import { CodeWorkerServer } from "../../src/app/models/code-worker-server";
 import { SystemTimeSource } from "../../src/app/services/system-time-source";
-import { HangLimitFixture } from "./hang-limit.fixture";
+import { ChangeSignalFixture } from "./change-signal.fixture";
 
 export class CodeWorkerScopeFixture implements ICodeHighlightingWorkerScope {
   public static readonly tokenizer: CodeTokenizer = new CodeTokenizer(shiki, CodeTokenizer.primitiveOf(shiki, engine));
 
   public readonly answers: ICodeWorkerAnswer[] = [];
+  // Fires on each answer the server posts.
+  public readonly changes: ChangeSignalFixture = new ChangeSignalFixture();
   private readonly listeners: ((event: MessageEvent) => void)[] = [];
   private readonly deliver: (answer: ICodeWorkerAnswer) => void;
 
@@ -37,6 +39,7 @@ export class CodeWorkerScopeFixture implements ICodeHighlightingWorkerScope {
   public postMessage(message: ICodeWorkerAnswer): void {
     const clone = structuredClone(message);
     this.answers.push(message);
+    this.changes.fire();
     setTimeout(() => this.deliver(clone));
   }
 
@@ -47,7 +50,7 @@ export class CodeWorkerScopeFixture implements ICodeHighlightingWorkerScope {
   }
 
   public async answeredAsync(count: number): Promise<readonly ICodeWorkerAnswer[]> {
-    await vi.waitFor(() => expect(this.answers.length).toBeGreaterThanOrEqual(count), { ...HangLimitFixture.wait, interval: 1 });
+    await this.changes.untilAsync(() => expect(this.answers.length).toBeGreaterThanOrEqual(count));
     return this.answers;
   }
 }
@@ -90,6 +93,8 @@ export class CodeWorkerFixture extends EventTarget implements ICodeWorker {
 
 export class CodeWorkerStartFixture {
   public readonly started: CodeWorkerFixture[] = [];
+  // Fires on each start and on each answer a started worker's server posts.
+  public readonly changes: ChangeSignalFixture = new ChangeSignalFixture();
   private readonly isServing: boolean;
 
   public constructor(isServing: boolean = true) {
@@ -99,6 +104,8 @@ export class CodeWorkerStartFixture {
   public readonly start = (): CodeWorkerFixture => {
     const worker = new CodeWorkerFixture(this.isServing);
     this.started.push(worker);
+    worker.scope.changes.listen(() => this.changes.fire());
+    this.changes.fire();
     return worker;
   };
 }

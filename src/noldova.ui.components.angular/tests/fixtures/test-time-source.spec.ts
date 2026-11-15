@@ -46,4 +46,22 @@ describe("TestTimeSource", () => {
 
     expect([calls, source.frameCount]).toEqual([["first"], 0]);
   });
+
+  it("signals each timer, frame and idle callback it is given or loses, whether it runs, is cancelled or is taken by a run, and nothing else", () => {
+    const source = new TestTimeSource();
+    const counts: number[][] = [];
+    source.changes.listen(() => counts.push([source.timerCount, source.frameCount, source.idleCount]));
+    const cancelTimer = source.after(() => undefined, 5);
+    source.every(() => undefined, 5);
+    source.frame(() => undefined);
+    source.idle(() => undefined);
+    cancelTimer();
+    cancelTimer();
+    source.advance(5);
+    source.runFrames();
+    source.runIdles();
+    source.jump(10);
+
+    expect(counts).toEqual([[1, 0, 0], [2, 0, 0], [2, 1, 0], [2, 1, 1], [1, 1, 1], [1, 0, 1], [1, 0, 0]]);
+  });
 });

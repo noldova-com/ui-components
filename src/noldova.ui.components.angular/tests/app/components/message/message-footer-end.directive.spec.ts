@@ -23,9 +23,9 @@ import type { MessageBlock } from "../../../../src/app/models/message-block";
 import { MessageText } from "../../../../src/app/models/message-text";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [IconButtonComponent, MessageActionDirective, MessageComponent, MessageFooterEndDirective],
@@ -229,7 +229,7 @@ describe("MessageFooterEndDirective", () => {
             t.width.set("24rem");
           });
           const gap = AppearanceFixture.measureLook("space-1");
-          await vi.waitFor(() => expect(find("nol-message").style.getPropertyValue("--nol-message-tools-width")).not.toBe(""), HangLimitFixture.wait);
+          await DomChangeFixture.untilAsync(() => expect(find("nol-message").style.getPropertyValue("--nol-message-tools-width")).not.toBe(""));
           const [message, tools, copy, stats, stop, header, author] = rects("nol-message", ".nol-message-tools", ".nol-message-copy", ".stats", ".stop", ".nol-message-header",
             ".nol-message-author");
 
@@ -256,7 +256,7 @@ describe("MessageFooterEndDirective", () => {
       .toEqual([null, "", "nol-message-main"]);
     host.ends.set(true);
     await fixture.whenStable();
-    await vi.waitFor(() => expect(find("nol-message").style.getPropertyValue("--nol-message-tools-width")).not.toBe(""), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(find("nol-message").style.getPropertyValue("--nol-message-tools-width")).not.toBe(""));
     host.ends.set(false);
     await fixture.whenStable();
     expect([DomFixture.maybe(DomFixture.host(fixture), ".nol-message-tools"), find("nol-message").style.getPropertyValue("--nol-message-tools-width")]).toEqual([null, ""]);

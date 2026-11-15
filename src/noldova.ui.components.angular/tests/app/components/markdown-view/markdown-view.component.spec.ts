@@ -30,11 +30,11 @@ import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { Resources } from "../../../../src/resources";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MarkdownViewComponent],
@@ -1220,7 +1220,7 @@ describe("MarkdownViewComponent", () => {
       framesOf(80);
       const code = DomFixture.one(shownView(), "nol-code-block code");
       const colored = (): string[] => [...code.querySelectorAll(".nol-code-line > span")].map(t => String(t.textContent));
-      await vi.waitFor(() => expect(colored().length).toBeGreaterThan(0), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(colored().length).toBeGreaterThan(0));
 
       expect([cut.length < "Introconst first = 1;\nconst sec".length, code.textContent, textsOfReveal("p"), visible(), colored().filter(t => t === "const")])
         .toEqual([true, "const first = 1;\nconst second = 2;", ["Intro", "The end comes mid-wor"], "Introconst first = 1;\nconst second = 2;The end comes mid-wor", ["const", "const"]]);
@@ -1388,7 +1388,7 @@ describe("MarkdownViewComponent", () => {
       const grown = pictures()[0];
       images.componentInstance.streaming.set(false);
       await images.whenStable();
-      await vi.waitFor(() => expect([shown().querySelector("strong")?.hidden, shown().querySelector("strong")?.textContent]).toEqual([false, "more"]), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect([shown().querySelector("strong")?.hidden, shown().querySelector("strong")?.textContent]).toEqual([false, "more"]));
 
       expect([drawn?.isConnected, grown === drawn, pictures()[0] === drawn, shown().querySelector("strong")?.textContent]).toEqual([true, true, true, "more"]);
     });
