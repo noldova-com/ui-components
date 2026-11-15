@@ -16,6 +16,7 @@ import { ConfigurationTableDirective } from "../../../../src/app/components/conf
 import type { IScrollbarGutters } from "../../../../src/app/interfaces/i-scrollbar-gutters";
 import { ConfigurationTableTokens } from "../../../../src/app/models/configuration-table-tokens";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -263,17 +264,16 @@ describe("ConfigurationTableDirective", () => {
     fixture.componentInstance.width.set("40rem");
     fixture.detectChanges();
     const request = window.requestAnimationFrame.bind(window);
-    let requested: () => void = () => undefined;
-    const requestedAsync = new Promise<void>(resolve => {
-      requested = resolve;
-    });
+    const requested = new ChangeSignalFixture();
+    let isRequested = false;
     const requests = vi.spyOn(window, "requestAnimationFrame").mockImplementationOnce(callback => {
-      requested();
+      isRequested = true;
+      requested.fire();
       queueMicrotask(() => fixture.destroy());
       return request(callback);
     });
     try {
-      await requestedAsync;
+      await requested.untilAsync(() => expect(isRequested, "a frame request").toBe(true));
     } finally {
       requests.mockRestore();
     }
