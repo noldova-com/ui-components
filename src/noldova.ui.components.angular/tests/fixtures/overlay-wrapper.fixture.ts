@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, onTestFinished, vi } from "vitest";
+import { expect, onTestFinished } from "vitest";
 
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "./dom-change.fixture";

@@ -96,7 +96,7 @@ describe("DocsSearchComponent", () => {
   it("opens the active result's page on Enter and clears the search", async () => {
     const host = await renderAsync();
     await typedAsync(host, "button");
-    const link = DocsFixture.all(host, ".nol-docs-search-result")[1]?.getAttribute("href");
+    const link = String(DocsFixture.all(host, ".nol-docs-search-result")[1]?.getAttribute("href"));
 
     await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
     await DocsFixture.routedAsync(TestBed.inject(Router), link);
