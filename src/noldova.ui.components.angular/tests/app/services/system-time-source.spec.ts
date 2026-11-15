@@ -8,6 +8,7 @@
 
 import { SystemTimeSource } from "../../../src/app/services/system-time-source";
 import { SystemTimeSourceResources } from "../../../src/app/services/system-time-source.resources";
+import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
 
 describe("SystemTimeSource", () => {
   it("reads the system's time", () => {

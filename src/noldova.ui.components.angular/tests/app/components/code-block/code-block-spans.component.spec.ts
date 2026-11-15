@@ -240,7 +240,7 @@ describe("CodeBlockComponent", () => {
     const changes = CodeHighlightsFixture.watch();
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(() => new Promise(resolve => {
       answers.push(resolve);
-      changes.fire();
+      queueMicrotask(() => changes.fire());
     }));
 
     harness.host.code.set(grown);

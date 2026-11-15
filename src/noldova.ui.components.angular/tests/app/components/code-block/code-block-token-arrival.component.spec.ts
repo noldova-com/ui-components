@@ -39,7 +39,7 @@ describe("CodeBlockComponent", () => {
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(code => code.startsWith("let ")
       ? new Promise(resolve => {
         answers.set(code, resolve);
-        changes.fire();
+        queueMicrotask(() => changes.fire());
       })
       : Promise.resolve([]));
     await renderAsync();
@@ -84,7 +84,7 @@ describe("CodeBlockComponent", () => {
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(code => code === "let selected;"
       ? new Promise(resolve => {
         answers.push(resolve);
-        changes.fire();
+        queueMicrotask(() => changes.fire());
       })
       : Promise.resolve([]));
     await renderAsync();
