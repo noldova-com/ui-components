@@ -16,6 +16,7 @@ import { OverlayAnchoring } from "../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../src/app/models/overlay-side";
 import { AnchoredOverlay } from "../../../src/app/services/anchored-overlay";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
 import { DomChangeFixture } from "../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../fixtures/dom.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
@@ -322,7 +323,11 @@ describe("AnchoredOverlay", () => {
 
   it("reports an anchor that stops rendering, but not one that only resizes", async () => {
     let losses = 0;
-    overlay.originLost.subscribe(() => losses++);
+    const lost = new ChangeSignalFixture();
+    overlay.originLost.subscribe(() => {
+      losses++;
+      lost.fire();
+    });
     const origin = anchor();
     overlay.openComponent(new ComponentPortal(ContentComponent), origin, below());
     origin.style.width = "200px";
@@ -330,7 +335,7 @@ describe("AnchoredOverlay", () => {
     const lossesAfterResize = losses;
 
     DomFixture.one(DomFixture.host(fixture), ".scroller").style.display = "none";
-    await DomChangeFixture.untilAsync(() => expect(losses).toBe(1));
+    await lost.untilAsync(() => expect(losses).toBe(1));
 
     expect(lossesAfterResize).toBe(0);
   });
