@@ -13,6 +13,7 @@ import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { CodeTokenizer } from "../../../src/app/models/code-tokenizer";
 import { CodeHighlighterWorkerFixture } from "../../fixtures/code-highlighter-worker.fixture";
 import { CodeWorkerStartFixture } from "../../fixtures/code-worker.fixture";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter with a highlighting worker", () => {
   const { signal, json, ini, off, offFailure, sent } = CodeHighlighterWorkerFixture;
@@ -32,7 +33,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
       highlighter.preload(["json", "ini", "cobol"]);
       const before = [bed.source.idleCount, starts.started.length];
       bed.source.runIdles();
-      await vi.waitFor(() => expect(starts.started[0]?.scope.answers.length).toBe(3), { interval: 1 });
+      await vi.waitFor(() => expect(starts.started[0]?.scope.answers.length).toBe(3), { ...HangLimitFixture.wait, interval: 1 });
       const tokens = await highlighter.tokensAsync("1", json, signal);
 
       expect([before, sent(starts.started[0]), bed.source.idleCount, bed.loadedOnPage(highlighter), bed.loadedOnPage(highlighter, ini), tokens.length > 0]).toEqual([
@@ -48,7 +49,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
 
       highlighter.preload(["json"]);
       bed.source.runIdles();
-      await vi.waitFor(() => expect(bed.errors.length).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(bed.errors.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       expect([bed.messages(), bed.source.idleCount, bed.loadedOnPage(highlighter)]).toEqual([[[failure.message, failure]], 0, false]);
     });
@@ -62,7 +63,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
       bed.source.runIdles();
       let steps = 0;
       while (!bed.loadedOnPage(highlighter)) {
-        await vi.waitFor(() => expect(bed.source.idleCount === 1 || bed.loadedOnPage(highlighter)).toBe(true), { interval: 1 });
+        await vi.waitFor(() => expect(bed.source.idleCount === 1 || bed.loadedOnPage(highlighter)).toBe(true), { ...HangLimitFixture.wait, interval: 1 });
         if (bed.source.idleCount === 1) {
           bed.source.runIdles();
           steps++;
@@ -80,7 +81,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
 
       highlighter.preload(["ini"]);
       while (!bed.loadedOnPage(highlighter, ini)) {
-        await vi.waitFor(() => expect(bed.source.idleCount === 1 || bed.loadedOnPage(highlighter, ini)).toBe(true), { interval: 1 });
+        await vi.waitFor(() => expect(bed.source.idleCount === 1 || bed.loadedOnPage(highlighter, ini)).toBe(true), { ...HangLimitFixture.wait, interval: 1 });
         bed.source.runIdles();
       }
 
@@ -96,7 +97,7 @@ describe("CodeHighlighter with a highlighting worker", () => {
       bed.serve(live.start).preload(["json"]);
 
       bed.source.runIdles();
-      await vi.waitFor(() => expect(live.started.length).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(live.started.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       expect([starts.started.length, bed.errors]).toEqual([0, []]);
     });

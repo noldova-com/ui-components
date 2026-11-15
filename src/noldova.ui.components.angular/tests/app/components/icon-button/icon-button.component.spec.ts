@@ -16,6 +16,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [IconButtonComponent],
@@ -125,7 +126,7 @@ describe("IconButtonComponent", () => {
       button().setAttribute("aria-disabled", "true");
       const unavailable = look();
       await userEvent.keyboard("{Tab}");
-      await vi.waitFor(() => expect(document.activeElement).toBe(button()));
+      await vi.waitFor(() => expect(document.activeElement).toBe(button()), HangLimitFixture.wait);
       const [gray, canvas, highlight, border] = [
         ForcedColorsFixture.resolve("GrayText"), ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("Highlight"), AppearanceFixture.measureLook("border-width")
       ];

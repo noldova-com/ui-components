@@ -21,6 +21,7 @@ import { ComponentStyleFixture } from "../../../fixtures/component-style.fixture
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OpacityFixture } from "../../../fixtures/opacity.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuBarComponent, MenuBarItemComponent, MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -78,7 +79,7 @@ describe("MenuBarItemComponent", () => {
 
   async function focusAsync(name: string, keys: string): Promise<void> {
     await userEvent.keyboard(keys);
-    await vi.waitFor(() => expect(document.activeElement).toBe(item(name)));
+    await vi.waitFor(() => expect(document.activeElement).toBe(item(name)), HangLimitFixture.wait);
     expect(item(name).matches(":focus-visible")).toBe(true);
   }
 

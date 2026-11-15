@@ -18,6 +18,7 @@ import { ConfigurationTableTokens } from "../../../../src/app/models/configurati
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ButtonComponent, ConfigurationTableComponent, ConfigurationTableDirective, ConfigurationTableFillDirective],
@@ -196,7 +197,7 @@ describe("ConfigurationTableDirective", () => {
       t.width.set("288px");
     });
 
-    await vi.waitFor(() => expect(isNarrow()).toBe(true));
+    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
     expect(isNarrowest()).toBe(false);
     expectReflowed();
     expectWordsWhole();
@@ -219,7 +220,7 @@ describe("ConfigurationTableDirective", () => {
       t.width.set("200px");
     });
 
-    await vi.waitFor(() => expect(isNarrowest()).toBe(true));
+    await vi.waitFor(() => expect(isNarrowest()).toBe(true), HangLimitFixture.wait);
     expect(isNarrow()).toBe(true);
     expectReflowed();
     expect(errors).toEqual([]);
@@ -237,7 +238,7 @@ describe("ConfigurationTableDirective", () => {
 
     await changeAsync(t => t.value.set("notes_archive_2026_a_folder_name_far_too_long_to_sit_on_one_line_of_this_table_and_more"));
 
-    await vi.waitFor(() => expect(isNarrow()).toBe(true));
+    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
     await frameAsync();
     expect(isNarrowest()).toBe(false);
     expectReflowed();
@@ -252,7 +253,7 @@ describe("ConfigurationTableDirective", () => {
       t.fillMinWidth.set(0);
       t.width.set("288px");
     });
-    await vi.waitFor(() => expect(isNarrow()).toBe(true));
+    await vi.waitFor(() => expect(isNarrow()).toBe(true), HangLimitFixture.wait);
     await frameAsync();
     await frameAsync();
     const changes: MutationRecord[] = [];
@@ -267,7 +268,7 @@ describe("ConfigurationTableDirective", () => {
       return request(callback);
     });
     try {
-      await vi.waitFor(() => expect(requests).toHaveBeenCalled());
+      await vi.waitFor(() => expect(requests).toHaveBeenCalled(), HangLimitFixture.wait);
     } finally {
       requests.mockRestore();
     }

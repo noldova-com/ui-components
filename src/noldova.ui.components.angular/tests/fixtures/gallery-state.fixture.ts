@@ -18,6 +18,7 @@ import { MarkdownParser } from "../../src/app/services/markdown.parser";
 import { PointerFixture } from "../../src/testing/services/pointer-fixture";
 import { MotionFixture } from "./motion.fixture";
 import { GalleryFixture } from "./gallery.fixture";
+import { HangLimitFixture } from "./hang-limit.fixture";
 
 export class GalleryStateFixture {
   private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility"];
@@ -82,7 +83,6 @@ export class GalleryStateFixture {
   }
 
   public static async expectHoverCellsShowTheirLookAsync(kept: Type<unknown>): Promise<void> {
-    const busyMachinePointerWait = 4000;
     const park = GalleryStateFixture.parkThePointer();
     try {
       await MotionFixture.reduceAsync();
@@ -98,7 +98,7 @@ export class GalleryStateFixture {
       for (const { element, shown, plain } of looks) {
         await PointerFixture.hoverAsync(element);
 
-        await vi.waitFor(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]), { timeout: busyMachinePointerWait, interval: 5 });
+        await vi.waitFor(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]), { ...HangLimitFixture.wait, interval: 5 });
         expect([GalleryStateFixture.name(element), shown]).not.toEqual([GalleryStateFixture.name(element), plain]);
       }
     } finally {

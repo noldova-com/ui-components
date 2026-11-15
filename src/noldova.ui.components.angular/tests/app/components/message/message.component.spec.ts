@@ -53,6 +53,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { RevealedTextFixture } from "../../../fixtures/revealed-text.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 class FeedRow {
   public readonly id: string;
@@ -745,7 +746,7 @@ describe("MessageComponent", () => {
       const tip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
       expect(tip).toBeTruthy();
       return tip;
-    });
+    }, HangLimitFixture.wait);
     await userEvent.unhover(find("time"));
     await changeAsync(() => host.twentyFourHour.set(false));
 
@@ -767,7 +768,7 @@ describe("MessageComponent", () => {
       const tip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
       expect(tip).toBeTruthy();
       return tip;
-    });
+    }, HangLimitFixture.wait);
     await userEvent.unhover(find("time"));
     await changeAsync(() => formats.set(new TimeFormats(t => `${t.getHours()}.${String(t.getMinutes()).padStart(2, "0")}`)));
     const changed = [text("time"), find("time").getAttribute("aria-label")];
@@ -896,7 +897,7 @@ describe("MessageComponent", () => {
           const tooltip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip");
           expect(tooltip?.textContent?.trim()).toBe("/repo/docs/notes.txt");
           return tooltip as HTMLElement;
-        });
+        }, HangLimitFixture.wait);
         await framesAsync();
         const box = shown.getBoundingClientRect();
         const target = button.getBoundingClientRect();
@@ -935,7 +936,7 @@ describe("MessageComponent", () => {
     const source = "Area $x^2$ and \\(y\\)\n\n$$\n\\frac{a}{b}\n$$";
     await renderAsync(t => t.blocks.set([new MessageText(source)]));
     const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
-    await vi.waitFor(() => expect(fixture.nativeElement.querySelectorAll(".nol-markdown-math .katex").length).toBe(3));
+    await vi.waitFor(() => expect(fixture.nativeElement.querySelectorAll(".nol-markdown-math .katex").length).toBe(3), HangLimitFixture.wait);
 
     find(".nol-message-copy").click();
     await fixture.whenStable();
@@ -953,7 +954,7 @@ describe("MessageComponent", () => {
     const copy = find(".nol-message-copy");
     const named = copy.getAttribute("aria-label");
     await userEvent.hover(copy);
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Copy message"));
+    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim()).toBe("Copy message"), HangLimitFixture.wait);
 
     copy.click();
     await fixture.whenStable();
@@ -974,10 +975,10 @@ describe("MessageComponent", () => {
     await vi.waitFor(() => {
       fixture.detectChanges();
       expect(find(".nol-message-copy").getAttribute("aria-label")).toBe("Couldn't copy");
-    });
+    }, HangLimitFixture.wait);
     clipboard.answer = (): Promise<boolean> => Promise.reject(failure);
     find(".nol-message-copy").click();
-    await vi.waitFor(() => expect(errors).toEqual([failure]));
+    await vi.waitFor(() => expect(errors).toEqual([failure]), HangLimitFixture.wait);
     fixture.detectChanges();
     const refused = find(".nol-message-copy").getAttribute("aria-label");
     source.advance(Resources.copyFeedbackDuration);
@@ -1279,7 +1280,7 @@ describe("MessageComponent", () => {
           const height = shown?.closest(`[${Resources.virtualListRowAttribute}]`)?.getBoundingClientRect().height ?? 0;
           measured = [height, Math.abs(Number(shown?.dataset["height"]) - height)];
           expect(measured[1], `the list's height for ${step} to match the row's`).toBeLessThanOrEqual(0.5);
-        }, { timeout: 5000, interval: 20 });
+        }, { ...HangLimitFixture.wait, interval: 20 });
         return measured;
       };
       const reply = Array.from({ length: 12 }, (_, index) => `Paragraph ${index + 1} of the reply.`).join("\n\n");

@@ -17,6 +17,7 @@ import type { ITimeSource } from "../../src/app/interfaces/i-time-source";
 import { CodeTokenizer } from "../../src/app/models/code-tokenizer";
 import { CodeWorkerServer } from "../../src/app/models/code-worker-server";
 import { SystemTimeSource } from "../../src/app/services/system-time-source";
+import { HangLimitFixture } from "./hang-limit.fixture";
 
 export class CodeWorkerScopeFixture implements ICodeHighlightingWorkerScope {
   public static readonly tokenizer: CodeTokenizer = new CodeTokenizer(shiki, CodeTokenizer.primitiveOf(shiki, engine));
@@ -46,7 +47,7 @@ export class CodeWorkerScopeFixture implements ICodeHighlightingWorkerScope {
   }
 
   public async answeredAsync(count: number): Promise<readonly ICodeWorkerAnswer[]> {
-    await vi.waitFor(() => expect(this.answers.length).toBeGreaterThanOrEqual(count), { interval: 1 });
+    await vi.waitFor(() => expect(this.answers.length).toBeGreaterThanOrEqual(count), { ...HangLimitFixture.wait, interval: 1 });
     return this.answers;
   }
 }

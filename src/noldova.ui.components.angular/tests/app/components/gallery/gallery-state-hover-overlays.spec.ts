@@ -12,5 +12,5 @@ import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 describe("GalleryStateDirective Hover cells of the overlays section", () => {
   it("shows in each of the Gallery's Hover cells the look its control has when the pointer is really over it", async () => {
     await GalleryStateFixture.expectHoverCellsShowTheirLookAsync(GalleryOverlaysComponent);
-  }, 60_000);
+  });
 });

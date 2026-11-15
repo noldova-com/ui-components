@@ -7,7 +7,8 @@
     "docs:api": "node scripts/generate-api.ts",
     "docs:build": "node scripts/build-docs.ts",
     "docs:test": "node scripts/test-docs.ts",
-    "test": "node scripts/test-docs.ts --suite"
+    "test": "node scripts/test-docs.ts --suite",
+    "test:timing": "node scripts/test-docs-timing.ts"
   },
   "dependencies": {
     "@angular/common": "22.2.6",

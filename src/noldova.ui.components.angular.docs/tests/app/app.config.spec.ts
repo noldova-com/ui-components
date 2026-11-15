@@ -15,6 +15,7 @@ import { appConfig } from "../../src/app/app.config.js";
 import { BrowserClipboardWriter } from "../../src/app/services/browser-clipboard-writer.js";
 import { VisitCounter } from "../../src/app/services/visit-counter.js";
 import { DocsFixture } from "../fixtures/docs.fixture.js";
+import { HangLimitFixture } from "../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
 
 describe("appConfig", () => {
   it("gives the kit the browser's clipboard, and the site its trailing-slash links", () => {
@@ -43,6 +44,6 @@ describe("appConfig", () => {
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
 
-    await vi.waitFor(() => expect(host.querySelector("pre code span[class^='nol-code-']:not(.nol-code-line)")).not.toBeNull(), { timeout: 10000 });
+    await vi.waitFor(() => expect(host.querySelector("pre code span[class^='nol-code-']:not(.nol-code-line)")).not.toBeNull(), HangLimitFixture.wait);
   });
 });

@@ -15,6 +15,7 @@ import { CodeHighlighter } from "../../../src/app/services/code-highlighter";
 import { CodeHighlightingFixture } from "../../../src/testing/models/code-highlighting-fixture";
 import { CodeHighlighterFixture, type ICodeHighlighterStatics } from "../../fixtures/code-highlighter.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter", () => {
   const { typescript, tokenizing, preloadWitness, idleStepsAsync } = CodeHighlighterFixture;
@@ -36,7 +37,7 @@ describe("CodeHighlighter", () => {
       const startAsync = vi.spyOn(CodeHighlighter as unknown as ICodeHighlighterStatics, "startAsync");
       highlighter = TestBed.inject(CodeHighlighter);
       highlighter.preload(["ts"]);
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
       const before = [source.idleCount, startAsync.mock.calls.length, highlighter.tokens("let a;", typescript)];
 
       const steps = await idleStepsAsync(highlighter, source, [typescript]);
@@ -54,9 +55,9 @@ describe("CodeHighlighter", () => {
 
       const steps = await idleStepsAsync(highlighter, source, [typescript, json]);
       highlighter.preload(["ts", "yaml"]);
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
       source.runIdles();
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       expect([steps, loadAsync.mock.calls.map(t => (t[1] as CodeLanguage).id)]).toEqual([6, [typescript.id, json.id]]);
     });
@@ -67,7 +68,7 @@ describe("CodeHighlighter", () => {
       highlighter.preload(["nothing-known"]);
       const asked = source.idleCount;
       highlighter.preload(["ts"]);
-      await vi.waitFor(() => expect(source.idleCount).toBeGreaterThan(0), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBeGreaterThan(0), { ...HangLimitFixture.wait, interval: 1 });
 
       expect([asked, source.idleCount]).toEqual([0, 1]);
     });
@@ -75,12 +76,12 @@ describe("CodeHighlighter", () => {
     it("loads nothing once its injector goes before the page is idle", async () => {
       const startAsync = vi.spyOn(CodeHighlighter as unknown as ICodeHighlighterStatics, "startAsync");
       TestBed.inject(CodeHighlighter).preload(["ts"]);
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       preloadWitness(source);
-      await vi.waitFor(() => expect(source.idleCount).toBe(2), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(2), { ...HangLimitFixture.wait, interval: 1 });
       source.runIdles();
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       expect(startAsync.mock.calls.length).toBe(1);
     });

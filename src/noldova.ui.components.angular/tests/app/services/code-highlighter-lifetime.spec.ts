@@ -17,6 +17,7 @@ import { Resources } from "../../../src/resources";
 import { CodeHighlightingFixture } from "../../../src/testing/models/code-highlighting-fixture";
 import { CodeHighlighterFixture } from "../../fixtures/code-highlighter.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter", () => {
   const { signal, typescript, ownShiki } = CodeHighlighterFixture;
@@ -68,7 +69,7 @@ describe("CodeHighlighter", () => {
     const releases: (() => void)[] = [];
     const slow: CodeLanguage = { id: typescript.id, aliases: [], load: () => new Promise(resolve => releases.push(() => resolve(import("@shikijs/langs/typescript")))) };
     const tokens = TestBed.inject(CodeHighlighter).tokensAsync("let a;", slow, signal);
-    await vi.waitFor(() => expect(releases.length).toBe(1), { interval: 1 });
+    await vi.waitFor(() => expect(releases.length).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
     TestBed.resetTestingModule();
     releases[0]?.();

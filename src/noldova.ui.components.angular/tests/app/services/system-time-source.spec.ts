@@ -8,6 +8,7 @@
 
 import { SystemTimeSource } from "../../../src/app/services/system-time-source";
 import { SystemTimeSourceResources } from "../../../src/app/services/system-time-source.resources";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("SystemTimeSource", () => {
   it("reads the system's time", () => {
@@ -31,11 +32,11 @@ describe("SystemTimeSource", () => {
     const cancel = source.every(() => calls++, 5);
     const watcher = source.every(() => later++, 5);
 
-    await vi.waitFor(() => expect(calls).toBeGreaterThanOrEqual(2));
+    await vi.waitFor(() => expect(calls).toBeGreaterThanOrEqual(2), HangLimitFixture.wait);
     cancel();
     const stopped = calls;
     const mark = later;
-    await vi.waitFor(() => expect(later).toBeGreaterThanOrEqual(mark + 3));
+    await vi.waitFor(() => expect(later).toBeGreaterThanOrEqual(mark + 3), HangLimitFixture.wait);
     watcher();
 
     expect(calls).toBe(stopped);
@@ -48,7 +49,7 @@ describe("SystemTimeSource", () => {
     source.after(() => calls.push("cancelled"), 5)();
     source.after(() => calls.push("later"), 20);
 
-    await vi.waitFor(() => expect(calls).toContain("later"));
+    await vi.waitFor(() => expect(calls).toContain("later"), HangLimitFixture.wait);
 
     expect(calls).toEqual(["once", "later"]);
   });
@@ -59,7 +60,7 @@ describe("SystemTimeSource", () => {
     source.frame(() => calls.push("cancelled"))();
     source.frame(() => calls.push("frame"));
 
-    await vi.waitFor(() => expect(calls).toContain("frame"));
+    await vi.waitFor(() => expect(calls).toContain("frame"), HangLimitFixture.wait);
 
     expect(calls).toEqual(["frame"]);
   });
@@ -100,7 +101,7 @@ describe("SystemTimeSource", () => {
       source.idle(() => calls.push("cancelled"))();
       source.idle(() => calls.push("idle"));
 
-      await vi.waitFor(() => expect(calls).toContain("idle"));
+      await vi.waitFor(() => expect(calls).toContain("idle"), HangLimitFixture.wait);
 
       expect([calls, after.mock.calls.map(t => t[1])]).toEqual([["idle"], [SystemTimeSourceResources.idleFallbackDelay, SystemTimeSourceResources.idleFallbackDelay]]);
     } finally {

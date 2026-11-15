@@ -16,6 +16,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RowFillFixture } from "../../../fixtures/row-fill.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   selector: "test-completion-host",
@@ -143,7 +144,7 @@ describe("CompletionListComponent", () => {
 
   it("fills a row under the pointer as it fills the active row", async () => {
     await userEvent.hover(option(2));
-    await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true));
+    await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true), HangLimitFixture.wait);
 
     expect(RowFillFixture.colorOf(option(2))).toBe(RowFillFixture.colorOf(option(0)));
   });
@@ -205,7 +206,7 @@ describe("CompletionListComponent", () => {
     await ForcedColorsFixture.activateAsync();
     try {
       await userEvent.hover(option(2));
-      await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true));
+      await vi.waitFor(() => expect(option(2).matches(":hover")).toBe(true), HangLimitFixture.wait);
       const outline = (index: number): string[] => {
         const fill = getComputedStyle(option(index), "::before");
         return [fill.outlineStyle, fill.outlineWidth, fill.outlineColor, fill.outlineOffset];

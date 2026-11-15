@@ -72,11 +72,12 @@ A new release of a package the kit's peers pull in can turn these steps red with
 It then compares the installed kit's declarations and API documentation with its source, and checks the types of each package's `scripts/`.
 Those comparisons, and the kit's own build, which carries the documentation onto the declarations the Angular compiler writes, read the kit's source through TypeScript's compiler API in the same process, from `src/noldova.ui.components.angular/scripts/api/`.
 
-`npm test` runs every test past the others' failures: the nativeElement assertions check, the OnPush strategies check, on Linux x64 only the Kit bundles, the Kit copies, the Kit manifest and Angular's newest, and the kit's Angular specs, which must each report a result, with no test identity, the spec file and the titles of its suites and test, repeated, then, on Linux only, builds the docs site and tests it, as `npm run docs:build` and `npm run docs:test` do, as the static site it serves is the same on every platform.
+`npm test` runs every test past the others' failures: the nativeElement assertions check, the OnPush strategies check, the poll and test limits check, on Linux x64 only the Kit bundles, the Kit copies, the Kit manifest and Angular's newest, and the kit's Angular specs, which must each report a result, with no test identity, the spec file and the titles of its suites and test, repeated, then, on Linux only, builds the docs site and tests it, as `npm run docs:build` and `npm run docs:test` do, as the static site it serves is the same on every platform.
 With `NOLDOVA_SEPARATE_TEST=docs`, as the CI targets' tests set it, `npm test` leaves the docs site out, and the CI run's "Separate test" job checks it once, with `npm run build` and `npm run test:docs`.
 `npm test -- --shard=<part>/<parts>`, with 2 to 8 parts, runs only every `<parts>`-th spec file of the kit's sorted list, from the `<part>`-th, with the Angular `part` configuration, which keeps the coverage report in `_build/angular-coverage` without gating it, and runs the checks before the specs only in part 1.
 `npm run test:merge -- <folder> <parts>`, with Node.js alone, first checks itself on small reports in a temporary folder, then adds up the coverage of the parts, each in a subfolder of `<folder>`, by where each function, statement and branch sits in its file, from only the parts that loaded the file, since a part that never loaded it maps it from its source and can map it otherwise, and fails as `npm test` does below the requirement in [Coverage](#coverage), naming what no part reached; it also fails when fewer subfolders than `<parts>` came, or when one holds no report or one that isn't JSON.
-`npm test -- <filter>...` runs only the spec files whose path from the repository root holds a filter, without the coverage gates, the nativeElement assertions check, the OnPush strategies check, the Kit bundles, the Kit copies, the Kit manifest, Angular's newest and the docs site, and fails when nothing matches.
+`npm test -- <filter>...` runs only the spec files whose path from the repository root holds a filter, without the coverage gates, the nativeElement assertions check, the OnPush strategies check, the poll and test limits check, the Kit bundles, the Kit copies, the Kit manifest, Angular's newest and the docs site, and fails when nothing matches.
+`npm run test:timing`, after `npm test`, is the timing check that [Time per file](#time-per-file) describes; CI doesn't run it, since its pass condition is a time, and it belongs on a test machine.
 The root's `npm run build:components` and `npm test` run each workspace's own `build` and `test`, and `npm run build:docs` each workspace's own `docs:build`, passing on what follows `--`; each package's scripts run from its own folder, with paths relative to it, and write to the root's `_build/` and `_packages/`.
 The kit's entry points are `src/noldova.ui.components.angular/scripts/build.ts` and `src/noldova.ui.components.angular/scripts/test.ts`, and the docs site's are in `src/noldova.ui.components.angular.docs/scripts/`.
 The CI run passes two options, which the organization's shared workflow gives every repository:
@@ -175,19 +176,63 @@ When npm can't answer, as when the registry can't be reached or doesn't answer, 
 The repository's automation has no spec runner of its own, as [Coverage](#coverage) says, so the check tests itself as it runs, as the Kit manifest check does: through a stand-in for npm, `scripts/checks/stood-in-npm.ts`, it passes with the kit at Angular's newest and with an `@angular/ssr` patch at the kit's build tools, and fails, as it must, on a peer ahead of the kit's `@angular/core`, naming that peer alone, while a deprecated newer version doesn't count; and it fails with the reason, and not as a package ahead, on each failure of npm: an error, an answer that isn't JSON, no answer in time, an error reading the build tools' peers, `npm_execpath` unset, and a kit that doesn't name `@angular/build`.
 Like the Kit bundles, the Kit copies and the Kit manifest checks, it runs on Linux x64 only, and the nightly "Newest context" run, whose `npm test` runs it too, opens or comments on its issue when it fails.
 
+### Hang limit
+
+The kit's and the docs site's specs have one hang limit, 30 seconds for each test and each hook, set in `src/noldova.ui.components.angular/vitest.config.mts`; no spec sets its own, and `src/noldova.ui.components.angular/tests/hang-limit.spec.ts` checks that the run uses it.
+The limit is at least three times the slowest test in main's runs: over the "Build and test" runs of 1d54803, 2f26351, b2316e9, e86e8b0 and 8af4e86, the slowest took 8.1 seconds, on Windows arm64, so 30 seconds is 3.7 times it.
+A test's time there includes its `beforeEach` and `afterEach` hooks, so the figure covers them too.
+The one `beforeAll` is the media reset in `src/noldova.ui.components.angular/tests/shared-page.setup.ts`, which runs once in every kit spec file under the same limit and is outside the figure; no spec has an `afterAll`.
+Every poll is bounded at half the limit, 15 seconds, as [Fixed pauses](#fixed-pauses) says, so a poll that never passes fails first, with what it waited for, and stops; the hang-limit spec shows a hung `vi.waitFor` and a hung `expect.poll` failing on their bound with their own message.
+A test that reaches either limit is a bug to fix, never a reason to raise it; Vitest names the test, and for a test that reaches the hang limit, the limit and the command it was waiting on.
+
+### Poll and test limits
+
+The poll and test limits check, `src/noldova.ui.components.angular/scripts/checks/poll-bound-check.ts`, reads every TypeScript file under the kit's `tests` and `src/testing` and the docs site's `tests`, with strings and comments read as blanks, and fails, naming the file and line, on a `vi.waitFor` or `vi.waitUntil` call that doesn't pass `HangLimitFixture.wait`, on a `timeout` key, such as a poll's or a test's own limit, on `vi.setConfig`, and on a test or suite given a third argument, or a hook a second, which can only be a limit or options of its own.
+The hang-limit spec alone is left out, since it shows a hung poll with a short bound of its own.
+It first tests itself on small sources, the shared bound passed, missing, in a string or overridden, for `vi.waitFor` and `vi.waitUntil`, a poll's and a test's own limits, as a number, a name or an expression after an inline or a named callback, a regular expression and a comment, and fails when that test does.
+
 ### Time per file
 
-The organization's testing standard has each spec file finish in under 1 second; one file has its own limit, by the maintainer's decision.
-A file's time is the one CI reports in its run of the whole suite, or one a machine reports when it runs the spec files one at a time, with Vitest's `fileParallelism` off; a whole-suite run on a busy machine measures its load rather than the file.
-`src/noldova.ui.components.angular/tests/app/models/markdown.reader.spec.ts` may take about 3 seconds.
-Its streaming specs read the whole text after every length they stream, through the reader's real paragraph step and margin, `markdownParagraphStep` and `markdownParagraphMargin`, 1000 and 500 characters, which stay as they are.
+The organization's testing standard has a component spec file's median test finish in under 100 ms, measured on a test machine, and README list each component test over 1 second with its time and cause.
+Every spec here, the kit's and the docs site's, is a component spec, since each runs in the browser through Angular's test builder.
+
+`npm run test:timing` is the timing check, apart from `npm test` since its pass condition is a time.
+It runs the kit's specs three times without coverage, and on Linux the docs site's too, as their tests run only there.
+It takes each test's median over the runs, so one slow run decides nothing, and fails a spec file whose tests' median is over 100 ms plus a margin of 20%.
+It also prints each test whose median is over 1 second, which the list below holds.
+Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
+Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
+
+57 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 54 of the kit's and 3 of the docs site's; [#148](https://github.com/noldova-com/ui-components/issues/148) makes them fit, and until then the timing check fails.
+The tests over 1 second, waiting for the Owner's acceptance, each with its slowest median over three runs on a Linux, a Windows and a macOS test machine, rounded up to 100 ms:
+
+| Test | Time | Cause |
+|---|---|---|
+| docs site, `docs-on-this-page.component.spec.ts`: lists exactly the sections of every page the menu links | 4100 ms | It goes through the router to every page of the catalog and waits for each page's headings and outline. |
+| `markdown-view.component.spec.ts`, while its text streams: streams a 10,000-character reply in 100-character batches | 3300 ms | It sets 100 lengths of the reply, and after each steps 6 frames of 16 ms on the fake timers, 700 steps in all. |
+| `virtual-list.component.spec.ts`: never moves a row it shows back when a smooth scroll near the start measures rows that grew | 2200 ms | It scrolls up from row 300, 90 px at a time, letting each step settle for up to 10 frames, then records a smooth scroll on every frame. |
+| `gallery-state-hover-navigation.spec.ts`, `-forms.spec.ts`, `-overlays.spec.ts`: shows in each of the Gallery's Hover cells the look its control has | 1900 ms | It moves a real pointer over every Hover cell of its section and reads each cell's computed styles until they match. |
+| `gallery-state-focus-navigation.spec.ts`: shows in each of the Gallery's Focus cells the look its control has | 1300 ms | It gives every Focus cell of the navigation section the real keyboard focus and reads each cell's computed styles until they match. |
+| `virtual-list.component.spec.ts`: holds an element from where a click above it puts it when its row starts inside the view | 1500 ms | It steps 80 rendered frames, 20 for each of four reads. |
+| `link-reference-chip.component.spec.ts`: gives the app each card link's address on a click, a middle click or Enter | 1500 ms | It renders the chip 9 times, each with a real hover, a real click and a wait for the card to close. |
+| `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag, in ltr and rtl | 1400 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
+| `tool-call.component.spec.ts`: folds its words, then its status word, then its kind's icon as the panel narrows, in each theme | 1300 ms | For each fold level it bisects the panel's width, about 9 resizes, each settling over frames, then measures the crossings again. |
+| `virtual-list.component.spec.ts`: keeps a focused article rendered, with the focus in it, while the keys scroll far from it | 1300 ms | It presses Page Up 20 times as real keys in a 1,000-row feed, letting each press settle for up to 10 frames. |
+| `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click between articles focuses the feed, or a click on an article, and the arrows follow | 1200 ms | One real click and 6 real key presses, each settling over about 6 frames. |
+| `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line on any frame of a scrollbar drag | 1200 ms | It jumps the scroll position in 30 steps from top to end, with up to 3 frames each. |
+| `busy-guard.spec.ts`: ignores clicks and Enter while busy | 1100 ms | It clicks 10 busy controls and a split button's arrow with real clicks, and presses Enter. |
+| `kit.spec.ts`, kit styles in forced colors: fills the navigation section's selected tab, current tree row, pressed… with the highlight | 1100 ms | It renders the whole Gallery navigation section under forced colors before reading computed colors. |
+| `markdown-view.component.spec.ts`, while its text streams: keeps a streaming code's ended lines past the reveal as empty token spans | 1100 ms | It streams 40 code lines in 5 reveals, settling each until highlighted and stepping 10 frames, then up to 500 more frames. |
+
+`src/noldova.ui.components.angular/tests/app/models/markdown.reader.spec.ts` is the slowest file whose median test fits: its streaming specs read the whole text after every length they stream, through the reader's real paragraph step and margin, `markdownParagraphStep` and `markdownParagraphMargin`, 1000 and 500 characters, which stay as they are.
 Two kinds of spec keep their time down by what they render.
-The Gallery's Focus and Hover specs, `gallery-state-focus-sections.spec.ts` and `gallery-state-hover-sections.spec.ts`, render each of the kit's sections alone, with the others stood in for: the whole Gallery took about half of a test's 15-second limit to render on macOS x64.
+The Gallery's Focus and Hover specs, `gallery-state-focus-sections.spec.ts` and `gallery-state-hover-sections.spec.ts`, render each of the kit's sections alone, with the others stood in for: the whole Gallery took about half of the 15-second limit a test then had to render on macOS x64.
 The docs site's page specs check the desktop and phone widths; only the tables' fit, in `component-page.component.spec.ts` and `docs-shell.component.spec.ts`, runs at every width the site promises, on every page that holds a table or may gain one.
 
 ### Fixed pauses
 
-Angular specs poll with Vitest's `vi.waitFor`, and pause for no fixed time but the two waits below.
+Angular specs poll with Vitest's `vi.waitFor` and `expect.poll`, and pause for no fixed time but the two waits below.
+Every poll has one bound, half the [hang limit](#hang-limit): `vitest.config.mts` gives it to `expect.poll`, and each `vi.waitFor` or `vi.waitUntil`, which take no bound from the config, passes `HangLimitFixture.wait`, from `src/noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.ts`, which reads it from there; the [poll and test limits](#poll-and-test-limits) check holds every poll to it.
 
 - The one real deadline a spec waits out is 20 ms: `src/noldova.ui.components.angular/tests/fixtures/live-region.fixture.spec.ts` checks that `LiveRegionFixture.spokenAsync` fails, naming its limit, when the region speaks nothing within it.
 - `LayoutTraceFixture.startAsync`, in `src/noldova.ui.components.angular/tests/fixtures/layout-trace.fixture.ts`, tries again every 50 ms, for up to 10 seconds, while the browser refuses its trace because a spec file in another tab is tracing. The browser tells only the tab that started a trace when it ends, so there is no event to wait for. A spec waits only while another trace runs.

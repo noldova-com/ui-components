@@ -18,6 +18,7 @@ import { Resources } from "../../../src/resources";
 import { CodeHighlightingFixture } from "../../../src/testing/models/code-highlighting-fixture";
 import { CodeHighlighterFixture, type ICodeHighlighterStatics } from "../../fixtures/code-highlighter.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
+import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
 
 describe("CodeHighlighter", () => {
   const { signal, typescript, preloadWitness, idleStepsAsync } = CodeHighlighterFixture;
@@ -64,7 +65,7 @@ describe("CodeHighlighter", () => {
       const tokens = await highlighter.tokensAsync("let a;", typescript, signal);
       const waiting = source.idleCount;
       source.runIdles();
-      await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+      await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
       expect([tokens.map(t => t.text), waiting, loadAsync.mock.calls.length]).toEqual([["let", "a"], 1, 1]);
     });
@@ -75,10 +76,10 @@ describe("CodeHighlighter", () => {
         highlighter = TestBed.inject(CodeHighlighter);
         highlighter.preload(["ts"]);
         for (let done = 0; done < ran; done++) {
-          await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+          await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
           source.runIdles();
         }
-        await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+        await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
         const tokens = await highlighter.tokensAsync("let a;", typescript, signal);
 
@@ -91,15 +92,15 @@ describe("CodeHighlighter", () => {
         const warmings = vi.spyOn(CodeTokenizer.prototype, "warm");
         TestBed.inject(CodeHighlighter).preload(["ts"]);
         for (let waited = 0; waited < ran; waited++) {
-          await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+          await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
           source.runIdles();
         }
-        await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+        await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
         preloadWitness(source);
-        await vi.waitFor(() => expect(source.idleCount).toBe(2), { interval: 1 });
+        await vi.waitFor(() => expect(source.idleCount).toBe(2), { ...HangLimitFixture.wait, interval: 1 });
         source.runIdles();
-        await vi.waitFor(() => expect(source.idleCount).toBe(1), { interval: 1 });
+        await vi.waitFor(() => expect(source.idleCount).toBe(1), { ...HangLimitFixture.wait, interval: 1 });
 
         expect([loadsAsync.mock.calls.length, warmings.mock.calls.length]).toEqual(done);
       });

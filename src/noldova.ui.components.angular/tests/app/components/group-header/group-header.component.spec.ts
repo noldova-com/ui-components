@@ -22,6 +22,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [GroupHeaderComponent, IconButtonComponent],
@@ -313,7 +314,7 @@ describe("GroupHeaderComponent", () => {
     tooltip().show();
     await fixture.whenStable();
     const cut = tooltip().isShown;
-    await vi.waitFor(() => expect(shownTooltip()).toBe(long));
+    await vi.waitFor(() => expect(shownTooltip()).toBe(long), HangLimitFixture.wait);
     tooltip().hide();
 
     expect(cut).toBe(true);

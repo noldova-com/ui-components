@@ -16,6 +16,7 @@ import { MenuComponent } from "../../../../src/app/components/menu/menu.componen
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -109,19 +110,19 @@ describe("MenuItemComponent's chevron", () => {
   it("still opens its submenu with the arrow key toward its side, Enter and the pointer without its chevron", async () => {
     row("zoom").focus();
     await userEvent.keyboard("{ArrowRight}");
-    await vi.waitFor(() => expect(submenu()).not.toBeNull());
+    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
     expect(row("zoom").getAttribute("aria-expanded")).toBe("true");
     await userEvent.keyboard("{ArrowLeft}");
-    await vi.waitFor(() => expect(submenu()).toBeNull());
+    await vi.waitFor(() => expect(submenu()).toBeNull(), HangLimitFixture.wait);
     expect(document.activeElement).toBe(row("zoom"));
 
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(submenu()).not.toBeNull());
+    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
     await userEvent.keyboard("{ArrowLeft}");
-    await vi.waitFor(() => expect(submenu()).toBeNull());
+    await vi.waitFor(() => expect(submenu()).toBeNull(), HangLimitFixture.wait);
 
     await userEvent.click(row("zoom"));
-    await vi.waitFor(() => expect(submenu()).not.toBeNull());
+    await vi.waitFor(() => expect(submenu()).not.toBeNull(), HangLimitFixture.wait);
     expect(row("zoom").getAttribute("aria-expanded")).toBe("true");
   });
 });

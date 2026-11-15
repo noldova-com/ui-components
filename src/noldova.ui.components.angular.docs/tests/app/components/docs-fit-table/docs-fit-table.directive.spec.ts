@@ -11,6 +11,7 @@ import { TestBed } from "@angular/core/testing";
 
 import { DocsFitTableDirective } from "../../../../src/app/components/docs-fit-table/docs-fit-table.directive.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
+import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
 
 @Component({
   selector: "test-fit-tables",
@@ -43,7 +44,7 @@ describe("DocsFitTableDirective", () => {
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
 
-    await vi.waitFor(() => expect(stacked(host)).toEqual(["Long"]));
+    await vi.waitFor(() => expect(stacked(host)).toEqual(["Long"]), HangLimitFixture.wait);
     expect(DocsFixture.all(host, "table").map(t => t.offsetWidth <= (t.parentElement?.clientWidth ?? 0))).toEqual([true, true]);
     expect(getComputedStyle(DocsFixture.one(host, "[aria-label=Short] tr")).display).toBe("table-row");
     expect(getComputedStyle(DocsFixture.one(host, "[aria-label=Long] tr")).display).toBe("flex");
@@ -53,11 +54,11 @@ describe("DocsFitTableDirective", () => {
     const fixture = TestBed.createComponent(FitTablesComponent);
     await fixture.whenStable();
     const host = DocsFixture.host(fixture);
-    await vi.waitFor(() => expect(stacked(host)).toEqual(["Long"]));
+    await vi.waitFor(() => expect(stacked(host)).toEqual(["Long"]), HangLimitFixture.wait);
 
     fixture.componentInstance.width.set(80);
     await fixture.whenStable();
 
-    await vi.waitFor(() => expect(stacked(host)).toEqual([]));
+    await vi.waitFor(() => expect(stacked(host)).toEqual([]), HangLimitFixture.wait);
   });
 });
