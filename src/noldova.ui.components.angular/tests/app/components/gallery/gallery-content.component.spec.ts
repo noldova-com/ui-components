@@ -13,9 +13,9 @@ import { ClipboardWriter } from "../../../../src/app/services/clipboard-writer";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 describe("GalleryContentComponent", () => {
   let fixture: ComponentFixture<GalleryContentComponent>;
@@ -63,14 +63,12 @@ describe("GalleryContentComponent", () => {
     fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
     const content = DomFixture.host(fixture);
     content.style.width = "calc(var(--nol-settings-content-width) - 2 * var(--nol-settings-content-inset))";
-    await new Promise(resolve => requestAnimationFrame(resolve));
     const cells = [...content.querySelectorAll<HTMLElement>(".nol-gallery-specimen[aria-label=\"Code block\"] nol-gallery-cell")];
     const width = (element: Element | null): number => element?.getBoundingClientRect().width ?? Number.NaN;
     const body = DomFixture.one(cell("Default"), ".nol-code-block-body");
+    const fills = (): (string | boolean | null)[][] => cells.map(t => [t.getAttribute("aria-label"), width(t.querySelector("nol-code-block")) === width(t.closest(".nol-gallery-specimen"))]);
 
-    const fills = cells.map(t => [t.getAttribute("aria-label"), width(t.querySelector("nol-code-block")) === width(t.closest(".nol-gallery-specimen"))]);
-
-    expect(fills).toEqual([["Default", true], ["Word wrap on", true], ["No language", true], ["Run offered", true], ["Run running", true], ["Output under Run", true], ["Run ended", true], ["Copy refused", true], ["Focus", true], ["Long text", false]]);
+    await DomChangeFixture.untilAsync(() => expect(fills()).toEqual([["Default", true], ["Word wrap on", true], ["No language", true], ["Run offered", true], ["Run running", true], ["Output under Run", true], ["Run ended", true], ["Copy refused", true], ["Focus", true], ["Long text", false]]));
     expect(getComputedStyle(content).getPropertyValue("--nol-settings-content-width")).not.toBe("");
     expect(body.scrollWidth).toBeGreaterThan(body.clientWidth);
   });
@@ -88,10 +86,9 @@ describe("GalleryContentComponent", () => {
 
     for (const width of ["40rem", "8rem"]) {
       content.style.width = width;
-      await new Promise(resolve => requestAnimationFrame(resolve));
 
       expect(cells().map(t => t.getAttribute("aria-label"))).toEqual(["Letters, code, documents, data and archives", "Glyph on a square, scripts", "Glyph, other kinds", "Any other file", "Folder, as the app says"]);
-      expect([width, overflows()]).toEqual([width, []]);
+      await DomChangeFixture.untilAsync(() => expect([width, overflows()]).toEqual([width, []]));
     }
   });
 
@@ -125,10 +122,8 @@ describe("GalleryContentComponent", () => {
     fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
     const typed = DomFixture.one(DomFixture.host(fixture), ".nol-gallery-specimen[aria-label=\"Plan\"] nol-gallery-cell[aria-label=\"Typed task list\"] nol-markdown-view");
     const items = (): Element[] => [...typed.querySelectorAll("li.nol-markdown-task")];
-    await vi.waitFor(async () => {
-      await fixture.whenStable();
-      expect(items()).toHaveLength(4);
-    }, HangLimitFixture.wait);
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(items()).toHaveLength(4));
 
     expect(items().map(t => [t.textContent, t.querySelector(".nol-markdown-task-mark")?.getAttribute("aria-label")])).toEqual([["Read the notes module", "Done"],
       ["Add a weekly reminder", "Not done"], ["Run the tests", "Not done"], ["Review the change", "Not done"]]);

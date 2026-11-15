@@ -20,6 +20,7 @@ import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [ButtonComponent, ConfigurationTableComponent, ConfigurationTableDirective, ConfigurationTableFillDirective],
@@ -91,6 +92,10 @@ describe("ConfigurationTableDirective", () => {
   const errors: string[] = [];
   const listen = (event: ErrorEvent): void => void errors.push(event.message);
   const frameAsync = (): Promise<number> => new Promise(resolve => requestAnimationFrame(resolve));
+  const twoFramesAsync = async (): Promise<void> => {
+    await frameAsync();
+    await frameAsync();
+  };
 
   beforeEach(() => {
     errors.length = 0;
@@ -151,11 +156,7 @@ describe("ConfigurationTableDirective", () => {
       });
       sizes.observe(find("table"));
     });
-    for (let classes = String.empty; classes !== find("table").className;) {
-      classes = find("table").className;
-      await frameAsync();
-      await frameAsync();
-    }
+    await LayoutSettleFixture.settledAsync("the table's classes", () => find("table").className, twoFramesAsync);
   }
 
   it("marks the owner's table as the configuration table's grid, named by the heading", async () => {
@@ -331,11 +332,7 @@ describe("ConfigurationTableDirective", () => {
         });
         sizes.observe(part(".nol-configuration-table"));
       });
-      for (let classes: string | null = null; classes !== grid().className;) {
-        classes = grid().className;
-        await frameAsync();
-        await frameAsync();
-      }
+      await LayoutSettleFixture.settledAsync("the grid's classes", () => grid().className, twoFramesAsync);
     }
 
     const expectOneLineOutsideFill = (): void => {
@@ -422,7 +419,7 @@ describe("ConfigurationTableDirective", () => {
       let width = 36;
       await fittedAsync(t => t.width.set(`${width}rem`));
       expect(grid().classList.contains("nol-configuration-table-narrow")).toBe(true);
-      while (grid().classList.contains("nol-configuration-table-narrow")) {
+      while (grid().classList.contains("nol-configuration-table-narrow") && width > 16) {
         expect(grid().classList.contains("nol-configuration-table-narrowest"), `${width}rem`).toBe(false);
         expectEveryWordWhole();
         expect(holder().scrollWidth, `${width}rem`).toBeLessThanOrEqual(holder().clientWidth);

@@ -18,7 +18,7 @@ import { Resources as KitResources } from "../../../../../noldova.ui.components.
 import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
-import { HangLimitFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/hang-limit.fixture.js";
+import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
 describe("TokensPageComponent", () => {
   const renderAsync = async (url: string): Promise<HTMLElement> => {
@@ -113,7 +113,7 @@ describe("TokensPageComponent", () => {
   it("stacks a token table that doesn't fit a phone, naming each value's mode before it, and a shared value's as both", async () => {
     await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
     const host = await renderAsync("/tokens");
-    await vi.waitFor(() => expect(DocsFixture.all(host, "main .nol-docs-stacked").length).toBeGreaterThan(0), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, "main .nol-docs-stacked").length).toBeGreaterThan(0));
     const rows = DocsFixture.all(host, "main .nol-docs-stacked tbody tr");
     const labels = (row: HTMLElement): readonly (string | null)[] => DocsFixture.all(row, "td").map(t => t.getAttribute("data-label"));
 
@@ -207,7 +207,7 @@ describe("TokensPageComponent", () => {
 
     await userEvent.click(DocsFixture.byText(nav, "a", "Theme tokens"));
 
-    await vi.waitFor(() => expect(heading(host)).toBe("Theme tokens"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(heading(host)).toBe("Theme tokens"));
     expect(DocsFixture.byText(nav, "a", "Theme tokens").getAttribute("aria-current")).toBe("page");
     expect(DocsFixture.byText(nav, "a", "Getting started").getAttribute("aria-current")).toBeNull();
   });
@@ -216,9 +216,9 @@ describe("TokensPageComponent", () => {
     const host = await renderAsync("/");
 
     await userEvent.fill(DocsFixture.one(host, "input[type=search]"), "tokens");
-    await vi.waitFor(() => expect(DocsFixture.all(host, ".nol-docs-search-result").map(t => t.textContent?.trim())).toContain("Theme tokens"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-search-result").map(t => t.textContent?.trim())).toContain("Theme tokens"));
     await userEvent.click(DocsFixture.byText(host, ".nol-docs-search-result", "Theme tokens"));
 
-    await vi.waitFor(() => expect(heading(host)).toBe("Theme tokens"), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(heading(host)).toBe("Theme tokens"));
   });
 });

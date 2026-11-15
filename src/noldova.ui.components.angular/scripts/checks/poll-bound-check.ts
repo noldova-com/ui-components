@@ -26,11 +26,13 @@ export class PollBoundCheck implements ICheck {
   private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*wait(?:For|Until)\s*\(/gu;
   /**
    * Each wait on a change, with how many arguments it takes: a wait on the page's changes takes its check alone, and a wait on a change
-   * signal its check and how to listen, so any argument past those is a limit of its own.
+   * signal its check and how to listen, and a wait for a layout to settle what it waits on, its shape and its pass, so any argument past
+   * those is a limit of its own.
    */
   private static readonly SIGNAL_WAITS: ReadonlyArray<readonly [RegExp, number]> = [
     [/(?<![\w$.])DomChangeFixture\s*\.\s*untilAsync\s*\(/gu, 1],
-    [/(?<![\w$.])ChangeSignalFixture\s*\.\s*untilAsync\s*\(/gu, 2]
+    [/(?<![\w$.])ChangeSignalFixture\s*\.\s*untilAsync\s*\(/gu, 2],
+    [/(?<![\w$.])LayoutSettleFixture\s*\.\s*settledAsync\s*\(/gu, 3]
   ];
   /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
   private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
@@ -73,6 +75,8 @@ export class PollBoundCheck implements ICheck {
     ["await DomChangeFixture.untilAsync(() => {\n  check(a, b);\n});", 0],
     ["await ChangeSignalFixture.untilAsync(() => check(), t => changes.listen(t));", 0],
     ["await ChangeSignalFixture.untilAsync(() => check(), t => changes.listen(t), 20);", 1],
+    ["await LayoutSettleFixture.settledAsync(\"the rows\", () => shape(), () => frameAsync());", 0],
+    ["await LayoutSettleFixture.settledAsync(\"the rows\", () => shape(), () => frameAsync(), 20);", 1],
     ["await source.changes.untilAsync(() => check());", 0],
     ["it(\"waits\", async () => {\n  await run();\n}, LIMIT);", 1],
     ["afterEach(async (): Promise<void> => {\n  await close();\n}, 2 * 30_000);", 1],

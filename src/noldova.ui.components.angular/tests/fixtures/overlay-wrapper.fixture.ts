@@ -6,10 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { expect, onTestFinished, vi } from "vitest";
+import { expect, onTestFinished } from "vitest";
 
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
-import { HangLimitFixture } from "./hang-limit.fixture";
+import { DomChangeFixture } from "./dom-change.fixture";
 
 export class OverlayWrapperFixture {
   public static readonly scrollbar: number = 15;
@@ -36,9 +36,9 @@ export class OverlayWrapperFixture {
   public static async expectCappedAsync(element: Element, box: DOMRect): Promise<void> {
     const margin = AppearanceFixture.measureLook("space-2");
     const cap = box.width - AppearanceFixture.measureLook("space-4");
-    await vi.waitFor(() => {
+    await DomChangeFixture.untilAsync(() => {
       const rect = element.getBoundingClientRect();
       expect([Math.round(rect.width), Math.round(rect.right) <= Math.round(box.right - margin)]).toEqual([Math.round(cap), true]);
-    }, HangLimitFixture.wait);
+    });
   }
 }

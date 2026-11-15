@@ -7,7 +7,10 @@
  */
 
 import type { ComponentFixture } from "@angular/core/testing";
+import type { Router } from "@angular/router";
 import { page } from "vitest/browser";
+
+import { ChangeSignalFixture } from "../../../noldova.ui.components.angular/tests/fixtures/change-signal.fixture.js";
 
 export class DocsFixture {
   public static readonly DESKTOP_WIDTH: number = 1280;
@@ -62,5 +65,13 @@ export class DocsFixture {
   public static overflowWidth(): number {
     const root = document.documentElement;
     return root.scrollWidth - root.clientWidth;
+  }
+
+  // A navigation within the page, such as to an anchor, may change nothing in the document, so this waits on the router's own events.
+  public static routedAsync(router: Router, url: string): Promise<void> {
+    return ChangeSignalFixture.untilAsync(() => expect(router.url).toBe(url), recheck => {
+      const events = router.events.subscribe(recheck);
+      return () => events.unsubscribe();
+    });
   }
 }

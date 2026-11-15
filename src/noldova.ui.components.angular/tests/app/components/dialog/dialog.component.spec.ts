@@ -324,8 +324,7 @@ describe("DialogComponent", () => {
       AppearanceFixture.apply();
       const opened = await openAsync();
       const backdrop = opened.overlayRef.backdropElement as HTMLElement;
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true);
+      await DomChangeFixture.untilAsync(() => expect(backdrop.classList.contains("cdk-overlay-backdrop-showing")).toBe(true));
       backdrop.getAnimations().forEach(t => t.finish());
 
       if (means === "Escape")
@@ -841,8 +840,12 @@ describe("DialogComponent", () => {
 
       await userEvent.click(page.getByRole("button", { name: "Maximize" }));
       await DomChangeFixture.untilAsync(() => expect(page.getByRole("button", { name: "Restore" }).query()).not.toBeNull());
-      await framesAsync();
-      const maximized = shown();
+      const maximized = await DomChangeFixture.untilAsync(() => {
+        const at = shown();
+        AppearanceFixture.expectPixels(at.top, overlay().top);
+        AppearanceFixture.expectPixels(at.left, overlay().left);
+        return at;
+      });
       const press = drag(middleOf(".nol-dialog-title"), new DOMPoint(middleOf(".nol-dialog-title").x - 70, middleOf(".nol-dialog-title").y + 40));
       await framesAsync();
       const still = shown();
