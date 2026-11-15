@@ -17,7 +17,7 @@ import { DomFixture } from "../../fixtures/dom.fixture";
 import { MovableTreeHostComponent } from "../../fixtures/movable-tree-host.component";
 import { TestTimeSource } from "../../fixtures/test-time-source";
 import { TreeHarness } from "../../fixtures/tree-harness.fixture";
-import { HangLimitFixture } from "../../fixtures/hang-limit.fixture";
+import { DomChangeFixture } from "../../fixtures/dom-change.fixture";
 
 describe("TreeDragSession at a zoom", () => {
   let fixture: ComponentFixture<MovableTreeHostComponent>;
@@ -192,7 +192,7 @@ describe("TreeDragSession at a zoom", () => {
       frame.style.zoom = String(zoom);
 
       expect(before).not.toEqual(started);
-      await vi.waitFor(() => expect(drawn()).toEqual(started), { ...HangLimitFixture.wait, interval: 1 });
+      await DomChangeFixture.untilAsync(() => expect(drawn()).toEqual(started));
     });
 
   it("redraws the drop line and the ghost on the drag's next tick when the zoom changes on an area that keeps its size, filling a parent of a fixed height", async () => {

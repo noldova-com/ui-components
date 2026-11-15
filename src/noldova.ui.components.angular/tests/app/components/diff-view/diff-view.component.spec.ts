@@ -44,9 +44,10 @@ import { Announcer } from "../../../../src/app/services/announcer";
 import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
 import { provideCodeHighlighting } from "../../../../src/app/services/provide-code-highlighting";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
+import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 const firstHunk = new DiffHunk("h1", 10, 3, 10, 4, [
   new DiffContextLine(10, 10, "const a = 1;"),
@@ -787,8 +788,10 @@ describe("DiffViewComponent", () => {
     const longFile = (id: string, name: string): DiffFile => new DiffFile(id, `src/${name}.ts`, null, DiffFileStatus.Added, 1, 0, "TypeScript",
       new DiffHunks([new DiffHunk(`h-${id}`, 0, 0, 1, 1, [new DiffAddedLine(1, `let ${name};${" ".repeat(995)}`)])]));
     let tokenized: () => readonly string[];
+    let changes: ChangeSignalFixture;
 
     beforeEach(async () => {
+      changes = CodeHighlightsFixture.watch();
       await renderAsync(t => t.files.set([modified]));
       await coloredAsync();
       const tokenize = vi.spyOn(TestBed.inject(CodeHighlighter) as unknown as { tokenize: (loaded: unknown, code: string) => readonly CodeToken[] }, "tokenize");
@@ -796,10 +799,10 @@ describe("DiffViewComponent", () => {
     });
 
     async function coloredAsync(): Promise<void> {
-      await vi.waitFor(() => {
+      await changes.untilAsync(() => {
         fixture.detectChanges();
         expect(cells().flatMap(t => tokensIn(t)).length).toBeGreaterThan(0);
-      }, HangLimitFixture.wait);
+      });
     }
 
     it("colors that side a task later, never in its first render, and colors a view shown again from the tokens kept for it, tokenizing nothing", async () => {
@@ -837,14 +840,15 @@ describe("DiffViewComponent", () => {
 
   it("puts each token on its own line, keeps each line's text as one text node, and takes back every range once its lines are gone", async () => {
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockImplementation(wordsAsync);
+    const changes = CodeHighlightsFixture.watch();
     const before = allRanges();
     const hunk = new DiffHunk("h1", 1, 3, 1, 3, [new DiffContextLine(1, 1, "if (ready)"), new DiffRemovedLine(2, "  stop();"), new DiffContextLine(3, 2, String.empty),
       new DiffAddedLine(3, "  go(now);")]);
     await renderAsync(t => t.files.set([new DiffFile("f6", "a.ts", null, DiffFileStatus.Modified, 1, 1, "TypeScript", new DiffHunks([hunk]))]));
-    await vi.waitFor(() => {
+    await changes.untilAsync(() => {
       fixture.detectChanges();
       expect(tokensIn(cells()[3] as HTMLElement).length).toBe(2);
-    }, HangLimitFixture.wait);
+    });
 
     expect(cells().map(t => tokensIn(t))).toEqual([[["if", "keyword"], ["ready", "keyword"]], [["stop", "keyword"]], [], [["go", "keyword"], ["now", "keyword"]]]);
     expect(all(".nol-diff-code").map(t => t.childNodes.length)).toEqual([1, 1, 1, 1]);
@@ -894,11 +898,15 @@ describe("DiffViewComponent", () => {
 
   it("reports tokens that failed to arrive, and leaves those lines plain", async () => {
     const errors: unknown[] = [];
+    const reported = new ChangeSignalFixture();
     const failure = new Error("The grammar's chunk did not load.");
-    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => {
+      errors.push(error);
+      reported.fire();
+    } } });
     vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync").mockRejectedValue(failure);
     await renderAsync(t => t.files.set([modified]));
-    await vi.waitFor(() => expect(errors.length).toBe(4), HangLimitFixture.wait);
+    await reported.untilAsync(() => expect(errors.length).toBe(4));
 
     expect([new Set(errors), tokensIn(DomFixture.host(fixture)), all(".nol-diff-code").map(t => t.textContent)]).toEqual([
       new Set([failure]), [], ["const a = 1;", "const b = 1;", "const b = 2;", "const c = 3;", "return a;", "old();", "next();"]

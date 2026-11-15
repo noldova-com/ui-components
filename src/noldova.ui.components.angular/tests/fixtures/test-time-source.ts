@@ -7,6 +7,7 @@
  */
 
 import type { ITimeSource } from "../../src/app/interfaces/i-time-source";
+import { ChangeSignalFixture } from "./change-signal.fixture";
 
 interface IFrame {
   readonly callback: () => void;
@@ -20,6 +21,8 @@ interface ITimer {
 }
 
 export class TestTimeSource implements ITimeSource {
+  // Fires each time a timer, a frame or an idle callback is added or removed, so a spec waits for the code to schedule one.
+  public readonly changes: ChangeSignalFixture = new ChangeSignalFixture();
   private readonly timers: Set<ITimer> = new Set();
   private readonly frames: Set<IFrame> = new Set();
   private readonly idles: Set<IFrame> = new Set();
@@ -60,25 +63,27 @@ export class TestTimeSource implements ITimeSource {
   public frame(callback: () => void): () => void {
     const frame: IFrame = { callback };
     this.frames.add(frame);
-    return () => this.frames.delete(frame);
+    this.changes.fire();
+    return () => this.removed(this.frames.delete(frame));
   }
 
   public idle(callback: () => void): () => void {
     const idle: IFrame = { callback };
     this.idles.add(idle);
-    return () => this.idles.delete(idle);
+    this.changes.fire();
+    return () => this.removed(this.idles.delete(idle));
   }
 
   public runIdles(): void {
     [...this.idles].forEach(t => {
-      if (this.idles.delete(t))
+      if (this.removed(this.idles.delete(t)))
         t.callback();
     });
   }
 
   public runFrames(): void {
     [...this.frames].forEach(t => {
-      if (this.frames.delete(t))
+      if (this.removed(this.frames.delete(t)))
         t.callback();
     });
   }
@@ -98,7 +103,14 @@ export class TestTimeSource implements ITimeSource {
 
   private add(timer: ITimer): () => void {
     this.timers.add(timer);
-    return () => this.timers.delete(timer);
+    this.changes.fire();
+    return () => this.removed(this.timers.delete(timer));
+  }
+
+  private removed(isRemoved: boolean): boolean {
+    if (isRemoved)
+      this.changes.fire();
+    return isRemoved;
   }
 
   private fireDue(): void {
@@ -108,7 +120,7 @@ export class TestTimeSource implements ITimeSource {
       if (t.isRepeating)
         t.elapsed = 0;
       else
-        this.timers.delete(t);
+        this.removed(this.timers.delete(t));
       t.callback();
     });
   }

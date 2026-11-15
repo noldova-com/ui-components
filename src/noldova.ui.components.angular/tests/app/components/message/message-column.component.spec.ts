@@ -33,12 +33,12 @@ import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [ChipComponent, IconButtonComponent, MessageActionDirective, MessageComponent],
@@ -791,11 +791,11 @@ describe("MessageComponent in a column", () => {
   });
 
   describe("its author's description", () => {
-    const tooltipAsync = async (): Promise<HTMLElement> => vi.waitFor(() => {
+    const tooltipAsync = async (): Promise<HTMLElement> => DomChangeFixture.untilAsync(() => {
       const shown = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip");
       expect(shown?.textContent?.trim()).toBeTruthy();
       return shown as HTMLElement;
-    }, HangLimitFixture.wait);
+    });
     const partsOf = (shown: HTMLElement): (string | null)[] => [...shown.querySelectorAll(".nol-tooltip-title, .nol-tooltip-description")].map(t => t.textContent?.trim() ?? null);
     const placeOf = (shown: HTMLElement, host: Element): boolean[] => {
       const [tip, anchor] = [shown.getBoundingClientRect(), host.getBoundingClientRect()];
@@ -816,12 +816,12 @@ describe("MessageComponent in a column", () => {
         const overName = await tooltipAsync();
         const named = [partsOf(overName), placeOf(overName, name)];
         await userEvent.unhover(name);
-        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).toBeNull(), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).toBeNull());
         await userEvent.hover(avatar);
         const overAvatar = await tooltipAsync();
         const pictured = [partsOf(overAvatar), placeOf(overAvatar, avatar)];
         await userEvent.unhover(avatar);
-        await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).toBeNull(), HangLimitFixture.wait);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-tooltip")).toBeNull());
         find(".article").focus();
         await userEvent.tab();
         const focused = [document.activeElement === name, partsOf(await tooltipAsync())];
