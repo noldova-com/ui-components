@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { TestTimingCheck } from "@noldova/context.testing";
+
 import CommandFailedException from "../command-failed.exception.ts";
 import { AngularTestTimingResult } from "./angular-test-timing-result.ts";
 import { JsonFields } from "./json-fields.ts";
@@ -39,12 +41,6 @@ export class AngularTestTiming {
     this.folder = folder;
   }
 
-  public static median(values: readonly number[]): number {
-    const sorted = [...values].sort((left, right) => left - right);
-    const middle = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 1 ? sorted[middle] ?? 0 : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
-  }
-
   public async readAsync(report: string): Promise<void> {
     const files = JsonFields.parse(await AngularTestTiming.readReportAsync(report), report).objects(AngularTestTiming.FILES_FIELD);
     for (const file of files) {
@@ -64,13 +60,13 @@ export class AngularTestTiming {
     const lines: string[] = [];
     let over = 0;
     for (const [file, tests] of [...this.times].sort(([left], [right]) => left.localeCompare(right))) {
-      const median = AngularTestTiming.median([...tests.values()].map(t => AngularTestTiming.median(t)));
+      const median = TestTimingCheck.median([...tests.values()].map(t => TestTimingCheck.median(t) ?? 0)) ?? 0;
       const isOver = median > AngularTestTiming.SPEC_MEDIAN_BUDGET_MILLISECONDS * (1 + AngularTestTiming.MARGIN);
       over += Number(isOver);
       if (isOver)
         lines.push(AngularTestTiming.formatOver(file, median, tests.size));
       for (const [test, times] of tests) {
-        const time = AngularTestTiming.median(times);
+        const time = TestTimingCheck.median(times) ?? 0;
         if (time > AngularTestTiming.SLOW_TEST_MILLISECONDS)
           lines.push(AngularTestTiming.formatSlowTest(file, test, time));
       }
