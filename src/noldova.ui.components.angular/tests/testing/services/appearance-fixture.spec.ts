@@ -96,7 +96,9 @@ describe("AppearanceFixture", () => {
       const park = vi.spyOn(AppearanceFixture, "parkPointerAsync").mockResolvedValue(document.createElement("div"));
       onTestFinished(() => park.mockRestore());
       vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-      onTestFinished(() => vi.useRealTimers());
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
       let failure: unknown;
       const checking = AppearanceFixture.expectThumbRevealsOnHoverAsync(area).catch((error: unknown) => {
         failure = error;
