@@ -17,9 +17,9 @@ import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-b
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective, ToolbarButtonComponent],
@@ -60,11 +60,11 @@ describe("ToolbarButtonComponent pressed while its menu is open", () => {
   const openAsync = async (name: string): Promise<void> => {
     button(name).focus();
     await userEvent.keyboard("{Enter}");
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull());
   };
   const closeAsync = async (): Promise<void> => {
     await userEvent.keyboard("{Escape}");
-    await vi.waitFor(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull());
   };
 
   afterEach(async () => {

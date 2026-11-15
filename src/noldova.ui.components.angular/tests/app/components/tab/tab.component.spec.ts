@@ -15,10 +15,10 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
-import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 
 @Component({
   imports: [TabComponent],
@@ -129,7 +129,7 @@ describe("TabComponent", () => {
         host.selected.set(true);
       });
       await showAsync();
-      await vi.waitFor(() => expect(tooltip()).not.toBeNull(), HangLimitFixture.wait);
+      await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
       await settledAsync();
       const box = tooltip()?.getBoundingClientRect() ?? new DOMRect();
 
@@ -155,7 +155,7 @@ describe("TabComponent", () => {
       host.selected.set(true);
     });
     await userEvent.hover(tab());
-    await vi.waitFor(() => expect(tooltip()).not.toBeNull(), HangLimitFixture.wait);
+    await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
     await settledAsync();
     const shown = tooltip();
     const target = tab().getBoundingClientRect();

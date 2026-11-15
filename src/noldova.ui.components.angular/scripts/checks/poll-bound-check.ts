@@ -24,6 +24,14 @@ export class PollBoundCheck implements ICheck {
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
   private static readonly SHARED_BOUND: string = "HangLimitFixture.wait";
   private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*wait(?:For|Until)\s*\(/gu;
+  /**
+   * Each wait on a change, with how many arguments it takes: a wait on the page's changes takes its check alone, and a wait on a change
+   * signal its check and how to listen, so any argument past those is a limit of its own.
+   */
+  private static readonly SIGNAL_WAITS: ReadonlyArray<readonly [RegExp, number]> = [
+    [/(?<![\w$.])DomChangeFixture\s*\.\s*untilAsync\s*\(/gu, 1],
+    [/(?<![\w$.])ChangeSignalFixture\s*\.\s*untilAsync\s*\(/gu, 2]
+  ];
   /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
   private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
   private static readonly SET_CONFIG: RegExp = /(?<![\w$.])vi\s*\.\s*setConfig\s*\(/gu;
@@ -60,6 +68,12 @@ export class PollBoundCheck implements ICheck {
     ["public static readonly wait: { readonly timeout: number } = { timeout: HangLimitFixture.readPollLimit() };", 0],
     ["await vi.waitUntil(() => ready());", 1],
     ["await vi.waitUntil(() => ready(), HangLimitFixture.wait);", 0],
+    ["await DomChangeFixture.untilAsync(() => check());", 0],
+    ["await DomChangeFixture.untilAsync(() => check(), 20);", 1],
+    ["await DomChangeFixture.untilAsync(() => {\n  check(a, b);\n});", 0],
+    ["await ChangeSignalFixture.untilAsync(() => check(), t => changes.listen(t));", 0],
+    ["await ChangeSignalFixture.untilAsync(() => check(), t => changes.listen(t), 20);", 1],
+    ["await source.changes.untilAsync(() => check());", 0],
     ["it(\"waits\", async () => {\n  await run();\n}, LIMIT);", 1],
     ["afterEach(async (): Promise<void> => {\n  await close();\n}, 2 * 30_000);", 1],
     ["describe(\"group\", function () {\n  it(\"runs\", () => {});\n}, { timeout: LIMIT });", 2],
@@ -113,6 +127,10 @@ export class PollBoundCheck implements ICheck {
       if (!call.includes(PollBoundCheck.SHARED_BOUND))
         findings.push(new PollBoundFinding(lineOf(match.index), "polls with vi.waitFor or vi.waitUntil without the shared bound; pass HangLimitFixture.wait, which vitest.config.mts sets below the test's limit."));
     }
+    for (const [wait, allowed] of PollBoundCheck.SIGNAL_WAITS)
+      for (const match of code.matchAll(wait))
+        if (PollBoundCheck.argumentsOf(code, match.index + match[0].length - 1).length > allowed)
+          findings.push(new PollBoundFinding(lineOf(match.index), "waits on a change with a limit of its own; a wait on a change takes the shared bound."));
     for (const match of code.matchAll(PollBoundCheck.OWN_TIMEOUT))
       findings.push(new PollBoundFinding(lineOf(match.index), "sets a limit of its own; polls take the shared bound and tests the one hang limit, both from vitest.config.mts."));
     for (const match of code.matchAll(PollBoundCheck.SET_CONFIG))
