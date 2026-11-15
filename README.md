@@ -198,7 +198,7 @@ Every spec here, the kit's and the docs site's, is a component spec, since each 
 
 `npm run test:timing` is the timing check, apart from `npm test` since its pass condition is a time.
 It runs the kit's specs three times without coverage, and on Linux the docs site's too, as their tests run only there.
-It takes each test's median over the runs, so one slow run decides nothing, and fails a spec file whose tests' median is over 100 ms plus a margin of 20%.
+It takes each test's median over the runs, with `TestTimingCheck.median` from `@noldova/context.testing`, so one slow run decides nothing, and fails a spec file whose tests' median is over 100 ms plus a margin of 20%.
 It also prints each test whose median is over 1 second, which the list below holds.
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
