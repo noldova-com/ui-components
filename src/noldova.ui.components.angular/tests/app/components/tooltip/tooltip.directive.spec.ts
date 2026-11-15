@@ -27,6 +27,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
@@ -522,7 +523,7 @@ describe("TooltipDirective", () => {
 
   it("describes the anchor with its description alone where its text is the anchor's name, and where it shows only while its text is truncated", async () => {
     const descriptionAsync = async (expected: string): Promise<void> => {
-      await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Split")).toBe(expected));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Split")).toBe(expected), HangLimitFixture.wait);
     };
     update(() => {
       host.text.set("split");
@@ -857,7 +858,7 @@ describe("TooltipDirective on a named host", () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const descriptionsAsync = async (hint: string, tab: string, closing: string, pinning: string): Promise<(string | null)[]> => {
-      await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Open")).toBe(hint));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Open")).toBe(hint), HangLimitFixture.wait);
       return Promise.all([tab, "Open", closing, pinning].map(name => AccessibilityFixture.descriptionAsync("button", name)));
     };
     const first = await descriptionsAsync("Open a file (Ctrl+O)", "New tab", "Close tab", "Pin tab");
@@ -892,11 +893,11 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.renaming.set("Rename tab");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"), HangLimitFixture.wait);
 
     fixture.componentInstance.renaming.set("Rename");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("describes the host with its fixed text only while the element its aria-labelledby names says something else, as that text changes and changes back", async () => {
@@ -905,11 +906,11 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.copying.set("Copy link");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy link")).toBe("Copy"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy link")).toBe("Copy"), HangLimitFixture.wait);
 
     fixture.componentInstance.copying.set("Copy");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Copy")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("follows aria-labelledby moved to another element, and that element's text as it changes", async () => {
@@ -918,24 +919,24 @@ describe("TooltipDirective on a host whose name changes or differs only in case 
 
     fixture.componentInstance.sharedBy.set("share-new");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share link")).toBe("Share"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share link")).toBe("Share"), HangLimitFixture.wait);
 
     fixture.componentInstance.sharing.set("Share");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share")).toBeNull());
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Share")).toBeNull(), HangLimitFixture.wait);
   });
 
   it("describes the host once while its name changes and its text stays another name", async () => {
     await renderAsync();
     fixture.componentInstance.renaming.set("Rename tab");
     fixture.detectChanges();
-    await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"));
+    await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", "Rename tab")).toBe("Rename"), HangLimitFixture.wait);
     const describes = vi.spyOn(TestBed.inject(AriaDescriber), "describe");
 
     for (const name of ["Rename this tab", "Rename the tab", "Rename it"]) {
       fixture.componentInstance.renaming.set(name);
       fixture.detectChanges();
-      await DomChangeFixture.untilAsync(async () => expect(await AccessibilityFixture.descriptionAsync("button", name)).toBe("Rename"));
+      await vi.waitFor(async () => expect(await AccessibilityFixture.descriptionAsync("button", name)).toBe("Rename"), HangLimitFixture.wait);
     }
 
     expect(describes).not.toHaveBeenCalled();
