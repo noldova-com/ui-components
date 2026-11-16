@@ -13,7 +13,6 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
-import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 describe("GalleryContentComponent's status colors", () => {
@@ -21,7 +20,6 @@ describe("GalleryContentComponent's status colors", () => {
 
   async function showAsync(theme: Theme): Promise<HTMLElement> {
     AppearanceFixture.apply(theme, ThemeMode.Light);
-    GalleryFixture.leaveOut(...GalleryFixture.contentSpecimens);
     fixture = TestBed.createComponent(GalleryContentComponent);
     fixture.detectChanges();
     await fixture.whenStable();

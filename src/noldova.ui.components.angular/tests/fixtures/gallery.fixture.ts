@@ -12,17 +12,10 @@ import { Component, type Type } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { GalleryComponent } from "../../src/app/components/gallery/gallery.component";
-import { GalleryAvatarComponent } from "../../src/app/components/gallery/gallery-avatar.component";
-import { GalleryCardComponent } from "../../src/app/components/gallery/gallery-card.component";
-import { GalleryCodeBlockComponent } from "../../src/app/components/gallery/gallery-code-block.component";
 import { GalleryContentComponent } from "../../src/app/components/gallery/gallery-content.component";
-import { GalleryFileBadgeComponent } from "../../src/app/components/gallery/gallery-file-badge.component";
 import { GalleryFormsComponent } from "../../src/app/components/gallery/gallery-forms.component";
-import { GalleryInlineCodeComponent } from "../../src/app/components/gallery/gallery-inline-code.component";
-import { GalleryMarkdownViewComponent } from "../../src/app/components/gallery/gallery-markdown-view.component";
 import { GalleryNavigationComponent } from "../../src/app/components/gallery/gallery-navigation.component";
 import { GalleryOverlaysComponent } from "../../src/app/components/gallery/gallery-overlays.component";
-import { GalleryTerminalOutputComponent } from "../../src/app/components/gallery/gallery-terminal-output.component";
 import { GalleryTokens } from "../../src/app/components/gallery/gallery-tokens";
 import { ThemeMode } from "../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../src/app/models/default-theme";
@@ -68,17 +61,6 @@ export class GalleryFixture {
   ];
 
   public static readonly kitSections: readonly Type<unknown>[] = GalleryFixture.KIT_SECTIONS.map(([section]) => section);
-
-  // The content section's specimen components, which a test of only the specimens its own template writes leaves out; the kit's components stay, since
-  // they need their templates, and the section's own Hover and Focus cells mark parts inside some of them.
-  public static readonly contentSpecimens: readonly Type<unknown>[] = [GalleryAvatarComponent, GalleryCardComponent, GalleryCodeBlockComponent, GalleryFileBadgeComponent,
-    GalleryInlineCodeComponent, GalleryMarkdownViewComponent, GalleryTerminalOutputComponent];
-
-  // Renders each of a section's specimen components empty, keeping its element, for a test that checks only what the rest of the section shows.
-  public static leaveOut(...specimens: readonly Type<unknown>[]): void {
-    for (const specimen of specimens)
-      TestBed.overrideTemplate(specimen, String.empty);
-  }
 
   public static standInForTheKitSections(...kept: readonly Type<unknown>[]): void {
     TestBed.overrideProvider(GalleryTokens.kitSections, { useValue: GalleryFixture.KIT_SECTIONS.map(([section, standIn]) => kept.includes(section) ? section : standIn) });
