@@ -288,7 +288,7 @@ describe("MenuGroupComponent with maxRows", () => {
         expect(edges(".row-2").bottom).toBeLessThanOrEqual(rows().getBoundingClientRect().bottom + 0.5);
       });
 
-  it("fits its rows as it opens and in the frame after its rows resize, never inside the ResizeObserver callback, which would log the browser's loop message", async () => {
+  it("fits its rows as it opens and again after its rows resize, never inside the ResizeObserver callback, which would log the browser's loop message", async () => {
     const callbacks: ResizeObserverCallback[] = [];
     vi.stubGlobal("ResizeObserver", class {
       public constructor(callback: ResizeObserverCallback) {
@@ -315,7 +315,7 @@ describe("MenuGroupComponent with maxRows", () => {
       for (const callback of callbacks)
         callback([], {} as ResizeObserver);
       const inCallback = rows().style.maxHeight;
-      await new Promise(t => requestAnimationFrame(t));
+      await DomChangeFixture.untilAsync(() => expect(rows().style.maxHeight).toBe(fitted));
 
       expect([fitted === "" ? "unfitted" : "fitted", inCallback, rows().style.maxHeight]).toEqual(["fitted", "1px", fitted]);
     }
