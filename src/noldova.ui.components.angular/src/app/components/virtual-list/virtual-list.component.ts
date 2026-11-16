@@ -401,10 +401,9 @@ export class VirtualListComponent<T> {
     const { ledger, cache } = this.state();
     const item = cache.itemAt(index);
     if (this.isFeed()) {
-      const control = target instanceof Element ? target.closest(VirtualListResources.virtualListResizesRowSelector) : null;
-      if (!Object.isNull(control)) {
+      if (target instanceof Element && !Object.isNull(target.closest(VirtualListResources.virtualListResizesRowSelector))) {
         this.clicked = new VirtualListAnchor(index, this.scrollTop() - ledger.offsetOf(index));
-        this.holdClick(control.getAttribute(VirtualListResources.virtualListResizesRowAttribute) === VirtualListResources.virtualListResizesRowLater);
+        this.holdClick(!Object.isNull(target.closest(VirtualListResources.virtualListResizesRowLaterSelector)));
       }
     } else if (!Object.isUndefined(item))
       this.activated.emit(new VirtualListChoice(index, item));
