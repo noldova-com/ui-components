@@ -203,7 +203,98 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
 
-57 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 54 of the kit's and 3 of the docs site's; [#148](https://github.com/noldova-com/ui-components/issues/148) makes them fit, and until then the timing check fails.
+54 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 52 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
+A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
+
+The Gallery's Focus and Hover cell specs render their whole section, then give each Focus cell the real keyboard focus, or move a real pointer onto each Hover cell, and read the cell's computed styles until they match.
+Measured on a Linux test machine: about 150 ms of setup; the navigation section about 455 ms to render and 375 ms more to settle, most of it for its feed, and the content section about 535 ms to render; then 31 to 56 ms for each pointer move.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `gallery-state-focus-content.spec.ts` | 538 ms | 666 ms | 1338 ms |
+| `gallery-state-focus-forms.spec.ts` | 274 ms | 432 ms | 787 ms |
+| `gallery-state-focus-navigation.spec.ts` | 874 ms | 866 ms | 1420 ms |
+| `gallery-state-focus-overlays.spec.ts` | 278 ms | 313 ms | 438 ms |
+| `gallery-state-focus-sections.spec.ts` | 208 ms | 242 ms | 544 ms |
+| `gallery-state-hover-content.spec.ts` | 646 ms | 710 ms | 1317 ms |
+| `gallery-state-hover-forms.spec.ts` | 671 ms | 755 ms | 935 ms |
+| `gallery-state-hover-navigation.spec.ts` | 1038 ms | 1140 ms | 1878 ms |
+| `gallery-state-hover-overlays.spec.ts` | 476 ms | 583 ms | 602 ms |
+| `gallery-state-hover-sections.spec.ts` | 244 ms | 220 ms | 496 ms |
+
+The Gallery's section specs render a whole section, or the whole Gallery, and read its specimens.
+Rendering the navigation and content sections is measured above; the other sections' share is not measured.
+`gallery-overlay-container.spec.ts` has one test, which took about 200 ms in one of its three Linux runs and about 1,400 ms in the other two, as an earlier Linux run of it also showed in one run of three; what its slow runs wait for is not measured.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `gallery-content.component.spec.ts` | 255 ms | 293 ms | 857 ms |
+| `gallery-feed.component.spec.ts` | 746 ms | 829 ms | 1204 ms |
+| `gallery-forms.component.spec.ts` | within | within | 245 ms |
+| `gallery-message.component.spec.ts` | 332 ms | 382 ms | 596 ms |
+| `gallery-navigation.component.spec.ts` | 468 ms | 479 ms | 1071 ms |
+| `gallery-overlay-container.spec.ts` | 1364 ms | 200 ms | 494 ms |
+| `gallery-overlays.component.spec.ts` | within | 133 ms | 307 ms |
+| `gallery-status.spec.ts` | 505 ms | 605 ms | 1967 ms |
+| `gallery-terminal.spec.ts` | 272 ms | 301 ms | 866 ms |
+| `gallery-virtual-feed.component.spec.ts` | 634 ms | 674 ms | 1222 ms |
+| `gallery.component.spec.ts` | within | 121 ms | 265 ms |
+
+The code block's specs render a block and wait for its layout to settle over animation frames.
+Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `code-block-forced-highlights.component.spec.ts` | 286 ms | 360 ms | 404 ms |
+| `code-block-forced-spans.component.spec.ts` | 317 ms | 396 ms | 423 ms |
+| `code-block-highlighting-start.component.spec.ts` | within | within | 421 ms |
+| `code-block-lines.component.spec.ts` | 125 ms | 133 ms | 135 ms |
+| `code-block-run-keys.component.spec.ts` | 144 ms | 164 ms | 215 ms |
+| `code-block-run-state.component.spec.ts` | 121 ms | 229 ms | 291 ms |
+| `code-block-run.component.spec.ts` | within | 139 ms | 209 ms |
+| `code-block-scrollbar.component.spec.ts` | 160 ms | 153 ms | 152 ms |
+| `code-block-settled-layout.component.spec.ts` | 204 ms | 258 ms | 427 ms |
+| `code-block-settled-pixels.component.spec.ts` | 304 ms | 344 ms | 567 ms |
+| `code-block-streaming-end.component.spec.ts` | within | 146 ms | 157 ms |
+| `code-block-streaming-return.component.spec.ts` | 177 ms | 197 ms | 197 ms |
+| `code-block-streaming-scroll.component.spec.ts` | 375 ms | 402 ms | 402 ms |
+
+The code highlighter's language specs test one language each, and a grammar's first load is most of a test: 4 to 270 ms on a macOS test machine, against 0.1 ms for a second highlight; not measured for `code-highlighter-growing.spec.ts`.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `code-highlighter-growing.spec.ts` | within | within | 129 ms |
+| `code-highlighter-languages-compiled.spec.ts` | within | within | 152 ms |
+| `code-highlighter-languages-web.spec.ts` | within | within | 159 ms |
+
+The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `virtual-list-focus-ring.component.spec.ts` | 256 ms | 267 ms | 266 ms |
+| `virtual-list-kit-rows.spec.ts` | 152 ms | 168 ms | 192 ms |
+| `virtual-list-spinner.component.spec.ts` | 236 ms | 236 ms | 265 ms |
+| `virtual-list.component.spec.ts` | 137 ms | 150 ms | 150 ms |
+
+The rest are not measured; most drive real pointer moves, clicks or key presses.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `diff-view.component.spec.ts` | within | within | 217 ms |
+| docs site, `docs-search.component.spec.ts` | 238 ms | not run | not run |
+| `focus-start.fixture.spec.ts` | within | 131 ms | 150 ms |
+| `hang-limit.spec.ts` | 122 ms | 127 ms | 127 ms |
+| `icon-button-tab-action.component.spec.ts` | 167 ms | 209 ms | 192 ms |
+| `message-picture.spec.ts` | within | within | 147 ms |
+| `message-popover.spec.ts` | 415 ms | 446 ms | 442 ms |
+| `message-shell-runs.component.spec.ts` | within | within | 199 ms |
+| `pointer-rest.fixture.spec.ts` | within | 136 ms | 181 ms |
+| `scroll-reveal.service.spec.ts` | within | 134 ms | 124 ms |
+| `short-screenshot-names.spec.ts` | 137 ms | 142 ms | 198 ms |
+| docs site, `tokens-page.component.spec.ts` | 134 ms | not run | not run |
+| `toolbar-button-open-pressed.component.spec.ts` | 132 ms | 152 ms | 150 ms |
+
 The tests over 1 second, waiting for the Owner's acceptance, each with its slowest median over three runs on a Linux, a Windows and a macOS test machine, rounded up to 100 ms:
 
 | Test | Time | Cause |
@@ -211,8 +302,9 @@ The tests over 1 second, waiting for the Owner's acceptance, each with its slowe
 | docs site, `docs-on-this-page.component.spec.ts`: lists exactly the sections of every page the menu links | 4100 ms | It goes through the router to every page of the catalog and waits for each page's headings and outline. |
 | `markdown-view.component.spec.ts`, while its text streams: streams a 10,000-character reply in 100-character batches | 3300 ms | It sets 100 lengths of the reply, and after each steps 6 frames of 16 ms on the fake timers, 700 steps in all. |
 | `virtual-list.component.spec.ts`: never moves a row it shows back when a smooth scroll near the start measures rows that grew | 2200 ms | It scrolls up from row 300, 90 px at a time, letting each step settle for up to 10 frames, then records a smooth scroll on every frame. |
-| `gallery-state-hover-navigation.spec.ts`, `-forms.spec.ts`, `-overlays.spec.ts`: shows in each of the Gallery's Hover cells the look its control has | 1900 ms | It moves a real pointer over every Hover cell of its section and reads each cell's computed styles until they match. |
-| `gallery-state-focus-navigation.spec.ts`: shows in each of the Gallery's Focus cells the look its control has | 1300 ms | It gives every Focus cell of the navigation section the real keyboard focus and reads each cell's computed styles until they match. |
+| `gallery-state-hover-navigation.spec.ts`, `-content.spec.ts`: shows in each of the Gallery's Hover cells the look its control has | 1900 ms | It renders its whole section, moves a real pointer onto every Hover cell of it and reads each cell's computed styles until they match. |
+| `gallery-state-focus-navigation.spec.ts`, `-content.spec.ts`: shows in each of the Gallery's Focus cells the look its control has | 1500 ms | It renders its whole section, gives every Focus cell of it the real keyboard focus and reads each cell's computed styles until they match. |
+| `gallery-state-focus-sections.spec.ts`: finds a Focus cell in every section in the kit's navigation section | 1400 ms | It renders the whole navigation section and looks for a Focus cell in each of its specimens. |
 | `virtual-list.component.spec.ts`: holds an element from where a click above it puts it when its row starts inside the view | 1500 ms | It steps 80 rendered frames, 20 for each of four reads. |
 | `link-reference-chip.component.spec.ts`: gives the app each card link's address on a click, a middle click or Enter | 1500 ms | It renders the chip 9 times, each with a real hover, a real click and a wait for the card to close. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag, in ltr and rtl | 1400 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
