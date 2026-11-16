@@ -81,7 +81,6 @@ export class VirtualListComponent<T> {
   private readonly hides: Signal<(item: T) => boolean> = computed(() => this.isFeed() ? this.rowTemplate().hidden() : () => false);
   private anchor: VirtualListAnchor = new VirtualListAnchor(0, 0);
   private clicked: VirtualListAnchor | null = null;
-  private clickedUntil: number = 0;
   private isClickStopped: boolean = false;
   private isPlaced: boolean = false;
   private latestDistance: number = 0;
@@ -400,10 +399,8 @@ export class VirtualListComponent<T> {
     const { ledger, cache } = this.state();
     const item = cache.itemAt(index);
     if (this.isFeed()) {
-      if (target instanceof Element && !Object.isNull(target.closest(VirtualListResources.virtualListResizesRowSelector))) {
+      if (target instanceof Element && !Object.isNull(target.closest(VirtualListResources.virtualListResizesRowSelector)))
         this.clicked = new VirtualListAnchor(index, this.scrollTop() - ledger.offsetOf(index));
-        this.clickedUntil = this.timeSource.now() + VirtualListResources.virtualListClickHold;
-      }
     } else if (!Object.isUndefined(item))
       this.activated.emit(new VirtualListChoice(index, item));
   }
@@ -903,8 +900,6 @@ export class VirtualListComponent<T> {
       this.scrollTop.set(at);
       this.tell();
     }
-    if (this.timeSource.now() > this.clickedUntil)
-      this.clicked = null;
     const clicked = this.clicked;
     let isChanged = false;
     let kept: VirtualListAnchor | null = null;

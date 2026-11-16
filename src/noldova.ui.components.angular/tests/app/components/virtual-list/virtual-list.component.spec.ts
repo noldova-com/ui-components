@@ -2197,6 +2197,20 @@ describe("VirtualListComponent", () => {
     expect([first, place(), isJumpShown()]).toEqual([[0, 100], [0, 200], true]);
   });
 
+  it("keeps a row clicked at the end of a following feed in place when its body shows more than a second after the click, as after a slow fetch or a busy page", async () => {
+    const toggling = await renderTogglingAsync();
+    const before = offsetOfArticle("item 28");
+
+    toggling.size("item 28", 0);
+    click("item 28", ".chevron");
+    await settleAsync();
+    time.advance(5000);
+    toggling.size("item 28", 200);
+    await settleAsync();
+
+    expect([Math.round(offsetOfArticle("item 28") - before), Math.round(fromEnd()), isJumpShown()]).toEqual([0, 200, true]);
+  });
+
   it("keeps a row clicked at the end of a following feed in place when another row in view is measured before its body shows", async () => {
     const toggling = await renderTogglingAsync();
     toggling.size("item 20", 0);
