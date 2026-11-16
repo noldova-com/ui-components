@@ -167,7 +167,8 @@ class ShrinkingHostComponent {
       <ng-template [nolVirtualRow]="source" let-item>
         <div class="line"><span class="label">{{ item }}</span><button type="button" class="chevron" data-nol-resizes-row [attr.aria-expanded]="open().has(item)" (click)="toggle(item)"><span class="glyph">E</span></button><button type="button" class="copy">Copy</button>
           <button type="button" class="menu" aria-haspopup="menu" [attr.aria-expanded]="open().has(item)" (click)="toggle(item)">Menu</button>
-          <button type="button" class="more" data-nol-resizes-row (click)="toggle(item)">More</button></div>
+          <button type="button" class="more" data-nol-resizes-row (click)="toggle(item)">More</button>
+          <button type="button" class="fetch" data-nol-resizes-row="later" (click)="toggle(item)">Fetch</button></div>
         @if (open().has(item)) {
           <div class="body" [style.height.px]="heights().get(item) ?? 200"></div>
         }
@@ -2180,14 +2181,16 @@ describe("VirtualListComponent", () => {
     expect([Math.round(fromEnd()), isJumpShown(), toggling.positions.every(t => t.isFollowing)]).toEqual([0, false, true]);
   });
 
-  it("keeps a row clicked at the end of a following feed in place when its body shows only after the click's frames, as after a fetch, and grows over two passes", async () => {
+  it("keeps a row clicked at the end of a following feed in place when a control that waits on the app, marked data-nol-resizes-row=\"later\", shows its body only after the click's frames, as after a fetch, and it grows over two passes", async () => {
     const toggling = await renderTogglingAsync();
     const before = offsetOfArticle("item 28");
     const place = (): number[] => [Math.round(offsetOfArticle("item 28") - before), Math.round(fromEnd())];
 
     toggling.size("item 28", 0);
-    click("item 28", ".chevron");
+    click("item 28", ".fetch");
     await settleAsync();
+    time.runFrames();
+    time.runFrames();
     toggling.size("item 28", 100);
     await settleAsync();
     const first = place();
@@ -2197,18 +2200,33 @@ describe("VirtualListComponent", () => {
     expect([first, place(), isJumpShown()]).toEqual([[0, 100], [0, 200], true]);
   });
 
-  it("keeps a row clicked at the end of a following feed in place when its body shows more than a second after the click, as after a slow fetch or a busy page", async () => {
+  it("keeps a row clicked at the end of a following feed in place when its body shows more than a second after the click with no frame laid out after the click's own, as on a busy page", async () => {
     const toggling = await renderTogglingAsync();
     const before = offsetOfArticle("item 28");
 
     toggling.size("item 28", 0);
     click("item 28", ".chevron");
     await settleAsync();
+    time.runFrames();
     time.advance(5000);
     toggling.size("item 28", 200);
     await settleAsync();
 
     expect([Math.round(offsetOfArticle("item 28") - before), Math.round(fromEnd()), isJumpShown()]).toEqual([0, 200, true]);
+  });
+
+  it("keeps the end of a following feed in view as a row grows by itself once a frame was laid out after a click on its resizing control that changed nothing, such as a wrap toggle on a block with no long line", async () => {
+    const toggling = await renderTogglingAsync();
+
+    toggling.size("item 29", 0);
+    click("item 29", ".chevron");
+    await settleAsync();
+    time.runFrames();
+    time.runFrames();
+    toggling.size("item 29", 200);
+    await settleAsync();
+
+    expect([Math.round(fromEnd()), isJumpShown(), toggling.positions.every(t => t.isFollowing)]).toEqual([0, false, true]);
   });
 
   it("keeps a row clicked at the end of a following feed in place when another row in view is measured before its body shows", async () => {

@@ -82,6 +82,7 @@ export class VirtualListComponent<T> {
   private anchor: VirtualListAnchor = new VirtualListAnchor(0, 0);
   private clicked: VirtualListAnchor | null = null;
   private isClickStopped: boolean = false;
+  private endClickHold: (() => void) | null = null;
   private isPlaced: boolean = false;
   private latestDistance: number = 0;
   private pendingTop: number | null = null;
@@ -180,6 +181,7 @@ export class VirtualListComponent<T> {
       this.checker.disconnect();
       this.pressing.abort();
       this.inputs.abort();
+      this.endClickHold?.();
     });
     afterNextRender(() => {
       for (const type of VirtualListResources.virtualListInputEvents)
@@ -399,8 +401,11 @@ export class VirtualListComponent<T> {
     const { ledger, cache } = this.state();
     const item = cache.itemAt(index);
     if (this.isFeed()) {
-      if (target instanceof Element && !Object.isNull(target.closest(VirtualListResources.virtualListResizesRowSelector)))
+      const control = target instanceof Element ? target.closest(VirtualListResources.virtualListResizesRowSelector) : null;
+      if (!Object.isNull(control)) {
         this.clicked = new VirtualListAnchor(index, this.scrollTop() - ledger.offsetOf(index));
+        this.holdClick(control.getAttribute(VirtualListResources.virtualListResizesRowAttribute) === VirtualListResources.virtualListResizesRowLater);
+      }
     } else if (!Object.isUndefined(item))
       this.activated.emit(new VirtualListChoice(index, item));
   }
@@ -832,6 +837,19 @@ export class VirtualListComponent<T> {
 
   private isUnprompted(moved: number): boolean {
     return !this.hasPersonInput && (this.isLatestAtStart() ? moved > 0 : moved < 0) && this.isFeed() && this.isFollowing() && Object.isNull(this.heldHeight());
+  }
+
+  private holdClick(isLater: boolean): void {
+    this.endClickHold?.();
+    this.endClickHold = null;
+    if (isLater)
+      return;
+    this.endClickHold = this.timeSource.frame(() => {
+      this.endClickHold = this.timeSource.frame(() => {
+        this.endClickHold = null;
+        this.clicked = null;
+      });
+    });
   }
 
   private release(): void {

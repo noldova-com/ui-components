@@ -17,6 +17,8 @@ export class VirtualListResources {
   public static readonly virtualListIdPrefix: string = "nol-virtual-list-";
   public static readonly virtualListFollowDistance: number = 120;
   public static readonly virtualListResizesRowSelector: string = "[data-nol-resizes-row]";
+  public static readonly virtualListResizesRowAttribute: string = "data-nol-resizes-row";
+  public static readonly virtualListResizesRowLater: string = "later";
   public static readonly virtualListLineStep: number = 40;
   public static readonly virtualListPageFraction: number = 0.875;
   public static readonly virtualListRowSelector: string = ".nol-virtual-list-slot > .nol-virtual-list-row";

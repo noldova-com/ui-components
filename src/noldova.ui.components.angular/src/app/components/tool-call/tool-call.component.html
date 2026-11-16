@@ -97,7 +97,7 @@ LICENSE file in the root directory of this source tree.
         } @else {
           <div class="nol-tool-call-load-failed">
             <span>{{ partResources.toolCallOutputFailed }}</span>
-            <button #retryButton type="button" class="nol-tool-call-more" data-nol-resizes-row (click)="retry(retryButton)">{{ partResources.toolCallRetryLabel }}</button>
+            <button #retryButton type="button" class="nol-tool-call-more" data-nol-resizes-row="later" (click)="retry(retryButton)">{{ partResources.toolCallRetryLabel }}</button>
           </div>
         }
       </div>
