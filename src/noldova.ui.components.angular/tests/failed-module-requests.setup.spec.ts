@@ -41,11 +41,15 @@ describe("failed module request setup", () => {
     const page = new URL(location.href);
     page.searchParams.set("module", crypto.randomUUID());
     const url = page.href;
+    const later = refusedAt("later");
 
     await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    // As after an error status, a cancel of the request would come before a later failure's line.
+    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await expect.poll(() => printedFor(later)).toHaveLength(1);
 
-    await expect.poll(() => printedFor(url)).toHaveLength(1);
     const printed = await printedFor(url);
+    expect(printed).toHaveLength(1);
     expect(printed[0]).toMatch(/^Failed module response at \S+: 200 text\/html/u);
   });
 
