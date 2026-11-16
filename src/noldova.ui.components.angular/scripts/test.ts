@@ -78,7 +78,7 @@ export class Test extends Script {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
-      await this.runCheckAsync(new FailureScreenshotCheck(Test.ROOT, new ProcessRunner(), new TemporaryFolder()));
+      await this.runCheckAsync(new FailureScreenshotCheck(Test.ROOT, new ProcessRunner()));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));
         await this.runCheckAsync(new KitCopiesCheck(Test.ROOT, new ProcessRunner(), new TemporaryFolder()));

@@ -6,14 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { readdir } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
 import type { ICheck } from "./interfaces/i-check.ts";
 import type { ProcessResult } from "../process-result.ts";
 import type { ProcessRunner } from "../processes/process-runner.ts";
-import type { TemporaryFolder } from "../processes/temporary-folder.ts";
 
 // Runs Vitest's browser mode on a fixture whose one test fails with a title past what a file name may take, and checks that its failure screenshot is
 // saved under a short name and that the run prints the long name beside the saved path. Vitest's own command would lose the screenshot to
@@ -23,7 +22,8 @@ export class FailureScreenshotCheck implements ICheck {
   private static readonly FIXTURE: string = "src/noldova.ui.components.angular/tests/fixtures/failure-screenshot";
   private static readonly RUN_ARGUMENTS: readonly string[] = ["run", "--config", "vitest.config.mts"];
   private static readonly ATTACHMENTS_VARIABLE: string = "NOLDOVA_FAILURE_SCREENSHOT_ATTACHMENTS";
-  private static readonly PREFIX: string = "failure-screenshot-";
+  // Under the repository, since Vitest saves a screenshot only inside the folders its server may serve.
+  private static readonly ATTACHMENTS_SEGMENTS: readonly string[] = ["_build", "failure-screenshot-check"];
   private static readonly TIMEOUT: number = 300_000;
   private static readonly FAILED_RUN: number = 1;
   private static readonly SHORT_NAME: RegExp = /^[\da-f]{16}\.png$/u;
@@ -32,18 +32,18 @@ export class FailureScreenshotCheck implements ICheck {
 
   private readonly root: string;
   private readonly runner: ProcessRunner;
-  private readonly folders: TemporaryFolder;
 
   public readonly title: string = "Failure screenshots";
 
-  public constructor(root: string, runner: ProcessRunner, folders: TemporaryFolder) {
+  public constructor(root: string, runner: ProcessRunner) {
     this.root = root;
     this.runner = runner;
-    this.folders = folders;
   }
 
   public async runAsync(output: Writable): Promise<boolean> {
-    const attachments = await this.folders.createAsync(process.platform, FailureScreenshotCheck.PREFIX);
+    const attachments = path.join(this.root, ...FailureScreenshotCheck.ATTACHMENTS_SEGMENTS);
+    await rm(attachments, { recursive: true, force: true });
+    await mkdir(attachments, { recursive: true });
     try {
       const result = await this.runner.captureAsync(process.execPath, [path.join(this.root, FailureScreenshotCheck.CLI), ...FailureScreenshotCheck.RUN_ARGUMENTS],
         path.join(this.root, FailureScreenshotCheck.FIXTURE), FailureScreenshotCheck.TIMEOUT, { ...process.env, [FailureScreenshotCheck.ATTACHMENTS_VARIABLE]: attachments });
@@ -55,7 +55,7 @@ export class FailureScreenshotCheck implements ICheck {
       return findings.length === 0;
     }
     finally {
-      await this.folders.removeAsync(attachments);
+      await rm(attachments, { recursive: true, force: true });
     }
   }
 
