@@ -8,6 +8,7 @@
 
 import { GalleryResources } from "../../../../src/app/components/gallery/gallery-resources";
 import { GalleryState } from "../../../../src/app/enums/gallery-state";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
@@ -21,6 +22,7 @@ describe("GalleryStateDirective Hover sections", () => {
 
     expect(sections.length).toBeGreaterThan(0);
     expect(sections.map(t => `${label(t)}: ${GalleryStateFixture.marked(t, state).length > 0}`)).toEqual(sections.map(t => `${label(t)}: ${!t.hasAttribute(flag)}`));
-    expect(GalleryStateFixture.shownWithoutCells(frame, kitSection, state)).toEqual(GalleryStateFixture.selectorsWithoutCells(kitSection, state));
+    // A cell's mark can come a render after the section is stable, as one CI run showed for the code block's Copy, so this waits for the marks.
+    await DomChangeFixture.untilAsync(() => expect(GalleryStateFixture.shownWithoutCells(frame, kitSection, state)).toEqual(GalleryStateFixture.selectorsWithoutCells(kitSection, state)));
   });
 });
