@@ -310,7 +310,7 @@ So the kit's first setup file, `src/noldova.ui.components.angular/tests/failed-m
 A request that ends in a network error prints "Failed module request" with the time, the error, such as `net::ERR_ABORTED` for a request the browser cancelled or `net::ERR_CONNECTION_RESET` for one the connection dropped, and the URL.
 A request answered with an error status, or with a success whose type isn't JavaScript, prints "Failed module response" with the time, the status, the content type and the URL.
 A response printed this way is printed once, though the browser also cancels its request.
-Every run prints five such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: three `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status and one HTML page's `text/html`.
+Every run prints six such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: four `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status and one HTML page's `text/html`.
 Playwright reports every request's end whether or not anything listens, so the cost is one command call per spec file; on a Windows test machine, passes with and without that call took the same time within their spread.
 
 ### Failure screenshots
