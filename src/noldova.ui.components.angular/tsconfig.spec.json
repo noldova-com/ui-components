@@ -14,6 +14,7 @@
     "tests/coverage/**",
     "tests/network/**",
     "tests/screenshots/**",
+    "tests/fixtures/failure-screenshot/**",
     "tests/fixtures/kit-bundles/**",
     "tests/fixtures/node-load/**"
   ]
