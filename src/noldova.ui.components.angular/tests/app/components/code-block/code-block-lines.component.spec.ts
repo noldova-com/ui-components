@@ -18,7 +18,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, body, framesAsync, pixelsAsync, growingLine } = harness;
+  const { renderAsync, changeAsync, body, framesAsync, settledAsync, pixelsAsync, growingLine } = harness;
   const code = `const a = 1;\n\n${growingLine}\nconst b = 2;`;
 
   beforeEach(harness.configure);
@@ -86,8 +86,8 @@ describe("CodeBlockComponent", () => {
   };
   const settleAsync = async (): Promise<void> => {
     await harness.fixture.whenStable();
-    await framesAsync();
     await document.fonts.ready;
+    await settledAsync("the code's lines", () => JSON.stringify([body().scrollWidth, body().getBoundingClientRect(), lines().map(t => [t.getBoundingClientRect(), ...glyphRectsOf(t)])]));
   };
 
   for (const [mode, forced] of looks)

@@ -28,6 +28,7 @@ import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
@@ -154,7 +155,8 @@ describe("TooltipDirective", () => {
   async function shownAsync(): Promise<HTMLElement> {
     await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
     await fixture.whenStable();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await LayoutSettleFixture.settledAsync("the tooltip's place", () => JSON.stringify(tooltip()?.getBoundingClientRect() ?? null),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
     return tooltip() ?? anchor();
   }
 
@@ -377,7 +379,7 @@ describe("TooltipDirective", () => {
       await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(inside()));
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
-      await new Promise(resolve => requestAnimationFrame(resolve));
+      await DomChangeFixture.untilAsync(() => expect(inside()).toBeNull());
       state = [shown, inside()];
     }
     finally {
@@ -401,7 +403,7 @@ describe("TooltipDirective", () => {
       await opener.whenStable();
       const shown = tooltip();
       await userEvent.keyboard("{Escape}");
-      await new Promise(resolve => requestAnimationFrame(resolve));
+      await DomChangeFixture.untilAsync(() => expect(close()).toBeNull());
       state = [shown, close()];
     }
     finally {

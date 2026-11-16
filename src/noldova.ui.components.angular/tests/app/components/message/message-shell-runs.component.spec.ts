@@ -25,6 +25,7 @@ import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { Resources } from "../../../../src/resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 const fence = "```";
 
@@ -92,12 +93,16 @@ describe("MessageComponent", () => {
       throw new Error("The output follows no block.");
     return block;
   };
-  const settleAsync = async (): Promise<void> => {
+  const places = (): string => JSON.stringify(all("nol-code-block, nol-shell-run-output").map(t => {
+    const box = t.getBoundingClientRect();
+    return [t.tagName, box.left, box.right, box.top, box.bottom];
+  }));
+  const settleAsync = (): Promise<void> => LayoutSettleFixture.settledAsync("the code blocks' and outputs' places", places, async () => {
     await fixture.whenStable();
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     fixture.detectChanges();
     await fixture.whenStable();
-  };
+  });
   const renderAsync = async (change: (host: ShellRunsHostComponent) => void = () => undefined): Promise<void> => {
     fixture = TestBed.createComponent(ShellRunsHostComponent);
     host = fixture.componentInstance;

@@ -17,8 +17,10 @@ import { VirtualListKind } from "../../../../src/app/enums/virtual-list-kind";
 import { ArrayVirtualListSource } from "../../../../src/app/models/array-virtual-list-source";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [VirtualListComponent, VirtualRowDirective],
@@ -47,16 +49,31 @@ describe("VirtualListComponent's feed focus ring", () => {
     await fixture.whenStable();
   }
 
+  async function settleLayoutAsync(): Promise<void> {
+    await LayoutSettleFixture.settledAsync("the feed's rows and scroll", () => {
+      const view = element().querySelector(".nol-virtual-list-viewport");
+      return `${element().querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
+    }, async () => {
+      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
+      for (let round = 0; round < 3; round++) {
+        await fixture.whenStable();
+        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+      }
+    });
+    await fixture.whenStable();
+  }
+
   async function renderAsync(theme = DefaultTheme.theme, mode = ThemeMode.Light): Promise<void> {
     AppearanceFixture.apply(theme, mode);
     fixture = TestBed.createComponent(FeedHostComponent);
-    await settleAsync();
+    await settleLayoutAsync();
   }
 
   async function tabInAsync(): Promise<void> {
     DomFixture.one(element(), ".before").focus();
     await userEvent.tab();
-    await settleAsync();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect([document.activeElement === feed(), ring()[0]]).toEqual([true, "solid"]));
   }
 
   const element = (): HTMLElement => DomFixture.host(fixture);
@@ -100,10 +117,11 @@ describe("VirtualListComponent's feed focus ring", () => {
     const opened = scrollTop();
 
     await userEvent.keyboard("{ArrowUp}{PageUp}");
-    await settleAsync();
+    await settleLayoutAsync();
     const scrolled = [opened - scrollTop() > 0, document.activeElement === feed(), ring()[0]];
     await userEvent.tab();
-    await settleAsync();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement?.classList.contains("reply")).toBe(true));
     const control = document.activeElement as HTMLElement;
 
     expect([scrolled, control.classList.contains("reply"), control.matches(":focus-visible"), getComputedStyle(control).outlineStyle !== "none", ring()[0], ringedArticles()]).toEqual([
@@ -115,7 +133,8 @@ describe("VirtualListComponent's feed focus ring", () => {
     await renderAsync();
     const clicked = articles().at(-1) as HTMLElement;
     await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 } });
-    await settleAsync();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(clicked));
     const looks: (readonly unknown[])[] = [];
 
     for (const key of ["{ArrowUp}", "{PageUp}", "{ArrowDown}", "{PageDown}", "{Home}", "{End}"]) {
@@ -132,7 +151,8 @@ describe("VirtualListComponent's feed focus ring", () => {
       await renderAsync();
       const clicked = articles().at(-1) as HTMLElement;
       await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 } });
-      await settleAsync();
+      await fixture.whenStable();
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(clicked));
 
       clicked.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
       DomFixture.one(element(), ".before").dispatchEvent(new PointerEvent(end, { bubbles: true }));
@@ -145,7 +165,8 @@ describe("VirtualListComponent's feed focus ring", () => {
     await renderAsync();
     const slot = articles().at(-2)?.parentElement as HTMLElement;
     await userEvent.click(slot, { position: { x: 4, y: slot.getBoundingClientRect().height - 1 } });
-    await settleAsync();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(feed()));
     const focused = [document.activeElement === feed(), feed().matches(":focus-visible")];
     const looks: (readonly unknown[])[] = [];
 
@@ -166,19 +187,21 @@ describe("VirtualListComponent's feed focus ring", () => {
       viewport().dispatchEvent(new WheelEvent("wheel"));
       viewport().scrollTop = 0;
       viewport().dispatchEvent(new Event("scroll"));
-      await settleAsync();
+      await fixture.whenStable();
+      await DomChangeFixture.untilAsync(() => expect(jump.classList.contains("nol-virtual-list-jump-shown")).toBe(true));
     };
 
     await leaveEndAsync();
     await userEvent.click(jump);
-    await settleAsync();
+    await settleLayoutAsync();
     await userEvent.keyboard("{ArrowUp}");
     await settleAsync();
     const clicked = [document.activeElement === feed(), ring()[0]];
     await leaveEndAsync();
     jump.focus();
     await userEvent.keyboard("{Enter}");
-    await settleAsync();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect([document.activeElement === feed(), ring()[0]]).toEqual([true, "solid"]));
 
     expect([clicked, document.activeElement === feed(), ring()[0], ringedArticles()]).toEqual([[true, "none"], true, "solid", 0]);
   });

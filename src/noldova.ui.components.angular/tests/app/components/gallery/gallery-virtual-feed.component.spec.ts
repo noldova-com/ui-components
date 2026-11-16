@@ -18,6 +18,7 @@ import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { Resources } from "../../../../src/resources";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { PressFixture } from "../../../fixtures/press.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
@@ -26,10 +27,14 @@ describe("GalleryVirtualFeedComponent", () => {
   let fixture: ComponentFixture<GalleryVirtualFeedComponent>;
 
   async function settleAsync(): Promise<void> {
-    for (let pass = 0; pass < 3; pass++) {
-      await fixture.whenStable();
-      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-    }
+    await LayoutSettleFixture.settledAsync("the feeds' rows and scroll", () => JSON.stringify([...DomFixture.host(fixture).querySelectorAll<HTMLElement>(".nol-virtual-list-viewport")]
+      .map(t => [t.querySelectorAll("[data-nol-row]").length, t.scrollHeight, t.scrollTop])), async () => {
+      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
+      for (let round = 0; round < 3; round++) {
+        await fixture.whenStable();
+        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+      }
+    });
     await fixture.whenStable();
   }
 

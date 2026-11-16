@@ -15,7 +15,12 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, find, body, framesAsync } = harness;
+  const { renderAsync, changeAsync, find, body, settledAsync } = harness;
+  const layout = (): string => {
+    const range = document.createRange();
+    range.selectNodeContents(find(".nol-code-block-body > code"));
+    return JSON.stringify([[...range.getClientRects()], body().getBoundingClientRect(), body().scrollWidth, body().clientWidth, body().scrollHeight, body().clientHeight, body().offsetHeight]);
+  };
 
   beforeEach(harness.configure);
 
@@ -30,7 +35,7 @@ describe("CodeBlockComponent", () => {
           TypographyPainter.paint(document.documentElement, new Typography(undefined, undefined, size));
           await renderAsync();
           await changeAsync(() => harness.host.wrapped.set(wrapped));
-          await framesAsync();
+          await settledAsync("the code's lines", layout);
           const range = document.createRange();
           range.selectNodeContents(find(".nol-code-block-body > code"));
           const lines = [...range.getClientRects()];

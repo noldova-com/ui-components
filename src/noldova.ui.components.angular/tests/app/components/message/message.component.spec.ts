@@ -52,6 +52,7 @@ import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 import { RevealedTextFixture } from "../../../fixtures/revealed-text.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
@@ -899,7 +900,7 @@ describe("MessageComponent", () => {
           expect(tooltip?.textContent?.trim()).toBe("/repo/docs/notes.txt");
           return tooltip as HTMLElement;
         });
-        await framesAsync();
+        await LayoutSettleFixture.settledAsync("the tooltip's place", () => JSON.stringify(shown.getBoundingClientRect()), framesAsync);
         const box = shown.getBoundingClientRect();
         const target = button.getBoundingClientRect();
 
@@ -1114,7 +1115,13 @@ describe("MessageComponent", () => {
     AppearanceFixture.apply();
     const feed = TestBed.createComponent(MessageFeedHostComponent);
     await feed.whenStable();
-    await framesAsync();
+    await LayoutSettleFixture.settledAsync("the feed's rows and scroll", () => {
+      const viewport = DomFixture.host(feed).querySelector(".nol-virtual-list-viewport");
+      return `${DomFixture.host(feed).querySelectorAll("[data-nol-row]").length} ${viewport?.scrollHeight} ${viewport?.scrollTop}`;
+    }, async () => {
+      await framesAsync();
+      await feed.whenStable();
+    });
     const view = DomFixture.one(DomFixture.host(feed), MessageResources.messageFeedSelector);
 
     (document.activeElement as HTMLElement).blur();
@@ -1190,27 +1197,32 @@ describe("MessageComponent", () => {
       opens += 1;
     });
     const pane = (): HTMLElement | null => document.querySelector<HTMLElement>(".cdk-overlay-container nol-menu.message-actions");
-    const settleAsync = async (): Promise<void> => {
+    const placedAsync = (): Promise<void> => LayoutSettleFixture.settledAsync("the menu's place", () => JSON.stringify(pane()?.getBoundingClientRect() ?? null), async () => {
       menuFixture.detectChanges();
       await menuFixture.whenStable();
       await framesAsync();
+    });
+    const closedAsync = async (focused: unknown): Promise<void> => {
+      menuFixture.detectChanges();
+      await menuFixture.whenStable();
+      await DomChangeFixture.untilAsync(() => expect([pane(), document.activeElement === focused]).toEqual([null, true]));
     };
     const link = DomFixture.one(DomFixture.host(menuFixture), ".nol-markdown-link");
 
     const clicked = link.getBoundingClientRect();
     await userEvent.click(link, { button: "right", position: { x: 4, y: 4 } });
-    await settleAsync();
+    await placedAsync();
     const shown = pane()?.getBoundingClientRect();
     const byPointer = [opens, Math.abs((shown?.left ?? 0) - clicked.left - 4) < 1 && Math.abs((shown?.top ?? 0) - clicked.top - 4) < 1];
     await userEvent.keyboard("{Escape}");
-    await settleAsync();
+    await closedAsync(menuFixture.componentInstance.requests[0]?.target);
     const afterPointer = [pane(), document.activeElement === menuFixture.componentInstance.requests[0]?.target];
     link.focus();
     await userEvent.keyboard("{Shift>}{F10}{/Shift}");
-    await settleAsync();
+    await placedAsync();
     const byKey = [opens, Math.abs((pane()?.getBoundingClientRect().top ?? 0) - link.getBoundingClientRect().bottom) < 1, menuFixture.componentInstance.requests[1]?.target === link];
     await userEvent.keyboard("{Escape}");
-    await settleAsync();
+    await closedAsync(link);
     const afterKey = [pane(), document.activeElement === link];
     menuFixture.destroy();
 
@@ -1238,13 +1250,14 @@ describe("MessageComponent", () => {
     await MotionFixture.reduceForTestAsync();
     AppearanceFixture.apply();
     const feed = TestBed.createComponent(MessageFeedHostComponent);
-    const settleAsync = async (): Promise<void> => {
+    const rows = (): HTMLElement[] => [...DomFixture.host(feed).querySelectorAll<HTMLElement>("nol-message")];
+    const settleAsync = (): Promise<void> => LayoutSettleFixture.settledAsync("the feed's rows and their heights", () => JSON.stringify(rows().map(t => [t.dataset["height"],
+      t.closest(`[${Resources.virtualListRowAttribute}]`)?.getBoundingClientRect().height, t.querySelector(".nol-message-more")?.textContent?.trim()])), async () => {
       await feed.whenStable();
       await framesAsync();
       await feed.whenStable();
-    };
+    });
     await settleAsync();
-    const rows = (): HTMLElement[] => [...DomFixture.host(feed).querySelectorAll<HTMLElement>("nol-message")];
     const gaps = (): number[] => rows().map(t => Math.abs(Number(t.dataset["height"]) - (t.closest(`[${Resources.virtualListRowAttribute}]`) as HTMLElement).getBoundingClientRect().height))
       .filter(t => t > 0.5);
     const paragraphs = Array.from({ length: 40 }, (_, index) => `Paragraph ${index + 1} of the reply.`);
@@ -1427,8 +1440,9 @@ describe("MessageComponent", () => {
     const long = new MessageText(Array.from({ length: 60 }, (_, index) => `Paragraph ${index + 1}`).join("\n\n"));
     AppearanceFixture.apply();
     await renderAsync(t => t.blocks.set([long, new MessageSlot("card"), long]));
-    await framesAsync();
     fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(all(".nol-message-more").length).toBe(2));
     const bodies = all(".nol-message-run-body");
     const before = bodies.map(t => t.classList.contains("nol-message-collapsed"));
 
