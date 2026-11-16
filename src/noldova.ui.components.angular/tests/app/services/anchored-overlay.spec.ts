@@ -331,7 +331,16 @@ describe("AnchoredOverlay", () => {
     const origin = anchor();
     overlay.openComponent(new ComponentPortal(ContentComponent), origin, below());
     origin.style.width = "200px";
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    // An observer delivers in the order observers were made, so this one, made after the overlay's, sees the resize after the overlay has.
+    const resized = new ChangeSignalFixture();
+    let isResized = false;
+    const sizes = new ResizeObserver(() => {
+      isResized = true;
+      resized.fire();
+    });
+    sizes.observe(origin);
+    await resized.untilAsync(() => expect(isResized, "the anchor's resize, observed").toBe(true));
+    sizes.disconnect();
     const lossesAfterResize = losses;
 
     DomFixture.one(DomFixture.host(fixture), ".scroller").style.display = "none";

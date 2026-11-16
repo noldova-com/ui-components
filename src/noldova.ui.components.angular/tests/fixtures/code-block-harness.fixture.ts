@@ -26,6 +26,7 @@ import { CodeBlockHostComponent } from "./code-block-host.component";
 import { DomFixture } from "./dom.fixture";
 import { ForcedColorsFixture } from "./forced-colors.fixture";
 import { GalleryFixture } from "./gallery.fixture";
+import { LayoutSettleFixture } from "./layout-settle.fixture";
 import { TestTimeSource } from "./test-time-source";
 
 export interface ICodeBlockRunGeometry {
@@ -129,6 +130,11 @@ export class CodeBlockHarness {
   public readonly glyphOfRun = (): HTMLElement => DomFixture.one(this.run(), ".nol-icon-button-glyph");
   public readonly body = (): HTMLElement => this.find(".nol-code-block-body");
   public readonly framesAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+  // Waits, two frames and a stable fixture at a time, until what the spec names of the block's layout stays the same, at the shared bound.
+  public readonly settledAsync = (what: string, shape: () => string): Promise<void> => LayoutSettleFixture.settledAsync(what, shape, async () => {
+    await this.framesAsync();
+    await this.fixture.whenStable();
+  });
   public readonly resolve = (property: string, value: string): string => GalleryFixture.colorOf(document.body, property, value);
   public readonly glyph = (button: HTMLElement): string | null | undefined => button.querySelector(".nol-icon-button-glyph")?.textContent;
 

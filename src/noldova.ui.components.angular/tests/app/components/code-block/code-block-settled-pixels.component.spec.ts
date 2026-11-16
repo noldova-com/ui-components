@@ -12,7 +12,7 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, body, framesAsync, ranges, tokenSpans, wordTokens, pixelsAsync, rangeLefts, spanPlaces, inksOf, inkDifferencesOf, outsideOf, backgroundOf,
+  const { renderAsync, changeAsync, controlTokens, body, framesAsync, settledAsync, ranges, tokenSpans, wordTokens, pixelsAsync, rangeLefts, spanPlaces, inksOf, inkDifferencesOf, outsideOf, backgroundOf,
     wholeCodeWidth } = harness;
 
   beforeEach(harness.configure);
@@ -29,12 +29,12 @@ describe("CodeBlockComponent", () => {
         harness.host.streaming.set(true);
         harness.host.code.set(harness.growingLine);
       });
-      await framesAsync();
       await document.fonts.ready;
+      await settledAsync("the highlights' places", () => rangeLefts().join(" "));
       const [highlights, streamedSpans, lefts] = [ranges().length, tokenSpans(), rangeLefts()];
       const highlighted = await pixelsAsync(body());
       await changeAsync(() => harness.host.streaming.set(false));
-      await framesAsync();
+      await settledAsync("the spans' places", () => `${ranges().length} ${JSON.stringify(spanPlaces())}`);
       const [settledRanges, settledSpans, places] = [ranges().length, tokenSpans(), spanPlaces()];
       const spans = await pixelsAsync(body());
       const beyond = places.map((t, i) => Math.abs(t.box.left - (lefts[i] ?? Number.NaN)) - t.earlier / 64);
@@ -59,8 +59,8 @@ describe("CodeBlockComponent", () => {
         harness.host.streaming.set(true);
         harness.host.code.set(harness.growingLine);
       });
-      await framesAsync();
       await document.fonts.ready;
+      await settledAsync("the highlights' places", () => rangeLefts().join(" "));
       const [range] = ranges()[1] as readonly [AbstractRange, string];
       const node = range.startContainer as Text;
       const boxOf = (start: number, end: number): DOMRect => {

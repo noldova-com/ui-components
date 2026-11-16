@@ -18,6 +18,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
 
 @Component({
@@ -118,6 +119,13 @@ describe("TabComponent", () => {
     await new Promise(resolve => requestAnimationFrame(resolve));
   }
 
+  async function placedAsync(): Promise<void> {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await LayoutSettleFixture.settledAsync("the tooltip's place", () => JSON.stringify(tooltip()?.getBoundingClientRect() ?? null),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+  }
+
   for (const [name, showAsync] of [
     ["hover", (): Promise<void> => userEvent.hover(tab())],
     ["keyboard focus", (): Promise<void> => userEvent.keyboard("{Tab}")]
@@ -130,7 +138,7 @@ describe("TabComponent", () => {
       });
       await showAsync();
       await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
-      await settledAsync();
+      await placedAsync();
       const box = tooltip()?.getBoundingClientRect() ?? new DOMRect();
 
       AppearanceFixture.expectTruncates(part(".nol-tab-label") ?? tab());
@@ -156,7 +164,7 @@ describe("TabComponent", () => {
     });
     await userEvent.hover(tab());
     await DomChangeFixture.untilAsync(() => expect(tooltip()).not.toBeNull());
-    await settledAsync();
+    await placedAsync();
     const shown = tooltip();
     const target = tab().getBoundingClientRect();
     const box = shown?.getBoundingClientRect() ?? new DOMRect();

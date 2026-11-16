@@ -29,6 +29,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FrameVirtualListSourceFixture } from "../../../fixtures/frame-virtual-list-source.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 import type { VirtualListReadFixture } from "../../../fixtures/virtual-list-read.fixture";
@@ -249,15 +250,10 @@ describe("VirtualListComponent", () => {
 
   async function settleAsync(): Promise<void> {
     await fixture.whenStable();
-    let last = shape();
-    for (let pass = 0; pass < 10; pass++) {
+    await LayoutSettleFixture.settledAsync("the list's rows and scroll", shape, async () => {
       await renderedFrameAsync();
       await fixture.whenStable();
-      const now = shape();
-      if (now === last)
-        return;
-      last = now;
-    }
+    });
   }
 
   async function renderAsync(source: VirtualListSource<string> = numbered(1000), theme = DefaultTheme.theme, mode = ThemeMode.Light): Promise<void> {
