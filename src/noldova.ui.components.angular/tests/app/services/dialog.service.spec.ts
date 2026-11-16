@@ -281,7 +281,6 @@ describe("DialogService", () => {
     await framesAsync();
     const before = [fading.isConnected, shown.isConnected];
     fades.forEach(t => t.finish());
-    await DomChangeFixture.untilAsync(() => expect(fading.isConnected).toBe(false));
     await framesAsync();
 
     expect([before, fading.isConnected, shown.isConnected, shown.parentElement?.isConnected, document.querySelectorAll(".nol-dialog-backdrop").length, opener.inert])
