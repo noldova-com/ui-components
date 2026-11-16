@@ -12,13 +12,13 @@ export class PointerFixture {
   private static readonly TARGET_PREFIX: string = "nol-pointer-target-";
   private static targets: number = 0;
 
-  public static async hoverAsync(target: HTMLElement): Promise<void> {
+  public static async hoverAsync(target: HTMLElement, options: { readonly force?: boolean } = {}): Promise<void> {
     if ("testid" in target.dataset)
       throw new Error(`The element to hover already has the test id ${target.dataset["testid"]}.`);
     const id = `${PointerFixture.TARGET_PREFIX}${++PointerFixture.targets}`;
     target.dataset["testid"] = id;
     try {
-      await userEvent.hover(page.getByTestId(id));
+      await userEvent.hover(page.getByTestId(id), { force: options.force ?? false });
     }
     finally {
       delete target.dataset["testid"];

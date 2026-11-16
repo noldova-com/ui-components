@@ -8,22 +8,20 @@
 
 import type { Type } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { page, userEvent } from "vitest/browser";
+import { userEvent } from "vitest/browser";
 
 import type { GalleryComponent } from "../../src/app/components/gallery/gallery.component";
 import { GalleryResources } from "../../src/app/components/gallery/gallery-resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { GalleryState } from "../../src/app/enums/gallery-state";
 import { MarkdownParser } from "../../src/app/services/markdown.parser";
+import { PointerFixture } from "../../src/testing/services/pointer-fixture";
 import { MotionFixture } from "./motion.fixture";
 import { GalleryFixture } from "./gallery.fixture";
 import { DomChangeFixture } from "./dom-change.fixture";
 
 export class GalleryStateFixture {
   private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility"];
-  private static readonly HOVER_TARGET_PREFIX: string = "gallery-state-hover-";
-
-  private static hoverTargets: number = 0;
 
   public static showAsync(kept: readonly Type<unknown>[] | null = null): Promise<ComponentFixture<GalleryComponent>> {
     GalleryFixture.standInForTheCodeHighlighter();
@@ -60,7 +58,7 @@ export class GalleryStateFixture {
     const park = GalleryStateFixture.parkThePointer();
     try {
       await MotionFixture.reduceAsync();
-      await GalleryStateFixture.hoverAsync(park);
+      await PointerFixture.hoverAsync(park, { force: true });
       const cells = GalleryStateFixture.marked(GalleryStateFixture.firstFrame(await GalleryStateFixture.showAsync([kept])), GalleryState.Focus);
 
       expect(cells.length).toBeGreaterThan(0);
@@ -88,7 +86,7 @@ export class GalleryStateFixture {
     const park = GalleryStateFixture.parkThePointer();
     try {
       await MotionFixture.reduceAsync();
-      await GalleryStateFixture.hoverAsync(park);
+      await PointerFixture.hoverAsync(park, { force: true });
       const cells = GalleryStateFixture.marked(GalleryStateFixture.firstFrame(await GalleryStateFixture.showAsync([kept])), GalleryState.Hover);
 
       expect(cells.length).toBeGreaterThan(0);
@@ -98,7 +96,8 @@ export class GalleryStateFixture {
         return { element, shown, plain: GalleryStateFixture.look(element) };
       });
       for (const { element, shown, plain } of looks) {
-        await GalleryStateFixture.hoverAsync(element);
+        // Forced, as the cells are rendered, laid out and still before the first move: the wait for that took about half of each move on a test machine.
+        await PointerFixture.hoverAsync(element, { force: true });
 
         await DomChangeFixture.untilAsync(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]));
         expect([GalleryStateFixture.name(element), shown]).not.toEqual([GalleryStateFixture.name(element), plain]);
@@ -107,19 +106,6 @@ export class GalleryStateFixture {
       park.remove();
       AppearanceFixture.reset();
       await MotionFixture.resetAsync();
-    }
-  }
-
-  // A real pointer move onto the element, without Playwright's checks that it is visible, still and enabled, which took about half of each move's time
-  // on a test machine; the cells are rendered, laid out and still before the first move.
-  private static async hoverAsync(target: HTMLElement): Promise<void> {
-    const id = `${GalleryStateFixture.HOVER_TARGET_PREFIX}${++GalleryStateFixture.hoverTargets}`;
-    target.dataset["testid"] = id;
-    try {
-      await userEvent.hover(page.getByTestId(id), { force: true });
-    }
-    finally {
-      delete target.dataset["testid"];
     }
   }
 }

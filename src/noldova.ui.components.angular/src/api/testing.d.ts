@@ -578,6 +578,10 @@ export declare class PointerFixture {
    * while the pointer moves.
    *
    * @param target The element to hover; it must not have a test id.
+   * @param options `force` moves the pointer at once, without waiting for the
+   * element to be visible, still and enabled, which takes about half of a
+   * move's time; for an element the test knows is laid out and still. False
+   * by default.
    * @returns A promise that settles when the pointer is over the element.
    * @example
    * ```ts
@@ -588,7 +592,7 @@ export declare class PointerFixture {
    * }
    * ```
    */
-  public static hoverAsync(target: HTMLElement): Promise<void>;
+  public static hoverAsync(target: HTMLElement, options?: { readonly force?: boolean }): Promise<void>;
 }
 
 /**
