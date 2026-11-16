@@ -12,6 +12,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { defineConfig } from "vitest/config";
 
 import { ClassMetadataCoverage } from "./tests/coverage/class-metadata-coverage.ts";
+import { FailedModuleRequests } from "./tests/network/failed-module-requests.ts";
 
 const project = pathToFileURL(`${process.cwd()}/`);
 const compilerOptions: { paths: Record<string, string[]> } = JSON.parse(readFileSync(new URL("./tsconfig.json", project), "utf8")).compilerOptions;
@@ -40,6 +41,7 @@ export default defineConfig({
   },
   test: {
     api: { port: 24315 },
+    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch } },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
     expect: { poll: { timeout: pollLimit } },
     hookTimeout: hangLimit,

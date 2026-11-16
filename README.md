@@ -33,7 +33,7 @@ Report a security problem privately, as its [security policy](https://github.com
 
 The toolchain is Node.js 26.13.1 with npm 11.20.0, as `package.json` pins them.
 The repository is one npm workspace: the root's `package.json` names the packages in `src/` as its workspaces and holds only TypeScript, the version Angular supports, which compiles the kit and checks each package's `scripts/`, and Node.js's types; each package's own `package.json` names what it uses, and the root's one `package-lock.json` holds every package the repository installs.
-Each Angular package is its own Angular workspace: the kit's `src/noldova.ui.components.angular/` holds its `angular.json`, `tsconfig.json`, `tsconfig.spec.json` and `vitest.config.mts`, and the docs site's `src/noldova.ui.components.angular.docs/` its `angular.json` and `tsconfig.json`, which extends the kit's and runs its tests with the kit's `vitest.config.mts`; the kit's `tsconfig.json` and `scripts/tsconfig.json` extend the root's `tsconfig-base.json`; everything the kit's tests use is in its `tests/`, with the coverage plugin in `tests/coverage/` and the build's fixtures in `tests/fixtures/kit-bundles/` and `tests/fixtures/node-load/`, which the specs' compile leaves out.
+Each Angular package is its own Angular workspace: the kit's `src/noldova.ui.components.angular/` holds its `angular.json`, `tsconfig.json`, `tsconfig.spec.json` and `vitest.config.mts`, and the docs site's `src/noldova.ui.components.angular.docs/` its `angular.json` and `tsconfig.json`, which extends the kit's and runs its tests with the kit's `vitest.config.mts`; the kit's `tsconfig.json` and `scripts/tsconfig.json` extend the root's `tsconfig-base.json`; everything the kit's tests use is in its `tests/`, with the coverage plugin in `tests/coverage/`, the failed module request recorder's Node side in `tests/network/`, and the build's fixtures in `tests/fixtures/kit-bundles/` and `tests/fixtures/node-load/`, which the specs' compile leaves out.
 
 ```bash
 npm run build:components
@@ -302,6 +302,13 @@ The "Newest context" workflow, `.github/workflows/newest-context.yml`, runs each
 `npm run newest-context`, `src/noldova.ui.components.angular/scripts/newest-context.ts`, moves each CONTEXT peer of the kit to the newest version npm publishes inside its range: the kit's development pin and the docs site's pin become that version, the range starts there, and the lockfile follows; nothing is committed.
 The workflow then runs `npm run build` and `npm test`, so the kit is built and tested with the CONTEXT release an app would take, as [Noldova's TypeScript standard](https://github.com/noldova-com/.github/blob/main/standards/stacks/TYPESCRIPT.md#dependencies) requires.
 When a step fails, it opens an issue titled "The kit fails its build or tests with the newest context in its peer range", or comments on the open one with the run's link.
+
+### Failed module requests
+
+A spec file the browser can't import fails before its tests run with Vitest's "Failed to fetch dynamically imported module", which doesn't say why.
+So the kit's first setup file, `src/noldova.ui.components.angular/tests/failed-module-requests.setup.ts`, has the run print each module request the browser fails, through a browser command in `vitest.config.mts` that listens on the test page once.
+Each line gives the time, the browser's network error, such as `net::ERR_ABORTED` for a request it cancelled or `net::ERR_CONNECTION_RESET` for one the connection dropped, and the URL.
+Playwright reports every request's end whether or not anything listens, so a run where every request succeeds prints nothing and takes no longer.
 
 ### Flake proof
 
