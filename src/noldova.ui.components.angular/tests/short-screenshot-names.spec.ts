@@ -15,6 +15,8 @@ describe("Screenshot names", () => {
   const fileName = (path: string): string => path.replace(/^.*[\\/]/u, "");
   const longName = (): string => `${"A-test-title-past-what-a-file-name-may-hold-".repeat(6)}${crypto.randomUUID()}.png`;
 
+  // If Vitest renames or drops __vitest_screenshot, this screenshot goes to Vitest's own command, which fails with ENAMETOOLONG; if it renames or drops
+  // the provider's __vitest_takeScreenshot, the replacement fails to take it. Either way an upgrade fails here rather than losing screenshots.
   it("saves a screenshot whose file name is past the 255 bytes a file name may take under a 16-character hash of it, keeping its extension", async () => {
     const name = longName();
     expect(new TextEncoder().encode(name).length).toBeGreaterThan(255);
