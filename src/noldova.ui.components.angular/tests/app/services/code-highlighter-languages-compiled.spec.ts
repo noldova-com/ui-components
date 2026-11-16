@@ -18,9 +18,8 @@ describe("CodeHighlighter", () => {
 
   beforeEach(() => TestBed.configureTestingModule({ providers: [{ provide: CodeHighlighterTokens.tokenizeTimeLimit, useValue: 0 }, CodeHighlightingFixture.sharedShiki] }));
 
-  it("colors a sample of each language of its compiled share, each token at its place in the sample", async () => {
-    const share = languageShares.compiled;
-
-    expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), share)).toEqual(share.map(t => [t, true, true]));
+  // One test per language, since each loads its own grammar, the most of a test's time.
+  it.each(languageShares.compiled)("colors a sample of %s, of its compiled share, each token at its place in the sample", async language => {
+    expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), [language])).toEqual([[language, true, true]]);
   });
 });
