@@ -25,9 +25,8 @@ describe("CodeHighlighter", () => {
     expect(Object.values(languageShares).flat().sort(byName)).toEqual(CodeLanguage.all.map(t => t.id).sort(byName));
   });
 
-  it("colors a sample of each language of its JavaScript share, each token at its place in the sample", async () => {
-    const share = languageShares.javascript;
-
-    expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), share)).toEqual(share.map(t => [t, true, true]));
+  // One test per language, since each loads its own grammar, the most of a test's time.
+  it.each(languageShares.javascript)("colors a sample of %s, of its JavaScript share, each token at its place in the sample", async language => {
+    expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), [language])).toEqual([[language, true, true]]);
   });
 });

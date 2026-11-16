@@ -36,11 +36,24 @@ describe("PointerFixture", () => {
     expect([target.isConnected, earlier[0]?.isConnected, target.matches(":hover"), target.hasAttribute("data-testid")]).toEqual([true, false, true, false]);
   });
 
-  it("refuses a target that already has a test id and leaves that id in place", async () => {
+  it("hovers a target that never stands still when forced, which a hover would otherwise wait on, and leaves it without a test id", async () => {
+    const target = append();
+    target.popover = "manual";
+    target.style.cssText = "position: fixed; inset: 0 auto auto 0; width: 40px; height: 40px; margin: 0; padding: 0; border: 0;";
+    target.showPopover();
+    target.animate([{ transform: "translateX(0)" }, { transform: "translateX(1px)" }], { duration: 100, iterations: Infinity });
+
+    await PointerFixture.hoverAsync(target, { isForced: true });
+
+    expect([target.matches(":hover"), target.hasAttribute("data-testid")]).toEqual([true, false]);
+  });
+
+  it("refuses a target that already has a test id, forced or not, and leaves that id in place", async () => {
     const target = append();
     target.dataset["testid"] = "given";
 
     await expect(PointerFixture.hoverAsync(target)).rejects.toThrow(new Error("The element to hover already has the test id given."));
+    await expect(PointerFixture.hoverAsync(target, { isForced: true })).rejects.toThrow(new Error("The element to hover already has the test id given."));
     expect(target.dataset["testid"]).toBe("given");
   });
 });
