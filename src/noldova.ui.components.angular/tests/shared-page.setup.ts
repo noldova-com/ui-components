@@ -9,16 +9,20 @@
 import { onTestFinished } from "vitest";
 
 import { EmulatedMediaFixture } from "./fixtures/emulated-media.fixture";
+import { FocusStartFixture } from "./fixtures/focus-start.fixture";
 import { PointerRestFixture } from "./fixtures/pointer-rest.fixture";
 import { TimerGlobalsFixture } from "./fixtures/timer-globals.fixture";
 
 TimerGlobalsFixture.record();
 beforeAll(() => EmulatedMediaFixture.resetAsync());
-beforeEach(() => onTestFinished(async () => {
-  try {
-    TimerGlobalsFixture.ensureOwn();
-  }
-  finally {
-    await PointerRestFixture.leavePageAsync();
-  }
-}));
+beforeEach(() => {
+  FocusStartFixture.reset();
+  onTestFinished(async () => {
+    try {
+      TimerGlobalsFixture.ensureOwn();
+    }
+    finally {
+      await PointerRestFixture.leavePageAsync();
+    }
+  });
+});

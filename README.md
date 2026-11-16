@@ -287,6 +287,7 @@ Vitest ignores port 0, so it can't ask the system for a free port.
 The Angular specs run with Vitest's `isolate: false`, the Angular test builder's default, so the spec files in one browser page share its globals.
 After each spec test, `src/noldova.ui.components.angular/tests/shared-page.setup.ts` fails the test if it left a timer global replaced, such as `setInterval` or `Date`, names it, and puts the page's own back.
 It then moves the pointer just outside the page, so the next test starts with no element under it and no spec file resets the pointer itself.
+Before each spec test, it leaves no element focused and starts keyboard navigation at the top of the page, through `src/noldova.ui.components.angular/tests/fixtures/focus-start.fixture.ts`, so a test's first Tab doesn't depend on what an earlier test focused or clicked.
 Before each spec file, it also sets the emulated media to no reduced motion and no forced colors, so no file sees what the machine prefers or what an earlier file left emulated.
 Specs emulate media only through `src/noldova.ui.components.angular/tests/fixtures/emulated-media.fixture.ts`, which the motion and forced-colors fixtures use: each emulation call replaces the whole emulated set, so the fixture sends every feature each time.
 A spy's own `mockRestore()` leaves its restore in Vitest's registry, where a later spec file's `vi.restoreAllMocks()` runs it again, so a test that spies on a faked timer global restores it with `vi.restoreAllMocks()`.

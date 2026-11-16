@@ -279,7 +279,8 @@ describe("ConfigurationTableComponent", () => {
     holder.style.display = "block";
     holder.style.overflowX = "auto";
     const remove = find(".remove");
-    await userEvent.tab();
+    // The keyboard reaches Remove from Add, the stop before it, so wherever focus was before the spec it starts there.
+    find(".add").focus();
     await userEvent.tab();
     const outline = Number.parseFloat(getComputedStyle(remove).outlineWidth) + Number.parseFloat(getComputedStyle(remove).outlineOffset);
     const room = box(".nol-configuration-table-body").right - box(".remove").right;
