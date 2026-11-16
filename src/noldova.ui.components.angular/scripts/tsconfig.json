@@ -11,6 +11,7 @@
   "include": [
     "**/*.ts",
     "../../noldova.ui.components.angular.docs/scripts/**/*.ts",
-    "../tests/coverage/**/*.ts"
+    "../tests/coverage/**/*.ts",
+    "../tests/network/**/*.ts"
   ]
 }
