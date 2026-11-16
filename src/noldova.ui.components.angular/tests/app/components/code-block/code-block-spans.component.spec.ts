@@ -140,6 +140,8 @@ describe("CodeBlockComponent", () => {
     const add = vi.spyOn(TestBed.inject(CodeHighlights), "add");
     const cutAsync = async (write: () => void): Promise<readonly (readonly [string, string])[]> => {
       write();
+      // The ranges reach past a cut text until the code's next frame cuts them, so the settle reads them only from then on.
+      await framesAsync();
       await settledAsync("the growing line's highlights", () => JSON.stringify(tokens()));
       return tokens();
     };
