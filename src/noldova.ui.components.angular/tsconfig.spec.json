@@ -13,6 +13,7 @@
   "exclude": [
     "tests/coverage/**",
     "tests/network/**",
+    "tests/screenshots/**",
     "tests/fixtures/kit-bundles/**",
     "tests/fixtures/node-load/**"
   ]
