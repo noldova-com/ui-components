@@ -309,7 +309,8 @@ A spec file the browser can't import fails before its tests run with Vitest's "F
 So the kit's first setup file, `src/noldova.ui.components.angular/tests/failed-module-requests.setup.ts`, has the run print each module request the browser fails, through a browser command in `vitest.config.mts` that listens on the test page once.
 A request that ends in a network error prints "Failed module request" with the time, the error, such as `net::ERR_ABORTED` for a request the browser cancelled or `net::ERR_CONNECTION_RESET` for one the connection dropped, and the URL.
 A request answered with an error status, or with a success whose type isn't JavaScript, prints "Failed module response" with the time, the status, the content type and the URL.
-Every run prints four such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: two `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status and one HTML page's `text/html`.
+A response printed this way is printed once, though the browser also cancels its request.
+Every run prints five such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: three `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status and one HTML page's `text/html`.
 Playwright reports every request's end whether or not anything listens, so the cost is one command call per spec file; on a Windows test machine, passes with and without that call took the same time within their spread.
 
 ### Failure screenshots
