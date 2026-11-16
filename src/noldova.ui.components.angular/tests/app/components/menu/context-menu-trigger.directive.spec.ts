@@ -206,6 +206,7 @@ describe("ContextMenuTriggerDirective", () => {
     await untilAsync(() => expect(menu()).not.toBeNull());
     await userEvent.click(fixture.nativeElement.querySelector(".target"));
     await untilAsync(() => expect([menu(), document.activeElement?.className]).toEqual([null, "target"]));
+    await settledAsync();
 
     expect([isOpen, afterBlank, menu(), document.activeElement?.className]).toEqual([true, [null, true], null, "target"]);
   });
@@ -381,9 +382,10 @@ describe("ContextMenuTriggerDirective", () => {
     const isOpenAfterClick = [menu(), menu("submenu")].every(t => t !== null);
     await userEvent.keyboard("{Escape}");
     await untilAsync(() => expect([menu("submenu"), document.activeElement?.classList.contains("more")]).toEqual([null, true]));
+    await settledAsync();
 
     expect(isOpenAfterClick).toBe(true);
-    expect(menu()).not.toBeNull();
+    expect([menu() !== null, menu("submenu"), document.activeElement?.classList.contains("more")]).toEqual([true, null, true]);
   });
 
   it("closes with its submenu, which shares its menu stack, when a submenu row runs, returning focus to its host", async () => {

@@ -568,7 +568,8 @@ describe("MenuItemComponent", () => {
     await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBe(`${label}, ${description}`));
     await userEvent.keyboard("{Escape}");
     await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBeUndefined());
-    expect(document.activeElement).toBe(row("described"));
+    await settledAsync();
+    expect([shownTooltip(), document.activeElement]).toEqual([undefined, row("described")]);
 
     await userEvent.keyboard("{ArrowDown}{ArrowUp}");
     await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBe(`${label}, ${description}`));
@@ -807,6 +808,13 @@ describe("MenuItemComponent's key-focus tooltip in a popup menu", () => {
     return document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
   }
 
+  // A fixed frame, so a check after it shows that nothing changed in the frame after the state the spec waited for.
+  async function settledAsync(): Promise<void> {
+    popup.detectChanges();
+    await popup.whenStable();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+  }
+
   async function openOnCutRowAsync(): Promise<HTMLElement> {
     DomFixture.one(popup.nativeElement, ".trigger").focus();
     await userEvent.keyboard("{Enter}");
@@ -823,8 +831,8 @@ describe("MenuItemComponent's key-focus tooltip in a popup menu", () => {
 
     await userEvent.keyboard("{Escape}");
     await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBeUndefined());
-    expect(menu("root")).not.toBeNull();
-    expect(document.activeElement).toBe(cut);
+    await settledAsync();
+    expect([shownTooltip(), menu("root") !== null, document.activeElement]).toEqual([undefined, true, cut]);
     await userEvent.keyboard("{Escape}");
     popup.detectChanges();
     await popup.whenStable();
@@ -837,7 +845,8 @@ describe("MenuItemComponent's key-focus tooltip in a popup menu", () => {
     await userEvent.hover(DomFixture.one(document, ".cdk-overlay-container .parent"));
     await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
     await DomChangeFixture.untilAsync(() => expect(shownTooltip()).toBeUndefined());
-    expect(document.activeElement).toBe(cut);
+    await settledAsync();
+    expect([shownTooltip(), menu("submenu") !== null, document.activeElement]).toEqual([undefined, true, cut]);
   });
 });
 

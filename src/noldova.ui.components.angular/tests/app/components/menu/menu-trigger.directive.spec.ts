@@ -210,6 +210,7 @@ describe("MenuTriggerDirective", () => {
     const open = [row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")];
     await userEvent.keyboard("{ArrowLeft}");
     await untilAsync(() => expect([menu("submenu"), row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([null, null, "false"]));
+    await settledAsync();
 
     expect([open, menu("submenu"), menu("root") === null, row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([[true, "true"], null, false, null, "false"]);
   });
@@ -297,6 +298,9 @@ describe("MenuTriggerDirective", () => {
     await userEvent.click(fixture.nativeElement.querySelector(".outside"));
 
     await untilAsync(() => expect([menu("root"), document.activeElement?.className]).toEqual([null, "outside"]));
+    await settledAsync();
+
+    expect([menu("root"), document.activeElement?.className]).toEqual([null, "outside"]);
   });
 
   it("returns focus to its trigger when a press outside that keeps focus in the menu closes it, as a sash's press does", async () => {
@@ -325,6 +329,9 @@ describe("MenuTriggerDirective", () => {
     await userEvent.click(fixture.nativeElement.querySelector(".blank"));
 
     await untilAsync(() => expect([menu("root"), document.activeElement === document.body]).toEqual([null, true]));
+    await settledAsync();
+
+    expect([menu("root"), document.activeElement === document.body]).toEqual([null, true]);
   });
 
   it("opens a submenu with Right, its first row focused, and leaves it with Left back on its row", async () => {
@@ -335,8 +342,9 @@ describe("MenuTriggerDirective", () => {
     await untilAsync(() => expect(focused()).toBe("one"));
     await userEvent.keyboard("{ArrowLeft}");
     await untilAsync(() => expect([menu("submenu"), focused()]).toEqual([null, "beta"]));
+    await settledAsync();
 
-    expect(menu("root")).not.toBeNull();
+    expect([menu("root") !== null, menu("submenu"), focused()]).toEqual([true, null, "beta"]);
   });
 
   it("opens a submenu on hover flush against its menu, its first row level with the trigger row, keeps it open when its row is clicked or chosen again, and runs a row in it", async () => {
