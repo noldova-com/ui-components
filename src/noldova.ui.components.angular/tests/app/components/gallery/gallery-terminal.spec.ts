@@ -13,6 +13,7 @@ import { GalleryResources } from "../../../../src/app/components/gallery/gallery
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 
 describe("GalleryContentComponent's terminal colors", () => {
   let fixture: ComponentFixture<GalleryContentComponent>;
@@ -21,11 +22,15 @@ describe("GalleryContentComponent's terminal colors", () => {
     AppearanceFixture.reset();
   });
 
-  it("shows the terminal's 16 ANSI colors on the window and panel colors, its text, cursor and selection in the colors the theme gives them, in each mode", async () => {
-    const seen: string[][] = [];
+  const under: readonly string[] = [
+    "yellow cyan bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white",
+    "black red blue magenta bright-black"
+  ];
 
-    for (const mode of AppearanceFixture.modes) {
+  for (const [index, mode] of AppearanceFixture.modes.entries())
+    it(`shows the terminal's 16 ANSI colors on the window and panel colors, its text, cursor and selection in the colors the theme gives them, in ${mode.toLowerCase()} mode`, async () => {
       AppearanceFixture.apply(DefaultTheme.theme, mode);
+      GalleryFixture.leaveOut(...GalleryFixture.contentSpecimens);
       fixture = TestBed.createComponent(GalleryContentComponent);
       fixture.detectChanges();
       await fixture.whenStable();
@@ -42,24 +47,16 @@ describe("GalleryContentComponent's terminal colors", () => {
           swatches.filter(t => AppearanceFixture.contrast(color(`terminal-ansi-${t.textContent}`), background) < 4.5).map(t => t.textContent).join(" ")
         ];
       };
-      seen.push([
+      const seen = [
         ...shown(onWindow, "window"),
         ...shown(onPanel, "panel"),
         String(getComputedStyle(text ?? section).backgroundColor === color("terminal-background") && getComputedStyle(text ?? section).color === color("terminal-foreground")),
         String(getComputedStyle(DomFixture.one(section, ".nol-gallery-terminal-cursor")).backgroundColor === color("terminal-cursor")),
         String(getComputedStyle(DomFixture.one(section, ".nol-gallery-terminal-selection")).backgroundColor === color("terminal-selection"))
-      ]);
-      fixture.destroy();
-    }
+      ];
+      const names = GalleryResources.terminalColors.map(t => `${t} true`);
 
-    const under: readonly string[] = [
-      "yellow cyan bright-red bright-green bright-yellow bright-blue bright-magenta bright-cyan bright-white",
-      "black red blue magenta bright-black"
-    ];
-    const names = GalleryResources.terminalColors.map(t => `${t} true`);
-    expect(seen).toEqual(AppearanceFixture.modes.map((_, i) => [
-      "true", ...names, "true", under[i], "true", ...names, "true", under[i], "true", "true", "true"
-    ]));
-    expect(names).toHaveLength(16);
-  });
+      expect(seen).toEqual(["true", ...names, "true", under[index], "true", ...names, "true", under[index], "true", "true", "true"]);
+      expect(names).toHaveLength(16);
+    });
 });

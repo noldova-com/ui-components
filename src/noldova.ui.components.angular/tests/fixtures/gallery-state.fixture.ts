@@ -175,8 +175,7 @@ export class GalleryStateFixture {
   }
 
   private static showCellsAsync(section: Type<unknown>, state: GalleryState): Promise<ComponentFixture<GalleryComponent>> {
-    for (const specimen of GalleryStateFixture.withoutCells(section, state))
-      TestBed.overrideTemplate(specimen, String.empty);
+    GalleryFixture.leaveOut(...GalleryStateFixture.withoutCells(section, state));
     return GalleryStateFixture.showAsync([section]);
   }
 
