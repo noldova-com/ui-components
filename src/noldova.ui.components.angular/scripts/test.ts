@@ -12,6 +12,7 @@ import path from "node:path";
 import { AngularCoverageReport } from "./angular/angular-coverage-report.ts";
 import { AngularTestReport } from "./angular/angular-test-report.ts";
 import { AngularNewestCheck } from "./checks/angular-newest-check.ts";
+import { FailureScreenshotCheck } from "./checks/failure-screenshot-check.ts";
 import type { ICheck } from "./checks/interfaces/i-check.ts";
 import { KitBundleCheck } from "./checks/kit-bundle-check.ts";
 import { KitCopiesCheck } from "./checks/kit-copies-check.ts";
@@ -27,7 +28,7 @@ import Script from "./script.ts";
 
 export class Test extends Script {
   private static readonly BLANK_LINE: string = "";
-  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the poll and test limits check, the Kit bundles, the Kit copies, the Kit manifest and Angular's newest skipped for a filtered run.";
+  private static readonly FILTERED_COVERAGE_SKIPPED: string = "Coverage gates, the nativeElement assertions check, the OnPush strategies check, the poll and test limits check, the Failure screenshots check, the Kit bundles, the Kit copies, the Kit manifest and Angular's newest skipped for a filtered run.";
   private static readonly NO_TEST_MATCHED: string = "No test matched the filters.";
   private static readonly KIT_CHECK_PLATFORM: NodeJS.Platform = "linux";
   private static readonly KIT_CHECK_ARCHITECTURE: NodeJS.Architecture = "x64";
@@ -77,6 +78,7 @@ export class Test extends Script {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
+      await this.runCheckAsync(new FailureScreenshotCheck(Test.ROOT, new ProcessRunner()));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));
         await this.runCheckAsync(new KitCopiesCheck(Test.ROOT, new ProcessRunner(), new TemporaryFolder()));

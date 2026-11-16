@@ -13,6 +13,7 @@ import { defineConfig } from "vitest/config";
 
 import { ClassMetadataCoverage } from "./tests/coverage/class-metadata-coverage.ts";
 import { FailedModuleRequests } from "./tests/network/failed-module-requests.ts";
+import { ShortScreenshotNames } from "./tests/screenshots/short-screenshot-names.ts";
 
 const project = pathToFileURL(`${process.cwd()}/`);
 const compilerOptions: { paths: Record<string, string[]> } = JSON.parse(readFileSync(new URL("./tsconfig.json", project), "utf8")).compilerOptions;
@@ -41,7 +42,8 @@ export default defineConfig({
   },
   test: {
     api: { port: 24315 },
-    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch } },
+    // __vitest_screenshot replaces Vitest's own screenshot command, so a failure screenshot whose name is too long for a file still saves.
+    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
     expect: { poll: { timeout: pollLimit } },
     hookTimeout: hangLimit,

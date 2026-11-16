@@ -33,7 +33,7 @@ Report a security problem privately, as its [security policy](https://github.com
 
 The toolchain is Node.js 26.13.1 with npm 11.20.0, as `package.json` pins them.
 The repository is one npm workspace: the root's `package.json` names the packages in `src/` as its workspaces and holds only TypeScript, the version Angular supports, which compiles the kit and checks each package's `scripts/`, and Node.js's types; each package's own `package.json` names what it uses, and the root's one `package-lock.json` holds every package the repository installs.
-Each Angular package is its own Angular workspace: the kit's `src/noldova.ui.components.angular/` holds its `angular.json`, `tsconfig.json`, `tsconfig.spec.json` and `vitest.config.mts`, and the docs site's `src/noldova.ui.components.angular.docs/` its `angular.json` and `tsconfig.json`, which extends the kit's and runs its tests with the kit's `vitest.config.mts`; the kit's `tsconfig.json` and `scripts/tsconfig.json` extend the root's `tsconfig-base.json`; everything the kit's tests use is in its `tests/`, with the coverage plugin in `tests/coverage/`, the failed module request recorder's Node side in `tests/network/`, and the build's fixtures in `tests/fixtures/kit-bundles/` and `tests/fixtures/node-load/`, which the specs' compile leaves out.
+Each Angular package is its own Angular workspace: the kit's `src/noldova.ui.components.angular/` holds its `angular.json`, `tsconfig.json`, `tsconfig.spec.json` and `vitest.config.mts`, and the docs site's `src/noldova.ui.components.angular.docs/` its `angular.json` and `tsconfig.json`, which extends the kit's and runs its tests with the kit's `vitest.config.mts`; the kit's `tsconfig.json` and `scripts/tsconfig.json` extend the root's `tsconfig-base.json`; everything the kit's tests use is in its `tests/`, with the coverage plugin in `tests/coverage/`, the failed module request recorder's Node side in `tests/network/`, the screenshot command's in `tests/screenshots/`, and the fixtures of the build and of the checks in `tests/fixtures/kit-bundles/`, `tests/fixtures/node-load/` and `tests/fixtures/failure-screenshot/`, which the specs' compile leaves out.
 
 ```bash
 npm run build:components
@@ -312,6 +312,18 @@ A request answered with an error status, or with a success whose type isn't Java
 A response printed this way is printed once, though the browser also cancels its request.
 Every run prints six such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: four `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status and one HTML page's `text/html`.
 Playwright reports every request's end whether or not anything listens, so the cost is one command call per spec file; on a Windows test machine, passes with and without that call took the same time within their spread.
+
+### Failure screenshots
+
+When a spec test fails, Vitest saves a screenshot of the page under `.vitest/attachments/failure-screenshots/<spec file>/`, named after the test's full name.
+A name past the 255 bytes a file name may take on macOS, Linux and Windows would fail with `ENAMETOOLONG` and lose the screenshot, so `vitest.config.mts` puts `src/noldova.ui.components.angular/tests/screenshots/short-screenshot-names.ts` in place of Vitest's own screenshot command, `__vitest_screenshot`.
+It names such a file with the first 16 hexadecimal digits of the name's SHA-256 hash and the same extension, and prints `Screenshot of "<long file name>": <path>` in the run's output, so the test's full name stays beside the screenshot; a name that fits stays as it is.
+The command keeps Vitest's own timing, right after the failed test and before its `afterEach` hooks clean the page up, and does what Vitest's does after the name: the Playwright provider's `__vitest_takeScreenshot` takes the screenshot.
+Two checks guard it, since it leans on two of Vitest's internal command names:
+- The "Failure screenshots" check in `npm test`, `src/noldova.ui.components.angular/scripts/checks/failure-screenshot-check.ts`, runs Vitest's browser mode on `src/noldova.ui.components.angular/tests/fixtures/failure-screenshot/`, whose one test fails with a title past 255 bytes. It fails unless the run saves one screenshot under the short name and prints the long name beside its path, so it catches a Vitest that no longer sends its failure screenshot through `__vitest_screenshot`.
+- `src/noldova.ui.components.angular/tests/short-screenshot-names.spec.ts` fails if `__vitest_screenshot` or `__vitest_takeScreenshot` is renamed, or if `__vitest_takeScreenshot` stops giving back the image and its path.
+
+Neither catches a change in what Vitest's own `__vitest_screenshot` does before or after calling the provider, such as a new option, so a Vitest update means comparing its `packages/browser/src/node/commands/screenshot.ts` with `short-screenshot-names.ts`.
 
 ### Flake proof
 
