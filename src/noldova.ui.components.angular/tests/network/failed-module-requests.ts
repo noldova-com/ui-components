@@ -29,6 +29,8 @@ export class FailedModuleRequests {
     "text/javascript1.3", "text/javascript1.4", "text/javascript1.5", "text/jscript", "text/livescript", "text/x-ecmascript", "text/x-javascript"]);
 
   private readonly pages: WeakSet<IBrowserPage> = new WeakSet();
+  // Requests whose response was printed: the browser then cancels the request too, which would print the same import again.
+  private readonly printedResponses: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly lines: string[] = [];
 
   // The browser command: listens on the page that calls it, once per page, and gives every line printed so far.
@@ -44,7 +46,7 @@ export class FailedModuleRequests {
   }
 
   private recordRequest(request: IBrowserRequest, run: IVitestRun): void {
-    if (request.resourceType() === FailedModuleRequests.MODULE)
+    if (request.resourceType() === FailedModuleRequests.MODULE && !this.printedResponses.has(request))
       this.print(`Failed module request at ${new Date().toISOString()}: ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR} ${request.url()}`, run);
   }
 
@@ -56,8 +58,10 @@ export class FailedModuleRequests {
     const status = response.status();
     const type = response.headers()[FailedModuleRequests.CONTENT_TYPE] ?? FailedModuleRequests.NO_TYPE;
     const isJavaScript = FailedModuleRequests.JAVASCRIPT.has(type.replace(FailedModuleRequests.PARAMETERS, "").trim().toLowerCase());
-    if (status >= FailedModuleRequests.FIRST_ERROR_STATUS || (status < FailedModuleRequests.FIRST_REDIRECT_STATUS && !isJavaScript))
-      this.print(`Failed module response at ${new Date().toISOString()}: ${status} ${type} ${response.url()}`, run);
+    if (status < FailedModuleRequests.FIRST_ERROR_STATUS && (status >= FailedModuleRequests.FIRST_REDIRECT_STATUS || isJavaScript))
+      return;
+    this.printedResponses.add(response.request());
+    this.print(`Failed module response at ${new Date().toISOString()}: ${status} ${type} ${response.url()}`, run);
   }
 
   private print(line: string, run: IVitestRun): void {

@@ -25,11 +25,15 @@ describe("failed module request setup", () => {
 
   it("prints a module the test server answers with an error status once, with when, its status, its type and its URL", async () => {
     const url = new URL(`/tests/missing-module-${crypto.randomUUID()}.js`, location.origin).href;
+    const later = refusedAt("later");
 
     await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    // The browser cancels the request after its error response; once a later failure is printed, that cancel would have been printed too.
+    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await expect.poll(() => printedFor(later)).toHaveLength(1);
 
-    await expect.poll(() => printedFor(url)).toHaveLength(1);
     const printed = await printedFor(url);
+    expect(printed).toHaveLength(1);
     expect(printed[0]).toMatch(/^Failed module response at \d{4}-\d\d-\d\dT[\d:.]+Z: [45]\d\d /u);
   });
 
