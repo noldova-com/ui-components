@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { existsSync } from "node:fs";
 import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
@@ -24,6 +25,8 @@ export class FailureScreenshotCheck implements ICheck {
   private static readonly ATTACHMENTS_VARIABLE: string = "NOLDOVA_FAILURE_SCREENSHOT_ATTACHMENTS";
   // Under the repository, since Vitest saves a screenshot only inside the folders its server may serve.
   private static readonly ATTACHMENTS_SEGMENTS: readonly string[] = ["_build", "failure-screenshot-check"];
+  // Vitest saves the screenshot here and then copies it to the attachments folder's root under a SHA-1 of its path, which this check leaves alone.
+  private static readonly SCREENSHOTS_FOLDER: string = "failure-screenshots";
   private static readonly TIMEOUT: number = 300_000;
   private static readonly FAILED_RUN: number = 1;
   private static readonly SHORT_NAME: RegExp = /^[\da-f]{16}\.png$/u;
@@ -47,7 +50,9 @@ export class FailureScreenshotCheck implements ICheck {
     try {
       const result = await this.runner.captureAsync(process.execPath, [path.join(this.root, FailureScreenshotCheck.CLI), ...FailureScreenshotCheck.RUN_ARGUMENTS],
         path.join(this.root, FailureScreenshotCheck.FIXTURE), FailureScreenshotCheck.TIMEOUT, { ...process.env, [FailureScreenshotCheck.ATTACHMENTS_VARIABLE]: attachments });
-      const files = (await readdir(attachments, { recursive: true, withFileTypes: true })).filter(t => t.isFile()).map(t => t.name);
+      const screenshots = path.join(attachments, FailureScreenshotCheck.SCREENSHOTS_FOLDER);
+      // Without a saved screenshot, Vitest never makes the folder.
+      const files = existsSync(screenshots) ? (await readdir(screenshots, { recursive: true, withFileTypes: true })).filter(t => t.isFile()).map(t => t.name) : [];
       const findings = FailureScreenshotCheck.findingsOf(result, files);
       for (const finding of findings)
         output.write(`${finding}\n`);
