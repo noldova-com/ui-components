@@ -26,6 +26,7 @@ import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [MenuComponent, MenuGroupComponent, MenuItemComponent],
@@ -412,7 +413,9 @@ describe("MenuGroupComponent opened from its trigger", () => {
   async function shownAsync(): Promise<void> {
     await opened.whenStable();
     await DomChangeFixture.untilAsync(() => expect(rows()?.style.maxHeight).not.toBe(""));
-    await new Promise(t => requestAnimationFrame(() => requestAnimationFrame(t)));
+    await LayoutSettleFixture.settledAsync("the menu's place and focused row",
+      () => JSON.stringify([document.querySelector(".cdk-overlay-container nol-menu"), rows(), document.activeElement].map(t => t?.getBoundingClientRect() ?? null)),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   }
 
   function expectInView(index: number): void {

@@ -14,25 +14,30 @@ import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { PressFixture } from "../../../fixtures/press.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 describe("GalleryMessageComponent", () => {
   let fixture: ComponentFixture<GalleryMessageComponent>;
 
-  async function settleAsync(): Promise<void> {
-    for (let pass = 0; pass < 3; pass++) {
-      await fixture.whenStable();
-      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-    }
-    await fixture.whenStable();
-  }
-
   async function renderAsync(): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, ThemeMode.Light);
     fixture = TestBed.createComponent(GalleryMessageComponent);
-    await settleAsync();
+    await LayoutSettleFixture.settledAsync("the messages' parts and size", () => {
+      const host = DomFixture.host(fixture);
+      const box = host.getBoundingClientRect();
+      return JSON.stringify([host.querySelectorAll("*").length, box.width, box.height]);
+    }, async () => {
+      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
+      for (let round = 0; round < 3; round++) {
+        await fixture.whenStable();
+        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+      }
+    });
+    await fixture.whenStable();
   }
 
   async function renderOnSourceAsync(): Promise<TestTimeSource> {
@@ -118,12 +123,12 @@ describe("GalleryMessageComponent", () => {
     const ticking = source.timerCount;
     const retryable = (): HTMLElement => DomFixture.one(element(), "nol-gallery-cell[aria-label=\"Error with Retry\"] nol-message");
     PressFixture.click(DomFixture.oneOf(retryable(), ".nol-message-retry", HTMLButtonElement));
-    await settleAsync();
-    const retrying = [textOf(retryable(), ".nol-message-status > span"), retryable().querySelector(".nol-message-retry")];
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect([textOf(retryable(), ".nol-message-status > span"), retryable().querySelector(".nol-message-retry")]).toEqual(["Writing", null]));
     source.advance(1500);
-    await settleAsync();
+    await fixture.whenStable();
 
-    expect([retrying, textOf(retryable(), ".nol-message-retry"), source.timerCount - ticking]).toEqual([["Writing", null], "Retry", 0]);
+    await DomChangeFixture.untilAsync(() => expect([textOf(retryable(), ".nol-message-retry"), source.timerCount - ticking]).toEqual(["Retry", 0]));
   });
 
   it("stops a Retry that is still writing once it is destroyed", async () => {

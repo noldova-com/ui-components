@@ -9,10 +9,12 @@
 import { TestBed } from "@angular/core/testing";
 
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { body, framesAsync, linesOf, fromEnd, followAsync, streamAsync } = harness;
+  const { body, linesOf, fromEnd, followAsync, streamAsync } = harness;
+  const followedAsync = (): Promise<void> => DomChangeFixture.untilAsync(() => expect(fromEnd()).toBeLessThanOrEqual(1));
 
   beforeEach(harness.configure);
 
@@ -25,6 +27,7 @@ describe("CodeBlockComponent", () => {
       const ends: number[] = [];
       for (const lines of [20, 40, 41]) {
         await followAsync(() => harness.host.code.set(linesOf(lines)));
+        await followedAsync();
         ends.push(fromEnd());
       }
 
@@ -33,24 +36,26 @@ describe("CodeBlockComponent", () => {
 
     it("follows a new line once the browser has laid it out, not in the change's own render, where reading its height would lay the page out early", async () => {
       await streamAsync(40);
+      await followedAsync();
       const end = body().scrollTop;
       harness.host.code.set(linesOf(50));
       TestBed.tick();
       const rendered = body().scrollTop;
-      await framesAsync();
+      await followedAsync();
 
       expect([end > 0, rendered, fromEnd() <= 1]).toEqual([true, end, true]);
     });
 
     it("follows the lines it took while it streamed when the stream ends in a later change, before the browser has laid them out", async () => {
       await streamAsync(40);
+      await followedAsync();
       const end = body().scrollTop;
       harness.host.code.set(linesOf(50));
       TestBed.tick();
       harness.host.streaming.set(false);
       TestBed.tick();
       const ended = body().scrollTop;
-      await framesAsync();
+      await followedAsync();
 
       expect([end > 0, ended, body().scrollTop > end, fromEnd() <= 1]).toEqual([true, end, true, true]);
     });

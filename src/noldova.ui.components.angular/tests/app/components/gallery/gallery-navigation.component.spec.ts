@@ -14,6 +14,7 @@ import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { Resources } from "../../../../src/resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
@@ -43,11 +44,12 @@ describe("GalleryNavigationComponent", () => {
     const time = new TestTimeSource();
     TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: time }] });
     fixture = await GalleryFixture.showSectionAsync(GalleryNavigationComponent);
-    await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-    time.advance(Resources.virtualListSlowRead);
-    await fixture.whenStable();
     const list = (caption: string): HTMLElement | null => DomFixture.host(fixture).querySelector(
       `.nol-gallery-specimen[aria-label="Virtual list"] nol-gallery-cell[aria-label="${caption}"] nol-virtual-list`);
+    await DomChangeFixture.untilAsync(() => expect([list("Default")?.querySelector("[role=option]") !== null, list("Loading")?.querySelector("[role=listbox]")?.getAttribute("aria-busy"),
+      list("Error")?.querySelector(".nol-virtual-list-failure") !== null]).toEqual([true, "true", true]));
+    time.advance(Resources.virtualListSlowRead);
+    await fixture.whenStable();
     const [items, loading, failing] = [list("Default"), list("Loading"), list("Error")];
     const options = [...(items as HTMLElement).querySelectorAll("[role=option]")];
 

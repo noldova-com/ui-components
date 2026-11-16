@@ -17,7 +17,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, framesAsync, tokens, spanColorOf, colorOf, wordTokens } = harness;
+  const { renderAsync, changeAsync, controlTokens, settledAsync, tokens, spanColorOf, colorOf, wordTokens } = harness;
 
   beforeEach(harness.configure);
 
@@ -60,10 +60,10 @@ describe("CodeBlockComponent", () => {
     const shown = tokens();
     const calls = [tokenizeAsync.mock.calls.length, add.mock.calls.length];
     await ForcedColorsFixture.activateAsync();
-    await framesAsync();
+    await settledAsync("the code's highlights", () => JSON.stringify(tokens()));
     const forced = tokens();
     await ForcedColorsFixture.resetAsync();
-    await framesAsync();
+    await settledAsync("the code's highlights", () => JSON.stringify(tokens()));
 
     expect(shown).toEqual(wordTokens(harness.host.code()).map(t => [t.text, t.kind.toLowerCase()]));
     expect(calls.map(t => t > 0)).toEqual([true, true]);

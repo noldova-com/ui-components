@@ -18,6 +18,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [SpinnerComponent, VirtualListComponent, VirtualRowDirective],
@@ -37,10 +38,17 @@ describe("VirtualListComponent's selected option under forced colors", () => {
   async function renderAsync(mode: ThemeMode): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
     fixture = TestBed.createComponent(SpinnerRowsHostComponent);
-    for (let pass = 0; pass < 3; pass++) {
-      await fixture.whenStable();
-      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-    }
+    await LayoutSettleFixture.settledAsync("the list's rows and scroll", () => {
+      const host = DomFixture.host(fixture);
+      const view = host.querySelector(".nol-virtual-list-viewport");
+      return `${host.querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
+    }, async () => {
+      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
+      for (let round = 0; round < 3; round++) {
+        await fixture.whenStable();
+        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+      }
+    });
   }
 
   const option = (label: string): HTMLElement => {

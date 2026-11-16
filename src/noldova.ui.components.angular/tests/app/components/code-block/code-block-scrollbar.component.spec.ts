@@ -13,7 +13,7 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, find, box, body, framesAsync, tokens } = harness;
+  const { renderAsync, changeAsync, controlTokens, find, box, body, settledAsync, tokens } = harness;
 
   beforeEach(harness.configure);
 
@@ -34,7 +34,7 @@ describe("CodeBlockComponent", () => {
       };
       const code = (): DOMRect => box(".nol-code-block-body > code");
       const end = (): number => Math.max(...lines().map(t => t.right));
-      await framesAsync();
+      await settledAsync("the code's lines and padding", () => JSON.stringify([lines(), code(), body().scrollWidth, body().clientWidth, bottom()]));
       const start = (lines()[0] as DOMRect).left - code().left;
 
       AppearanceFixture.expectPixels(start, AppearanceFixture.toPixels(0.875));
@@ -49,7 +49,7 @@ describe("CodeBlockComponent", () => {
       expect(Math.abs(body().scrollLeft + body().clientWidth - body().scrollWidth)).toBeLessThan(1);
 
       await changeAsync(() => harness.host.wrapped.set(true));
-      await framesAsync();
+      await settledAsync("the wrapped code's width and padding", () => `${body().scrollWidth} ${body().clientWidth} ${bottom()}`);
 
       expect(body().scrollWidth).toBe(body().clientWidth);
       AppearanceFixture.expectPixels(bottom(), AppearanceFixture.toPixels(0.875));

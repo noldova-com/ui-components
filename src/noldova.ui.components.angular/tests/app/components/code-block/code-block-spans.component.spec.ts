@@ -17,7 +17,7 @@ import { CodeHighlightsFixture } from "../../../fixtures/code-highlights.fixture
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, find, body, copyAsync, framesAsync, ranges, tokens, tokenSpans, lines, lineNodes, isLine, plain, allRanges, tokenAt, shownOf, wordTokens } = harness;
+  const { renderAsync, changeAsync, controlTokens, find, body, copyAsync, framesAsync, settledAsync, ranges, tokens, tokenSpans, lines, lineNodes, isLine, plain, allRanges, tokenAt, shownOf, wordTokens } = harness;
 
   beforeEach(harness.configure);
 
@@ -140,7 +140,7 @@ describe("CodeBlockComponent", () => {
     const add = vi.spyOn(TestBed.inject(CodeHighlights), "add");
     const cutAsync = async (write: () => void): Promise<readonly (readonly [string, string])[]> => {
       write();
-      await framesAsync();
+      await settledAsync("the growing line's highlights", () => JSON.stringify(tokens()));
       return tokens();
     };
 
@@ -187,8 +187,9 @@ describe("CodeBlockComponent", () => {
     const node = lineNodes()[0] as Text;
     node.data = code.slice(0, "const mes".length);
     tokensOf = wordTokens;
+    const changes = CodeHighlightsFixture.watch();
     await changeAsync(() => harness.host.language.set("JavaScript"));
-    await framesAsync();
+    await changes.untilAsync(() => expect(tokens().map(([t]) => t)).toEqual(["const", "mes"]));
 
     expect(tokens().map(([t]) => t)).toEqual(["const", "mes"]);
   });

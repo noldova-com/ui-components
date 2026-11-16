@@ -23,6 +23,7 @@ import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 
@@ -134,15 +135,27 @@ describe("MenuTriggerDirective", () => {
     await new Promise(resolve => requestAnimationFrame(resolve));
   }
 
+  async function untilAsync(check: () => void): Promise<void> {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(check);
+  }
+
+  async function placedAsync(...names: string[]): Promise<void> {
+    await untilAsync(() => expect(names.filter(t => menu(t) === null)).toEqual([]));
+    await LayoutSettleFixture.settledAsync("the menus' places", () => JSON.stringify(["root", "submenu"].map(t => menu(t)?.getBoundingClientRect() ?? null)),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+  }
+
   async function openFromKeyboardAsync(): Promise<void> {
     trigger().focus();
     await userEvent.keyboard("{Enter}");
-    await settledAsync();
+    await untilAsync(() => expect(focused()).toBe("alpha"));
   }
 
   it("opens below its trigger in the kit's own pane, not in a connected one, and marks the trigger expanded", async () => {
     trigger().click();
-    await settledAsync();
+    await placedAsync("root");
     const panel = menu("root");
     const pane = panel?.parentElement;
 
@@ -159,34 +172,33 @@ describe("MenuTriggerDirective", () => {
   it("names its open menu in aria-controls and names none once the menu closes, by a row, Escape, a click outside or a submenu's row, with aria-expanded beside it", async () => {
     const controls: string[] = [];
     const state = (): string => `${trigger().getAttribute("aria-controls") === menu("root")?.id ? "names the menu" : trigger().getAttribute("aria-controls")}, expanded ${trigger().getAttribute("aria-expanded")}`;
+    const open = "names the menu, expanded true";
+    const closed = "null, expanded false";
+    const reachedAsync = async (expected: string): Promise<void> => {
+      await untilAsync(() => expect(state()).toBe(expected));
+      controls.push(state());
+    };
     const openAsync = async (): Promise<void> => {
       trigger().click();
-      await settledAsync();
-      controls.push(state());
+      await reachedAsync(open);
     };
     await openAsync();
     row("alpha").click();
-    await settledAsync();
-    controls.push(state());
+    await reachedAsync(closed);
     await openFromKeyboardAsync();
     await userEvent.keyboard("{Escape}");
-    await settledAsync();
-    controls.push(state());
+    await reachedAsync(closed);
     await openAsync();
     await userEvent.click(fixture.nativeElement.querySelector(".outside"));
-    await settledAsync();
-    controls.push(state());
+    await reachedAsync(closed);
     await openAsync();
     await userEvent.hover(row("beta"));
     await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
-    await settledAsync();
+    await untilAsync(() => expect([row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")]).toEqual([true, "true"]));
     const beta = row("beta");
     const betaOpen = [beta.getAttribute("aria-controls") === menu("submenu")?.id, beta.getAttribute("aria-expanded")];
     await userEvent.click(row("one"));
-    await settledAsync();
-    controls.push(state());
-    const open = "names the menu, expanded true";
-    const closed = "null, expanded false";
+    await reachedAsync(closed);
 
     expect([controls, betaOpen, menu("root")]).toEqual([[open, closed, closed, open, closed, open, closed], [true, "true"], null]);
   });
@@ -194,10 +206,10 @@ describe("MenuTriggerDirective", () => {
   it("names no submenu in its row's aria-controls once the submenu closes and its menu stays open", async () => {
     await openFromKeyboardAsync();
     await userEvent.keyboard("{ArrowDown}{ArrowRight}");
-    await settledAsync();
+    await untilAsync(() => expect([row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")]).toEqual([true, "true"]));
     const open = [row("beta").getAttribute("aria-controls") === menu("submenu")?.id, row("beta").getAttribute("aria-expanded")];
     await userEvent.keyboard("{ArrowLeft}");
-    await settledAsync();
+    await untilAsync(() => expect([menu("submenu"), row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([null, null, "false"]));
 
     expect([open, menu("submenu"), menu("root") === null, row("beta").getAttribute("aria-controls"), row("beta").getAttribute("aria-expanded")]).toEqual([[true, "true"], null, false, null, "false"]);
   });
@@ -207,9 +219,8 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.alignment.set(OverlayAlignment.End);
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
 
-    await DomChangeFixture.untilAsync(() => expect(menu("root")?.getBoundingClientRect().right).toBeCloseTo(trigger().getBoundingClientRect().right, 0));
+    await untilAsync(() => expect(menu("root")?.getBoundingClientRect().right).toBeCloseTo(trigger().getBoundingClientRect().right, 0));
   });
 
   it("moves through its rows with the arrow keys, Home, End and type-ahead, skipping nothing", async () => {
@@ -231,13 +242,10 @@ describe("MenuTriggerDirective", () => {
     await settledAsync();
     const isOpenAfterDisabled = menu("root") !== null;
     await userEvent.keyboard("{ArrowDown}{Enter}");
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused(), trigger().getAttribute("aria-expanded")]).toEqual([null, "trigger", "false"]));
 
     expect(isOpenAfterDisabled).toBe(true);
     expect(fixture.componentInstance.chosen).toEqual(["delta"]);
-    expect(menu("root")).toBeNull();
-    expect(focused()).toBe("trigger");
-    expect(trigger().getAttribute("aria-expanded")).toBe("false");
   });
 
   it("forces at most one style and one layout pass while a row's click closes it and its trigger takes the focus back", async () => {
@@ -245,7 +253,7 @@ describe("MenuTriggerDirective", () => {
     const alpha = row("alpha");
 
     const passes = await LayoutTraceFixture.forcedPassesAsync(() => alpha.click());
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
 
     expect(passes.filter(t => t.startsWith("UpdateLayoutTree ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
     expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
@@ -255,34 +263,31 @@ describe("MenuTriggerDirective", () => {
   it("closes with Escape and returns focus to its trigger", async () => {
     await openFromKeyboardAsync();
     await userEvent.keyboard("{Escape}");
-    await settledAsync();
 
-    expect(menu("root")).toBeNull();
-    expect(focused()).toBe("trigger");
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
   });
 
   it("closes on a click outside, but not on a click inside", async () => {
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("gamma").click();
     const isOpenAfterInside = menu("root") !== null;
     await userEvent.click(fixture.nativeElement.querySelector(".outside"));
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).toBeNull());
 
     expect(isOpenAfterInside).toBe(true);
-    expect(menu("root")).toBeNull();
   });
 
   it("returns focus to its trigger after a click on an empty area outside, whether it opened from the keyboard or a click", async () => {
     await openFromKeyboardAsync();
     await userEvent.click(fixture.nativeElement.querySelector(".blank"));
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
     const afterKeyboard = [menu("root"), focused()];
     await userEvent.click(trigger());
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     const isOpen = menu("root") !== null;
     await userEvent.click(fixture.nativeElement.querySelector(".blank"));
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
 
     expect([afterKeyboard, isOpen, menu("root"), focused()]).toEqual([[null, "trigger"], true, null, "trigger"]);
   });
@@ -290,16 +295,15 @@ describe("MenuTriggerDirective", () => {
   it("leaves focus on the control that a click outside reaches", async () => {
     await openFromKeyboardAsync();
     await userEvent.click(fixture.nativeElement.querySelector(".outside"));
-    await settledAsync();
 
-    expect([menu("root"), document.activeElement?.className]).toEqual([null, "outside"]);
+    await untilAsync(() => expect([menu("root"), document.activeElement?.className]).toEqual([null, "outside"]));
   });
 
   it("returns focus to its trigger when a press outside that keeps focus in the menu closes it, as a sash's press does", async () => {
     await openFromKeyboardAsync();
     const before = focused();
     await userEvent.click(fixture.nativeElement.querySelector(".held"));
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
 
     expect([before, menu("root"), focused()]).toEqual(["alpha", null, "trigger"]);
   });
@@ -310,7 +314,7 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.top.set(140);
     fixture.detectChanges();
     fixture.nativeElement.querySelector(".scroller").dispatchEvent(new Event("scroll"));
-    await settledAsync();
+    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
 
     expect([before, menu("root"), focused()]).toEqual(["alpha", null, "trigger"]);
   });
@@ -319,9 +323,8 @@ describe("MenuTriggerDirective", () => {
     await openFromKeyboardAsync();
     trigger().disabled = true;
     await userEvent.click(fixture.nativeElement.querySelector(".blank"));
-    await settledAsync();
 
-    expect([menu("root"), document.activeElement === document.body]).toEqual([null, true]);
+    await untilAsync(() => expect([menu("root"), document.activeElement === document.body]).toEqual([null, true]));
   });
 
   it("opens a submenu with Right, its first row focused, and leaves it with Left back on its row", async () => {
@@ -329,23 +332,19 @@ describe("MenuTriggerDirective", () => {
     await userEvent.keyboard("{ArrowDown}");
     expect(row("beta").querySelector(".nol-menu-item-chevron")?.textContent).toBe("chevron_right");
     await userEvent.keyboard("{ArrowRight}");
-    await settledAsync();
-    const focusedInSubmenu = focused();
+    await untilAsync(() => expect(focused()).toBe("one"));
     await userEvent.keyboard("{ArrowLeft}");
-    await settledAsync();
+    await untilAsync(() => expect([menu("submenu"), focused()]).toEqual([null, "beta"]));
 
-    expect(focusedInSubmenu).toBe("one");
-    expect(menu("submenu")).toBeNull();
     expect(menu("root")).not.toBeNull();
-    expect(focused()).toBe("beta");
   });
 
   it("opens a submenu on hover flush against its menu, its first row level with the trigger row, keeps it open when its row is clicked or chosen again, and runs a row in it", async () => {
     await userEvent.click(trigger());
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     await userEvent.hover(row("beta"));
     await DomChangeFixture.untilAsync(() => expect(menu("submenu")).not.toBeNull());
-    await settledAsync();
+    await placedAsync("root", "submenu");
     const parent = menu("root")?.getBoundingClientRect();
     const child = menu("submenu")?.getBoundingClientRect();
 
@@ -361,9 +360,8 @@ describe("MenuTriggerDirective", () => {
     await settledAsync();
     expect(menu("submenu")).not.toBeNull();
     await userEvent.click(row("one"));
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).toBeNull());
     expect(fixture.componentInstance.chosen).toEqual(["one"]);
-    expect(menu("root")).toBeNull();
   });
 
   it("opens on its trigger's start edge, and a submenu flush against its menu's end side, on the right and left in a right-to-left layout", async () => {
@@ -371,9 +369,9 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.direction.set("rtl");
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").click();
-    await settledAsync();
+    await placedAsync("root", "submenu");
     const parent = menu("root")?.getBoundingClientRect();
     const child = menu("submenu")?.getBoundingClientRect();
 
@@ -387,7 +385,7 @@ describe("MenuTriggerDirective", () => {
 
   it("opens a submenu with the arrow key toward its side and closes it with the other, by the direction of the region it opens from, whatever the page's", async () => {
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").focus();
     await userEvent.keyboard("{ArrowLeft}");
     await settledAsync();
@@ -395,22 +393,20 @@ describe("MenuTriggerDirective", () => {
     expect(menu("submenu")).toBeNull();
 
     await userEvent.keyboard("{ArrowRight}");
-    await settledAsync();
 
-    expect(menu("submenu")).not.toBeNull();
+    await untilAsync(() => expect(menu("submenu")).not.toBeNull());
 
     await userEvent.keyboard("{ArrowLeft}");
-    await settledAsync();
 
-    expect(menu("submenu")).toBeNull();
+    await untilAsync(() => expect(menu("submenu")).toBeNull());
 
     await userEvent.keyboard("{Escape}");
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).toBeNull());
     fixture.componentInstance.left.set(600);
     fixture.componentInstance.direction.set("rtl");
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").focus();
     await userEvent.keyboard("{ArrowRight}");
     await settledAsync();
@@ -418,14 +414,12 @@ describe("MenuTriggerDirective", () => {
     expect(menu("submenu")).toBeNull();
 
     await userEvent.keyboard("{ArrowLeft}");
-    await settledAsync();
 
-    expect(menu("submenu")).not.toBeNull();
+    await untilAsync(() => expect(menu("submenu")).not.toBeNull());
 
     await userEvent.keyboard("{ArrowRight}");
-    await settledAsync();
 
-    expect(menu("submenu")).toBeNull();
+    await untilAsync(() => expect(menu("submenu")).toBeNull());
   });
 
   it("aligns its end with the trigger's end, its left edge, when asked in a right-to-left layout", async () => {
@@ -434,7 +428,7 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.alignment.set(OverlayAlignment.End);
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
+    await placedAsync("root");
 
     expect(menu("root")?.getBoundingClientRect().left).toBeCloseTo(trigger().getBoundingClientRect().left, 0);
   });
@@ -444,9 +438,9 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.direction.set("rtl");
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").click();
-    await settledAsync();
+    await placedAsync("root", "submenu");
 
     expect(menu("submenu")?.getBoundingClientRect().left).toBeCloseTo(menu("root")?.getBoundingClientRect().right ?? 0, 0);
   });
@@ -456,54 +450,50 @@ describe("MenuTriggerDirective", () => {
     fixture.componentInstance.alignment.set(OverlayAlignment.End);
     fixture.detectChanges();
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").click();
-    await settledAsync();
+    await placedAsync("root", "submenu");
 
     expect(menu("submenu")?.getBoundingClientRect().right).toBeCloseTo(menu("root")?.getBoundingClientRect().left ?? 0, 0);
   });
 
   it("closes every menu when something around its trigger scrolls", async () => {
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     row("beta").click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("submenu")).not.toBeNull());
 
     fixture.componentInstance.top.set(140);
     fixture.detectChanges();
     fixture.nativeElement.querySelector(".scroller").dispatchEvent(new Event("scroll"));
-    await settledAsync();
 
-    expect(menu("submenu")).toBeNull();
-    expect(menu("root")).toBeNull();
+    await untilAsync(() => expect([menu("submenu"), menu("root")]).toEqual([null, null]));
   });
 
   it("keeps its menu open when opened again, and closes it when toggled", async () => {
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).not.toBeNull());
     const directive = fixture.debugElement.query(t => t.nativeElement === trigger()).injector.get(MenuTriggerDirective);
     directive.open();
     const isOpenAfterAgain = menu("root") !== null;
     trigger().click();
-    await settledAsync();
+    await untilAsync(() => expect(menu("root")).toBeNull());
 
     expect(isOpenAfterAgain).toBe(true);
-    expect(menu("root")).toBeNull();
   });
 
   it("opens its menu with the focus on the first item when asked to focus", async () => {
     const directive = fixture.debugElement.query(t => t.nativeElement === trigger()).injector.get(MenuTriggerDirective);
 
     directive.openFocusing("keyboard");
-    await settledAsync();
 
-    expect(document.activeElement).toBe(row("alpha"));
+    await untilAsync(() => expect(document.activeElement).toBe(row("alpha")));
   });
 
   it("keeps a menu too wide for the window within its overlay wrapper less the margins, not the viewport, as it must beside a classic scrollbar", async () => {
     OverlayWrapperFixture.showScrollbars();
     trigger().click();
-    await settledAsync();
+    await placedAsync("root");
     const shown = menu("root") as HTMLElement;
     shown.style.width = "500vw";
     const box = OverlayWrapperFixture.narrow(shown.closest(".nol-menu-pane") as Element);
@@ -545,9 +535,7 @@ describe("MenuTriggerDirective in an OnPush host", () => {
     DomFixture.one(DomFixture.present(menu("submenu")), ".one").click();
     await DomChangeFixture.untilAsync(() => expect(menu("root")).toBeNull());
     await fixture.whenStable();
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    await fixture.whenStable();
 
-    expect([state(trigger, "root"), fixture.componentInstance.shown()]).toEqual(["null, expanded false", "one"]);
+    await DomChangeFixture.untilAsync(() => expect([state(trigger, "root"), fixture.componentInstance.shown()]).toEqual(["null, expanded false", "one"]));
   });
 });

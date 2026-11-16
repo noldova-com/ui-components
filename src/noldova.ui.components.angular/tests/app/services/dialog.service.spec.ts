@@ -15,6 +15,7 @@ import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
 import { DialogService } from "../../../src/app/services/dialog.service";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
 import { DomChangeFixture } from "../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../fixtures/dom.fixture";
 import { MotionFixture } from "../../fixtures/motion.fixture";
@@ -166,11 +167,10 @@ describe("DialogService", () => {
     const halfway = parseFloat(getComputedStyle(backdrop).opacity);
     const host = backdrop.parentElement;
     fade?.finish();
-    await settleAsync();
+    await DomChangeFixture.untilAsync(() => expect([backdrop.isConnected, host?.isConnected, document.querySelectorAll(".cdk-overlay-backdrop").length]).toEqual([false, false, 0]));
 
     expect(fading).toEqual([true, true, 1, "none", true, true, false, 0]);
     expect(halfway).toBeCloseTo(0.065, 2);
-    expect([backdrop.isConnected, host?.isConnected, document.querySelectorAll(".cdk-overlay-backdrop").length]).toEqual([false, false, 0]);
   });
 
   it("fades a dialog closed while its backdrop still fades in out from the opacity it got to, rather than from full", async () => {
@@ -189,7 +189,7 @@ describe("DialogService", () => {
     fades.forEach(t => t.pause());
     const start = parseFloat(getComputedStyle(backdrop).opacity);
     fades.forEach(t => t.finish());
-    await settleAsync();
+    await DomChangeFixture.untilAsync(() => expect(backdrop.isConnected).toBe(false));
 
     expect([got, fades.length, backdrop.style.opacity, backdrop.isConnected]).toEqual([expect.closeTo(0.708, 2), 1, "", false]);
     expect(start).toBeCloseTo(got, 2);
@@ -205,7 +205,7 @@ describe("DialogService", () => {
     if (fade !== undefined)
       fade.currentTime = fade.effect?.getComputedTiming().endTime ?? 0;
     const ended = fade?.playState;
-    await settleAsync();
+    await DomChangeFixture.untilAsync(() => expect([backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual([false, 0]));
 
     expect([ended, connected, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual(["finished", true, false, 0]);
   });
@@ -214,10 +214,13 @@ describe("DialogService", () => {
     it(`lets a listener on the document hear a closed dialog's backdrop end its fade, once the backdrop has left the window behind it, in ${mode} mode`, async () => {
       AppearanceFixture.apply(DefaultTheme.theme, mode);
       const heard: (readonly [string, boolean])[] = [];
+      const hearing = new ChangeSignalFixture();
       const [reference, backdrop] = await openShownAsync();
       const listen = (event: TransitionEvent): void => {
-        if (event.target === backdrop)
+        if (event.target === backdrop) {
           heard.push([event.propertyName, backdrop.isConnected]);
+          hearing.fire();
+        }
       };
       document.addEventListener("transitionend", listen);
       try {
@@ -226,7 +229,7 @@ describe("DialogService", () => {
         reference.close();
         const shade = getComputedStyle(backdrop).backgroundColor;
         backdrop.getAnimations().forEach(t => t.finish());
-        await settleAsync();
+        await hearing.untilAsync(() => expect(heard).toEqual([["opacity", false]]));
 
         expect(shade).not.toBe("rgba(0, 0, 0, 0)");
         expect([heard, backdrop.isConnected, document.elementFromPoint(1, 1)?.closest(".cdk-overlay-container") ?? null]).toEqual([[["opacity", false]], false, null]);
@@ -243,9 +246,12 @@ describe("DialogService", () => {
     references = [];
     await settleAsync();
     const heard: (readonly [string, string, boolean])[] = [];
+    const hearing = new ChangeSignalFixture();
     const listen = (event: TransitionEvent): void => {
-      if (event.target === backdrop)
+      if (event.target === backdrop) {
         heard.push([event.type, event.propertyName, backdrop.isConnected]);
+        hearing.fire();
+      }
     };
     const types = ["transitionend", "transitioncancel"] as const;
     for (const type of types)
@@ -253,7 +259,7 @@ describe("DialogService", () => {
     try {
       reference.close();
       backdrop.getAnimations().forEach(t => t.cancel());
-      await framesAsync();
+      await hearing.untilAsync(() => expect(heard).toEqual([["transitioncancel", "opacity", false]]));
 
       expect([heard, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length, time.timerCount])
         .toEqual([[["transitioncancel", "opacity", false]], false, 0, 0]);
@@ -312,9 +318,8 @@ describe("DialogService", () => {
     references = [];
 
     TestBed.resetTestingModule();
-    await settleAsync();
 
-    expect([opener.inert, document.activeElement === opener, document.querySelectorAll("[role='dialog'], .nol-dialog-backdrop").length]).toEqual([false, true, 0]);
+    await DomChangeFixture.untilAsync(() => expect([opener.inert, document.activeElement === opener, document.querySelectorAll("[role='dialog'], .nol-dialog-backdrop").length]).toEqual([false, true, 0]));
   });
 
   it("takes a closed dialog's backdrop away at once when reduced motion is preferred, or when it closes before its first frame", async () => {
@@ -328,9 +333,8 @@ describe("DialogService", () => {
       references = [];
       reference.close();
       const fades = backdrop.getAnimations().length;
-      await settleAsync();
 
-      expect([earlyFades, fades, earlyBackdrop.isConnected, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual([0, 0, false, false, 0]);
+      await DomChangeFixture.untilAsync(() => expect([earlyFades, fades, earlyBackdrop.isConnected, backdrop.isConnected, document.querySelectorAll(".cdk-overlay-container > .cdk-overlay-popover").length]).toEqual([0, 0, false, false, 0]));
     }
     finally {
       await MotionFixture.resetAsync();
@@ -351,7 +355,7 @@ describe("DialogService", () => {
     const order = [...document.querySelectorAll(":popover-open")].filter(t => t.contains(fading) || t.contains(shown)).map(t => t.contains(fading) ? "fading" : "shown");
     const meanwhile = [document.querySelectorAll(".nol-dialog-backdrop").length, document.elementFromPoint(1, 1) === shown, opener.inert];
     fades.forEach(t => t.finish());
-    await settleAsync();
+    await DomChangeFixture.untilAsync(() => expect(fading.isConnected).toBe(false));
 
     expect([order, meanwhile]).toEqual([["fading", "shown"], [2, true, true]]);
     const left = [...document.querySelectorAll(".nol-dialog-backdrop")];
