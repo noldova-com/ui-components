@@ -23,6 +23,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [IconButtonComponent, MenuComponent, MenuGroupActionDirective, MenuGroupComponent, MenuItemComponent, MenuTriggerDirective],
@@ -64,7 +65,11 @@ describe("MenuGroupActionDirective", () => {
     fixture = TestBed.createComponent(MenuGroupActionHostComponent);
     await settledAsync();
     find(".trigger", fixture.nativeElement).click();
-    await settledAsync();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(menu()).not.toBeNull());
+    await LayoutSettleFixture.settledAsync("the menu's place", () => JSON.stringify([menu(), document.querySelector(".refresh")].map(t => t?.getBoundingClientRect() ?? null)),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
   }
 
   afterEach(async () => {
@@ -149,11 +154,12 @@ describe("MenuGroupActionDirective", () => {
     await settledAsync();
     const afterKeys = [menu() !== null, focused()];
     find(".default").click();
-    await settledAsync();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(menu()).toBeNull());
 
     expect([afterClick, afterKeys]).toEqual([true, [true, "refresh"]]);
     expect(fixture.componentInstance.refreshes).toEqual(["refresh", "refresh", "refresh", "default"]);
-    expect(menu()).toBeNull();
   });
 
   it("is reached by the arrow keys before its group's rows and by type-ahead by its label", async () => {
@@ -194,8 +200,9 @@ describe("MenuGroupActionDirective", () => {
     expect([focused(), fixture.componentInstance.refreshes, menu() !== null]).toEqual(["refresh", ["refresh"], true]);
 
     fixture.componentInstance.loading.set(false);
-    await settledAsync();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(action.getAttribute("aria-disabled")).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(action.getAttribute("aria-disabled")).toBeNull());
   });
 });

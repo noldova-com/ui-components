@@ -329,9 +329,18 @@ describe("AnchoredOverlay", () => {
       lost.fire();
     });
     const origin = anchor();
+    // The overlay's observer of its anchor asks whether the anchor still renders each time it sees it resize.
+    const seen = new ChangeSignalFixture();
+    let checks = 0;
+    const isVisible = origin.checkVisibility.bind(origin);
+    vi.spyOn(origin, "checkVisibility").mockImplementation(options => {
+      checks++;
+      seen.fire();
+      return isVisible(options);
+    });
     overlay.openComponent(new ComponentPortal(ContentComponent), origin, below());
     origin.style.width = "200px";
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await seen.untilAsync(() => expect(checks, "the overlay's checks of its resized anchor").toBeGreaterThan(0));
     const lossesAfterResize = losses;
 
     DomFixture.one(DomFixture.host(fixture), ".scroller").style.display = "none";

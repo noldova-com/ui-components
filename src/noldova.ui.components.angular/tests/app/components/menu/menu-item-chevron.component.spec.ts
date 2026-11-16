@@ -17,6 +17,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 
 @Component({
   imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective],
@@ -57,13 +58,15 @@ describe("MenuItemComponent's chevron", () => {
   const box = (name: string, selector: string): DOMRect => DomFixture.one(row(name), selector).getBoundingClientRect();
   const chevron = (name: string): Element | null => row(name).querySelector(".nol-menu-item-chevron");
   const submenu = (): Element | null => document.querySelector(".cdk-overlay-container nol-menu");
-  const settledAsync = async (): Promise<void> => {
+  const laidOutAsync = async (): Promise<void> => {
     await fixture.whenStable();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await LayoutSettleFixture.settledAsync("the rows' trailing parts",
+      () => JSON.stringify([...DomFixture.host(fixture).querySelectorAll(".nol-menu-item-value, .nol-menu-item-chevron, .nol-menu-item-shortcut")].map(t => t.getBoundingClientRect())),
+      () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
   };
 
   async function expectTrailEndsAsync(): Promise<void> {
-    await settledAsync();
+    await laidOutAsync();
     const end = (name: string, selector: string): number => row(name).getBoundingClientRect().right - box(name, selector).right;
     const padding = end("model", ".nol-menu-item-chevron");
 
@@ -95,7 +98,7 @@ describe("MenuItemComponent's chevron", () => {
   it("shows the chevron again, with the value before it, once the row asks for it", async () => {
     fixture.componentInstance.isShowingChevron.set(true);
     fixture.detectChanges();
-    await settledAsync();
+    await laidOutAsync();
 
     expect(chevron("zoom")?.textContent).toBe("chevron_right");
     AppearanceFixture.expectPixels(box("zoom", ".nol-menu-item-chevron").right, box("model", ".nol-menu-item-chevron").right);

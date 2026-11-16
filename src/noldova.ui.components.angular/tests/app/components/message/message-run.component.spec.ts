@@ -17,7 +17,9 @@ import { MessageText } from "../../../../src/app/models/message-text";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { Resources } from "../../../../src/resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
 
 @Component({
@@ -64,6 +66,12 @@ describe("MessageRunComponent", () => {
     fixture.detectChanges();
   }
 
+  async function measuredAsync(check: () => void): Promise<void> {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(check);
+  }
+
   const find = (selector: string): HTMLElement => DomFixture.one(DomFixture.host(fixture), selector);
   const all = (selector: string): HTMLElement[] => [...DomFixture.host(fixture).querySelectorAll<HTMLElement>(selector)];
   const long = new MessageText(Array.from({ length: 60 }, (_, index) => `Paragraph ${index + 1}`).join("\n\n"));
@@ -104,10 +112,12 @@ describe("MessageRunComponent", () => {
       t.streaming.set(true);
       t.blocks.set([new MessageText(["```ts", lines(80), "```", String.empty, "```ts", lines(80)].join("\n"))]);
     });
-    await measureAsync();
+    const scrolledAsync = (): Promise<void> => LayoutSettleFixture.settledAsync("the code blocks' scroll",
+      () => bodies().map(t => `${t.scrollTop} ${t.scrollHeight}`).join(", "), measureAsync);
+    await scrolledAsync();
     const markdown = bodies().map(t => [t.scrollTop, fromEnd(t)] as const);
     await changeAsync(() => host.blocks.set([new MessageCode(lines(80)), new MessageCode(lines(80))]));
-    await measureAsync();
+    await scrolledAsync();
     const code = bodies().map(t => [t.scrollTop, fromEnd(t)] as const);
 
     expect(markdown.map(([top, end]) => [top === 0, end <= 1])).toEqual([[true, false], [false, true]]);
@@ -179,7 +189,7 @@ describe("MessageRunComponent", () => {
   it("collapses long complete text with Show more, expands it and collapses it again, never collapses short text, and keeps text that streamed in view expanded with Show less", async () => {
     await MotionFixture.reduceForTestAsync();
     await renderAsync(t => t.blocks.set([long]));
-    await measureAsync();
+    await measuredAsync(() => expect(all(".nol-message-more").length).toBe(1));
     const body = find(".nol-message-run-body");
     const more = find(".nol-message-more");
     const collapsed = [body.classList.contains("nol-message-collapsed"), more.textContent?.trim(), more.getAttribute("aria-expanded"), more.getAttribute("aria-controls") === body.id];
@@ -190,12 +200,12 @@ describe("MessageRunComponent", () => {
     await fixture.whenStable();
     const again = body.classList.contains("nol-message-collapsed");
     await changeAsync(() => host.blocks.set([new MessageText("Short")]));
-    await measureAsync();
+    await measuredAsync(() => expect(all(".nol-message-more").length).toBe(0));
     const short = all(".nol-message-more").length;
     await changeAsync(() => host.streaming.set(true));
     await changeAsync(() => host.blocks.set([long]));
     await changeAsync(() => host.streaming.set(false));
-    await measureAsync();
+    await measuredAsync(() => expect(all(".nol-message-more").map(t => t.textContent?.trim())).toEqual([Resources.messageShowLessLabel]));
 
     expect([collapsed, expanded, again, short, all(".nol-message-more").map(t => t.textContent?.trim()), body.classList.contains("nol-message-collapsed")]).toEqual([
       [true, Resources.messageShowMoreLabel, "false", true], [false, Resources.messageShowLessLabel, "true"], true, 0, [Resources.messageShowLessLabel], false
@@ -204,13 +214,16 @@ describe("MessageRunComponent", () => {
 
   it("expands when Tab moves focus to a link below its cut, with its content still from its top and the link in view", async () => {
     await renderAsync(t => t.blocks.set([new MessageText(`${long.text}\n\n[docs](https://example.com/docs)`)]));
-    await measureAsync();
+    await measuredAsync(() => expect(all(".nol-message-more").length).toBe(1));
     const body = find(".nol-message-run-body");
     const wasCollapsed = body.classList.contains("nol-message-collapsed");
 
     await userEvent.tab();
     await fixture.whenStable();
-    await measureAsync();
+    await measuredAsync(() => {
+      const box = find(".nol-markdown-link").getBoundingClientRect();
+      expect([body.classList.contains("nol-message-collapsed"), box.top >= 0 && box.bottom <= window.innerHeight]).toEqual([false, true]);
+    });
     const link = find(".nol-markdown-link");
     const shown = link.getBoundingClientRect();
 
@@ -221,7 +234,7 @@ describe("MessageRunComponent", () => {
 
   it("stays as it is when focus goes to a link above its cut, or into it once expanded", async () => {
     await renderAsync(t => t.blocks.set([new MessageText(`[docs](https://example.com/docs)\n\n${long.text}`)]));
-    await measureAsync();
+    await measuredAsync(() => expect(all(".nol-message-more").length).toBe(1));
     const body = find(".nol-message-run-body");
     find(".nol-markdown-link").focus();
     await fixture.whenStable();
@@ -242,7 +255,7 @@ describe("MessageRunComponent", () => {
     const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
     const end = link.getBoundingClientRect().bottom - body.getBoundingClientRect().top + rem / 2;
     (DomFixture.host(fixture).firstElementChild as HTMLElement).style.setProperty("--nol-message-collapsed-height", `${end}px`);
-    await measureAsync();
+    await measuredAsync(() => expect(body.classList.contains("nol-message-clipped")).toBe(true));
     const isAboveCut = link.getBoundingClientRect().bottom < body.getBoundingClientRect().bottom;
     const collapsed = body.classList.contains("nol-message-clipped");
     link.focus();
@@ -253,10 +266,10 @@ describe("MessageRunComponent", () => {
 
   it("fades only a collapsed run that is longer than its height", async () => {
     await renderAsync(t => t.blocks.set([long]));
-    await measureAsync();
+    await measuredAsync(() => expect(find(".nol-message-run-body").classList.contains("nol-message-clipped")).toBe(true));
     const clipped = find(".nol-message-run-body").classList.contains("nol-message-clipped");
     await changeAsync(() => host.blocks.set([new MessageText("Short")]));
-    await measureAsync();
+    await measuredAsync(() => expect(find(".nol-message-run-body").classList.contains("nol-message-clipped")).toBe(false));
 
     expect([clipped, find(".nol-message-run-body").classList.contains("nol-message-clipped")]).toEqual([true, false]);
   });

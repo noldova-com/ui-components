@@ -10,7 +10,7 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, find, ranges, wordTokens, framesAsync } = harness;
+  const { renderAsync, changeAsync, controlTokens, find, ranges, rangeLefts, wordTokens, framesAsync, settledAsync } = harness;
 
   beforeEach(harness.configure);
 
@@ -24,18 +24,15 @@ describe("CodeBlockComponent", () => {
   const movesAsync = async (zoom: number): Promise<{ readonly highlights: number; readonly spans: number; readonly moved: readonly number[] }> => {
     controlTokens(wordTokens);
     await renderAsync();
-    await framesAsync();
-    await harness.fixture.whenStable();
+    await settledAsync("the code's advance", ratio);
     document.documentElement.style.zoom = String(zoom);
-    await framesAsync();
-    await harness.fixture.whenStable();
+    await settledAsync("the code's advance", ratio);
     await changeAsync(() => {
       harness.host.code.set(Array.from({ length: 134 }, (_, i) => `v${i}=f${i}(${i})`).join(";"));
       harness.host.streaming.set(true);
     });
     await document.fonts.ready;
-    await framesAsync();
-    await harness.fixture.whenStable();
+    await settledAsync("the code's advance and its highlights' places", () => `${ratio()} ${rangeLefts().join(" ")}`);
     const highlights = ranges().map(([t]) => {
       const range = document.createRange();
       range.setStart(t.startContainer, t.startOffset);
@@ -57,8 +54,7 @@ describe("CodeBlockComponent", () => {
 
   it("takes its code's advance from its samples once laid out, under a layout unit from the advance itself, and keeps it while hidden, the samples adding no text to the block", async () => {
     await renderAsync();
-    await framesAsync();
-    await harness.fixture.whenStable();
+    await settledAsync("the code's advance", ratio);
     const shown = ratio();
     find("nol-code-block").style.display = "none";
     await framesAsync();

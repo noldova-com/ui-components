@@ -12,13 +12,20 @@ import { TestBed } from "@angular/core/testing";
 import { CodeTokenKind } from "../../../src/app/enums/code-token-kind";
 import { CodeToken } from "../../../src/app/models/code-token";
 import { CodeHighlights } from "../../../src/app/services/code-highlights";
+import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
 import { ForcedColorsFixture } from "../../fixtures/forced-colors.fixture";
 
 describe("CodeHighlights", () => {
   const names = Object.values(CodeTokenKind).map(t => `nol-code-${t.toLowerCase()}`);
   const ranges = (): readonly string[] => names.flatMap(name => [...CSS.highlights.get(name) ?? []].map(t => `${name} ${t.startContainer.textContent?.slice(t.startOffset, t.endOffset)}`));
-  const framesAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
   const shown = (): readonly string[] => names.filter(t => CSS.highlights.has(t));
+  // Waits for the highlights forced colors leave registered, rechecking on each change of the media query, which the page's own listener, added
+  // first, has seen. A spec starts it before it switches forced colors, so it listens before the change fires.
+  const registeredAsync = (isForced: boolean): Promise<void> => ChangeSignalFixture.untilAsync(() => expect(shown()).toEqual(isForced ? [] : names), recheck => {
+    const query = matchMedia("(forced-colors: active)");
+    query.addEventListener("change", recheck);
+    return () => query.removeEventListener("change", recheck);
+  });
 
   afterEach(async () => {
     vi.restoreAllMocks();
@@ -72,15 +79,18 @@ describe("CodeHighlights", () => {
     const highlights = TestBed.inject(CodeHighlights);
     const remove = highlights.add(document.createTextNode("return 1;"), [new CodeToken(0, "return", CodeTokenKind.Control)]);
     const forced = shown();
+    const registering = registeredAsync(false);
     await ForcedColorsFixture.resetAsync();
-    await framesAsync();
+    await registering;
     const registered = names.map(t => CSS.highlights.get(t));
     const first = ranges();
+    const clearing = registeredAsync(true);
     await ForcedColorsFixture.activateAsync();
-    await framesAsync();
+    await clearing;
     const forcedAgain = shown();
+    const registeringAgain = registeredAsync(false);
     await ForcedColorsFixture.resetAsync();
-    await framesAsync();
+    await registeringAgain;
     const again = names.map((t, i) => CSS.highlights.get(t) === registered[i]);
     const second = ranges();
     remove();
