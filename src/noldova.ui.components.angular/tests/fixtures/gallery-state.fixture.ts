@@ -58,7 +58,7 @@ export class GalleryStateFixture {
     const park = GalleryStateFixture.parkThePointer();
     try {
       await MotionFixture.reduceAsync();
-      await PointerFixture.hoverAsync(park, { force: true });
+      await PointerFixture.hoverAsync(park, { isForced: true });
       const cells = GalleryStateFixture.marked(GalleryStateFixture.firstFrame(await GalleryStateFixture.showAsync([kept])), GalleryState.Focus);
 
       expect(cells.length).toBeGreaterThan(0);
@@ -86,7 +86,7 @@ export class GalleryStateFixture {
     const park = GalleryStateFixture.parkThePointer();
     try {
       await MotionFixture.reduceAsync();
-      await PointerFixture.hoverAsync(park, { force: true });
+      await PointerFixture.hoverAsync(park, { isForced: true });
       const cells = GalleryStateFixture.marked(GalleryStateFixture.firstFrame(await GalleryStateFixture.showAsync([kept])), GalleryState.Hover);
 
       expect(cells.length).toBeGreaterThan(0);
@@ -97,7 +97,7 @@ export class GalleryStateFixture {
       });
       for (const { element, shown, plain } of looks) {
         // Forced, as the cells are rendered, laid out and still before the first move: the wait for that took about half of each move on a test machine.
-        await PointerFixture.hoverAsync(element, { force: true });
+        await PointerFixture.hoverAsync(element, { isForced: true });
 
         await DomChangeFixture.untilAsync(() => expect([GalleryStateFixture.name(element), GalleryStateFixture.look(element)]).toEqual([GalleryStateFixture.name(element), shown]));
         expect([GalleryStateFixture.name(element), shown]).not.toEqual([GalleryStateFixture.name(element), plain]);

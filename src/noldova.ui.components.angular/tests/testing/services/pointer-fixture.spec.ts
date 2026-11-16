@@ -43,7 +43,7 @@ describe("PointerFixture", () => {
     target.showPopover();
     target.animate([{ transform: "translateX(0)" }, { transform: "translateX(1px)" }], { duration: 100, iterations: Infinity });
 
-    await PointerFixture.hoverAsync(target, { force: true });
+    await PointerFixture.hoverAsync(target, { isForced: true });
 
     expect([target.matches(":hover"), target.hasAttribute("data-testid")]).toEqual([true, false]);
   });
@@ -53,7 +53,7 @@ describe("PointerFixture", () => {
     target.dataset["testid"] = "given";
 
     await expect(PointerFixture.hoverAsync(target)).rejects.toThrow(new Error("The element to hover already has the test id given."));
-    await expect(PointerFixture.hoverAsync(target, { force: true })).rejects.toThrow(new Error("The element to hover already has the test id given."));
+    await expect(PointerFixture.hoverAsync(target, { isForced: true })).rejects.toThrow(new Error("The element to hover already has the test id given."));
     expect(target.dataset["testid"]).toBe("given");
   });
 });

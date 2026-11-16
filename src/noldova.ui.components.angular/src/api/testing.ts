@@ -16,4 +16,5 @@ export { ClipboardWriterFixture } from "../testing/services/clipboard-writer-fix
 export { KitStylesheetFixture } from "../testing/services/kit-stylesheet-fixture.js";
 export { MarkdownFixture } from "../testing/services/markdown-fixture.js";
 export { PointerFixture } from "../testing/services/pointer-fixture.js";
+export type { IPointerHoverOptions } from "../testing/interfaces/i-pointer-hover-options.js";
 export { ThrowingErrorHandler } from "../testing/services/throwing-error-handler.js";
