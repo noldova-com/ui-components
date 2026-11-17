@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryButtonComponent } from "../../../../src/app/components/gallery/gallery-button.component";
 import { GalleryCheckboxComponent } from "../../../../src/app/components/gallery/gallery-checkbox.component";
 import { GalleryChoicePillsComponent } from "../../../../src/app/components/gallery/gallery-choice-pills.component";

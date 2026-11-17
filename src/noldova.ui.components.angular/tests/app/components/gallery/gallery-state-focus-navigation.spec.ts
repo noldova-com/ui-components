@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryFeedComponent } from "../../../../src/app/components/gallery/gallery-feed.component";
 import { GalleryGroupHeaderComponent } from "../../../../src/app/components/gallery/gallery-group-header.component";
 import { GalleryNavigationComponent } from "../../../../src/app/components/gallery/gallery-navigation.component";

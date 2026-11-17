@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryDialogComponent } from "../../../../src/app/components/gallery/gallery-dialog.component";
 import { GalleryMenuComponent } from "../../../../src/app/components/gallery/gallery-menu.component";
 import { GalleryOverlaysComponent } from "../../../../src/app/components/gallery/gallery-overlays.component";

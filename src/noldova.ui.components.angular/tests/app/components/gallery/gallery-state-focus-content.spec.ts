@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryCodeBlockComponent } from "../../../../src/app/components/gallery/gallery-code-block.component";
 import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
 import { GalleryDiffViewComponent } from "../../../../src/app/components/gallery/gallery-diff-view.component";

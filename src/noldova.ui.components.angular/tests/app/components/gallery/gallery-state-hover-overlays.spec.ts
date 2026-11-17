@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryCompletionListComponent } from "../../../../src/app/components/gallery/gallery-completion-list.component";
 import { GalleryMentionFieldComponent } from "../../../../src/app/components/gallery/gallery-mention-field.component";
 import { GalleryMenuComponent } from "../../../../src/app/components/gallery/gallery-menu.component";

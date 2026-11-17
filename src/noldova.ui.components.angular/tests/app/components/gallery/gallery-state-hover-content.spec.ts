@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
 import { GalleryPermissionCardComponent } from "../../../../src/app/components/gallery/gallery-permission-card.component";
 import { GalleryToolCallComponent } from "../../../../src/app/components/gallery/gallery-tool-call.component";

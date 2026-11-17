@@ -11,6 +11,10 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
 import type { GalleryComponent } from "../../src/app/components/gallery/gallery.component";
+import { GalleryContentComponent } from "../../src/app/components/gallery/gallery-content.component";
+import { GalleryFormsComponent } from "../../src/app/components/gallery/gallery-forms.component";
+import { GalleryNavigationComponent } from "../../src/app/components/gallery/gallery-navigation.component";
+import { GalleryOverlaysComponent } from "../../src/app/components/gallery/gallery-overlays.component";
 import { GalleryResources } from "../../src/app/components/gallery/gallery-resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { GalleryState } from "../../src/app/enums/gallery-state";
@@ -24,6 +28,9 @@ import { LayoutSettleFixture } from "./layout-settle.fixture";
 
 export class GalleryStateFixture {
   private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility"];
+
+  // The kit sections that have a Focus and a Hover spec file of their own; its spec holds it to the kit's sections, so a new one needs its files.
+  public static readonly sections: readonly Type<unknown>[] = [GalleryContentComponent, GalleryFormsComponent, GalleryNavigationComponent, GalleryOverlaysComponent];
 
   public static showAsync(kept: readonly Type<unknown>[] | null = null): Promise<ComponentFixture<GalleryComponent>> {
     GalleryStateFixture.standInForTheParsers();
@@ -132,6 +139,8 @@ export class GalleryStateFixture {
   // Renders the whole section, as the Gallery shows it, and finds a cell of the state in every specimen but one marked as having none; the
   // specimens that hold one are the components given, which the per-specimen tests check, so a specimen added to the section is checked too.
   public static async expectSectionCellsAsync(section: Type<unknown>, state: GalleryState, specimens: readonly Type<unknown>[]): Promise<void> {
+    if (!GalleryStateFixture.sections.includes(section))
+      throw new Error(`${section.name} is not one of the sections the Gallery's state specs cover.`);
     const flag = state === GalleryState.Focus ? GalleryResources.noFocusAttribute : GalleryResources.noHoverAttribute;
     const shown = [...GalleryStateFixture.firstFrame(await GalleryStateFixture.showAsync([section])).querySelectorAll("nol-gallery-specimen")];
     const label = (specimen: Element): string => specimen.querySelector(".nol-gallery-specimen")?.getAttribute("aria-label") ?? "";
