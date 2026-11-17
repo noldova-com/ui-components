@@ -11,7 +11,10 @@ import { cdp } from "vitest/browser";
 
 import "@noldova/context.core";
 
+import { LayoutTraceSuite } from "./layout-trace-suite";
+
 export class LayoutTraceFixture {
+  public static readonly suite: string = LayoutTraceSuite.title;
   private static readonly categories: string = "devtools.timeline,disabled-by-default-devtools.timeline.stack,disabled-by-default-devtools.timeline.invalidationTracking,blink.user_timing,__metadata";
   private static readonly passes: readonly string[] = ["UpdateLayoutTree", "Layout"];
   private static readonly causes: readonly string[] = ["ScheduleStyleInvalidationTracking", "StyleRecalcInvalidationTracking", "LayoutInvalidationTracking"];
@@ -23,19 +26,13 @@ export class LayoutTraceFixture {
   private static readonly busy: string = "Tracing has already been started";
   private static readonly busyWait: number = 50;
   private static readonly busyLimit: number = 10000;
+  private static readonly readSize: number = 16_777_216;
+  private static readonly shownLength: number = 200;
 
   public static async forcedPassesAsync(run: () => void): Promise<readonly string[]> {
     const session = cdp();
-    const events: unknown[] = [];
-    let complete = (): void => undefined;
-    const completed = new Promise<void>(resolve => complete = resolve);
-    const collect = (payload: { readonly value: readonly unknown[] }): void => {
-      events.push(...payload.value);
-    };
-    const finish = (): void => complete();
+    let events: readonly unknown[] = [];
     await LayoutTraceFixture.startAsync(session);
-    session.on("Tracing.dataCollected", collect);
-    session.on("Tracing.tracingComplete", finish);
     const id = crypto.randomUUID();
     try {
       document.documentElement.getBoundingClientRect();
@@ -44,14 +41,7 @@ export class LayoutTraceFixture {
       performance.mark(`end-${id}`);
     }
     finally {
-      try {
-        await session.send("Tracing.end");
-        await completed;
-      }
-      finally {
-        session.off("Tracing.dataCollected", collect);
-        session.off("Tracing.tracingComplete", finish);
-      }
+      events = await LayoutTraceFixture.endAsync(session);
     }
     const start = events.find(t => LayoutTraceFixture.field(t, "name") === `start-${id}`);
     const end = events.find(t => LayoutTraceFixture.field(t, "name") === `end-${id}`);
@@ -88,7 +78,7 @@ export class LayoutTraceFixture {
   public static async startAsync(session: ReturnType<typeof cdp>, categories: string = LayoutTraceFixture.categories, limit: number = LayoutTraceFixture.busyLimit): Promise<void> {
     for (let waited = 0; ; waited += LayoutTraceFixture.busyWait) {
       try {
-        await session.send("Tracing.start", { categories, transferMode: "ReportEvents" });
+        await session.send("Tracing.start", { categories, transferMode: "ReturnAsStream" });
         return;
       } catch (error) {
         const message = String(LayoutTraceFixture.field(error, "message"));
@@ -99,6 +89,40 @@ export class LayoutTraceFixture {
       }
       await new Promise(resolve => setTimeout(resolve, LayoutTraceFixture.busyWait));
     }
+  }
+
+  public static async endAsync(session: ReturnType<typeof cdp>): Promise<readonly unknown[]> {
+    let complete: (stream: string) => void = () => undefined;
+    const completed = new Promise<string>(resolve => complete = resolve);
+    const finish = (payload: { readonly stream?: string }): void => complete(payload.stream ?? String.empty);
+    session.on("Tracing.tracingComplete", finish);
+    try {
+      await session.send("Tracing.end");
+      const handle = await completed;
+      const parts: string[] = [];
+      try {
+        let read = await session.send("IO.read", { handle, size: LayoutTraceFixture.readSize });
+        parts.push(read.data);
+        while (!read.eof) {
+          read = await session.send("IO.read", { handle, size: LayoutTraceFixture.readSize });
+          parts.push(read.data);
+        }
+      }
+      finally {
+        await session.send("IO.close", { handle });
+      }
+      return LayoutTraceFixture.eventsOf(parts.join(String.empty));
+    }
+    finally {
+      session.off("Tracing.tracingComplete", finish);
+    }
+  }
+
+  public static eventsOf(trace: string): readonly unknown[] {
+    const events = LayoutTraceFixture.field(JSON.parse(trace), "traceEvents");
+    if (!Array.isArray(events))
+      throw new Error(`The trace holds no traceEvents list: ${trace.slice(0, LayoutTraceFixture.shownLength)}`);
+    return events;
   }
 
   private static timingOf(event: unknown): string {

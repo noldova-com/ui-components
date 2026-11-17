@@ -444,26 +444,28 @@ describe("ContextMenuTriggerDirective", () => {
     expect([box?.left, box?.top]).toEqual([200, 220]);
   });
 
-  it("lays the page out once, for its first item's focus, while it opens at the pointer and is placed there", async () => {
-    const passes = await LayoutTraceFixture.forcedPassesAsync(() => contextMenu(150, 120));
-    await placedAsync();
-    const box = menu()?.getBoundingClientRect();
+  describe(LayoutTraceFixture.suite, () => {
+    it("lays the page out once, for its first item's focus, while it opens at the pointer and is placed there", async () => {
+      const passes = await LayoutTraceFixture.forcedPassesAsync(() => contextMenu(150, 120));
+      await placedAsync();
+      const box = menu()?.getBoundingClientRect();
 
-    expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBe(1);
-    expect([box?.left, box?.top, document.activeElement?.classList.contains("alpha")]).toEqual([150, 120, true]);
-  });
+      expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBe(1);
+      expect([box?.left, box?.top, document.activeElement?.classList.contains("alpha")]).toEqual([150, 120, true]);
+    });
 
-  it("forces at most one style and one layout pass while an item's click closes it and its host takes the focus back", async () => {
-    contextMenu(150, 120);
-    await untilAsync(() => expect(menu()).not.toBeNull());
-    const alpha = DomFixture.one(DomFixture.present(menu()), ".alpha");
+    it("forces at most one style and one layout pass while an item's click closes it and its host takes the focus back", async () => {
+      contextMenu(150, 120);
+      await untilAsync(() => expect(menu()).not.toBeNull());
+      const alpha = DomFixture.one(DomFixture.present(menu()), ".alpha");
 
-    const passes = await LayoutTraceFixture.forcedPassesAsync(() => alpha.click());
-    await untilAsync(() => expect([menu(), document.activeElement]).toEqual([null, area()]));
+      const passes = await LayoutTraceFixture.forcedPassesAsync(() => alpha.click());
+      await untilAsync(() => expect([menu(), document.activeElement]).toEqual([null, area()]));
 
-    expect(passes.filter(t => t.startsWith("UpdateLayoutTree ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
-    expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
-    expect([fixture.componentInstance.chosen, menu(), document.activeElement]).toEqual([["alpha"], null, area()]);
+      expect(passes.filter(t => t.startsWith("UpdateLayoutTree ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
+      expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
+      expect([fixture.componentInstance.chosen, menu(), document.activeElement]).toEqual([["alpha"], null, area()]);
+    });
   });
 
   it("opens nothing without a menu", async () => {

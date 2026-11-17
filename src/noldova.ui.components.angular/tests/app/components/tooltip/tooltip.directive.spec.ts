@@ -266,25 +266,27 @@ describe("TooltipDirective", () => {
     expect(tooltip()).toBeNull();
   });
 
-  it("reads no layout when a change on the page covers its anchor and the pointer leaves for the cover, and hides once the pointer moves on away from both", async () => {
-    host.tooltip().show();
-    await shownAsync();
-    const point = center(anchor());
-    const cover = document.body.appendChild(document.createElement("div"));
-    try {
-      const passes = await LayoutTraceFixture.forcedPassesAsync(() => {
-        cover.style.cssText = "position: fixed; inset: 0;";
-        anchor().dispatchEvent(new PointerEvent("pointerleave", { relatedTarget: cover, clientX: point.x, clientY: point.y }));
-      });
-      const isShownAfterLeave = tooltip() !== null;
-      await pointAsync(new DOMPoint(point.x, point.y + gap() * 20));
-      await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
+  describe(LayoutTraceFixture.suite, () => {
+    it("reads no layout when a change on the page covers its anchor and the pointer leaves for the cover, and hides once the pointer moves on away from both", async () => {
+      host.tooltip().show();
+      await shownAsync();
+      const point = center(anchor());
+      const cover = document.body.appendChild(document.createElement("div"));
+      try {
+        const passes = await LayoutTraceFixture.forcedPassesAsync(() => {
+          cover.style.cssText = "position: fixed; inset: 0;";
+          anchor().dispatchEvent(new PointerEvent("pointerleave", { relatedTarget: cover, clientX: point.x, clientY: point.y }));
+        });
+        const isShownAfterLeave = tooltip() !== null;
+        await pointAsync(new DOMPoint(point.x, point.y + gap() * 20));
+        await DomChangeFixture.untilAsync(() => expect(tooltip()).toBeNull());
 
-      expect(passes).toEqual([]);
-      expect(isShownAfterLeave).toBe(true);
-    } finally {
-      cover.remove();
-    }
+        expect(passes).toEqual([]);
+        expect(isShownAfterLeave).toBe(true);
+      } finally {
+        cover.remove();
+      }
+    });
   });
 
   it("hides when something around its anchor scrolls it away, but not for a scroll that leaves it in place", async () => {
