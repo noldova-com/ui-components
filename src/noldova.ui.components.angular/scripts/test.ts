@@ -55,7 +55,6 @@ export class Test extends Script {
   private static readonly UNTRACED_PART: string = "part-1";
   private static readonly PARTS_PREFIX: string = "kit-coverage-parts-";
   private static readonly COVERAGE_PART_FILE: string = "coverage-final.json";
-  private static readonly TEXT_ENCODING: BufferEncoding = "utf8";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly WORKSPACE_FOLDER: string = ".";
   private static readonly KIT_FOLDER: string = `src/${Config.KIT_INFO.path}`;
@@ -132,7 +131,7 @@ export class Test extends Script {
 
     const traced: string[] = [];
     for (const spec of selected)
-      if ((await fs.readFile(path.resolve(Test.WORKSPACE_FOLDER, spec), Test.TEXT_ENCODING)).includes(Test.TRACED_MARK))
+      if ((await this.readFileAsync(path.resolve(Test.WORKSPACE_FOLDER, spec))).includes(Test.TRACED_MARK))
         traced.push(spec);
     const isWhole = filters.length === 0 && shard === null;
     const keepsCoverage = filters.length === 0;
