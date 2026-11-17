@@ -9,6 +9,7 @@
 import * as engine from "@shikijs/engine-javascript";
 import * as shiki from "@shikijs/primitive";
 
+import type { CodeToken } from "../../../src/app/models/code-token";
 import { CodeTokenizer } from "../../../src/app/models/code-tokenizer";
 import { Resources } from "../../../src/resources";
 
@@ -32,14 +33,21 @@ describe("CodeTokenizer", () => {
     return tokenizer;
   };
 
+  let first: CodeTokenizer;
+  let firstTokens: readonly CodeToken[];
+
+  beforeAll(async () => {
+    first = await startAsync([]);
+    firstTokens = first.tokenize(code, "json", Resources.codeNoTokenizeTimeLimit);
+  });
+
+  afterAll(() => first.dispose());
+
   it("compiles none of the patterns an earlier tokenizer on the page compiled, and colors the same", async () => {
-    const first = await startAsync([]);
-    const firstTokens = first.tokenize(code, "json", Resources.codeNoTokenizeTimeLimit);
     const compiled: string[] = [];
     const later = await startAsync(compiled);
 
     expect([compiled, later.tokenize(code, "json", Resources.codeNoTokenizeTimeLimit)]).toEqual([[], firstTokens]);
-    first.dispose();
     later.dispose();
   });
 });
