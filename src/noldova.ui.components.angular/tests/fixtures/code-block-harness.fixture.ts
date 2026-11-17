@@ -26,7 +26,6 @@ import { CodeBlockHostComponent } from "./code-block-host.component";
 import { DomFixture } from "./dom.fixture";
 import { ForcedColorsFixture } from "./forced-colors.fixture";
 import { GalleryFixture } from "./gallery.fixture";
-import { HangLimitFixture } from "./hang-limit.fixture";
 import { LayoutSettleFixture } from "./layout-settle.fixture";
 import { TestTimeSource } from "./test-time-source";
 
@@ -269,13 +268,12 @@ export class CodeBlockHarness {
     await this.framesAsync();
   };
 
-  // For a check that something happened; a check that nothing moved waits out followAsync's two frames instead.
+  // For a check that something happened, within followAsync's two frames; a check that nothing moved waits them out instead.
   public readonly followedAsync = async (what: string, change: () => void, isDone: () => boolean): Promise<void> => {
     await this.changeAsync(change);
-    const deadline = performance.now() + HangLimitFixture.wait.timeout;
-    while (!isDone()) {
-      if (performance.now() >= deadline)
-        throw new Error(`${what} didn't happen within ${HangLimitFixture.wait.timeout} ms.`);
+    for (let frame = 0; !isDone(); frame++) {
+      if (frame === 2)
+        throw new Error(`${what} didn't happen within two frames.`);
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     }
   };
