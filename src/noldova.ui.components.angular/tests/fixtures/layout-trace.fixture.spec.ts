@@ -18,8 +18,8 @@ describe("LayoutTraceFixture", () => {
       const box = document.body.appendChild(document.createElement("div"));
       const order: string[] = [];
       const finish = (): void => {
-        session.off("Tracing.tracingComplete", finish);
-        order.push("other ended");
+        if (!order.includes("other ended"))
+          order.push("other ended");
       };
       function forceLayout(): void {
         box.style.width = `${box.offsetWidth + 10}px`;
