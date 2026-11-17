@@ -268,6 +268,7 @@ The code highlighter's specs and `code-block-highlighting-start.component.spec.t
 | `code-block-streaming.component.spec.ts` | within | 121 ms | within |
 
 The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
+The focus ring's, kit rows' and spinner's rows were measured after [#178](https://github.com/noldova-com/ui-components/issues/178) cut their settles to a pass of one rendered frame, on macOS alone: every Linux and Windows run of the check that day ran under load, timing the unchanged `virtual-list.component.spec.ts` at 187 to 288 ms against its row's 137 and 150 ms, so those cells wait for a quiet run; what still takes their time is their tests' own steps, not measured.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
