@@ -32,7 +32,8 @@
               "tests/failed-module-requests.setup.ts",
               "tests/shared-page.setup.ts",
               "tests/browser-matchers.setup.ts",
-              "tests/kit-stylesheet.setup.ts"
+              "tests/kit-stylesheet.setup.ts",
+              "tests/typescript-grammar.setup.ts"
             ],
             "watch": false,
             "coverage": true,
