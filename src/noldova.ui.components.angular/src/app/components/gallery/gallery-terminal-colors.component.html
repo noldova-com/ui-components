@@ -1,0 +1,24 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.terminal" [size]="sizes.Full" noHover noFocus noLongText>
+  @for (surface of terminalSurfaces; track surface[0]) {
+    <nol-gallery-cell [caption]="surface[1]">
+      <div class="nol-gallery-terminal" [style.background]="'var(--nol-' + surface[0] + ')'">
+        @for (color of terminalColors; track color) {
+          <span class="nol-gallery-terminal-color"><span class="nol-gallery-terminal-swatch" [style.background]="'var(--nol-terminal-ansi-' + color + ')'"></span>{{ color }}</span>
+        }
+      </div>
+    </nol-gallery-cell>
+  }
+  <nol-gallery-cell [caption]="text.terminalTextCaption">
+    <div class="nol-gallery-terminal">
+      <span>{{ text.terminalText }}<span class="nol-gallery-terminal-cursor">{{ text.terminalCursor }}</span><span class="nol-gallery-terminal-selection">{{ text.terminalSelected }}</span></span>
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>
