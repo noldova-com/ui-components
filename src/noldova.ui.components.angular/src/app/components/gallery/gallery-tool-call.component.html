@@ -1,0 +1,37 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.toolCall" [size]="sizes.Full">
+  <nol-gallery-cell [caption]="text.defaultState"><nol-tool-call [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallRunningCaption"><nol-tool-call [call]="calls.running" [views]="calls.runningViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallQueuedCaption"><nol-tool-call [call]="calls.queued" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallPermissionCaption"><nol-tool-call [call]="calls.awaiting" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallAnswerCaption"><nol-tool-call [call]="calls.answering" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNoteCaption"><nol-tool-call [call]="calls.noted" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNoteBareCaption"><nol-tool-call [call]="calls.notedBare" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallCancelledCaption"><nol-tool-call [call]="calls.cancelled" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallDeniedCaption"><nol-tool-call [call]="calls.denied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNothingCaption"><nol-tool-call [call]="calls.nothing" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNestedCaption"><nol-tool-call [call]="calls.nested" [views]="calls.nestedViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallNestedClosedCaption"><nol-tool-call [call]="calls.nestedClosed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLongOutputCaption"><nol-tool-call [call]="calls.longOutput" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallAllLinesCaption"><nol-tool-call [call]="calls.allLines" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallControlCaption">
+    <nol-tool-call [call]="calls.control" [views]="calls.openViews">
+      <ng-template nolToolCallOutput let-call><nol-code-block [language]="text.toolCallDiff" [code]="call.output ?? text.toolCallNoDiff" /></ng-template>
+    </nol-tool-call>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLoadingCaption"><nol-tool-call [call]="calls.loading" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><nol-tool-call [nolGalleryHover]="toggle" [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-tool-call [nolGalleryFocus]="toggle" [call]="calls.read" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallFailedCaption"><nol-tool-call [call]="calls.failed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.toolCallLoadFailedCaption"><nol-tool-call [call]="calls.loadFailed" [views]="calls.openViews" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-tool-call class="nol-gallery-narrow" [call]="calls.long" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

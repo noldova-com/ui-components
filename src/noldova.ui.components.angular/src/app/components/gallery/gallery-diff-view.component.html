@@ -1,0 +1,26 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.diffView" [size]="sizes.Full" noHover>
+  <nol-gallery-cell [caption]="text.defaultState"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffSideBySideCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [layout]="sideBySide" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffReviewedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [reviews]="diffReviews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffPartlyReviewedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffPartial" [reviews]="diffReviews" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffCollapsedCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [collapsed]="diffCollapsed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffReadOnlyCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [reviews]="diffReviews" [readOnly]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffNoOpeningCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffFiles" [readOnly]="true" [canOpenFiles]="false" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffStatesCaption"><nol-diff-view [label]="text.diffLabel" [files]="diffStates" [collapseLimit]="diffHeldLimit" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.diffEmptyCaption"><nol-diff-view [label]="text.diffLabel" [files]="[]" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-diff-view nolGalleryFocus=".nol-diff-cell-changed" [label]="text.diffLabel" [files]="diffFiles" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-diff-view class="nol-gallery-narrow" [label]="text.diffLabel" [files]="diffLong" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.diffWrappedCaption">
+    <nol-diff-view class="nol-gallery-narrow" [label]="text.diffLabel" [files]="diffLong" [wrapped]="true" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
