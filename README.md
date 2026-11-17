@@ -203,7 +203,7 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
 
-47 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 45 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+49 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 47 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
 A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
 
@@ -239,30 +239,43 @@ Rendering the navigation and content sections is measured above; the other secti
 
 The code block's specs render a block and wait for its layout to settle over animation frames.
 Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
+Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-components/issues/174), what stays:
+
+- A pixel read, in the `settled-pixels`, `forced-highlights`, `forced-spans` and `lines` specs, costs 71 to 80 ms whatever its size, an 8 by 8 pixel read as much as a whole block, so reading less doesn't help; each read covers every pixel its check compares.
+- The streaming specs follow each scroll and each change of the code with two fixed frames, about 17 ms each, which a check that nothing moved needs, since no event signals it; a check that the block followed its end waits out the same two frames, checking after each, and fails if the block hasn't reached its end by the second or leaves it once there, through `CodeBlockHarness.followedAsync`.
+- The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`: at least two passes of two frames and a stable fixture.
+- The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
+- `code-block-highlighter`, `code-block-run-state-look` and `code-block-streaming` are over on macOS alone, by 4 to 16 ms past the margin; not measured.
+- `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
+
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
+The code highlighter's specs and `code-block-highlighting-start.component.spec.ts` skip it, since they check that first load; they pay for it unless an earlier spec file on their page has already warmed it, as they did before when an earlier file showed a code block.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `code-block-forced-highlights.component.spec.ts` | 286 ms | 360 ms | 404 ms |
-| `code-block-forced-spans.component.spec.ts` | 317 ms | 396 ms | 423 ms |
-| `code-block-highlighting-start.component.spec.ts` | within | within | 421 ms |
-| `code-block-lines.component.spec.ts` | 125 ms | 133 ms | 135 ms |
-| `code-block-run-keys.component.spec.ts` | 144 ms | 164 ms | 215 ms |
-| `code-block-run-state.component.spec.ts` | 121 ms | 229 ms | 291 ms |
-| `code-block-run.component.spec.ts` | within | 139 ms | 209 ms |
-| `code-block-scrollbar.component.spec.ts` | 160 ms | 153 ms | 152 ms |
-| `code-block-settled-layout.component.spec.ts` | 204 ms | 258 ms | 427 ms |
-| `code-block-settled-pixels.component.spec.ts` | 304 ms | 344 ms | 567 ms |
-| `code-block-streaming-end.component.spec.ts` | within | 146 ms | 157 ms |
-| `code-block-streaming-return.component.spec.ts` | 177 ms | 197 ms | 197 ms |
-| `code-block-streaming-scroll.component.spec.ts` | 375 ms | 402 ms | 402 ms |
+| `code-block-forced-highlights.component.spec.ts` | 329 ms | 306 ms | 518 ms |
+| `code-block-forced-spans.component.spec.ts` | 360 ms | 363 ms | 413 ms |
+| `code-block-highlighter.component.spec.ts` | within | within | 124 ms |
+| `code-block-highlighting-start.component.spec.ts` | within | 120 ms | 231 ms |
+| `code-block-lines.component.spec.ts` | 132 ms | 132 ms | 133 ms |
+| `code-block-run-keys.component.spec.ts` | 155 ms | 139 ms | 287 ms |
+| `code-block-run-state-look.component.spec.ts` | within | within | 129 ms |
+| `code-block-run-state.component.spec.ts` | 234 ms | 213 ms | 327 ms |
+| `code-block-run.component.spec.ts` | 162 ms | 160 ms | 259 ms |
+| `code-block-scrollbar.component.spec.ts` | 164 ms | 168 ms | 153 ms |
+| `code-block-settled-layout.component.spec.ts` | 260 ms | 266 ms | 399 ms |
+| `code-block-settled-pixels.component.spec.ts` | 321 ms | 359 ms | 530 ms |
+| `code-block-streaming-end.component.spec.ts` | 127 ms | 134 ms | 149 ms |
+| `code-block-streaming-return.component.spec.ts` | 184 ms | 188 ms | 223 ms |
+| `code-block-streaming-scroll.component.spec.ts` | 377 ms | 372 ms | 364 ms |
+| `code-block-streaming.component.spec.ts` | within | within | 136 ms |
 
-The code highlighter's language specs test one language each, and a grammar's first load is most of a test: 4 to 270 ms on a macOS test machine, against 0.1 ms for a second highlight; not measured for `code-highlighter-growing.spec.ts`.
+The code highlighter's language specs test one language each, and a grammar's first load is most of a test: 4 to 270 ms on a macOS test machine, against 0.1 ms for a second highlight.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `code-highlighter-growing.spec.ts` | within | within | 129 ms |
-| `code-highlighter-languages-compiled.spec.ts` | within | within | 152 ms |
-| `code-highlighter-languages-web.spec.ts` | within | within | 159 ms |
+| `code-highlighter-languages-compiled.spec.ts` | within | within | 189 ms |
+| `code-highlighter-languages-web.spec.ts` | within | within | 134 ms |
 
 The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
 
@@ -339,7 +352,6 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `gallery-state-focus-content.spec.ts`: finds a Focus cell in every specimen of the section but one marked noFocus, and only in the specimens above | 1200 ms | It renders the whole content section and reads which specimens hold a Focus cell. |
 | `tool-call.component.spec.ts`: folds its words, then its status word, then its kind's icon as the panel narrows, and unfolds them in turn as it widens, each at one width and with one class change, and again when its spacing changes, in the noldova.default theme | 1100 ms | For each fold level it bisects the panel's width, about 9 resizes, each settling over frames, then measures the crossings again. |
 | `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click between articles focuses the feed and the arrows, Page Up, Page Down, Home or End follow | 1100 ms | One real click and 6 real key presses, each settling over about 6 frames. |
-| `code-block-lines.component.spec.ts`: lays each line out as a block as wide as its text, each line's text a line below the one before and an empty line taking one, drawing the same pixels over its lines as inline lines, in Light mode | 1100 ms | Not measured; #174 takes its file. |
 | `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click on an article is followed by the arrows, Page Up, Page Down, Home or End | 1100 ms | One real click and 6 real key presses, each settling over about 6 frames. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line or a blank row in view on any frame of a fast wheel, 800 px a frame, over rows of mixed heights from a source that answers two frames later, from row 0 past row 500 | 1100 ms | Not measured alone; its file's tests spend about 80% of their time waiting for rendered frames at 60 Hz, as #178 measured. |
 
@@ -410,6 +422,7 @@ After each spec test, `src/noldova.ui.components.angular/tests/shared-page.setup
 It then moves the pointer just outside the page, so the next test starts with no element under it and no spec file resets the pointer itself.
 Before each spec test, it leaves no element focused and starts keyboard navigation at the top of the page, through `src/noldova.ui.components.angular/tests/fixtures/focus-start.fixture.ts`, so a test's first Tab doesn't depend on what an earlier test focused or clicked.
 Before each spec file, it also sets the emulated media to no reduced motion and no forced colors, so no file sees what the machine prefers or what an earlier file left emulated.
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` keeps one property of its own on the page's `window`, `nolTypeScriptWarming`, the page's one TypeScript warming, which Time per file explains: a setup file and the modules it imports load again for each spec file, while the files on one page share its window.
 Specs emulate media only through `src/noldova.ui.components.angular/tests/fixtures/emulated-media.fixture.ts`, which the motion and forced-colors fixtures use: each emulation call replaces the whole emulated set, so the fixture sends every feature each time.
 A spy's own `mockRestore()` leaves its restore in Vitest's registry, where a later spec file's `vi.restoreAllMocks()` runs it again, so a test that spies on a faked timer global restores it with `vi.restoreAllMocks()`.
 One spec fakes a timer global in the shared page, by the maintainer's decision: `src/noldova.ui.components.angular/tests/testing/services/kit-stylesheet-fixture.spec.ts` fakes `setTimeout` to reach `KitStylesheetFixture`'s 30 s load deadline and the 5 s limit on its diagnostic fetch of a font that failed.
