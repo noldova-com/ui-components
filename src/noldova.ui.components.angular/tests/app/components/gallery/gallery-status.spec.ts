@@ -8,19 +8,19 @@
 
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
+import { GalleryStatusColorsComponent } from "../../../../src/app/components/gallery/gallery-status-colors.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
-describe("GalleryContentComponent's status colors", () => {
-  let fixture: ComponentFixture<GalleryContentComponent>;
+describe("GalleryStatusColorsComponent", () => {
+  let fixture: ComponentFixture<GalleryStatusColorsComponent>;
 
   async function showAsync(theme: Theme): Promise<HTMLElement> {
     AppearanceFixture.apply(theme, ThemeMode.Light);
-    fixture = TestBed.createComponent(GalleryContentComponent);
+    fixture = TestBed.createComponent(GalleryStatusColorsComponent);
     fixture.detectChanges();
     await fixture.whenStable();
     return DomFixture.one(DomFixture.host(fixture), ".nol-gallery-specimen[aria-label=\"Status colors\"]");

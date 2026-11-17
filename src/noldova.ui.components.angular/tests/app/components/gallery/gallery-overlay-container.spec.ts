@@ -10,9 +10,9 @@ import { OverlayContainer } from "@angular/cdk/overlay";
 import { Component, ElementRef, inject } from "@angular/core";
 import { userEvent } from "vitest/browser";
 
-import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
 import { GalleryOverlayContainer } from "../../../../src/app/components/gallery/gallery-overlay-container";
 import { GalleryScopeDirective } from "../../../../src/app/components/gallery/gallery-scope.directive";
+import { GallerySelectComponent } from "../../../../src/app/components/gallery/gallery-select.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import type { Theme } from "../../../../src/app/models/theme";
 import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
@@ -22,9 +22,9 @@ import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 
 @Component({
   selector: "test-scope",
-  imports: [GalleryFormsComponent],
+  imports: [GallerySelectComponent],
   providers: [{ provide: OverlayContainer, useFactory: () => new GalleryOverlayContainer(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement) }],
-  template: `<nol-gallery-forms />`
+  template: `<nol-gallery-select />`
 })
 class ScopeComponent {
 }
