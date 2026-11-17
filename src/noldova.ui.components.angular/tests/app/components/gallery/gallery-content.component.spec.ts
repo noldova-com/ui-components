@@ -8,7 +8,11 @@
 
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
+import { GalleryCodeBlockComponent } from "../../../../src/app/components/gallery/gallery-code-block.component";
+import { GalleryDiffViewComponent } from "../../../../src/app/components/gallery/gallery-diff-view.component";
+import { GalleryFileBadgeComponent } from "../../../../src/app/components/gallery/gallery-file-badge.component";
+import { GalleryPermissionCardComponent } from "../../../../src/app/components/gallery/gallery-permission-card.component";
+import { GalleryPlanComponent } from "../../../../src/app/components/gallery/gallery-plan.component";
 import { ClipboardWriter } from "../../../../src/app/services/clipboard-writer";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -17,8 +21,8 @@ import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 
-describe("GalleryContentComponent", () => {
-  let fixture: ComponentFixture<GalleryContentComponent>;
+describe("GalleryContentComponent's specimens", () => {
+  let fixture: ComponentFixture<unknown>;
 
   afterEach(() => {
     AppearanceFixture.reset();
@@ -38,7 +42,7 @@ describe("GalleryContentComponent", () => {
   }
 
   it("copies a code block's code through the window's clipboard, and a block in the Copy refused cell says Couldn't copy without writing", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryCodeBlockComponent);
     const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
 
     const copied = await copyAsync("Default");
@@ -50,7 +54,7 @@ describe("GalleryContentComponent", () => {
 
   it("offers Run before Copy only in the Run offered, Run running, Output under Run and Run ended cells, each named for its state", async () => {
     TestBed.configureTestingModule({ providers: [provideMarkdown()] });
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryCodeBlockComponent);
     const runs = [...DomFixture.host(fixture).querySelectorAll(".nol-gallery-specimen[aria-label=\"Code block\"] .nol-code-block-run")];
     const labels = (caption: string): (string | null)[] => [...cell(caption).querySelectorAll("button")].map(t => t.getAttribute("aria-label"));
 
@@ -60,7 +64,7 @@ describe("GalleryContentComponent", () => {
 
   it("fills the content column with each code block, except Long text's, which stays narrow to cut its language, and Default's long line still scrolls sideways at the widest Settings column", async () => {
     TestBed.configureTestingModule({ providers: [provideMarkdown()] });
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryCodeBlockComponent);
     const content = DomFixture.host(fixture);
     content.style.width = "calc(var(--nol-settings-content-width) - 2 * var(--nol-settings-content-inset))";
     const cells = [...content.querySelectorAll<HTMLElement>(".nol-gallery-specimen[aria-label=\"Code block\"] nol-gallery-cell")];
@@ -74,7 +78,7 @@ describe("GalleryContentComponent", () => {
   });
 
   it("keeps each file badge cell's names inside the cell, at the cell's own width and in a narrower column", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryFileBadgeComponent);
     const content = DomFixture.host(fixture);
     const cells = (): HTMLElement[] => [...content.querySelectorAll<HTMLElement>(".nol-gallery-specimen[aria-label=\"File badge\"] nol-gallery-cell")];
     const overflows = (): (string | null)[] => cells().filter(t => {
@@ -93,7 +97,7 @@ describe("GalleryContentComponent", () => {
   });
 
   it("marks the spreadsheet and the table of data XL in the file badge's Letters cell", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryFileBadgeComponent);
     const files = [...DomFixture.host(fixture).querySelectorAll<HTMLElement>(
       ".nol-gallery-specimen[aria-label=\"File badge\"] nol-gallery-cell[aria-label=\"Letters, code, documents, data and archives\"] .nol-gallery-file")];
     const marks = files.map(t => [t.querySelector("nol-file-badge")?.textContent?.trim(), t.lastChild?.textContent?.trim()]);
@@ -102,14 +106,14 @@ describe("GalleryContentComponent", () => {
   });
 
   it("shows a code block wrapped and one with its copy button focused", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryCodeBlockComponent);
 
     expect(cell("Word wrap on").querySelector(".nol-code-block-wrap")?.getAttribute("aria-pressed")).toBe("true");
     expect(cell("Focus").querySelector(".nol-code-block-copy")?.getAttribute("data-nol-state")).toBe("Focus");
   });
 
   it("shows a read-only diff that doesn't open files beside the read-only one that does", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryDiffViewComponent);
     const diff = (caption: string): HTMLElement =>
       DomFixture.one(DomFixture.host(fixture), `.nol-gallery-specimen[aria-label="Diff view"] nol-gallery-cell[aria-label="${caption}"] nol-diff-view`);
     const shown = (caption: string): number[] => [".nol-diff-file", ".nol-diff-file-open", ".nol-diff-actions"].map(t => diff(caption).querySelectorAll(t).length);
@@ -119,7 +123,7 @@ describe("GalleryContentComponent", () => {
 
   it("shows a typed task list beside the plan, with the plan's steps as task items, the first done", async () => {
     TestBed.configureTestingModule({ providers: [provideMarkdown()] });
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryPlanComponent);
     const typed = DomFixture.one(DomFixture.host(fixture), ".nol-gallery-specimen[aria-label=\"Plan\"] nol-gallery-cell[aria-label=\"Typed task list\"] nol-markdown-view");
     const items = (): Element[] => [...typed.querySelectorAll("li.nol-markdown-task")];
     await fixture.whenStable();
@@ -130,7 +134,7 @@ describe("GalleryContentComponent", () => {
   });
 
   it("shows a permission card in every state, one of them asking to confirm always allow without taking focus, and one with its long details expanded", async () => {
-    fixture = await GalleryFixture.showSectionAsync(GalleryContentComponent);
+    fixture = await GalleryFixture.showSectionAsync(GalleryPermissionCardComponent);
     const permission = (caption: string): HTMLElement =>
       DomFixture.one(DomFixture.host(fixture), `.nol-gallery-specimen[aria-label="Permission card"] nol-gallery-cell[aria-label="${caption}"] nol-permission-card`);
     const captions = ["Default", "Medium risk", "High risk", "Confirming always allow", "The app's options", "Sending", "Send failed", "Allowed once", "Always allowed", "Denied",
