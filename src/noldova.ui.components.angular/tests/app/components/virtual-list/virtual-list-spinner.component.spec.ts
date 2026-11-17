@@ -19,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 @Component({
   imports: [SpinnerComponent, VirtualListComponent, VirtualRowDirective],
@@ -43,11 +44,9 @@ describe("VirtualListComponent's selected option under forced colors", () => {
       const view = host.querySelector(".nol-virtual-list-viewport");
       return `${host.querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
     }, async () => {
-      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
-      for (let round = 0; round < 3; round++) {
-        await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      }
+      await fixture.whenStable();
+      await RenderedFrameFixture.nextAsync();
+      await fixture.whenStable();
     });
   }
 
