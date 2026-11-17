@@ -38,6 +38,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
+import { RestingOpacityFixture } from "../../../fixtures/resting-opacity.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 @Component({
@@ -212,19 +213,16 @@ describe("MessageComponent in a column", () => {
   it("shows its actions and time only on hover or while it or its article has focus", async () => {
     AppearanceFixture.apply();
     await renderAsync();
-    const opacityAsync = async (): Promise<string> => {
-      await Promise.all(find(".nol-message-footer").getAnimations().map(t => t.finished));
-      return getComputedStyle(find(".nol-message-footer")).opacity;
-    };
+    const footer = (): Element => find(".nol-message-footer");
     const park = await AppearanceFixture.parkPointerAsync();
-    const resting = await opacityAsync();
+    const resting = await RestingOpacityFixture.atAsync(footer, "0");
     find(".article").focus();
-    const focused = await opacityAsync();
+    const focused = await RestingOpacityFixture.atAsync(footer, "1");
     find(".article").blur();
     park.remove();
     await userEvent.hover(find(".nol-message-content"));
 
-    expect([resting, focused, await opacityAsync()]).toEqual(["0", "1", "1"]);
+    expect([resting, focused, await RestingOpacityFixture.atAsync(footer, "1")]).toEqual(["0", "1", "1"]);
   });
 
   it("copies its answers only, joined by blank lines, and shows Copied with its check in the added color, popping in over 200ms from 60% of its size and 40% opacity", async () => {
@@ -531,18 +529,14 @@ describe("MessageComponent in a column", () => {
         t.copyText.set("The plan.");
       });
       const actions = find(".nol-message-header .nol-message-actions");
-      const opacityAsync = async (): Promise<string> => {
-        await Promise.all(actions.getAnimations().map(t => t.finished));
-        return getComputedStyle(actions).opacity;
-      };
       const park = await AppearanceFixture.parkPointerAsync();
-      const resting = await opacityAsync();
+      const resting = await RestingOpacityFixture.atAsync(() => actions, "0");
       find(".article").focus();
-      const focused = await opacityAsync();
+      const focused = await RestingOpacityFixture.atAsync(() => actions, "1");
       find(".article").blur();
       park.remove();
       await userEvent.hover(find(".nol-message-content"));
-      const hovered = await opacityAsync();
+      const hovered = await RestingOpacityFixture.atAsync(() => actions, "1");
       find(".nol-message-copy").click();
       await fixture.whenStable();
 
@@ -646,15 +640,11 @@ describe("MessageComponent in a column", () => {
           t.direction.set(direction);
         });
         const actions = find(".nol-message-actions");
-        const opacityAsync = async (): Promise<string> => {
-          await Promise.all(actions.getAnimations().map(t => t.finished));
-          return getComputedStyle(actions).opacity;
-        };
         const park = await AppearanceFixture.parkPointerAsync();
-        const resting = await opacityAsync();
+        const resting = await RestingOpacityFixture.atAsync(() => actions, "0");
         park.remove();
         await userEvent.hover(find(".nol-message-content"));
-        const hovered = await opacityAsync();
+        const hovered = await RestingOpacityFixture.atAsync(() => actions, "1");
         const [message, box, content] = [rect("nol-message"), actions.getBoundingClientRect(), rect(".nol-message-content")];
         const space = (name: string): number => AppearanceFixture.measureLook(name);
 
