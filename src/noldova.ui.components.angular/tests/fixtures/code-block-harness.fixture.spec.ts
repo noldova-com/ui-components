@@ -15,16 +15,17 @@ describe("CodeBlockHarness", () => {
 
   afterEach(harness.resetAsync);
 
-  it("passes a follow once its check holds, checking after the change and after each frame", async () => {
+  it("passes a follow that holds by the second frame, having checked after each of the two frames", async () => {
     await harness.renderAsync();
+    const states = [false, true];
     let reads = 0;
 
-    await harness.followedAsync("The follow", () => undefined, () => ++reads === 2);
+    await harness.followedAsync("The follow", () => undefined, () => states[reads++] ?? false);
 
     expect(reads).toBe(2);
   });
 
-  it("fails a follow whose check doesn't hold after two frames, naming what it waited for", async () => {
+  it("fails a follow that doesn't hold after two frames, naming what it waited for", async () => {
     await harness.renderAsync();
     let reads = 0;
 
@@ -34,6 +35,17 @@ describe("CodeBlockHarness", () => {
     });
 
     await expect(following).rejects.toThrow("The follow didn't happen within two frames.");
-    expect(reads).toBe(3);
+    expect(reads).toBe(2);
+  });
+
+  it("fails a follow that holds at the first frame and is lost at the second, naming the frame", async () => {
+    await harness.renderAsync();
+    const states = [true, false];
+    let reads = 0;
+
+    const following = harness.followedAsync("The follow", () => undefined, () => states[reads++] ?? true);
+
+    await expect(following).rejects.toThrow("The follow stopped holding at frame 2.");
+    expect(reads).toBe(2);
   });
 });

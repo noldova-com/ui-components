@@ -268,14 +268,19 @@ export class CodeBlockHarness {
     await this.framesAsync();
   };
 
-  // For a check that something happened, within followAsync's two frames; a check that nothing moved waits them out instead.
+  // Waits out followAsync's two frames, checking after each that what the spec names has happened, and that it still holds once it has.
   public readonly followedAsync = async (what: string, change: () => void, isDone: () => boolean): Promise<void> => {
     await this.changeAsync(change);
-    for (let frame = 0; !isDone(); frame++) {
-      if (frame === 2)
-        throw new Error(`${what} didn't happen within two frames.`);
+    let isHeld = false;
+    for (const frame of [1, 2]) {
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      const holds = isDone();
+      if (isHeld && !holds)
+        throw new Error(`${what} stopped holding at frame ${frame}.`);
+      isHeld = holds;
     }
+    if (!isHeld)
+      throw new Error(`${what} didn't happen within two frames.`);
   };
 
   public readonly isAtEnd = (): boolean => this.body().scrollHeight > this.body().clientHeight && this.fromEnd() <= 1;
