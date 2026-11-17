@@ -188,6 +188,7 @@ export class VirtualListComponent<T> {
         this.viewport().nativeElement.addEventListener(type, () => {
           this.hasPersonInput = true;
         }, { capture: true, passive: true, signal: this.inputs.signal });
+      this.viewport().nativeElement.addEventListener(Resources.rowAnsweredEvent, event => this.answered(event), { signal: this.inputs.signal });
     });
     effect(onCleanup => {
       const state = this.state();
@@ -836,6 +837,12 @@ export class VirtualListComponent<T> {
 
   private isUnprompted(moved: number): boolean {
     return !this.hasPersonInput && (this.isLatestAtStart() ? moved > 0 : moved < 0) && this.isFeed() && this.isFollowing() && Object.isNull(this.heldHeight());
+  }
+
+  private answered(event: Event): void {
+    const row = event.composedPath().find(t => t instanceof Element && t.hasAttribute(Resources.virtualListRowAttribute));
+    if (row instanceof Element && this.clicked?.index === Number(row.getAttribute(Resources.virtualListRowAttribute)))
+      this.holdClick(false);
   }
 
   private holdClick(isLater: boolean): void {

@@ -611,6 +611,21 @@ describe("DiffViewComponent", () => {
     expect(find(".nol-diff-expand", first).getAttribute("aria-label")).toBe("Show lines above");
   });
 
+  it("marks its hunk expanders as resizing their row later, and tells its row once the owner's answer to an expander is drawn, not on a change it didn't ask for", async () => {
+    await renderAsync();
+    const answers: string[] = [];
+    element().addEventListener("nol-row-answered", event => answers.push(`${event.target === element()} ${all(".nol-diff-hunk").length}`));
+    const marks = all(".nol-diff-expand").map(t => t.getAttribute("data-nol-resizes-row"));
+    await changeAsync(() => host.files.set([modified, renamed]));
+    const unasked = answers.length;
+
+    find(".nol-diff-expand").click();
+    const asked = answers.length;
+    await changeAsync(() => host.files.set([modified]));
+
+    expect([marks.length > 0 && marks.every(t => t === "later"), unasked, asked, answers]).toEqual([true, 0, 0, [`true ${modified.content.hunks.length}`]]);
+  });
+
   it("makes each hunk's lines one Tab stop that moves with the line focused, and moves among them with the arrow keys, Home and End", async () => {
     await renderAsync();
     const lines = cells(hunks()[0]);

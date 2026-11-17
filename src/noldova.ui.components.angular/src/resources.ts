@@ -501,6 +501,8 @@ export class Resources {
   public static readonly treeZoomInterval: number = 16;
   public static readonly virtualListSlowRead: number = 250;
   public static readonly virtualListRowAttribute: string = "data-nol-row";
+  public static readonly rowAnsweredEvent: string = "nol-row-answered";
+  public static readonly resizesRowLater: string = "later";
   public static readonly focusableSelector: string = "a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable=\"true\"]";
   public static readonly forcedColorsQuery: string = "(forced-colors: active)";
   public static readonly reducedMotionQuery: string = "(prefers-reduced-motion: reduce)";

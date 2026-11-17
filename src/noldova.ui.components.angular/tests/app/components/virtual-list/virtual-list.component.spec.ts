@@ -2229,6 +2229,43 @@ describe("VirtualListComponent", () => {
     expect([Math.round(fromEnd()), isJumpShown(), toggling.positions.every(t => t.isFollowing)]).toEqual([0, false, true]);
   });
 
+  it("keeps the end of a following feed in view as a row grows by itself once the app's answer to its control marked later is drawn and leaves the row unchanged, and an answer with no click holds nothing", async () => {
+    const toggling = await renderTogglingAsync();
+    const answer = (from: EventTarget): boolean => from.dispatchEvent(new CustomEvent("nol-row-answered", { bubbles: true }));
+
+    answer(DomFixture.one(article("item 29"), ".fetch"));
+    toggling.size("item 29", 0);
+    click("item 29", ".fetch");
+    await settleAsync();
+    time.runFrames();
+    time.runFrames();
+    answer(DomFixture.one(article("item 29"), ".fetch"));
+    time.runFrames();
+    time.runFrames();
+    toggling.size("item 29", 200);
+    await settleAsync();
+
+    expect([Math.round(fromEnd()), isJumpShown(), toggling.positions.every(t => t.isFollowing)]).toEqual([0, false, true]);
+  });
+
+  it("keeps a row clicked by its control marked later in place when an answer comes from another row or from outside the rows", async () => {
+    const toggling = await renderTogglingAsync();
+    const before = offsetOfArticle("item 28");
+    const answer = (from: EventTarget): boolean => from.dispatchEvent(new CustomEvent("nol-row-answered", { bubbles: true }));
+
+    toggling.size("item 28", 0);
+    click("item 28", ".fetch");
+    await settleAsync();
+    answer(DomFixture.one(article("item 27"), ".fetch"));
+    answer(viewport());
+    time.runFrames();
+    time.runFrames();
+    toggling.size("item 28", 200);
+    await settleAsync();
+
+    expect([Math.round(offsetOfArticle("item 28") - before), Math.round(fromEnd()), isJumpShown()]).toEqual([0, 200, true]);
+  });
+
   it("keeps a row clicked at the end of a following feed in place when another row in view is measured before its body shows", async () => {
     const toggling = await renderTogglingAsync();
     toggling.size("item 20", 0);
