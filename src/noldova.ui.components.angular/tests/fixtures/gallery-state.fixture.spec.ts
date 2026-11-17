@@ -10,7 +10,7 @@ import { GalleryFixture } from "./gallery.fixture";
 import { GalleryStateFixture } from "./gallery-state.fixture";
 
 describe("GalleryStateFixture", () => {
-  it("covers exactly the kit's sections, so a section added to the kit fails until it has Focus and Hover spec files", () => {
+  it("covers exactly the kit's sections, so a section added to the kit fails until GalleryStateFixture.sections names it", () => {
     expect(GalleryStateFixture.sections.map(t => t.name).sort()).toEqual(GalleryFixture.kitSections.map(t => t.name).sort());
   });
 });
