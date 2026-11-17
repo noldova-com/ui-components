@@ -203,7 +203,7 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
 
-50 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 48 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+47 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 45 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
 A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
 
@@ -230,13 +230,10 @@ Rendering the navigation and content sections is measured above; the other secti
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `gallery-content.component.spec.ts` | 255 ms | 293 ms | 857 ms |
 | `gallery-feed.component.spec.ts` | 746 ms | 829 ms | 1204 ms |
 | `gallery-forms.component.spec.ts` | within | within | 245 ms |
 | `gallery-message.component.spec.ts` | 332 ms | 382 ms | 596 ms |
-| `gallery-navigation.component.spec.ts` | 468 ms | 479 ms | 1071 ms |
 | `gallery-overlays.component.spec.ts` | within | 133 ms | 307 ms |
-| `gallery-terminal.spec.ts` | 272 ms | 301 ms | 866 ms |
 | `gallery-virtual-feed.component.spec.ts` | 634 ms | 674 ms | 1222 ms |
 | `gallery.component.spec.ts` | within | 121 ms | 265 ms |
 
@@ -320,11 +317,9 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `appearance-fixture.spec.ts`: waits out a scroll's reveal and the thumb's transitions before it reads the thumb hidden, and then shown on hover | 1500 ms | It waits out a scroll's reveal and the thumb's transitions, then hovers the area with the real pointer and waits out the transitions again. |
 | `markdown-view.component.spec.ts`, while its text streams: keeps a streaming code's ended lines past the reveal as empty token spans, the text never past the reveal and never laid out more than a line below it in any frame, with forced colors | 1500 ms | It streams 40 code lines in 5 reveals, settling each until highlighted and stepping 10 frames, then up to 500 more frames. |
 | `virtual-list.component.spec.ts`: holds an element from where a click above it puts it when its row starts inside the view, in every frame as the row then grows below and above it | 1500 ms | It steps 80 rendered frames, 20 for each of four reads. |
-| `gallery-content.component.spec.ts`: copies a code block's code through the window's clipboard, and a block in the Copy refused cell says Couldn't copy without writing | 1500 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag in rtl to both ends, its rows following one way, and moves nothing on release | 1500 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
 | `message.component.spec.ts`: streams Markdown 200 characters at a time to 5,000, then 5,000 at a time to 15,000, changing and moving no block above the one that grows | 1500 ms | It renders a reply at 27 lengths up to 15,000 characters of Markdown with code, lists and tables, and measures the blocks above the growing one after each. |
 | `kit.spec.ts`, kit styles in forced colors: outlines every hovered control of the navigation section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included | 1500 ms | It renders the whole Gallery navigation section under forced colors before reading each Hover and Focus cell's outline. |
-| `gallery-navigation.component.spec.ts`: shows a busy toolbar button with its spinner centred in place of its glyph, in Dark | 1400 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag in ltr to both ends, its rows following one way, and moves nothing on release | 1400 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
 | `gallery-virtual-feed.component.spec.ts`: shows a conversation of 10,000 messages at its end, each named by its author and time, with code among them | 1400 ms | Not measured; #176 takes its file. |
 | `markdown-view.component.spec.ts`, while its text streams: keeps a streaming code's ended lines past the reveal as empty token spans, the text never past the reveal and never laid out more than a line below it in any frame, with the fixture.contrast theme in Dark mode | 1400 ms | It streams 40 code lines in 5 reveals, settling each until highlighted and stepping 10 frames, then up to 500 more frames. |
@@ -334,7 +329,6 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `diff-view.component.spec.ts`: heads each file with its path, status and counts, a rename with both paths, and its state below the header | 1300 ms | Not measured; #176 takes its file. |
 | `gallery.component.spec.ts`: gives every section in the kit's _GalleryNavigationComponent a long-text row, except a section marked noLongText, which has none | 1300 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line or a blank row in view on any frame of a fast wheel, 800 px a frame, over rows of mixed heights from a source that answers two frames later, from row 500 past row 1000 | 1300 ms | Not measured alone; its file's tests spend about 80% of their time waiting for rendered frames at 60 Hz, as #178 measured. |
-| `gallery-navigation.component.spec.ts`: shows a busy toolbar button with its spinner centred in place of its glyph, in Light | 1300 ms | Not measured; #176 takes its file. |
 | `gallery-feed.component.spec.ts`: shows the messages, the reference chips and the virtual feed in turn, the feed's specimen right under the chips and filling its own component's box, and marks the chips' Focus cell's chip, drawn before any parser loads, keeping the gallery in place when it is clicked | 1300 ms | Not measured; #176 takes its file. |
 | `group-header.component.spec.ts`: starts its twistie's ink at the section text's start, folded and open, at rest and hovered, in both directions, with its hover fill on its own edges, in the fixture.contrast theme in Dark mode | 1300 ms | It takes 8 screenshots, one for each direction, fold and hover, to find where the twistie's ink starts. |
 | `gallery.component.spec.ts`: keeps each long-text specimen in the kit's _GalleryNavigationComponent at most 12rem wide and inside its cell, with nothing spilling out of it | 1200 ms | Not measured; #176 takes its file. |
@@ -346,10 +340,8 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `tool-call.component.spec.ts`: folds its words, then its status word, then its kind's icon as the panel narrows, and unfolds them in turn as it widens, each at one width and with one class change, and again when its spacing changes, in the noldova.default theme | 1100 ms | For each fold level it bisects the panel's width, about 9 resizes, each settling over frames, then measures the crossings again. |
 | `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click between articles focuses the feed and the arrows, Page Up, Page Down, Home or End follow | 1100 ms | One real click and 6 real key presses, each settling over about 6 frames. |
 | `code-block-lines.component.spec.ts`: lays each line out as a block as wide as its text, each line's text a line below the one before and an empty line taking one, drawing the same pixels over its lines as inline lines, in Light mode | 1100 ms | Not measured; #174 takes its file. |
-| `gallery-content.component.spec.ts`: keeps each file badge cell's names inside the cell, at the cell's own width and in a narrower column | 1100 ms | Not measured; #176 takes its file. |
 | `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click on an article is followed by the arrows, Page Up, Page Down, Home or End | 1100 ms | One real click and 6 real key presses, each settling over about 6 frames. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line or a blank row in view on any frame of a fast wheel, 800 px a frame, over rows of mixed heights from a source that answers two frames later, from row 0 past row 500 | 1100 ms | Not measured alone; its file's tests spend about 80% of their time waiting for rendered frames at 60 Hz, as #178 measured. |
-| `gallery-content.component.spec.ts`: shows a code block wrapped and one with its copy button focused | 1100 ms | Not measured; #176 takes its file. |
 
 `src/noldova.ui.components.angular/tests/app/models/markdown.reader.spec.ts` is the slowest file whose median test fits: its streaming specs read the whole text after every length they stream, through the reader's real paragraph step and margin, `markdownParagraphStep` and `markdownParagraphMargin`, 1000 and 500 characters, which stay as they are.
 Two kinds of spec keep their time down by what they render.
