@@ -20,22 +20,7 @@ LICENSE file in the root directory of this source tree.
 
 <nol-gallery-markdown-view />
 
-<nol-gallery-specimen [name]="text.terminal" [size]="sizes.Full" noHover noFocus noLongText>
-  @for (surface of terminalSurfaces; track surface[0]) {
-    <nol-gallery-cell [caption]="surface[1]">
-      <div class="nol-gallery-terminal" [style.background]="'var(--nol-' + surface[0] + ')'">
-        @for (color of terminalColors; track color) {
-          <span class="nol-gallery-terminal-color"><span class="nol-gallery-terminal-swatch" [style.background]="'var(--nol-terminal-ansi-' + color + ')'"></span>{{ color }}</span>
-        }
-      </div>
-    </nol-gallery-cell>
-  }
-  <nol-gallery-cell [caption]="text.terminalTextCaption">
-    <div class="nol-gallery-terminal">
-      <span>{{ text.terminalText }}<span class="nol-gallery-terminal-cursor">{{ text.terminalCursor }}</span><span class="nol-gallery-terminal-selection">{{ text.terminalSelected }}</span></span>
-    </div>
-  </nol-gallery-cell>
-</nol-gallery-specimen>
+<nol-gallery-terminal-colors />
 
 <nol-gallery-terminal-output />
 
@@ -43,14 +28,6 @@ LICENSE file in the root directory of this source tree.
 
 <nol-gallery-tool-call />
 
-<nol-gallery-specimen [name]="text.planSection" [size]="sizes.Full" noHover noFocus>
-  <nol-gallery-cell [caption]="text.defaultState"><nol-plan [plan]="plans.working" /></nol-gallery-cell>
-  <nol-gallery-cell [caption]="text.planTypedCaption"><nol-markdown-view [text]="text.planTyped" /></nol-gallery-cell>
-  <nol-gallery-cell [caption]="text.planDoneCaption"><nol-plan [plan]="plans.done" /></nol-gallery-cell>
-  <nol-gallery-cell [caption]="text.planNotStartedCaption"><nol-plan [plan]="plans.notStarted" /></nol-gallery-cell>
-  <nol-gallery-cell long [caption]="text.longCaption">
-    <nol-plan class="nol-gallery-narrow" [plan]="plans.long" />
-  </nol-gallery-cell>
-</nol-gallery-specimen>
+<nol-gallery-plan />
 
 <nol-gallery-permission-card />

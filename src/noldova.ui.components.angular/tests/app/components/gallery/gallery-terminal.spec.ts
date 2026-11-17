@@ -8,14 +8,14 @@
 
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
 import { GalleryResources } from "../../../../src/app/components/gallery/gallery-resources";
+import { GalleryTerminalColorsComponent } from "../../../../src/app/components/gallery/gallery-terminal-colors.component";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
-describe("GalleryContentComponent's terminal colors", () => {
-  let fixture: ComponentFixture<GalleryContentComponent>;
+describe("GalleryTerminalColorsComponent", () => {
+  let fixture: ComponentFixture<GalleryTerminalColorsComponent>;
 
   afterEach(() => {
     AppearanceFixture.reset();
@@ -29,7 +29,7 @@ describe("GalleryContentComponent's terminal colors", () => {
   for (const [index, mode] of AppearanceFixture.modes.entries())
     it(`shows the terminal's 16 ANSI colors on the window and panel colors, its text, cursor and selection in the colors the theme gives them, in ${mode.toLowerCase()} mode`, async () => {
       AppearanceFixture.apply(DefaultTheme.theme, mode);
-      fixture = TestBed.createComponent(GalleryContentComponent);
+      fixture = TestBed.createComponent(GalleryTerminalColorsComponent);
       fixture.detectChanges();
       await fixture.whenStable();
       const section = DomFixture.one(DomFixture.host(fixture), ".nol-gallery-specimen[aria-label=\"Terminal colors\"]");
