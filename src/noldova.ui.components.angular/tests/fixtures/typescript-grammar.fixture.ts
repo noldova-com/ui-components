@@ -9,14 +9,17 @@
 import { CodeTokenizer } from "../../src/app/models/code-tokenizer";
 
 declare global {
-  // Each spec file loads its own copy of this module, while the spec files on one page share its globals, so the page's one warming is kept there.
-  var nolTypeScriptWarming: Promise<void> | undefined;
+  interface Window {
+    // The setup file loads this module again for each spec file, while the spec files on one page share its window, so the page's one warming
+    // is kept there.
+    nolTypeScriptWarming?: Promise<void>;
+  }
 }
 
 export class TypeScriptGrammarFixture {
   public static warmAsync(): Promise<void> {
-    globalThis.nolTypeScriptWarming ??= TypeScriptGrammarFixture.highlightAsync();
-    return globalThis.nolTypeScriptWarming;
+    window.nolTypeScriptWarming ??= TypeScriptGrammarFixture.highlightAsync();
+    return window.nolTypeScriptWarming;
   }
 
   private static async highlightAsync(): Promise<void> {

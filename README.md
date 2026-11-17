@@ -243,6 +243,16 @@ Rendering the navigation and content sections is measured above; the other secti
 
 The code block's specs render a block and wait for its layout to settle over animation frames.
 Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
+Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-components/issues/174), what stays:
+
+- A pixel read, in the `settled-pixels`, `forced-highlights`, `forced-spans` and `lines` specs, costs 71 to 80 ms whatever its size, an 8 by 8 pixel read as much as a whole block, so reading less doesn't help; each read covers every pixel its check compares.
+- The streaming specs follow each scroll and each change of the code with two fixed frames, about 17 ms each, which a check that nothing moved needs, since no event signals it; a check that the block followed its end waits for that instead, through `CodeBlockHarness.followedAsync`.
+- The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`: at least two passes of two frames and a stable fixture.
+- The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
+- `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
+
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
+The code highlighter's specs and `code-block-highlighting-start.component.spec.ts` skip it, since they check that first load; they pay for it unless an earlier spec file on their page has already warmed it, as they did before when an earlier file showed a code block.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
@@ -420,6 +430,7 @@ After each spec test, `src/noldova.ui.components.angular/tests/shared-page.setup
 It then moves the pointer just outside the page, so the next test starts with no element under it and no spec file resets the pointer itself.
 Before each spec test, it leaves no element focused and starts keyboard navigation at the top of the page, through `src/noldova.ui.components.angular/tests/fixtures/focus-start.fixture.ts`, so a test's first Tab doesn't depend on what an earlier test focused or clicked.
 Before each spec file, it also sets the emulated media to no reduced motion and no forced colors, so no file sees what the machine prefers or what an earlier file left emulated.
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` keeps one property of its own on the page's `window`, `nolTypeScriptWarming`, the page's one TypeScript warming, which Time per file explains: a setup file and the modules it imports load again for each spec file, while the files on one page share its window.
 Specs emulate media only through `src/noldova.ui.components.angular/tests/fixtures/emulated-media.fixture.ts`, which the motion and forced-colors fixtures use: each emulation call replaces the whole emulated set, so the fixture sends every feature each time.
 A spy's own `mockRestore()` leaves its restore in Vitest's registry, where a later spec file's `vi.restoreAllMocks()` runs it again, so a test that spies on a faked timer global restores it with `vi.restoreAllMocks()`.
 One spec fakes a timer global in the shared page, by the maintainer's decision: `src/noldova.ui.components.angular/tests/testing/services/kit-stylesheet-fixture.spec.ts` fakes `setTimeout` to reach `KitStylesheetFixture`'s 30 s load deadline and the 5 s limit on its diagnostic fetch of a font that failed.
