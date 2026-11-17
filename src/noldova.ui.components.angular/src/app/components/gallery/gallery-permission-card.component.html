@@ -1,0 +1,31 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.permissionCard" [size]="sizes.Full">
+  <nol-gallery-cell [caption]="text.defaultState"><nol-permission-card [request]="permissions.pending" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionMediumCaption"><nol-permission-card [request]="permissions.medium" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionHighCaption"><nol-permission-card [request]="permissions.high" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionConfirmCaption"><nol-permission-card [nolGalleryPress]="alwaysAllow" [request]="permissions.confirming" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAppOptionsCaption"><nol-permission-card [request]="permissions.appOptions" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionSendingCaption"><nol-permission-card [request]="permissions.sending" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionSendFailedCaption"><nol-permission-card [request]="permissions.sendFailed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAllowedOnceCaption"><nol-permission-card [request]="permissions.allowedOnce" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAlwaysAllowedCaption"><nol-permission-card [request]="permissions.alwaysAllowed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionDeniedCaption"><nol-permission-card [request]="permissions.denied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionAlwaysDeniedCaption"><nol-permission-card [request]="permissions.alwaysDenied" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionUnscopedCaption"><nol-permission-card [request]="permissions.unscoped" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionExpiredCaption"><nol-permission-card [request]="permissions.expired" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionWithdrawnCaption"><nol-permission-card [request]="permissions.withdrawn" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionLongDetailsCaption"><nol-permission-card [request]="permissions.longDetails" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.permissionExpandedCaption"><nol-permission-card [request]="permissions.expanded" [detailsExpanded]="true" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover"><nol-permission-card [nolGalleryHover]="option" [request]="permissions.hover" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus"><nol-permission-card [nolGalleryFocus]="option" [request]="permissions.focus" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <nol-permission-card class="nol-gallery-narrow" [request]="permissions.long" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>
