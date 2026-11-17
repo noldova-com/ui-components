@@ -249,16 +249,18 @@ describe("MenuTriggerDirective", () => {
     expect(fixture.componentInstance.chosen).toEqual(["delta"]);
   });
 
-  it("forces at most one style and one layout pass while a row's click closes it and its trigger takes the focus back", async () => {
-    await openFromKeyboardAsync();
-    const alpha = row("alpha");
+  describe(LayoutTraceFixture.suite, () => {
+    it("forces at most one style and one layout pass while a row's click closes it and its trigger takes the focus back", async () => {
+      await openFromKeyboardAsync();
+      const alpha = row("alpha");
 
-    const passes = await LayoutTraceFixture.forcedPassesAsync(() => alpha.click());
-    await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
+      const passes = await LayoutTraceFixture.forcedPassesAsync(() => alpha.click());
+      await untilAsync(() => expect([menu("root"), focused()]).toEqual([null, "trigger"]));
 
-    expect(passes.filter(t => t.startsWith("UpdateLayoutTree ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
-    expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
-    expect([fixture.componentInstance.chosen, menu("root"), focused()]).toEqual([["alpha"], null, "trigger"]);
+      expect(passes.filter(t => t.startsWith("UpdateLayoutTree ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
+      expect(passes.filter(t => t.startsWith("Layout ")).length, passes.join("\n")).toBeLessThanOrEqual(1);
+      expect([fixture.componentInstance.chosen, menu("root"), focused()]).toEqual([["alpha"], null, "trigger"]);
+    });
   });
 
   it("closes with Escape and returns focus to its trigger", async () => {

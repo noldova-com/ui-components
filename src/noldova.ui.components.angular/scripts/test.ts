@@ -11,6 +11,7 @@ import path from "node:path";
 
 import { AngularCoverageReport } from "./angular/angular-coverage-report.ts";
 import { AngularTestReport } from "./angular/angular-test-report.ts";
+import { CoverageMerge } from "./angular/coverage-merge.ts";
 import { AngularNewestCheck } from "./checks/angular-newest-check.ts";
 import { FailureScreenshotCheck } from "./checks/failure-screenshot-check.ts";
 import type { ICheck } from "./checks/interfaces/i-check.ts";
@@ -46,6 +47,15 @@ export class Test extends Script {
   private static readonly ANGULAR_SELECTION_OPTIONS: readonly string[] = ["--no-coverage"];
   private static readonly ANGULAR_PART_OPTIONS: readonly string[] = ["--configuration=part"];
   private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
+  private static readonly ANGULAR_FILTER_OPTION: string = "--filter";
+  private static readonly TRACED_SUITE: string = "with a layout trace, in a browser of its own";
+  private static readonly TRACED_MARK: string = "describe(LayoutTraceFixture.suite";
+  private static readonly UNTRACED_FILTER: string = `^(?!.*${Test.TRACED_SUITE})`;
+  private static readonly TRACED_PART: string = "part-2";
+  private static readonly UNTRACED_PART: string = "part-1";
+  private static readonly PARTS_PREFIX: string = "kit-coverage-parts-";
+  private static readonly COVERAGE_PART_FILE: string = "coverage-final.json";
+  private static readonly TEXT_ENCODING: BufferEncoding = "utf8";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly WORKSPACE_FOLDER: string = ".";
   private static readonly KIT_FOLDER: string = `src/${Config.KIT_INFO.path}`;
@@ -120,24 +130,52 @@ export class Test extends Script {
     if (selected.length === 0)
       return 0;
 
+    const traced: string[] = [];
+    for (const spec of selected)
+      if ((await fs.readFile(path.resolve(Test.WORKSPACE_FOLDER, spec), Test.TEXT_ENCODING)).includes(Test.TRACED_MARK))
+        traced.push(spec);
+    const isWhole = filters.length === 0 && shard === null;
+    const keepsCoverage = filters.length === 0;
+    const options = keepsCoverage ? Test.ANGULAR_PART_OPTIONS : Test.ANGULAR_SELECTION_OPTIONS;
+    const parts = await new TemporaryFolder().createAsync(process.platform, Test.PARTS_PREFIX);
+    try {
+      await fs.rm(Test.DEPENDENCY_CACHE, { recursive: true, force: true });
+      await this.runAngularPartAsync(selected, isWhole ? [] : selected, options, Test.UNTRACED_FILTER, keepsCoverage ? path.join(parts, Test.UNTRACED_PART) : null);
+      if (traced.length > 0)
+        await this.runAngularPartAsync(traced, traced, options, Test.TRACED_SUITE, keepsCoverage ? path.join(parts, Test.TRACED_PART) : null);
+      if (keepsCoverage) {
+        await new CoverageMerge(Test.ROOT, Test.KIT_FOLDER).mergeAsync(parts, traced.length > 0 ? 2 : 1, this.coverage.path);
+        if (shard === null)
+          for (const line of await this.coverage.listUnhitAsync()) {
+            await this.writeLogAsync(line);
+            this.failed = true;
+          }
+      }
+    }
+    finally {
+      await new TemporaryFolder().removeAsync(parts);
+    }
+    return selected.length;
+  }
+
+  private async runAngularPartAsync(specs: readonly string[], included: readonly string[], options: readonly string[], filter: string, coverageFolder: string | null): Promise<void> {
     const report = path.resolve(Test.ANGULAR_REPORT_FILE);
     await fs.rm(report, { force: true });
     await fs.rm(this.coverage.path, { force: true });
-    await fs.rm(Test.DEPENDENCY_CACHE, { recursive: true, force: true });
-    const isWhole = filters.length === 0 && shard === null;
-    const options = filters.length > 0 ? Test.ANGULAR_SELECTION_OPTIONS : Test.ANGULAR_PART_OPTIONS;
-    const selection = isWhole ? [] : [...options, ...selected.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
+    const selection = [...options, `${Test.ANGULAR_FILTER_OPTION}=${filter}`, ...included.flatMap(t => [Test.ANGULAR_INCLUDE_OPTION, t])];
     await this.writeLogAsync(Test.BLANK_LINE);
     await this.runCommandAsync(process.execPath, [Test.ANGULAR_CLI_PATH, ...Test.ANGULAR_TEST_ARGUMENTS, report, ...selection], path.resolve(Test.WORKSPACE_FOLDER));
 
-    for (const finding of await this.report.checkAsync(report, selected)) {
+    for (const finding of await this.report.checkAsync(report, specs)) {
       await this.writeLogAsync(finding);
       this.failed = true;
     }
-    if (isWhole)
-      for (const line of await this.coverage.listUnhitAsync())
-        await this.writeLogAsync(line);
-    return selected.length;
+    if (coverageFolder !== null) {
+      await fs.mkdir(coverageFolder, { recursive: true });
+      await fs.copyFile(this.coverage.path, path.join(coverageFolder, Test.COVERAGE_PART_FILE)).catch((error: unknown) => {
+        throw new CommandFailedException(Test.coverageMissing(filter, this.coverage.path), { cause: error });
+      });
+    }
   }
 
   private async runCommandAsync(command: string, arguments_: readonly string[], workingDirectory: string): Promise<void> {
@@ -153,6 +191,10 @@ export class Test extends Script {
 
   private static unknownOption(option: string): string {
     return `Unknown option "${option}"; npm run test takes only filters and one --shard=<part>/<parts>, with 2 to 8 parts.`;
+  }
+
+  private static coverageMissing(filter: string, file: string): string {
+    return `The kit's run of the tests named by ${filter} wrote no coverage at ${file}.`;
   }
 
   private static partRun(part: number, parts: number, specs: number): string {

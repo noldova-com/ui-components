@@ -2439,22 +2439,24 @@ describe("VirtualListComponent", () => {
       expect([Math.round(clamped), Math.round(fromEnd()), feed.positions.at(-1)?.isFollowing, isJumpShown()]).toEqual([300, 0, true, false]);
     });
 
-  it("lays the page out for none of its settling after a render elsewhere, as an overlay opening over it makes, and keeps following its end once the frame is laid out", async () => {
-    await renderFeedAsync();
-    const overlay = document.body.appendChild(document.createElement("div"));
-    try {
-      const passes = await LayoutTraceFixture.forcedPassesAsync(() => {
-        overlay.style.cssText = "position: fixed; inset: 0;";
-        fixture.changeDetectorRef.markForCheck();
-        TestBed.inject(ApplicationRef).tick();
-      });
-      await settleAsync();
+  describe(LayoutTraceFixture.suite, () => {
+    it("lays the page out for none of its settling after a render elsewhere, as an overlay opening over it makes, and keeps following its end once the frame is laid out", async () => {
+      await renderFeedAsync();
+      const overlay = document.body.appendChild(document.createElement("div"));
+      try {
+        const passes = await LayoutTraceFixture.forcedPassesAsync(() => {
+          overlay.style.cssText = "position: fixed; inset: 0;";
+          fixture.changeDetectorRef.markForCheck();
+          TestBed.inject(ApplicationRef).tick();
+        });
+        await settleAsync();
 
-      expect([passes.filter(t => LayoutTraceFixture.functionsOf(t).includes("settle")), Math.round(fromEnd()), feed.positions.at(-1)?.isFollowing]).toEqual([[], 0, true]);
-    }
-    finally {
-      overlay.remove();
-    }
+        expect([passes.filter(t => LayoutTraceFixture.functionsOf(t).includes("settle")), Math.round(fromEnd()), feed.positions.at(-1)?.isFollowing]).toEqual([[], 0, true]);
+      }
+      finally {
+        overlay.remove();
+      }
+    });
   });
 
   it("stops following its end when the reader scrolls 300px toward its start and the list renders for another change before the scroll's event", async () => {
