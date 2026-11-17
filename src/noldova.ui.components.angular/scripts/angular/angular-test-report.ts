@@ -126,11 +126,11 @@ export class AngularTestReport {
   }
 
   private static formatNeverRan(identities: readonly string[]): string {
-    return `The Angular tests ran ${identities.length} tests in none of their runs, where each must run in exactly one: ${identities.join(", ")}.`;
+    return `${identities.length} of the Angular tests ran in none of their runs, where each must run in exactly one: ${identities.join(", ")}.`;
   }
 
   private static formatRanAgain(identities: readonly string[]): string {
-    return `The Angular tests ran ${identities.length} tests in more than one of their runs, where each must run in exactly one: ${identities.join(", ")}.`;
+    return `${identities.length} of the Angular tests ran in more than one of their runs, where each must run in exactly one: ${identities.join(", ")}.`;
   }
 
   private static formatIdleRun(run: number, runs: number): string {
