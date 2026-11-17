@@ -19,6 +19,7 @@
   --nol-text-heading: calc(var(--nol-text-panel) * 2);
   --nol-text-reference-title: var(--nol-text-message);
   --nol-text-avatar-byline: 0.625rem;
+  --nol-text-display: 1.75rem;
   --nol-line-panel: max(1.125rem, calc(var(--nol-text-panel) + 0.3125rem));
   --nol-line-title: calc(var(--nol-text-title) + 0.3125rem);
   --nol-line-label: calc(var(--nol-text-label) + 0.25rem);
@@ -31,6 +32,7 @@
   --nol-weight-emphasis: 500;
   --nol-weight-strong: 600;
   --nol-letter-spacing-caps: 0.05em;
+  --nol-letter-spacing-display: 0.12em;
   --nol-pointer-target: 24px;
 }
 

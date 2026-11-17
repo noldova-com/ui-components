@@ -184,4 +184,25 @@ describe("theme stylesheet", () => {
       scope.remove();
     }
   });
+
+  it("gives a text area the height of three lines of a text field with its padding and border, 4.25rem at the default panel size, and follows the panel size, the field's padding and the border", () => {
+    const root = document.documentElement;
+    const area = document.body.appendChild(document.createElement("div"));
+    area.style.minHeight = "var(--nol-text-area-min-height)";
+    try {
+      const rem = Number.parseFloat(getComputedStyle(root).fontSize);
+      const normal = area.getBoundingClientRect().height;
+      root.style.setProperty("--nol-text-panel", "1.25rem");
+      root.style.setProperty("--nol-field-padding", "0.5rem");
+      root.style.setProperty("--nol-border-width", "2px");
+      const changed = area.getBoundingClientRect().height;
+
+      expect(normal).toBeCloseTo(4.25 * rem, 3);
+      expect(changed).toBeCloseTo(3 * (1.25 + 0.3125) * rem + 2 * 0.5 * rem + 2 * 2, 3);
+    } finally {
+      for (const name of ["--nol-text-panel", "--nol-field-padding", "--nol-border-width"])
+        root.style.removeProperty(name);
+      area.remove();
+    }
+  });
 });

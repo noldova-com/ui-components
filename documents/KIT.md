@@ -244,6 +244,26 @@ On the overlay backdrop itself, such as an image viewer's, that fill would vanis
 An element that paints a theme of its own, such as each scope of the Gallery, takes the class `nol-theme-scope`.
 It declares the derived tokens again, so they follow its own text and semantic colors.
 
+Sizes a window draws with where no kit control holds them, such as a module window's own cards, rows and panels, are tokens too, so a window writes no size literal.
+Each but the display text pair is a look key, which a theme can change like the radii and spaces; the display text pair is in `styles/base.css`, with the other text sizes.
+
+| Token | Theme key | Value | Use |
+|---|---|---|---|
+| `--nol-space-half` | `space-half` | 0.125rem | Between a row's two lines of text, and other hairline gaps |
+| `--nol-count-gap` | `count-gap` | 0.25em | Between the numbers of an inline count, such as a file's added and removed lines |
+| `--nol-view-padding-inline` | `view-padding-inline` | 0.625rem | A card's, row's or panel's inline padding in a view, beside `--nol-view-padding-block` |
+| `--nol-view-gap` | `view-gap` | 0.625rem | Between a panel's blocks |
+| `--nol-nested-row-indent` | `nested-row-indent` | 2.25rem | A nested list row's start, such as a group's "more" row under its file rows |
+| `--nol-empty-icon` | `empty-icon` | 1.25rem | An empty state's icon |
+| `--nol-text-area-min-height` | `text-area-min-height` | Three lines of a text field with its padding and border, 4.25rem at the default panel size | A multi-line text field's height; it follows the panel size |
+| `--nol-list-max-height` | `list-max-height` | 18rem | A menu-like list's scroll height in a view; the mention list keeps `--nol-mention-list-height` |
+| `--nol-diff-view-max-height` | `diff-view-max-height` | 24rem | An inline diff's scroll height |
+| `--nol-diff-view-padding-block` | `diff-view-padding-block` | 0.375rem | An inline diff panel's block inset |
+| `--nol-text-display` | none | 1.75rem | Display text, such as a code shown to type elsewhere |
+| `--nol-letter-spacing-display` | none | 0.12em | Between the letters of display text |
+
+A compact row, as tall as an icon button, takes `--nol-icon-button`, 1.375rem, for its minimum height.
+
 ## Controls
 
 Each control's specification is a file of its own in [kit/](kit/), which gives its default geometry, the text role it uses, and its surface and behavior.
