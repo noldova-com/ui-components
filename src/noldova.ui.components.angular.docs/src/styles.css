@@ -23,11 +23,13 @@
   --nol-docs-kit-text-heading: var(--nol-text-heading);
   --nol-docs-kit-text-reference-title: var(--nol-text-reference-title);
   --nol-docs-kit-text-avatar-byline: var(--nol-text-avatar-byline);
+  --nol-docs-kit-text-display: var(--nol-text-display);
   --nol-docs-kit-line-panel: var(--nol-line-panel);
   --nol-docs-kit-line-title: var(--nol-line-title);
   --nol-docs-kit-line-label: var(--nol-line-label);
   --nol-docs-kit-line-tooltip: var(--nol-line-tooltip);
   --nol-docs-kit-line-heading: var(--nol-line-heading);
+  --nol-docs-kit-space-half: var(--nol-space-half);
   --nol-docs-kit-space-1: var(--nol-space-1);
   --nol-docs-kit-space-2: var(--nol-space-2);
   --nol-docs-kit-space-3: var(--nol-space-3);
@@ -53,11 +55,13 @@
   --nol-text-heading: calc(var(--nol-docs-kit-text-heading) * var(--nol-docs-scale));
   --nol-text-reference-title: calc(var(--nol-docs-kit-text-reference-title) * var(--nol-docs-scale));
   --nol-text-avatar-byline: calc(var(--nol-docs-kit-text-avatar-byline) * var(--nol-docs-scale));
+  --nol-text-display: calc(var(--nol-docs-kit-text-display) * var(--nol-docs-scale));
   --nol-line-panel: calc(var(--nol-docs-kit-line-panel) * var(--nol-docs-scale));
   --nol-line-title: calc(var(--nol-docs-kit-line-title) * var(--nol-docs-scale));
   --nol-line-label: calc(var(--nol-docs-kit-line-label) * var(--nol-docs-scale));
   --nol-line-tooltip: calc(var(--nol-docs-kit-line-tooltip) * var(--nol-docs-scale));
   --nol-line-heading: calc(var(--nol-docs-kit-line-heading) * var(--nol-docs-scale));
+  --nol-space-half: calc(var(--nol-docs-kit-space-half) * var(--nol-docs-scale));
   --nol-space-1: calc(var(--nol-docs-kit-space-1) * var(--nol-docs-scale));
   --nol-space-2: calc(var(--nol-docs-kit-space-2) * var(--nol-docs-scale));
   --nol-space-3: calc(var(--nol-docs-kit-space-3) * var(--nol-docs-scale));

@@ -172,11 +172,13 @@
   --nol-radius-small: 0.25rem;
   --nol-radius-medium: 0.375rem;
   --nol-radius-large: 0.5rem;
+  --nol-space-half: 0.125rem;
   --nol-space-1: 0.25rem;
   --nol-space-2: 0.5rem;
   --nol-space-3: 0.75rem;
   --nol-space-4: 1rem;
   --nol-space-6: 1.5rem;
+  --nol-count-gap: 0.25em;
   --nol-pill-padding: 0.375rem;
   --nol-border-width: 1px;
   --nol-shadow-large: 0 0 0.75rem rgb(0 0 0 / 14%);
@@ -212,6 +214,7 @@
   --nol-tab-underline: 0.125rem;
   --nol-icon: 1rem;
   --nol-icon-button: 1.375rem;
+  --nol-empty-icon: 1.25rem;
   --nol-sash: var(--nol-panel-card-gap);
   --nol-sash-grip: 0.125rem;
   --nol-sash-grip-spacing: 0.3125rem;
@@ -277,9 +280,11 @@
   --nol-quick-input-list-height: 60vh;
   --nol-quick-input-label-line: normal;
   --nol-mention-list-height: 16rem;
+  --nol-list-max-height: 18rem;
   --nol-mention-row-height: 2.5rem;
   --nol-field-height: 1.625rem;
   --nol-field-padding: 0.375rem;
+  --nol-text-area-min-height: calc(3 * var(--nol-line-panel) + 2 * var(--nol-field-padding) + 2 * var(--nol-border-width));
   --nol-window-row-height: calc(var(--nol-icon-button-target) + 2 * var(--nol-band-gap));
   --nol-message-collapsed-height: 24rem;
   --nol-message-picture-height: 24rem;
@@ -300,12 +305,15 @@
   --nol-setting-marker: 0.625rem;
   --nol-tree-row-height: 1.625rem;
   --nol-tree-indent: 1.75rem;
+  --nol-nested-row-indent: 2.25rem;
   --nol-row-gap: calc(2 * var(--nol-tab-inset));
   --nol-section-header-height: 1.75rem;
   --nol-section-header-caret: 0.875rem;
   --nol-content-padding-inline: calc(3 * var(--nol-tab-inset) + var(--nol-pill-padding));
   --nol-document-padding-block: 1rem;
   --nol-view-padding-block: 0.5rem;
+  --nol-view-padding-inline: 0.625rem;
+  --nol-view-gap: 0.625rem;
   --nol-settings-pages-width: 12.5rem;
   --nol-settings-content-width: 50rem;
   --nol-modules-list-width: 20rem;
@@ -320,6 +328,8 @@
   --nol-settings-heading-space: 0.625rem;
   --nol-settings-content-inset: 0.9375rem;
   --nol-code-header-height: 1.625rem;
+  --nol-diff-view-max-height: 24rem;
+  --nol-diff-view-padding-block: 0.375rem;
   --nol-reference-mark: 0.875rem;
   --nol-reference-mark-slot-radius: 0.1875rem;
   --nol-reference-chip-max-width: 27.5rem;

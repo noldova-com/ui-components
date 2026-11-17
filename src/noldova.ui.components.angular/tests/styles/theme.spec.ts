@@ -184,4 +184,16 @@ describe("theme stylesheet", () => {
       scope.remove();
     }
   });
+
+  it("gives a text area the height of three lines of a text field with its padding and border, 4.25rem at the default panel size", () => {
+    const area = document.body.appendChild(document.createElement("div"));
+    area.style.minHeight = "var(--nol-text-area-min-height)";
+    try {
+      const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+      expect(area.getBoundingClientRect().height).toBeCloseTo(4.125 * rem + 2, 3);
+    } finally {
+      area.remove();
+    }
+  });
 });
