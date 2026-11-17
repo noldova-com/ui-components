@@ -8,13 +8,14 @@
 
 import "@noldova/context.core";
 
-// Loads the TypeScript grammar and the highlighter's modules before a spec file's first test, so the page's first TypeScript highlight doesn't fall
-// on whichever test renders it, as README's timing section says. The code highlighter's specs and the code block's highlighting start specs check
-// that first load, so they skip it and pay for it as an app does.
+import { TypeScriptGrammarFixture } from "./fixtures/typescript-grammar.fixture";
+
+// Highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before a spec file's first test, so the page's first
+// TypeScript highlight doesn't fall on whichever test renders it, as README's timing section says. The code highlighter's specs and the code block's
+// highlighting start spec check that first load, so they skip it, and pay for it unless an earlier file on their page has already warmed it.
 const loadSpecs = /[\\/](code-highlighter-[^\\/]*|code-block-highlighting-start\.component)\.spec\.ts$/;
 
 beforeAll(async () => {
-  if (loadSpecs.test(expect.getState().testPath ?? String.empty))
-    return;
-  await Promise.all([import("@shikijs/langs/typescript"), import("@shikijs/primitive"), import("@shikijs/engine-javascript")]);
+  if (!loadSpecs.test(expect.getState().testPath ?? String.empty))
+    await TypeScriptGrammarFixture.warmAsync();
 });
