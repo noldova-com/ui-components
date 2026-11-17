@@ -24,12 +24,6 @@ type Answer = { readonly value: unknown; readonly failure: null } | { readonly v
 type Answers = ReadonlyMap<string, ProcessResult | Error>;
 type StoodInCase = { readonly title: string; readonly npm?: string | undefined; readonly pins: ReadonlyMap<string, string>; readonly answers: Answers; readonly expected: (lines: readonly string[]) => boolean };
 
-/**
- * Fails when a newer Angular is out than the kit's, in the kit's major, for an Angular package the kit names or one that
- * Angular's build tools at the kit's version take as a peer. Those peers resolve to Angular's newest, so a fresh install
- * of the kit with the build tools would stop with ERESOLVE, as a release's build does; this says so on a pull request and
- * in the nightly run, before a version is tagged.
- */
 export class AngularNewestCheck implements ICheck {
   private static readonly SOURCE_FOLDER: string = "src";
   private static readonly MANIFEST: string = "package.json";
@@ -73,7 +67,6 @@ export class AngularNewestCheck implements ICheck {
     return await this.findingsAsync(this.runner, process.env[AngularNewestCheck.NPM_PATH_VARIABLE], pins);
   }
 
-  /** The check's own test: npm's answers stood in for each case, and what the check must then say. */
   private async checkStoodInAsync(): Promise<readonly string[]> {
     const findings: string[] = [];
     for (const t of AngularNewestCheck.stoodInCases()) {
@@ -149,15 +142,14 @@ export class AngularNewestCheck implements ICheck {
         findings.push(listed.failure);
         continue;
       }
-      const published = PeerRange.newestOf(AngularNewestCheck.versionsOf(listed.value));
+      const published = PeerRange.newestOf(AngularNewestCheck.undeprecatedVersionsOf(listed.value));
       if (published !== null && PeerRange.compare(published, version) > 0)
         ahead.push(`${name} ${published}${AngularNewestCheck.AHEAD}${version}.`);
     }
     return ahead.length === 0 ? findings : [...findings, `Angular's newest is ahead of the kit's: ${ahead.join(" ")} ${AngularNewestCheck.FIX}`];
   }
 
-  /** The exact versions npm listed that aren't deprecated; npm gives bare versions when none in the range is deprecated. */
-  private static versionsOf(value: unknown): readonly string[] {
+  private static undeprecatedVersionsOf(value: unknown): readonly string[] {
     const listed: readonly unknown[] = Array.isArray(value) ? value : [value];
     return listed.flatMap(t => {
       if (PeerRange.isExact(t))
@@ -168,7 +160,6 @@ export class AngularNewestCheck implements ICheck {
     });
   }
 
-  /** npm's answer for fields of a package, parsed, or a line saying why it couldn't be read. */
   private async readAsync(runner: ProcessRunner, npm: string, spec: string, fields: readonly string[]): Promise<Answer> {
     const asked = `npm view ${spec} ${fields.join(" ")}`;
     let result: ProcessResult;

@@ -10,11 +10,6 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from "@ang
 
 import { Resources } from "../../../resources.js";
 
-/**
- * Stacks its table's rows, by the stacked class, only while the table's own
- * columns are wider than the holder around it. It measures again whenever
- * the holder changes size, as when the window does or a description renders.
- */
 @Directive({
   selector: "table[nolDocsFitTable]"
 })

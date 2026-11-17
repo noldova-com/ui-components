@@ -19,30 +19,20 @@ export class PollBoundCheck implements ICheck {
     "src/noldova.ui.components.angular/src/testing",
     "src/noldova.ui.components.angular.docs/tests"
   ];
-  /** The spec that tests the bound itself, with a short one, so a hung poll ends in a moment. */
-  private static readonly EXEMPT: string = "src/noldova.ui.components.angular/tests/hang-limit.spec.ts";
+  private static readonly HANG_LIMIT_SPEC: string = "src/noldova.ui.components.angular/tests/hang-limit.spec.ts";
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
   private static readonly SHARED_BOUND: string = "HangLimitFixture.wait";
   private static readonly WAIT_FOR: RegExp = /(?<![\w$.])vi\s*\.\s*wait(?:For|Until)\s*\(/gu;
-  /**
-   * Each wait on a change, with how many arguments it takes: a wait on the page's changes takes its check alone, and a wait on a change
-   * signal its check and how to listen, and a wait for a layout to settle what it waits on, its shape and its pass, so any argument past
-   * those is a limit of its own.
-   */
-  private static readonly SIGNAL_WAITS: ReadonlyArray<readonly [RegExp, number]> = [
+  private static readonly SIGNAL_WAIT_ARGUMENTS: ReadonlyArray<readonly [RegExp, number]> = [
     [/(?<![\w$.])DomChangeFixture\s*\.\s*untilAsync\s*\(/gu, 1],
     [/(?<![\w$.])ChangeSignalFixture\s*\.\s*untilAsync\s*\(/gu, 2],
     [/(?<![\w$.])LayoutSettleFixture\s*\.\s*settledAsync\s*\(/gu, 3]
   ];
-  /** A timeout key, but not the shared bound's own: its type's number, or the value its fixture reads from the config. */
   private static readonly OWN_TIMEOUT: RegExp = /(?<![\w$])timeout\s*:(?!\s*(?:number\b|[\w$]+\.readPollLimit\(\)))/gu;
   private static readonly SET_CONFIG: RegExp = /(?<![\w$.])vi\s*\.\s*setConfig\s*\(/gu;
   private static readonly TEST_CALL: RegExp = /(?<![\w$.])(?<name>it|test|describe|beforeEach|afterEach|beforeAll|afterAll)(?:\s*\.\s*(?:only|skip|concurrent|sequential|fails))*\s*\(/gu;
-  /** A hook takes its callback alone, so any second argument is a limit or options. */
   private static readonly HOOKS: ReadonlySet<string> = new Set(["beforeEach", "afterEach", "beforeAll", "afterAll"]);
-  /** A test or suite takes its title and its callback, so any third argument is a limit or options, as are options before the callback. */
   private static readonly TEST_ARGUMENTS: number = 2;
-  /** A "/" that starts a regular expression rather than a division follows one of these, or nothing but spaces from the line's start. */
   private static readonly BEFORE_REGEX: RegExp = /(?:^|[(,=:[!&|?{};+\-*%<>~^]|\breturn|\btypeof|\bcase)\s*$/u;
   private static readonly NOT_LINE_END: RegExp = /[^\n]/gu;
   private static readonly REGEX_FLAG: RegExp = /^[a-z]$/u;
@@ -106,7 +96,7 @@ export class PollBoundCheck implements ICheck {
       const files = (await readdir(path.join(this.root, folder), { recursive: true })).filter(t => PollBoundCheck.SOURCE.test(t)).sort();
       for (const file of files) {
         const name = path.posix.join(folder, file.split(path.sep).join(path.posix.sep));
-        if (name === PollBoundCheck.EXEMPT)
+        if (name === PollBoundCheck.HANG_LIMIT_SPEC)
           continue;
         read++;
         const text = await readFile(path.join(this.root, folder, file), PollBoundCheck.ENCODING);
@@ -120,7 +110,6 @@ export class PollBoundCheck implements ICheck {
     return own.length === 0 && findings.length === 0;
   }
 
-  /** Each finding in the text, as its line, from 1, and what is wrong there; strings and comments are read as blanks. */
   private static findingsOf(text: string): readonly PollBoundFinding[] {
     const code = PollBoundCheck.blankStringsAndComments(text);
     const lineOf = (index: number): number => code.slice(0, index).split("\n").length;
@@ -131,7 +120,7 @@ export class PollBoundCheck implements ICheck {
       if (!call.includes(PollBoundCheck.SHARED_BOUND))
         findings.push(new PollBoundFinding(lineOf(match.index), "polls with vi.waitFor or vi.waitUntil without the shared bound; pass HangLimitFixture.wait, which vitest.config.mts sets below the test's limit."));
     }
-    for (const [wait, allowed] of PollBoundCheck.SIGNAL_WAITS)
+    for (const [wait, allowed] of PollBoundCheck.SIGNAL_WAIT_ARGUMENTS)
       for (const match of code.matchAll(wait))
         if (PollBoundCheck.argumentsOf(code, match.index + match[0].length - 1).length > allowed)
           findings.push(new PollBoundFinding(lineOf(match.index), "waits on a change with a limit of its own; a wait on a change takes the shared bound."));
@@ -148,7 +137,6 @@ export class PollBoundCheck implements ICheck {
     return findings.sort((left, right) => left.line - right.line);
   }
 
-  /** The text with the inside of each string, template and regular expression, and each comment, turned to spaces, keeping its lines. */
   private static blankStringsAndComments(text: string): string {
     const blank = (part: string): string => part.replace(PollBoundCheck.NOT_LINE_END, " ");
     let result = "";
@@ -181,7 +169,6 @@ export class PollBoundCheck implements ICheck {
     return found === -1 ? fallback : found;
   }
 
-  /** The index of the quote that closes the string or template at start; a template's ${…} may hold strings and templates of its own. */
   private static closingQuoteOf(text: string, start: number): number {
     const quote = text.charAt(start);
     let depth = 0;
@@ -205,7 +192,6 @@ export class PollBoundCheck implements ICheck {
     return text.length - 1;
   }
 
-  /** The index just past a regular expression's closing "/" and its flags. */
   private static regexEndOf(text: string, start: number): number {
     let isInClass = false;
     for (let index = start + 1; index < text.length; index++) {
@@ -228,7 +214,6 @@ export class PollBoundCheck implements ICheck {
     return start + 1;
   }
 
-  /** The index just past the ")" that closes the "(" at open. */
   private static closeOf(code: string, open: number): number {
     let depth = 0;
     for (let index = open; index < code.length; index++) {
@@ -241,7 +226,6 @@ export class PollBoundCheck implements ICheck {
     return code.length;
   }
 
-  /** The call's arguments, each trimmed, for the "(" at open. */
   private static argumentsOf(code: string, open: number): readonly string[] {
     const close = PollBoundCheck.closeOf(code, open) - 1;
     const values: string[] = [];

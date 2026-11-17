@@ -8,12 +8,6 @@
 
 import "@noldova/context.core";
 
-/**
- * The kit's documents write a section's rules one to a line, as hard line
- * breaks inside one paragraph. The docs draw each rule as a paragraph of its
- * own, so the rules keep their line height and gain the gap between
- * paragraphs; headings, lists, tables, quotes and code stay as written.
- */
 export class DocsSpecification {
   private static readonly LINE_BREAK: string = "\n";
   private static readonly FENCE: RegExp = /^\s*(?:```|~~~)/u;

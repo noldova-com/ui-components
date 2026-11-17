@@ -9,17 +9,12 @@
 import { ProcessResult } from "../process-result.ts";
 import { ProcessRunner } from "../processes/process-runner.ts";
 
-/**
- * A process runner that answers each `npm view` from a table instead of the registry, for a check's own test of how it
- * reads npm's answers: each answer is a result npm gave, or the error the runner throws, such as a timeout.
- */
 export class StoodInNpm extends ProcessRunner {
   private static readonly VIEW: string = "view";
   private static readonly NO_ANSWER: ProcessResult = new ProcessResult(1, "", "npm error code E404\nnpm error 404 Not Found");
 
   private readonly answers: ReadonlyMap<string, ProcessResult | Error>;
 
-  /** Answers keyed by the package and field asked, such as "@angular/core@^22.2.6 version deprecated". */
   public constructor(answers: ReadonlyMap<string, ProcessResult | Error>) {
     super();
     this.answers = answers;

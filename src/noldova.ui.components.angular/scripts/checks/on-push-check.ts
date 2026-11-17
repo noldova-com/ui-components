@@ -19,11 +19,9 @@ export class OnPushCheck implements ICheck {
   private static readonly LIST_ARGUMENTS: readonly string[] = ["ls-files", "-z", "--", ...OnPushCheck.FOLDERS];
   private static readonly LIST_TIMEOUT: number = 60_000;
   private static readonly SOURCE: RegExp = /\.m?ts$/u;
-  /** A changeDetection key, bare or quoted, set to anything but Eager, or written as a shorthand property. */
-  private static readonly STRATEGY: RegExp = /\bchangeDetection["']?(?:\s*:(?!\s*ChangeDetectionStrategy\.Eager\b)|\s*(?=[,}]))/gu;
+  private static readonly NOT_EAGER_STRATEGY: RegExp = /\bchangeDetection["']?(?:\s*:(?!\s*ChangeDetectionStrategy\.Eager\b)|\s*(?=[,}]))/gu;
   private static readonly ENCODING: BufferEncoding = "utf8";
   private static readonly KEY: string = "changeDetection";
-  /** The own test's cases: what comes before and after the key, kept apart from it so this file holds no key the check would find. */
   private static readonly OWN_CASES: ReadonlyArray<readonly [string, string, number]> = [
     ["", ": ChangeDetectionStrategy.Eager", 0],
     ["", ":ChangeDetectionStrategy.Eager", 0],
@@ -73,8 +71,7 @@ export class OnPushCheck implements ICheck {
     return own.length === 0 && findings.length === 0;
   }
 
-  /** The lines, from 1, of each changeDetection in the text that isn't set to ChangeDetectionStrategy.Eager. */
   private static linesOf(text: string): readonly number[] {
-    return [...text.matchAll(OnPushCheck.STRATEGY)].map(t => text.slice(0, t.index).split("\n").length);
+    return [...text.matchAll(OnPushCheck.NOT_EAGER_STRATEGY)].map(t => text.slice(0, t.index).split("\n").length);
   }
 }
