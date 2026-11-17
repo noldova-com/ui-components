@@ -30,6 +30,7 @@ export class CodeTokenizer {
       { scope: [...CodeTokenizerResources.codePlainScopes], settings: { foreground: CodeTokenizerResources.codePlainMarker } }
     ]
   };
+  private static readonly patterns: Map<string, RegExp | Error> = new Map();
 
   private readonly shiki: typeof import("@shikijs/primitive");
   private readonly primitive: ShikiPrimitive;
@@ -41,7 +42,7 @@ export class CodeTokenizer {
   }
 
   public static primitiveOf(shiki: typeof import("@shikijs/primitive"), engine: typeof import("@shikijs/engine-javascript")): ShikiPrimitive {
-    return shiki.createShikiPrimitive({ engine: engine.createJavaScriptRegexEngine({ forgiving: true }), themes: [CodeTokenizer.theme] });
+    return shiki.createShikiPrimitive({ engine: engine.createJavaScriptRegexEngine({ forgiving: true, cache: CodeTokenizer.patterns }), themes: [CodeTokenizer.theme] });
   }
 
   public async loadAsync(grammar: LanguageInput): Promise<void> {
