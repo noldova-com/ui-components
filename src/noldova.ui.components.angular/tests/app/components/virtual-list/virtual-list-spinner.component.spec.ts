@@ -19,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 @Component({
   imports: [SpinnerComponent, VirtualListComponent, VirtualRowDirective],
@@ -35,17 +36,6 @@ class SpinnerRowsHostComponent {
 describe("VirtualListComponent's selected option under forced colors", () => {
   let fixture: ComponentFixture<SpinnerRowsHostComponent>;
 
-  async function renderedFrameAsync(): Promise<void> {
-    await new Promise<void>(t => requestAnimationFrame(() => {
-      const channel = new MessageChannel();
-      channel.port1.onmessage = () => {
-        channel.port1.close();
-        t();
-      };
-      channel.port2.postMessage(null);
-    }));
-  }
-
   async function renderAsync(mode: ThemeMode): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
     fixture = TestBed.createComponent(SpinnerRowsHostComponent);
@@ -55,7 +45,7 @@ describe("VirtualListComponent's selected option under forced colors", () => {
       return `${host.querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
     }, async () => {
       await fixture.whenStable();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       await fixture.whenStable();
     });
   }

@@ -30,6 +30,7 @@ import { provideCodeHighlighting } from "../../../../src/app/services/provide-co
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 const call = new ToolCall("call-1", "Read main.ts", ToolCallKind.Read, ToolCallStatus.Succeeded, { output: Array.from({ length: 60 }, (_, t) => `line ${t + 1}`).join("\n") });
 const failed = new ToolCall("call-3", "Read b.ts", ToolCallKind.Read, ToolCallStatus.Succeeded, { outputState: ToolCallOutputState.Failed });
@@ -114,22 +115,11 @@ describe("VirtualListComponent with the kit's rows", () => {
   const subject = (): HTMLElement => DomFixture.one(root(), "[data-nol-row=\"30\"]");
   const fromEnd = (): number => viewport().scrollHeight - viewport().clientHeight - viewport().scrollTop;
 
-  async function renderedFrameAsync(): Promise<void> {
-    await new Promise<void>(t => requestAnimationFrame(() => {
-      const channel = new MessageChannel();
-      channel.port1.onmessage = () => {
-        channel.port1.close();
-        t();
-      };
-      channel.port2.postMessage(null);
-    }));
-  }
-
   async function settleAsync(): Promise<void> {
     await LayoutSettleFixture.settledAsync("the list's rows and scroll",
       () => `${root().querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`, async () => {
         await fixture.whenStable();
-        await renderedFrameAsync();
+        await RenderedFrameFixture.nextAsync();
         await fixture.whenStable();
       });
   }
