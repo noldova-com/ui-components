@@ -246,12 +246,12 @@ Measured on a macOS test machine in the code-size specs: the waits for the layou
 Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-components/issues/174), what stays:
 
 - A pixel read, in the `settled-pixels`, `forced-highlights`, `forced-spans` and `lines` specs, costs 71 to 80 ms whatever its size, an 8 by 8 pixel read as much as a whole block, so reading less doesn't help; each read covers every pixel its check compares.
-- The streaming specs follow each scroll and each change of the code with two fixed frames, about 17 ms each, which a check that nothing moved needs, since no event signals it; a check that the block followed its end waits for that instead, through `CodeBlockHarness.followedAsync`.
+- The streaming specs follow each scroll and each change of the code with two fixed frames, about 17 ms each, which a check that nothing moved needs, since no event signals it; a check that the block followed its end passes as soon as it holds, and fails if it doesn't after those two frames, through `CodeBlockHarness.followedAsync`.
 - The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`: at least two passes of two frames and a stable fixture.
 - The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
 - `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
 
-`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through Shiki with the highlighter's engine, so it adds nothing to the kit's coverage, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
 The code highlighter's specs and `code-block-highlighting-start.component.spec.ts` skip it, since they check that first load; they pay for it unless an earlier spec file on their page has already warmed it, as they did before when an earlier file showed a code block.
 
 | File | Linux | Windows | macOS |
