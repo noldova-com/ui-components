@@ -27,8 +27,9 @@ const aliasOf = (name: string, target: string): { find: string | RegExp; replace
 const cacheDir = fileURLToPath(new URL("../../node_modules/.vite", import.meta.url));
 
 // The specs' one hang limit, for tests and hooks: at least three times the slowest test in main's runs on any target, as README's Checks gives it. A
-// test's time there includes its beforeEach and afterEach hooks. The one beforeAll is the shared setup's media reset, in every kit spec file under the
-// same limit and outside that figure, and no spec has an afterAll. A test that reaches it is a bug to fix, never a reason to raise it.
+// test's time there includes its beforeEach and afterEach hooks. The beforeAll hooks are the shared setup's media reset and the TypeScript grammar's
+// preload, in every kit spec file under the same limit and outside that figure, and no spec has an afterAll. A test that reaches it is a bug to
+// fix, never a reason to raise it.
 const hangLimit = 30_000;
 // Every poll's bound: half the hang limit, so a poll that never passes fails first, naming what it waited for, and stops before the test's limit.
 const pollLimit = hangLimit / 2;
