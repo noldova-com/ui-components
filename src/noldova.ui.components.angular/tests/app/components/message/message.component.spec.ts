@@ -54,6 +54,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { MotionFixture } from "../../../fixtures/motion.fixture";
+import { RestingOpacityFixture } from "../../../fixtures/resting-opacity.fixture";
 import { RevealedTextFixture } from "../../../fixtures/revealed-text.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
@@ -316,18 +317,15 @@ describe("MessageComponent", () => {
   it("shows a bubble's Copy action and time only on hover, while it or its article has focus, or always without hover", async () => {
     AppearanceFixture.apply();
     await renderAsync(t => t.layout.set(MessageLayout.Bubble));
-    const opacityAsync = async (): Promise<string> => {
-      await Promise.all(find(".nol-message-footer").getAnimations().map(t => t.finished));
-      return getComputedStyle(find(".nol-message-footer")).opacity;
-    };
+    const footer = (): Element => find(".nol-message-footer");
     const park = await AppearanceFixture.parkPointerAsync();
-    const resting = await opacityAsync();
+    const resting = await RestingOpacityFixture.atAsync(footer, "0");
     find(".article").focus();
-    const focused = await opacityAsync();
+    const focused = await RestingOpacityFixture.atAsync(footer, "1");
     find(".article").blur();
     park.remove();
     await userEvent.hover(find(".nol-message-content"));
-    const hovered = await opacityAsync();
+    const hovered = await RestingOpacityFixture.atAsync(footer, "1");
 
     expect([resting, focused, hovered, matchMedia("(hover: none)").matches]).toEqual(["0", "1", "1", false]);
   });

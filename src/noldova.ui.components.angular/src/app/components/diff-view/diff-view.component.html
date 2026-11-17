@@ -54,7 +54,7 @@ LICENSE file in the root directory of this source tree.
             @let hunkState = reviewOf(file).hunkState(hunk.id);
             <div class="nol-diff-hunk" role="group" [attr.aria-label]="hunkLabel">
               <div class="nol-diff-hunk-header">
-                <button type="button" nol-icon-button class="nol-diff-expand" data-nol-resizes-row [icon]="partResources.diffExpandGlyphs[directions.Up]" [label]="partResources.diffExpandLabels[directions.Up]"
+                <button type="button" nol-icon-button class="nol-diff-expand" data-nol-resizes-row="later" [icon]="partResources.diffExpandGlyphs[directions.Up]" [label]="partResources.diffExpandLabels[directions.Up]"
                   [nolTooltip]="partResources.diffExpandLabels[directions.Up]" (click)="expand(file, hunk, directions.Up)"></button>
                 <span class="nol-diff-hunk-range" aria-hidden="true">{{ partResources.formatDiffHunkRange(hunk.oldStart, hunk.oldLength, hunk.newStart, hunk.newLength) }} {{ hunk.section }}</span>
                 @if (hunkState !== undecided) {
@@ -87,7 +87,7 @@ LICENSE file in the root directory of this source tree.
                 }
               </div>
               @if (isLast) {
-                <button type="button" nol-icon-button class="nol-diff-expand nol-diff-expand-down" data-nol-resizes-row [icon]="partResources.diffExpandGlyphs[directions.Down]"
+                <button type="button" nol-icon-button class="nol-diff-expand nol-diff-expand-down" data-nol-resizes-row="later" [icon]="partResources.diffExpandGlyphs[directions.Down]"
                   [label]="partResources.diffExpandLabels[directions.Down]" [nolTooltip]="partResources.diffExpandLabels[directions.Down]" (click)="expand(file, hunk, directions.Down)"></button>
               }
             </div>

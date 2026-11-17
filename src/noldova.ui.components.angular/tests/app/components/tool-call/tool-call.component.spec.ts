@@ -412,6 +412,25 @@ describe("ToolCallComponent", () => {
     expect([toggle().getAttribute("aria-expanded"), body().hidden, host.views().isExpanded(host.call()), host.requested.length]).toEqual(["false", true, false, 1]);
   });
 
+  it("marks its toggle as resizing its row later while opening would ask for output, and tells its row once the owner's answer to the toggle or to Retry is drawn", async () => {
+    const input = ToolCallInput.fromCode("cat main.ts");
+    await renderAsync(callOf({ input }));
+    const answers: string[] = [];
+    DomFixture.host(fixture).addEventListener("nol-row-answered", event => answers.push(`${event.target instanceof HTMLElement ? event.target.tagName : null} ${DomFixture.host(fixture).textContent.includes("done")}`));
+    const closed = toggle().getAttribute("data-nol-resizes-row");
+    await changeAsync(() => host.call.set(callOf({ input })));
+    const unasked = answers.length;
+
+    await clickAsync(toggle());
+    const opened = [toggle().getAttribute("data-nol-resizes-row"), answers.length];
+    await changeAsync(() => host.call.set(callOf({ input, outputState: ToolCallOutputState.Failed })));
+    await clickAsync(find(".nol-tool-call-more"));
+    const retried = answers.length;
+    await changeAsync(() => host.call.set(callOf({ input, output: "done" })));
+
+    expect([closed, unasked, opened, retried, answers]).toEqual(["later", 0, ["", 0], 1, ["NOL-TOOL-CALL false", "NOL-TOOL-CALL true"]]);
+  });
+
   it("opens and closes with Enter and Space on its toggle, which controls the body region", async () => {
     await renderAsync(callOf({ input: ToolCallInput.fromCode("cat main.ts") }));
     toggle().focus();

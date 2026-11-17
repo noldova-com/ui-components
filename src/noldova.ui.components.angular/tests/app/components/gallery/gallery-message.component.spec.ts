@@ -18,6 +18,7 @@ import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { PressFixture } from "../../../fixtures/press.fixture";
+import { RestingOpacityFixture } from "../../../fixtures/resting-opacity.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 describe("GalleryMessageComponent", () => {
@@ -63,7 +64,8 @@ describe("GalleryMessageComponent", () => {
     const clockOf = (message: HTMLElement | undefined): string => new Intl.DateTimeFormat("en-US", { timeStyle: "short" }).format(new Date(message?.querySelector("time")?.getAttribute("datetime") ?? 0));
     const beside = states().map(t => [t.querySelector(".nol-message-avatar")?.getBoundingClientRect(), t.querySelector(".nol-message-author")?.getBoundingClientRect()])
       .filter(([avatar, author]) => avatar !== undefined && author !== undefined && avatar.right <= author.left && avatar.bottom > author.top);
-    await Promise.all([bubble, bubbleHovered].flatMap(t => t?.querySelector(".nol-message-footer")?.getAnimations() ?? []).map(t => t.finished));
+    await RestingOpacityFixture.atAsync(() => DomFixture.one(DomFixture.present(bubble), ".nol-message-footer"), "0");
+    await RestingOpacityFixture.atAsync(() => DomFixture.one(DomFixture.present(bubbleHovered), ".nol-message-footer"), "1");
 
     expect(beside.length).toBe(18);
     expect([bubble, bubbleHovered].map(t => [t?.classList.contains("nol-message-bubble"), t?.querySelector(".nol-message-avatar, .nol-message-header"), textOf(t, "time") === clockOf(t),
