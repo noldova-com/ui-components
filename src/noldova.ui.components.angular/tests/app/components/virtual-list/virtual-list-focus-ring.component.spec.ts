@@ -41,6 +41,17 @@ class FeedHostComponent {
 describe("VirtualListComponent's feed focus ring", () => {
   let fixture: ComponentFixture<FeedHostComponent>;
 
+  async function renderedFrameAsync(): Promise<void> {
+    await new Promise<void>(t => requestAnimationFrame(() => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => {
+        channel.port1.close();
+        t();
+      };
+      channel.port2.postMessage(null);
+    }));
+  }
+
   async function settleAsync(): Promise<void> {
     for (let pass = 0; pass < 3; pass++) {
       await fixture.whenStable();
@@ -54,11 +65,9 @@ describe("VirtualListComponent's feed focus ring", () => {
       const view = element().querySelector(".nol-virtual-list-viewport");
       return `${element().querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
     }, async () => {
-      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
-      for (let round = 0; round < 3; round++) {
-        await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      }
+      await fixture.whenStable();
+      await renderedFrameAsync();
+      await fixture.whenStable();
     });
     await fixture.whenStable();
   }

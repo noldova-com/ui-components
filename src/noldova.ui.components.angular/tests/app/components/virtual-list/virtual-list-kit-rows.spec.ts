@@ -114,11 +114,23 @@ describe("VirtualListComponent with the kit's rows", () => {
   const subject = (): HTMLElement => DomFixture.one(root(), "[data-nol-row=\"30\"]");
   const fromEnd = (): number => viewport().scrollHeight - viewport().clientHeight - viewport().scrollTop;
 
+  async function renderedFrameAsync(): Promise<void> {
+    await new Promise<void>(t => requestAnimationFrame(() => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => {
+        channel.port1.close();
+        t();
+      };
+      channel.port2.postMessage(null);
+    }));
+  }
+
   async function settleAsync(): Promise<void> {
     await LayoutSettleFixture.settledAsync("the list's rows and scroll",
       () => `${root().querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`, async () => {
         await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
+        await renderedFrameAsync();
+        await fixture.whenStable();
       });
   }
 

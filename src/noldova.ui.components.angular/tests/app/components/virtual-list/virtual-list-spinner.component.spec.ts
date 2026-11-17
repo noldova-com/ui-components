@@ -35,6 +35,17 @@ class SpinnerRowsHostComponent {
 describe("VirtualListComponent's selected option under forced colors", () => {
   let fixture: ComponentFixture<SpinnerRowsHostComponent>;
 
+  async function renderedFrameAsync(): Promise<void> {
+    await new Promise<void>(t => requestAnimationFrame(() => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => {
+        channel.port1.close();
+        t();
+      };
+      channel.port2.postMessage(null);
+    }));
+  }
+
   async function renderAsync(mode: ThemeMode): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
     fixture = TestBed.createComponent(SpinnerRowsHostComponent);
@@ -43,11 +54,9 @@ describe("VirtualListComponent's selected option under forced colors", () => {
       const view = host.querySelector(".nol-virtual-list-viewport");
       return `${host.querySelectorAll("[data-nol-row]").length} ${view?.scrollHeight} ${view?.scrollTop}`;
     }, async () => {
-      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
-      for (let round = 0; round < 3; round++) {
-        await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      }
+      await fixture.whenStable();
+      await renderedFrameAsync();
+      await fixture.whenStable();
     });
   }
 
