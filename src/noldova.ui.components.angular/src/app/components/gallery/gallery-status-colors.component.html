@@ -1,0 +1,19 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.statusColors" noHover noFocus noLongText>
+  @for (surface of statusSurfaces; track surface[0]) {
+    <nol-gallery-cell [caption]="surface[1]">
+      <div class="nol-gallery-status" [style.background]="'var(--nol-' + surface[0] + ')'">
+        @for (status of text.statuses; track status.token) {
+          <span class="nol-gallery-status-row"><span class="nol-gallery-status-dot" [style.background]="'var(--nol-' + status.token + ')'"></span>{{ status.label }}</span>
+        }
+      </div>
+    </nol-gallery-cell>
+  }
+</nol-gallery-specimen>

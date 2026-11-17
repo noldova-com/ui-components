@@ -23,13 +23,14 @@ import { GalleryPermissionCardComponent } from "./gallery-permission-card.compon
 import { GalleryPlans } from "./gallery-plans.js";
 import { GalleryResources } from "./gallery-resources.js";
 import { GallerySpecimenComponent } from "./gallery-specimen.component.js";
+import { GalleryStatusColorsComponent } from "./gallery-status-colors.component.js";
 import { GalleryTerminalOutputComponent } from "./gallery-terminal-output.component.js";
 import { GalleryToolCallComponent } from "./gallery-tool-call.component.js";
 
 @Component({
   selector: "nol-gallery-content",
   imports: [GalleryAvatarComponent, GalleryCardComponent, GalleryCellComponent, GalleryCodeBlockComponent, GalleryDiffViewComponent, GalleryFileBadgeComponent, GalleryInlineCodeComponent,
-    GalleryMarkdownViewComponent, GalleryPermissionCardComponent, GallerySpecimenComponent, GalleryTerminalOutputComponent, GalleryToolCallComponent, MarkdownViewComponent, PlanComponent],
+    GalleryMarkdownViewComponent, GalleryPermissionCardComponent, GallerySpecimenComponent, GalleryStatusColorsComponent, GalleryTerminalOutputComponent, GalleryToolCallComponent, MarkdownViewComponent, PlanComponent],
   templateUrl: "./gallery-content.component.html",
   styleUrl: "./gallery-content.component.css"
 })
@@ -38,6 +39,5 @@ export class GalleryContentComponent {
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly terminalColors: readonly string[] = GalleryResources.terminalColors;
   protected readonly terminalSurfaces: readonly (readonly [string, string])[] = [["window", this.text.terminalWindowCaption], ["panel", this.text.terminalPanelCaption]];
-  protected readonly statusSurfaces: readonly (readonly [string, string])[] = [["window", this.text.statusWindowCaption], ["panel", this.text.statusPanelCaption]];
   protected readonly plans: GalleryPlans = new GalleryPlans();
 }
