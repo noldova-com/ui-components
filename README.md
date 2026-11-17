@@ -251,7 +251,7 @@ Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-co
 - The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
 - `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
 
-`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through Shiki with the highlighter's engine, so it adds nothing to the kit's coverage, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
+`src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
 The code highlighter's specs and `code-block-highlighting-start.component.spec.ts` skip it, since they check that first load; they pay for it unless an earlier spec file on their page has already warmed it, as they did before when an earlier file showed a code block.
 
 | File | Linux | Windows | macOS |

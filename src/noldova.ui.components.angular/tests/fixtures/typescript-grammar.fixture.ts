@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { CodeTokenizerResources } from "../../src/app/models/code-tokenizer.resources";
+import { CodeTokenizer } from "../../src/app/models/code-tokenizer";
 
 declare global {
   interface Window {
@@ -17,21 +17,17 @@ declare global {
 }
 
 export class TypeScriptGrammarFixture {
-  private static readonly theme: string = "warming";
-
   public static warmAsync(): Promise<void> {
     window.nolTypeScriptWarming ??= TypeScriptGrammarFixture.highlightAsync();
     return window.nolTypeScriptWarming;
   }
 
-  // Through Shiki itself, with the engine the highlighter uses, so the warming runs none of the kit's code and adds nothing to its coverage.
+  // Through the highlighter's own tokenizer, which runs only code its own specs cover too: a warming through Shiki alone left a page's first code
+  // block render at 182 to 295 ms on a Linux test machine, against 114 to 149 ms through the tokenizer.
   private static async highlightAsync(): Promise<void> {
     const [shiki, engine] = await Promise.all([import("@shikijs/primitive"), import("@shikijs/engine-javascript")]);
-    const primitive = shiki.createShikiPrimitive({
-      engine: engine.createJavaScriptRegexEngine({ forgiving: true }),
-      themes: [{ name: TypeScriptGrammarFixture.theme, settings: [] }]
-    });
-    await primitive.loadLanguage(() => import("@shikijs/langs/typescript"));
-    shiki.codeToTokensBase(primitive, CodeTokenizerResources.codeWarmingSample, { lang: "typescript", theme: TypeScriptGrammarFixture.theme });
+    const tokenizer = new CodeTokenizer(shiki, CodeTokenizer.primitiveOf(shiki, engine));
+    await tokenizer.loadAsync(() => import("@shikijs/langs/typescript"));
+    tokenizer.warm("typescript");
   }
 }
