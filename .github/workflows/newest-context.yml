@@ -27,7 +27,7 @@ env:
 jobs:
   versions:
     name: Versions
-    uses: noldova-com/.github/.github/workflows/versions.yml@7930c8dcf906cccb753aa7559220ac2b139c89aa # v2.34.0
+    uses: noldova-com/.github/.github/workflows/versions.yml@ca4ec084bd2907b4050679523deba3e3cc010fb7 # v2.36.0
     permissions: {}
 
   newest-context:
