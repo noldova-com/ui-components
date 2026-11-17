@@ -203,7 +203,7 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
 
-52 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 50 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+50 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 48 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
 A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
 
@@ -227,7 +227,6 @@ The slowest are the feed's tests, 600 to 700 ms on Linux, rendering its virtual 
 
 The Gallery's section specs render a whole section, or the whole Gallery, and read its specimens.
 Rendering the navigation and content sections is measured above; the other sections' share is not measured.
-`gallery-overlay-container.spec.ts` has one test, which took about 200 ms in one of its three Linux runs and about 1,400 ms in the other two, as an earlier Linux run of it also showed in one run of three; what its slow runs wait for is not measured.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
@@ -236,9 +235,7 @@ Rendering the navigation and content sections is measured above; the other secti
 | `gallery-forms.component.spec.ts` | within | within | 245 ms |
 | `gallery-message.component.spec.ts` | 332 ms | 382 ms | 596 ms |
 | `gallery-navigation.component.spec.ts` | 468 ms | 479 ms | 1071 ms |
-| `gallery-overlay-container.spec.ts` | 1364 ms | 200 ms | 494 ms |
 | `gallery-overlays.component.spec.ts` | within | 133 ms | 307 ms |
-| `gallery-status.spec.ts` | 505 ms | 605 ms | 1967 ms |
 | `gallery-terminal.spec.ts` | 272 ms | 301 ms | 866 ms |
 | `gallery-virtual-feed.component.spec.ts` | 634 ms | 674 ms | 1222 ms |
 | `gallery.component.spec.ts` | within | 121 ms | 265 ms |
@@ -310,7 +307,6 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `gallery.component.spec.ts`: colors the code in its code blocks though the app provides no code highlighting | 2600 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`: holds an element taller than the view where the view shows it, in every frame as the row grows and shrinks above it, and lets it go once the person scrolls | 2400 ms | Not measured alone; its file's tests spend about 80% of their time waiting for rendered frames at 60 Hz, as #178 measured. |
 | `gallery.component.spec.ts`: shows every control listed under the kit's _GalleryNavigationComponent in a scope | 2400 ms | Not measured; #176 takes its file. |
-| `gallery-status.spec.ts`: shows a positive and a failed dot, round and half a rem wide on their label's line, in the noldova.default theme's status colors in each mode on the window and the panel color, and in CanvasText under forced colors | 2300 ms | Not measured; #177 takes its file. |
 | `virtual-list.component.spec.ts`: never moves a row it shows back when a smooth scroll near the start measures rows that grew by more than the space before them, which sets the scroll position at once | 2300 ms | It scrolls up from row 300, 90 px at a time, letting each step settle for up to 10 frames, then records a smooth scroll on every frame. |
 | `gallery-state-focus-navigation.spec.ts`: shows in each of the Focus cells of nol-gallery-feed the look its control has when it really holds the keyboard focus | 2300 ms | It renders the feed on its own, with its virtual feed and its messages, gives each of its Focus cells the real keyboard focus and reads its computed styles. |
 | `kit.spec.ts`, kit styles in forced colors: draws the sash's bar and the drop line in the highlight and grips in the text color, where they were drawn with fills alone | 2100 ms | It renders the whole Gallery navigation section under forced colors before reading computed colors. |
@@ -318,7 +314,6 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line on any frame of a scrollbar drag from the top to the end over rows of mixed heights from a source that answers within a frame, and fills the rows in view within three frames of each step | 1800 ms | It jumps the scroll position in 30 steps from top to end, with up to 3 frames each. |
 | `gallery-state-hover-navigation.spec.ts`: shows in each of the Hover cells of nol-gallery-feed the look its control has when the pointer is really over it | 1800 ms | It renders the feed on its own, with its virtual feed and its messages, moves a real pointer onto each of its Hover cells and reads its computed styles until they match. |
 | `kit.spec.ts`, kit styles in forced colors: outlines every hovered control of the content section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included | 1700 ms | It renders the whole Gallery content section under forced colors before reading each Hover and Focus cell's outline. |
-| `gallery-status.spec.ts`: shows a positive and a failed dot, round and half a rem wide on their label's line, in the fixture.contrast theme's status colors in each mode on the window and the panel color, and in CanvasText under forced colors | 1700 ms | Not measured; #177 takes its file. |
 | `gallery-virtual-feed.component.spec.ts`: reads older messages at a local store's speed, and shows a slow source in a cell of its own, marked with a class of its own, whose loading line shows once a read has taken 250 ms | 1700 ms | Not measured; #176 takes its file. |
 | `gallery-state-focus-navigation.spec.ts`: finds a Focus cell in every specimen of the section but one marked noFocus, and only in the specimens above | 1700 ms | It renders the whole navigation section, with its feed, and reads which specimens hold a Focus cell. |
 | `link-reference-chip.component.spec.ts`: gives the app each card link's address on a click, a middle click or Enter, as a link's, and hides the card | 1600 ms | It renders the chip 9 times, each with a real hover, a real click and a wait for the card to close. |
@@ -331,7 +326,6 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `kit.spec.ts`, kit styles in forced colors: outlines every hovered control of the navigation section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included | 1500 ms | It renders the whole Gallery navigation section under forced colors before reading each Hover and Focus cell's outline. |
 | `gallery-navigation.component.spec.ts`: shows a busy toolbar button with its spinner centred in place of its glyph, in Dark | 1400 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag in ltr to both ends, its rows following one way, and moves nothing on release | 1400 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
-| `gallery-overlay-container.spec.ts`: opens the overlays of a scope inside it, so they take its theme and mode | 1400 ms | Not measured; #177 takes its file. |
 | `gallery-virtual-feed.component.spec.ts`: shows a conversation of 10,000 messages at its end, each named by its author and time, with code among them | 1400 ms | Not measured; #176 takes its file. |
 | `markdown-view.component.spec.ts`, while its text streams: keeps a streaming code's ended lines past the reveal as empty token spans, the text never past the reveal and never laid out more than a line below it in any frame, with the fixture.contrast theme in Dark mode | 1400 ms | It streams 40 code lines in 5 reveals, settling each until highlighted and stepping 10 frames, then up to 500 more frames. |
 | `gallery-state-hover-navigation.spec.ts`: finds a Hover cell in every specimen of the section but one marked noHover, and only in the specimens above | 1400 ms | It renders the whole navigation section, with its feed, and reads which specimens hold a Hover cell. |
