@@ -8,13 +8,15 @@
 
 import { CodeTokenizer } from "../../src/app/models/code-tokenizer";
 
-export class TypeScriptGrammarFixture {
-  // Spec files on one page share this module, so the page highlights its sample once.
-  private static warming: Promise<void> | null = null;
+declare global {
+  // Each spec file loads its own copy of this module, while the spec files on one page share its globals, so the page's one warming is kept there.
+  var nolTypeScriptWarming: Promise<void> | undefined;
+}
 
+export class TypeScriptGrammarFixture {
   public static warmAsync(): Promise<void> {
-    TypeScriptGrammarFixture.warming ??= TypeScriptGrammarFixture.highlightAsync();
-    return TypeScriptGrammarFixture.warming;
+    globalThis.nolTypeScriptWarming ??= TypeScriptGrammarFixture.highlightAsync();
+    return globalThis.nolTypeScriptWarming;
   }
 
   private static async highlightAsync(): Promise<void> {
