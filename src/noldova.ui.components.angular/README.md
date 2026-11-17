@@ -54,6 +54,7 @@ An app that streams code names its common languages in `preload`, as `provideCod
 Once the app's injector is created, the highlighter and then each of them load one by one, a step per idle callback of the browser, or every 100 milliseconds where there is none.
 A step still runs on the main thread, so input that arrives during one waits for it; a language not named still loads on first use, as before.
 The step that compiles a grammar, by tokenizing a short sample, still holds up one frame, since a grammar's first use costs far more than any later one: 150 milliseconds or more for TypeScript's, measured on Linux, of which the sample's first line alone takes 110 to 167, so no split of the sample brings each part under 34 milliseconds.
+The engines of a page share the regular expressions they compile from the grammars, so a later highlighter, such as one a new view provides, compiles a grammar the page has already compiled in 2 to 3 milliseconds, against 39 to 47 for compiling it again, measured on Linux, Windows and macOS.
 An app whose page must keep every frame short provides a highlighting worker, as below: `preload` then loads and compiles each grammar in the worker, and the page holds no frame for it while the worker runs.
 
 An app can move the highlighting off the main thread into a worker of its own.
