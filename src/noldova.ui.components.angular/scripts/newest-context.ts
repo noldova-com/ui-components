@@ -14,11 +14,6 @@ import Config from "./config.ts";
 import { PeerRange } from "./packages/peer-range.ts";
 import Script from "./script.ts";
 
-/**
- * Moves the kit's context peers to the newest published version inside their ranges, for the nightly build and tests.
- * Each peer's development pin, and the docs site's pin, becomes that version and its range starts there, so the build,
- * the fresh install with peers and the tests all run against it; the workflow never commits the change.
- */
 export class NewestContext extends Script {
   private static readonly ROOT: string = fileURLToPath(new URL("../../..", import.meta.url));
   private static readonly MANIFEST: string = "package.json";
