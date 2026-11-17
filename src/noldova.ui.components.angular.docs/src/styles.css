@@ -69,6 +69,7 @@
   --nol-space-6: calc(var(--nol-docs-kit-space-6) * var(--nol-docs-scale));
   --nol-field-height: calc(var(--nol-docs-kit-field-height) * var(--nol-docs-scale));
   --nol-field-padding: calc(var(--nol-docs-kit-field-padding) * var(--nol-docs-scale));
+  --nol-text-area-min-height: calc(3 * var(--nol-line-panel) + 2 * var(--nol-field-padding) + 2 * var(--nol-border-width));
   --nol-choice-pill: calc(var(--nol-docs-kit-choice-pill) * var(--nol-docs-scale));
   --nol-choice-pill-gap: calc(var(--nol-docs-kit-choice-pill-gap) * var(--nol-docs-scale));
   --nol-pill-padding: calc(var(--nol-docs-kit-pill-padding) * var(--nol-docs-scale));
