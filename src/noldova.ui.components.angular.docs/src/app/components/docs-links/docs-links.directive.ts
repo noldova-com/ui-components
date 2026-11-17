@@ -14,13 +14,6 @@ import { MarkdownViewComponent } from "@noldova/ui.components.angular/markdown";
 
 import { Resources } from "../../../resources.js";
 
-/**
- * Follows the links of the docs' own Markdown, which the view never follows
- * itself. A link to a kit part's document goes to that part's page on the
- * site, its anchor included, through the router on a plain click or Enter
- * and in a new tab on a middle or Ctrl or Cmd click; any other link, such as
- * KIT.md or an outside site, opens in a new tab.
- */
 @Directive({
   selector: "nol-markdown-view[nolDocsLinks]"
 })
