@@ -81,8 +81,8 @@ export class VirtualListComponent<T> {
   private readonly hides: Signal<(item: T) => boolean> = computed(() => this.isFeed() ? this.rowTemplate().hidden() : () => false);
   private anchor: VirtualListAnchor = new VirtualListAnchor(0, 0);
   private clicked: VirtualListAnchor | null = null;
-  private clickedUntil: number = 0;
   private isClickStopped: boolean = false;
+  private endClickHold: (() => void) | null = null;
   private isPlaced: boolean = false;
   private latestDistance: number = 0;
   private pendingTop: number | null = null;
@@ -181,12 +181,14 @@ export class VirtualListComponent<T> {
       this.checker.disconnect();
       this.pressing.abort();
       this.inputs.abort();
+      this.endClickHold?.();
     });
     afterNextRender(() => {
       for (const type of VirtualListResources.virtualListInputEvents)
         this.viewport().nativeElement.addEventListener(type, () => {
           this.hasPersonInput = true;
         }, { capture: true, passive: true, signal: this.inputs.signal });
+      this.viewport().nativeElement.addEventListener(Resources.rowAnsweredEvent, event => this.answered(event), { signal: this.inputs.signal });
     });
     effect(onCleanup => {
       const state = this.state();
@@ -402,7 +404,7 @@ export class VirtualListComponent<T> {
     if (this.isFeed()) {
       if (target instanceof Element && !Object.isNull(target.closest(VirtualListResources.virtualListResizesRowSelector))) {
         this.clicked = new VirtualListAnchor(index, this.scrollTop() - ledger.offsetOf(index));
-        this.clickedUntil = this.timeSource.now() + VirtualListResources.virtualListClickHold;
+        this.holdClick(!Object.isNull(target.closest(VirtualListResources.virtualListResizesRowLaterSelector)));
       }
     } else if (!Object.isUndefined(item))
       this.activated.emit(new VirtualListChoice(index, item));
@@ -837,6 +839,25 @@ export class VirtualListComponent<T> {
     return !this.hasPersonInput && (this.isLatestAtStart() ? moved > 0 : moved < 0) && this.isFeed() && this.isFollowing() && Object.isNull(this.heldHeight());
   }
 
+  private answered(event: Event): void {
+    const row = event.composedPath().find(t => t instanceof Element && t.hasAttribute(Resources.virtualListRowAttribute));
+    if (row instanceof Element && this.clicked?.index === Number(row.getAttribute(Resources.virtualListRowAttribute)))
+      this.holdClick(false);
+  }
+
+  private holdClick(isLater: boolean): void {
+    this.endClickHold?.();
+    this.endClickHold = null;
+    if (isLater)
+      return;
+    this.endClickHold = this.timeSource.frame(() => {
+      this.endClickHold = this.timeSource.frame(() => {
+        this.endClickHold = null;
+        this.clicked = null;
+      });
+    });
+  }
+
   private release(): void {
     this.clicked = null;
     this.part = null;
@@ -903,8 +924,6 @@ export class VirtualListComponent<T> {
       this.scrollTop.set(at);
       this.tell();
     }
-    if (this.timeSource.now() > this.clickedUntil)
-      this.clicked = null;
     const clicked = this.clicked;
     let isChanged = false;
     let kept: VirtualListAnchor | null = null;

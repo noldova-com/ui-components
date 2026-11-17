@@ -8,8 +8,8 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import {
-  Component, DestroyRef, ElementRef, ErrorHandler, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, effect, inject, input, model, output,
-  signal
+  Component, DestroyRef, ElementRef, ErrorHandler, Injector, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, effect, inject, input, model,
+  output, signal, untracked
 } from "@angular/core";
 
 import "@noldova/context.core";
@@ -39,6 +39,7 @@ import { DiffLineReference } from "../../models/diff-line-reference.js";
 import { DiffReviewRequest } from "../../models/diff-review-request.js";
 import { DiffWordChanges } from "../../models/diff-word-changes.js";
 import type { DiffShortcut } from "../../models/diff-shortcut.js";
+import { RowAnswer } from "../../models/row-answer.js";
 import { Announcer } from "../../services/announcer.js";
 import { Resources } from "../../../resources.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -76,6 +77,7 @@ export class DiffViewComponent {
   private static nextId: number = 0;
 
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly answer: RowAnswer = new RowAnswer(this.host, inject(Injector));
   private readonly announcer: Announcer = inject(Announcer);
   private readonly highlighter: ICodeHighlighter | null = inject(CodeHighlighterTokens.highlighter);
   private readonly errors: ErrorHandler = inject(ErrorHandler);
@@ -134,6 +136,10 @@ export class DiffViewComponent {
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => this.tokenizing.forEach(t => t.abort()));
+    effect(() => {
+      this.files();
+      untracked(() => this.answer.arrive());
+    });
     effect(() => {
       const highlighter = this.highlighter;
       if (Object.isNull(highlighter))
@@ -286,6 +292,7 @@ export class DiffViewComponent {
   }
 
   protected expand(file: DiffFile, hunk: DiffHunk, direction: DiffExpandDirection): void {
+    this.answer.await();
     this.contextRequested.emit(new DiffContextRequest(file.id, hunk.id, direction));
   }
 

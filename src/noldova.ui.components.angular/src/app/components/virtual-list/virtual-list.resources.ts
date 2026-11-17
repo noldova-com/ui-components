@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { Resources } from "../../../resources.js";
+
 export class VirtualListResources {
   public static readonly virtualListInputEvents: readonly string[] = ["wheel", "keydown", "pointerdown", "touchstart"];
   public static readonly virtualListOverscan: number = 600;
@@ -16,8 +18,8 @@ export class VirtualListResources {
   public static readonly virtualListRetry: string = "Retry";
   public static readonly virtualListIdPrefix: string = "nol-virtual-list-";
   public static readonly virtualListFollowDistance: number = 120;
-  public static readonly virtualListClickHold: number = 1000;
   public static readonly virtualListResizesRowSelector: string = "[data-nol-resizes-row]";
+  public static readonly virtualListResizesRowLaterSelector: string = `[data-nol-resizes-row="${Resources.resizesRowLater}"]`;
   public static readonly virtualListLineStep: number = 40;
   public static readonly virtualListPageFraction: number = 0.875;
   public static readonly virtualListRowSelector: string = ".nol-virtual-list-slot > .nol-virtual-list-row";
