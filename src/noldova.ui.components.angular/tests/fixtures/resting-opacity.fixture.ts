@@ -6,16 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ChangeSignalFixture } from "./change-signal.fixture";
+import { DomChangeFixture } from "./dom-change.fixture";
 
-// Waits until an element's opacity rests at a value, with no animation running on it, and gives the value. It reads again on each mutation in
-// the document and each transition event, so it waits on the style rather than on frames or time, and fails at the shared bound naming every
-// read: the value, the animations running, and the time and frames since the wait began, so a style that came late, a transition that started
-// late and a wrong resting value read apart.
+// Waits after a change until an element's opacity rests at a value, with no animation running on it, and gives the value. Its first read
+// must already show the change, the value or a running animation, so a style that didn't follow the change fails at once rather than passing
+// late; then it reads again on each change DomChangeFixture listens to, a transition's end among them, so it waits on the style rather than on
+// frames or time. Each failure names every read: the value, the animations running, and the time and frames since the wait began.
 export class RestingOpacityFixture {
-  private static readonly MUTATIONS: MutationObserverInit = { attributes: true, characterData: true, childList: true, subtree: true };
-  private static readonly EVENTS: readonly string[] = ["transitionrun", "transitionstart", "transitionend", "transitioncancel"];
-
   private readonly element: () => Element;
   private readonly expected: string;
   private readonly start: number = performance.now();
@@ -25,12 +22,17 @@ export class RestingOpacityFixture {
 
   // Reads the opacity and gives it once it rests at the value; until then it fails naming every read so far.
   public readonly read = (): string => {
-    const running = this.element().getAnimations().length;
-    const value = getComputedStyle(this.element()).opacity;
-    this.reads.push(`${value} with ${running} running at ${Math.round(performance.now() - this.start)} ms, frame ${this.frames}`);
+    const [value, running] = this.record();
     if (running > 0 || value !== this.expected)
       throw new Error(`The opacity didn't rest at ${this.expected}; its reads: ${this.reads.join("; ")}.`);
     return value;
+  };
+
+  // Reads the opacity once and fails, naming the read, unless it shows the change: the value, or an animation running.
+  public readonly follows = (): void => {
+    const [value, running] = this.record();
+    if (running === 0 && value !== this.expected)
+      throw new Error(`The opacity didn't follow the change to ${this.expected}; its reads: ${this.reads.join("; ")}.`);
   };
 
   private readonly count = (): void => {
@@ -45,23 +47,19 @@ export class RestingOpacityFixture {
 
   public static async atAsync(element: () => Element, expected: string): Promise<string> {
     const wait = new RestingOpacityFixture(element, expected);
+    wait.follows();
     wait.frame = requestAnimationFrame(wait.count);
     try {
-      return await ChangeSignalFixture.untilAsync(wait.read, RestingOpacityFixture.listen);
+      return await DomChangeFixture.untilAsync(wait.read);
     } finally {
       cancelAnimationFrame(wait.frame);
     }
   }
 
-  private static listen(recheck: () => void): () => void {
-    const mutations = new MutationObserver(recheck);
-    mutations.observe(document, RestingOpacityFixture.MUTATIONS);
-    for (const name of RestingOpacityFixture.EVENTS)
-      document.addEventListener(name, recheck, true);
-    return () => {
-      mutations.disconnect();
-      for (const name of RestingOpacityFixture.EVENTS)
-        document.removeEventListener(name, recheck, true);
-    };
+  private record(): readonly [string, number] {
+    const running = this.element().getAnimations().length;
+    const value = getComputedStyle(this.element()).opacity;
+    this.reads.push(`${value} with ${running} running at ${Math.round(performance.now() - this.start)} ms, frame ${this.frames}`);
+    return [value, running];
   }
 }

@@ -76,7 +76,7 @@ describe("MessageFooterEndDirective", () => {
   const rects = <const T extends readonly string[]>(...selectors: T): { [K in keyof T]: DOMRect } => selectors.map(rect) as { [K in keyof T]: DOMRect };
   const middle = (box: DOMRect): number => box.top + box.height / 2;
   const holderOf = (layout: MessageLayout): string => layout === MessageLayout.Row ? ".nol-message-tools" : ".nol-message-footer";
-  // Waits for each resting opacity in turn, on the style rather than on the animations running when it begins, and fails naming every read.
+  // Waits for each resting opacity in turn, on the style, failing naming every read if the first read after the change doesn't show it.
   const restingOpacitiesAsync = async (layout: MessageLayout): Promise<string[]> => {
     const park = await AppearanceFixture.parkPointerAsync();
     const holder = (): HTMLElement => find(holderOf(layout));

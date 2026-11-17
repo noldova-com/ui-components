@@ -39,13 +39,17 @@ describe("RestingOpacityFixture", () => {
     expect(root.getAnimations()).toHaveLength(0);
   });
 
-  it("waits for a value that a change after the start brings", async () => {
+  it("fails at once when its first read shows neither the value nor a running animation, though a later frame brings the value", async () => {
     root.style.opacity = "0";
-    requestAnimationFrame(() => {
+    const late = requestAnimationFrame(() => {
       root.style.opacity = "1";
     });
 
-    await expect(RestingOpacityFixture.atAsync(element, "1")).resolves.toBe("1");
+    try {
+      await expect(RestingOpacityFixture.atAsync(element, "1")).rejects.toThrow(/^The opacity didn't follow the change to 1; its reads: 0 with 0 running at \d+ ms, frame 0\.$/);
+    } finally {
+      cancelAnimationFrame(late);
+    }
   });
 
   it("fails each read before the opacity rests at the value, naming every read so far: its value, running animations, time and frames", () => {
@@ -58,5 +62,15 @@ describe("RestingOpacityFixture", () => {
     expect(wait.read).toThrow(/^The opacity didn't rest at 1; its reads: 0 with 0 running at \d+ ms, frame 0; 0 with 1 running at \d+ ms, frame 0\.$/);
     root.style.transition = "none";
     expect(wait.read()).toBe("1");
+  });
+
+  it("fails a read at the value while an animation still runs, as when a transition away from it has just started", () => {
+    const wait = new RestingOpacityFixture(element, "1");
+    root.style.transition = "opacity 30ms linear";
+    root.style.opacity = "1";
+    expect(getComputedStyle(root).opacity).toBe("1");
+    root.style.opacity = "0";
+
+    expect(wait.read).toThrow(/^The opacity didn't rest at 1; its reads: 1 with 1 running at \d+ ms, frame 0\.$/);
   });
 });

@@ -120,4 +120,15 @@ describe("DomChangeFixture", () => {
     await failed;
     expect([loading.naturalWidth, failing.naturalWidth]).toEqual([1, 0]);
   });
+
+  it("passes when a transition ends, which changes nothing in the document", async () => {
+    root.style.transition = "opacity 30ms linear";
+    root.style.opacity = "0";
+    expect(getComputedStyle(root).opacity).toBe("0");
+    root.style.opacity = "1";
+    expect(root.getAnimations()).toHaveLength(1);
+
+    await DomChangeFixture.untilAsync(() => expect(root.getAnimations()).toHaveLength(0));
+    expect(getComputedStyle(root).opacity).toBe("1");
+  });
 });
