@@ -23,6 +23,7 @@ import { OnPushCheck } from "./checks/on-push-check.ts";
 import { PollBoundCheck } from "./checks/poll-bound-check.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
+import { LayoutTraceSuite } from "../tests/fixtures/layout-trace-suite.ts";
 import { ProcessRunner } from "./processes/process-runner.ts";
 import { TemporaryFolder } from "./processes/temporary-folder.ts";
 import Script from "./script.ts";
@@ -48,7 +49,7 @@ export class Test extends Script {
   private static readonly ANGULAR_PART_OPTIONS: readonly string[] = ["--configuration=part"];
   private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
   private static readonly ANGULAR_FILTER_OPTION: string = "--filter";
-  private static readonly TRACED_SUITE: string = "with a layout trace, in a browser of its own";
+  private static readonly TRACED_SUITE: string = LayoutTraceSuite.title;
   private static readonly TRACED_MARK: string = "describe(LayoutTraceFixture.suite";
   private static readonly UNTRACED_FILTER: string = `^(?!.*${Test.TRACED_SUITE})`;
   private static readonly TRACED_PART: string = "part-2";
@@ -139,9 +140,13 @@ export class Test extends Script {
     const parts = await new TemporaryFolder().createAsync(process.platform, Test.PARTS_PREFIX);
     try {
       await fs.rm(Test.DEPENDENCY_CACHE, { recursive: true, force: true });
-      await this.runAngularPartAsync(selected, isWhole ? [] : selected, options, Test.UNTRACED_FILTER, keepsCoverage ? path.join(parts, Test.UNTRACED_PART) : null);
+      const runs = [await this.runAngularPartAsync(selected, isWhole ? [] : selected, options, Test.UNTRACED_FILTER, keepsCoverage ? path.join(parts, Test.UNTRACED_PART) : null)];
       if (traced.length > 0)
-        await this.runAngularPartAsync(traced, traced, options, Test.TRACED_SUITE, keepsCoverage ? path.join(parts, Test.TRACED_PART) : null);
+        runs.push(await this.runAngularPartAsync(traced, traced, options, Test.TRACED_SUITE, keepsCoverage ? path.join(parts, Test.TRACED_PART) : null));
+      for (const finding of AngularTestReport.checkRanOnce(runs)) {
+        await this.writeLogAsync(finding);
+        this.failed = true;
+      }
       if (keepsCoverage) {
         await new CoverageMerge(Test.ROOT, Test.KIT_FOLDER).mergeAsync(parts, traced.length > 0 ? 2 : 1, this.coverage.path);
         if (shard === null)
@@ -157,7 +162,7 @@ export class Test extends Script {
     return selected.length;
   }
 
-  private async runAngularPartAsync(specs: readonly string[], included: readonly string[], options: readonly string[], filter: string, coverageFolder: string | null): Promise<void> {
+  private async runAngularPartAsync(specs: readonly string[], included: readonly string[], options: readonly string[], filter: string, coverageFolder: string | null): Promise<ReadonlyMap<string, boolean>> {
     const report = path.resolve(Test.ANGULAR_REPORT_FILE);
     await fs.rm(report, { force: true });
     await fs.rm(this.coverage.path, { force: true });
@@ -175,6 +180,7 @@ export class Test extends Script {
         throw new CommandFailedException(Test.coverageMissing(filter, this.coverage.path), { cause: error });
       });
     }
+    return await this.report.listRanAsync(report);
   }
 
   private async runCommandAsync(command: string, arguments_: readonly string[], workingDirectory: string): Promise<void> {

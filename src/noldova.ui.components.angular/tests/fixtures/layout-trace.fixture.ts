@@ -11,8 +11,10 @@ import { cdp } from "vitest/browser";
 
 import "@noldova/context.core";
 
+import { LayoutTraceSuite } from "./layout-trace-suite";
+
 export class LayoutTraceFixture {
-  public static readonly suite: string = "with a layout trace, in a browser of its own";
+  public static readonly suite: string = LayoutTraceSuite.title;
   private static readonly categories: string = "devtools.timeline,disabled-by-default-devtools.timeline.stack,disabled-by-default-devtools.timeline.invalidationTracking,blink.user_timing,__metadata";
   private static readonly passes: readonly string[] = ["UpdateLayoutTree", "Layout"];
   private static readonly causes: readonly string[] = ["ScheduleStyleInvalidationTracking", "StyleRecalcInvalidationTracking", "LayoutInvalidationTracking"];
