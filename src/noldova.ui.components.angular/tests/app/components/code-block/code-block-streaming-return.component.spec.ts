@@ -10,7 +10,7 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { body, linesOf, fromEnd, followAsync, scrollToAsync, streamAsync } = harness;
+  const { body, linesOf, fromEnd, isAtEnd, followAsync, followedAsync, scrollToAsync, streamAsync } = harness;
 
   beforeEach(harness.configure);
 
@@ -24,7 +24,7 @@ describe("CodeBlockComponent", () => {
       await followAsync(() => harness.host.code.set(linesOf(41)));
       const far = fromEnd();
       await scrollToAsync(body().scrollHeight - body().clientHeight - 16);
-      await followAsync(() => harness.host.code.set(linesOf(60)));
+      await followedAsync("Following the end again", () => harness.host.code.set(linesOf(60)), isAtEnd);
 
       expect([far > 17, fromEnd() <= 1]).toEqual([true, true]);
     });
@@ -35,7 +35,7 @@ describe("CodeBlockComponent", () => {
       await followAsync(() => harness.host.maxHeight.set(8));
       body().dispatchEvent(new Event("scroll"));
       const pulled = body().scrollTop;
-      await followAsync(() => harness.host.code.set(linesOf(50)));
+      await followedAsync("Following the end as it grows", () => harness.host.code.set(linesOf(50)), isAtEnd);
 
       expect([pulled < end, fromEnd() <= 1]).toEqual([true, true]);
     });
