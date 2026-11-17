@@ -8,12 +8,6 @@
 
 import { onTestFinished } from "vitest";
 
-/**
- * Records where the focus goes during a test, the focus and blur events of
- * the page's elements and of its window, and the focus state at the points a
- * test names, and adds them to an assertion's message only when it fails, so a
- * rare miss in CI shows its cause. It changes nothing the test checks.
- */
 export class FocusRecordFixture {
   private static readonly TYPES: readonly string[] = ["focus", "blur", "focusin", "focusout"];
 

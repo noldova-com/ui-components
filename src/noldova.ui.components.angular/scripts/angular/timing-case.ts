@@ -12,7 +12,6 @@ import type { TimedTest } from "./timed-test.ts";
 // One case of the timing check's own check: what it expects, each run's small report, and whether the check's result holds it.
 export class TimingCase {
   public readonly expectation: string;
-  /** Each run's tests, or null for a run that wrote no report. */
   public readonly runs: readonly (readonly TimedTest[] | null)[];
   private readonly holdsFor: (result: AngularTestTimingResult | null, failure: string) => boolean;
 
@@ -22,7 +21,6 @@ export class TimingCase {
     this.holdsFor = holds;
   }
 
-  /** Whether the check's result, or null with the failure it raised, is what the case expects. */
   public holds(result: AngularTestTimingResult | null, failure: string): boolean {
     return this.holdsFor(result, failure);
   }
