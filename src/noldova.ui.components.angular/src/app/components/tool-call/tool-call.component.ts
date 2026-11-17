@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, DestroyRef, ElementRef, ErrorHandler, Injector, type Signal, type TemplateRef, ViewEncapsulation, type WritableSignal,
-  afterNextRender, afterRenderEffect, computed, contentChild, effect, inject, input, model, output, signal, viewChild, viewChildren } from "@angular/core";
+  afterNextRender, afterRenderEffect, computed, contentChild, effect, inject, input, model, output, signal, untracked, viewChild, viewChildren } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -21,6 +21,7 @@ import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import type { IToolCallOutputContext } from "../../interfaces/i-tool-call-output-context.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
 import { OverlaySide } from "../../models/overlay-side.js";
+import { RowAnswer } from "../../models/row-answer.js";
 import { ScrollEndFollower } from "../../models/scroll-end-follower.js";
 import { TextCut } from "../../models/text-cut.js";
 import type { ToolCall } from "../../models/tool-call.js";
@@ -82,6 +83,7 @@ export class ToolCallComponent {
   private readonly copyTimers: Map<WritableSignal<CopyState>, () => void> = new Map();
   private lastCall: ToolCall | null = null;
   private isRetryingFromFocus: boolean = false;
+  private readonly answer: RowAnswer = new RowAnswer(this.host, this.injector);
   private isRetryLoading: boolean = false;
   private readonly follower: ScrollEndFollower = new ScrollEndFollower(ToolCallComponentResources.toolCallFollowDistance);
 
@@ -99,6 +101,7 @@ export class ToolCallComponent {
   protected readonly outputTemplate: Signal<TemplateRef<IToolCallOutputContext> | null> = computed(() => this.ownOutput()?.template ?? this.parent?.outputTemplate() ?? null);
   protected readonly control: Signal<TemplateRef<IToolCallOutputContext> | null> = computed(() => this.call().hasOutputControl ? this.outputTemplate() : null);
   protected readonly isExpanded: Signal<boolean> = computed(() => this.views().isExpanded(this.call()));
+  protected readonly toggleResizesRow: Signal<string> = computed(() => !this.isExpanded() && this.lacksOutput(this.call()) ? Resources.resizesRowLater : String.empty);
   protected readonly isRunning: Signal<boolean> = computed(() => this.call().status === ToolCallStatus.Running);
   protected readonly target: Signal<TextCut | null> = computed(() => {
     const target = this.call().target;
@@ -190,6 +193,10 @@ export class ToolCallComponent {
         this.announcer.announce(ToolCallComponentResources.formatToolCallEnded(call.title, ToolCallComponentResources.toolCallStatusLabels[call.status]), AnnouncementPoliteness.Polite,
           { key: ToolCallComponentResources.formatToolCallEndedKey(call.id, call.status) });
     });
+    effect(() => {
+      this.call();
+      untracked(() => this.answer.arrive());
+    });
     afterNextRender(() => {
       const call = this.call();
       if (this.isExpanded() && this.lacksOutput(call))
@@ -207,8 +214,10 @@ export class ToolCallComponent {
     const call = this.call();
     const isExpanding = !this.isExpanded();
     this.views.update(t => t.withExpanded(call, isExpanding));
-    if (isExpanding && this.lacksOutput(call))
+    if (isExpanding && this.lacksOutput(call)) {
+      this.answer.await();
       this.outputRequest.emit(call);
+    }
   }
 
   protected retry(button: HTMLElement): void {
@@ -216,6 +225,7 @@ export class ToolCallComponent {
       this.toggleButton().focus({ preventScroll: true });
       this.isRetryingFromFocus = true;
     }
+    this.answer.await();
     this.outputRequest.emit(this.call());
   }
 
