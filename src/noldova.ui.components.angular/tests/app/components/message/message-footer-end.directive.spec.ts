@@ -26,6 +26,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { RestingOpacityFixture } from "../../../fixtures/resting-opacity.fixture";
 
 @Component({
   imports: [IconButtonComponent, MessageActionDirective, MessageComponent, MessageFooterEndDirective],
@@ -75,21 +76,19 @@ describe("MessageFooterEndDirective", () => {
   const rects = <const T extends readonly string[]>(...selectors: T): { [K in keyof T]: DOMRect } => selectors.map(rect) as { [K in keyof T]: DOMRect };
   const middle = (box: DOMRect): number => box.top + box.height / 2;
   const holderOf = (layout: MessageLayout): string => layout === MessageLayout.Row ? ".nol-message-tools" : ".nol-message-footer";
-  const opacityOfAsync = async (selector: string): Promise<string> => {
-    await Promise.all(find(selector).getAnimations().map(t => t.finished));
-    return getComputedStyle(find(selector)).opacity;
-  };
+  // Waits for each resting opacity in turn, on the style rather than on the animations running when it begins, and fails naming every read.
   const restingOpacitiesAsync = async (layout: MessageLayout): Promise<string[]> => {
     const park = await AppearanceFixture.parkPointerAsync();
+    const holder = (): HTMLElement => find(holderOf(layout));
     try {
       (document.activeElement as HTMLElement | null)?.blur();
-      const shown = await opacityOfAsync(holderOf(layout));
+      const shown = await RestingOpacityFixture.atAsync(holder, "1");
       host.stops.set(false);
       await fixture.whenStable();
-      const hidden = await opacityOfAsync(holderOf(layout));
+      const hidden = await RestingOpacityFixture.atAsync(holder, "0");
       host.stops.set(true);
       await fixture.whenStable();
-      return [shown, hidden, await opacityOfAsync(holderOf(layout))];
+      return [shown, hidden, await RestingOpacityFixture.atAsync(holder, "1")];
     } finally {
       park.remove();
     }
