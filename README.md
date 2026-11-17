@@ -203,39 +203,40 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
 
-49 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 47 of the kit's and 2 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+45 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 42 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
+The times are from one run of `npm run test:timing` on each system at 9bb5b36, while [#178](https://github.com/noldova-com/ui-components/issues/178) is open.
+A file near the line may fall either side on another run: against a run on each of the same machines at 9265927, 4 files left the list and 5 joined it, besides the spinner's, which #178 changed between them.
 A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
 
 The Gallery's Focus and Hover cell specs render each specimen on its own, one test each, then give each Focus cell the real keyboard focus, or move a real pointer onto each Hover cell, and read the cell's computed styles until they match.
 One test in each renders its whole section and checks which specimens hold a cell of the state, so a specimen added to the section is checked too.
 Measured on a Linux test machine with one spec file running, a test's setup takes about 50 ms: parking the pointer 15 ms, rendering 5 to 10 ms, settling 5 to 12 ms, the Shift key a Focus test presses 8 ms and reducing motion and resetting it 2 to 13 ms; then each pointer move takes about 16 ms, a frame.
 Each of these is a frame or a round trip to the browser that the check needs, so none was cut.
-Under the whole suite the same tests take 100 to 150 ms on Linux, and on macOS 1.5 to 2.5 times that.
+Under the whole suite their files' medians are those in the table below.
 The slowest are the feed's tests, 600 to 700 ms on Linux, rendering its virtual feed and its messages; the diff view's Focus test, about 280 ms; the button's Hover test, about 300 ms for its seven pointer moves; and each file's section test, which renders its whole section.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `gallery-state-focus-content.spec.ts` | 160 ms | 229 ms | 375 ms |
-| `gallery-state-focus-forms.spec.ts` | within | 149 ms | 142 ms |
-| `gallery-state-focus-navigation.spec.ts` | within | 159 ms | 189 ms |
-| `gallery-state-focus-overlays.spec.ts` | within | within | 139 ms |
-| `gallery-state-hover-content.spec.ts` | 171 ms | 234 ms | 292 ms |
-| `gallery-state-hover-forms.spec.ts` | 141 ms | 345 ms | 150 ms |
-| `gallery-state-hover-navigation.spec.ts` | 163 ms | 177 ms | 219 ms |
-| `gallery-state-hover-overlays.spec.ts` | 124 ms | 133 ms | 251 ms |
+| `gallery-state-focus-content.spec.ts` | 196 ms | 262 ms | within |
+| `gallery-state-focus-forms.spec.ts` | 150 ms | 172 ms | within |
+| `gallery-state-focus-navigation.spec.ts` | 169 ms | 195 ms | within |
+| `gallery-state-focus-overlays.spec.ts` | 125 ms | 182 ms | within |
+| `gallery-state-hover-content.spec.ts` | 194 ms | 258 ms | within |
+| `gallery-state-hover-forms.spec.ts` | 148 ms | 232 ms | within |
+| `gallery-state-hover-navigation.spec.ts` | 164 ms | 227 ms | within |
+| `gallery-state-hover-overlays.spec.ts` | 133 ms | 178 ms | within |
 
 The Gallery's section specs render a whole section, or the whole Gallery, and read its specimens.
 Rendering the navigation and content sections is measured above; the other sections' share is not measured.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `gallery-feed.component.spec.ts` | 746 ms | 829 ms | 1204 ms |
-| `gallery-forms.component.spec.ts` | within | within | 245 ms |
-| `gallery-message.component.spec.ts` | 332 ms | 382 ms | 596 ms |
-| `gallery-overlays.component.spec.ts` | within | 133 ms | 307 ms |
-| `gallery-virtual-feed.component.spec.ts` | 634 ms | 674 ms | 1222 ms |
-| `gallery.component.spec.ts` | within | 121 ms | 265 ms |
+| `gallery-feed.component.spec.ts` | 784 ms | 908 ms | 284 ms |
+| `gallery-message.component.spec.ts` | 383 ms | 434 ms | 217 ms |
+| `gallery-overlays.component.spec.ts` | within | 165 ms | within |
+| `gallery-virtual-feed.component.spec.ts` | 692 ms | 770 ms | 434 ms |
+| `gallery.component.spec.ts` | 158 ms | within | within |
 
 The code block's specs render a block and wait for its layout to settle over animation frames.
 Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
@@ -245,7 +246,7 @@ Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-co
 - The streaming specs follow each scroll and each change of the code with two fixed frames, about 17 ms each, which a check that nothing moved needs, since no event signals it; a check that the block followed its end waits out the same two frames, checking after each, and fails if the block hasn't reached its end by the second or leaves it once there, through `CodeBlockHarness.followedAsync`.
 - The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`: at least two passes of two frames and a stable fixture.
 - The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
-- `code-block-highlighter`, `code-block-run-state-look` and `code-block-streaming` are over on macOS alone, by 4 to 16 ms past the margin; not measured.
+- `code-block-code-size-dark` and `code-block-wrap` are over on Windows alone, by 0.6 and 17.4 ms past the margin; not measured.
 - `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
 
 `src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
@@ -253,57 +254,49 @@ The code highlighter's specs and `code-block-highlighting-start.component.spec.t
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `code-block-forced-highlights.component.spec.ts` | 329 ms | 306 ms | 518 ms |
-| `code-block-forced-spans.component.spec.ts` | 360 ms | 363 ms | 413 ms |
-| `code-block-highlighter.component.spec.ts` | within | within | 124 ms |
-| `code-block-highlighting-start.component.spec.ts` | within | 120 ms | 231 ms |
-| `code-block-lines.component.spec.ts` | 132 ms | 132 ms | 133 ms |
-| `code-block-run-keys.component.spec.ts` | 155 ms | 139 ms | 287 ms |
-| `code-block-run-state-look.component.spec.ts` | within | within | 129 ms |
-| `code-block-run-state.component.spec.ts` | 234 ms | 213 ms | 327 ms |
-| `code-block-run.component.spec.ts` | 162 ms | 160 ms | 259 ms |
-| `code-block-scrollbar.component.spec.ts` | 164 ms | 168 ms | 153 ms |
-| `code-block-settled-layout.component.spec.ts` | 260 ms | 266 ms | 399 ms |
-| `code-block-settled-pixels.component.spec.ts` | 321 ms | 359 ms | 530 ms |
-| `code-block-streaming-end.component.spec.ts` | 127 ms | 134 ms | 149 ms |
-| `code-block-streaming-return.component.spec.ts` | 184 ms | 188 ms | 223 ms |
-| `code-block-streaming-scroll.component.spec.ts` | 377 ms | 372 ms | 364 ms |
-| `code-block-streaming.component.spec.ts` | within | within | 136 ms |
-
-The code highlighter's language specs test one language each, and a grammar's first load is most of a test: 4 to 270 ms on a macOS test machine, against 0.1 ms for a second highlight.
-
-| File | Linux | Windows | macOS |
-|---|---|---|---|
-| `code-highlighter-languages-compiled.spec.ts` | within | within | 189 ms |
-| `code-highlighter-languages-web.spec.ts` | within | within | 134 ms |
+| `code-block-code-size-dark.component.spec.ts` | within | 121 ms | within |
+| `code-block-forced-highlights.component.spec.ts` | 335 ms | 397 ms | 222 ms |
+| `code-block-forced-spans.component.spec.ts` | 399 ms | 446 ms | 232 ms |
+| `code-block-lines.component.spec.ts` | 136 ms | 137 ms | within |
+| `code-block-run-keys.component.spec.ts` | 145 ms | 192 ms | within |
+| `code-block-run-state.component.spec.ts` | 230 ms | 249 ms | within |
+| `code-block-run.component.spec.ts` | 169 ms | 176 ms | within |
+| `code-block-scrollbar.component.spec.ts` | 153 ms | 163 ms | 147 ms |
+| `code-block-settled-layout.component.spec.ts` | 230 ms | 286 ms | 183 ms |
+| `code-block-settled-pixels.component.spec.ts` | 360 ms | 408 ms | 301 ms |
+| `code-block-streaming-end.component.spec.ts` | 127 ms | 164 ms | within |
+| `code-block-streaming-return.component.spec.ts` | 186 ms | 184 ms | 164 ms |
+| `code-block-streaming-scroll.component.spec.ts` | 378 ms | 428 ms | 362 ms |
+| `code-block-wrap.component.spec.ts` | within | 137 ms | within |
 
 The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
-The focus ring's, kit rows' and spinner's rows were measured after [#178](https://github.com/noldova-com/ui-components/issues/178) cut their settles to a pass of one rendered frame, on macOS alone: every Linux and Windows run of the check that day ran under load, timing the unchanged `virtual-list.component.spec.ts` at 187 to 288 ms against its row's 137 and 150 ms, so those cells wait for a quiet run; what still takes their time is their tests' own steps, not measured.
+[#178](https://github.com/noldova-com/ui-components/issues/178) cut the focus ring's, kit rows' and spinner's settles to a pass of one rendered frame, and the spinner's file was within the budget on every system at 9bb5b36; what still takes the others' time is their tests' own steps, not measured.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `virtual-list-focus-ring.component.spec.ts` | not measured | not measured | 135 ms |
-| `virtual-list-kit-rows.spec.ts` | not measured | not measured | 147 ms |
-| `virtual-list-spinner.component.spec.ts` | not measured | not measured | 125 ms |
-| `virtual-list.component.spec.ts` | 137 ms | 150 ms | 150 ms |
+| `virtual-list-focus-ring.component.spec.ts` | 124 ms | 171 ms | within |
+| `virtual-list-kit-rows.spec.ts` | within | 134 ms | within |
+| `virtual-list.component.spec.ts` | 150 ms | 151 ms | 132 ms |
 
 The rest are not measured; most drive real pointer moves, clicks or key presses.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `diff-view.component.spec.ts` | within | within | 217 ms |
-| docs site, `docs-search.component.spec.ts` | 238 ms | not run | not run |
-| `focus-start.fixture.spec.ts` | within | 131 ms | 150 ms |
-| `hang-limit.spec.ts` | 122 ms | 127 ms | 127 ms |
-| `icon-button-tab-action.component.spec.ts` | 167 ms | 209 ms | 192 ms |
-| `message-picture.spec.ts` | within | within | 147 ms |
-| `message-popover.spec.ts` | 415 ms | 446 ms | 442 ms |
-| `message-shell-runs.component.spec.ts` | within | within | 199 ms |
-| `pointer-rest.fixture.spec.ts` | within | 136 ms | 181 ms |
-| `scroll-reveal.service.spec.ts` | within | 134 ms | 124 ms |
-| `short-screenshot-names.spec.ts` | 137 ms | 142 ms | 198 ms |
-| docs site, `tokens-page.component.spec.ts` | 134 ms | not run | not run |
-| `toolbar-button-open-pressed.component.spec.ts` | 132 ms | 152 ms | 150 ms |
+| `configuration-table-row-hover.component.spec.ts` | within | 132 ms | within |
+| docs site, `docs-on-this-page.component.spec.ts` | 140 ms | not run | not run |
+| docs site, `docs-search.component.spec.ts` | 275 ms | not run | not run |
+| `focus-start.fixture.spec.ts` | 127 ms | within | within |
+| `gallery-overlay-container.spec.ts` | 146 ms | 136 ms | within |
+| `hang-limit.spec.ts` | 139 ms | 136 ms | within |
+| `icon-button-tab-action.component.spec.ts` | 218 ms | 260 ms | within |
+| `message-popover.spec.ts` | 448 ms | 480 ms | 404 ms |
+| `message-shell-runs.component.spec.ts` | 138 ms | 170 ms | within |
+| `pointer-rest.fixture.spec.ts` | within | 127 ms | within |
+| `scroll-reveal.service.spec.ts` | 139 ms | 155 ms | within |
+| `short-screenshot-names.spec.ts` | 149 ms | 174 ms | within |
+| `tab-leading.component.spec.ts` | within | 132 ms | within |
+| docs site, `tokens-page.component.spec.ts` | 182 ms | not run | not run |
+| `toolbar-button-open-pressed.component.spec.ts` | 170 ms | 192 ms | within |
 
 The tests over 1 second, waiting for the Owner's acceptance: every one the timing check printed at 60fda17 on one Linux, one Windows and one macOS test machine, each with its slowest median of three runs there, rounded up to 100 ms, and its cause, from what the test does, or the issue that measures it: The Gallery's Focus and Hover cell rows were printed for #173 on the same three systems, after their specs were split by specimen.
 
