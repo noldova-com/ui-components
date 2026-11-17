@@ -278,12 +278,13 @@ The code highlighter's language specs test one language each, and a grammar's fi
 | `code-highlighter-languages-web.spec.ts` | within | within | 134 ms |
 
 The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
+The focus ring's, kit rows' and spinner's rows were measured after [#178](https://github.com/noldova-com/ui-components/issues/178) cut their settles to a pass of one rendered frame, on macOS alone: every Linux and Windows run of the check that day ran under load, timing the unchanged `virtual-list.component.spec.ts` at 187 to 288 ms against its row's 137 and 150 ms, so those cells wait for a quiet run; what still takes their time is their tests' own steps, not measured.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `virtual-list-focus-ring.component.spec.ts` | 256 ms | 267 ms | 266 ms |
-| `virtual-list-kit-rows.spec.ts` | 152 ms | 168 ms | 192 ms |
-| `virtual-list-spinner.component.spec.ts` | 236 ms | 236 ms | 265 ms |
+| `virtual-list-focus-ring.component.spec.ts` | not measured | not measured | 135 ms |
+| `virtual-list-kit-rows.spec.ts` | not measured | not measured | 147 ms |
+| `virtual-list-spinner.component.spec.ts` | not measured | not measured | 125 ms |
 | `virtual-list.component.spec.ts` | 137 ms | 150 ms | 150 ms |
 
 The rest are not measured; most drive real pointer moves, clicks or key presses.

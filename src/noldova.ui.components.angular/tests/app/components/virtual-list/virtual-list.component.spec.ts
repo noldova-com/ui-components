@@ -31,6 +31,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FrameVirtualListSourceFixture } from "../../../fixtures/frame-virtual-list-source.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 import type { VirtualListReadFixture } from "../../../fixtures/virtual-list-read.fixture";
 import { VirtualListSourceFixture } from "../../../fixtures/virtual-list-source.fixture";
@@ -238,21 +239,10 @@ describe("VirtualListComponent", () => {
 
   const shape = (): string => `${element().querySelectorAll("[data-nol-row]").length} ${viewport().scrollHeight} ${viewport().scrollTop}`;
 
-  async function renderedFrameAsync(): Promise<void> {
-    await new Promise<void>(t => requestAnimationFrame(() => {
-      const channel = new MessageChannel();
-      channel.port1.onmessage = () => {
-        channel.port1.close();
-        t();
-      };
-      channel.port2.postMessage(null);
-    }));
-  }
-
   async function settleAsync(): Promise<void> {
     await fixture.whenStable();
     await LayoutSettleFixture.settledAsync("the list's rows and scroll", shape, async () => {
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       await fixture.whenStable();
     });
   }
@@ -306,7 +296,7 @@ describe("VirtualListComponent", () => {
     const sender = new ResizeObserver(() => viewport().dispatchEvent(new Event("scroll")));
     if (isEventFirst) {
       sender.observe(DomFixture.one(element(), ".tail"));
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       element().addEventListener("scroll", hold, { capture: true });
     }
 
@@ -591,7 +581,7 @@ describe("VirtualListComponent", () => {
   async function seenTopsAsync(selector: string = ".part"): Promise<number[]> {
     const seen: number[] = [];
     for (let frame = 0; frame < 20; frame++) {
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       await fixture.whenStable();
       const edges = partEdges(selector);
       if (edges !== null)
@@ -640,7 +630,7 @@ describe("VirtualListComponent", () => {
   async function rowTopsAsync(index: number): Promise<number[]> {
     const seen: number[] = [];
     for (let frame = 0; frame < 20; frame++) {
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       if (element().querySelector(`[data-nol-row='${index}']`) !== null)
         seen.push(rowTop(index));
       await fixture.whenStable();
@@ -1042,7 +1032,7 @@ describe("VirtualListComponent", () => {
 
         element().style.setProperty("--tail-height", `${tail}px`);
         for (let frame = 0; frame < 6; frame++) {
-          await renderedFrameAsync();
+          await RenderedFrameFixture.nextAsync();
           sample();
         }
         sizes.disconnect();
@@ -1140,7 +1130,7 @@ describe("VirtualListComponent", () => {
     viewport().scrollTop = viewport().scrollHeight;
     const [top, scrolled] = [viewport().scrollTop, offsetOfMessage("tail 3")];
     DomFixture.one(element(), "nol-virtual-list").style.width = "201px";
-    await renderedFrameAsync();
+    await RenderedFrameFixture.nextAsync();
     viewport().dispatchEvent(new Event("scroll"));
     viewport().dispatchEvent(new Event("scrollend"));
     await settleAsync();
@@ -1386,7 +1376,7 @@ describe("VirtualListComponent", () => {
       time.advance(16);
       await fixture.whenStable();
       shown ||= isLoadingShown();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       await fixture.whenStable();
       return [shown, blank];
     }
@@ -1810,7 +1800,7 @@ describe("VirtualListComponent", () => {
       createTall();
       await fixture.whenStable();
       const first = [isTopFilled(), newestInView()];
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       const measured = held.length > 0;
       await releaseAsync();
 
@@ -1822,10 +1812,10 @@ describe("VirtualListComponent", () => {
       holdMeasures();
       createTall();
       await fixture.whenStable();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       viewport().dispatchEvent(new Event("scroll"));
       await fixture.whenStable();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
       const first = [held.length > 0, isTopFilled(), newestInView(), viewport().getBoundingClientRect().bottom - article("item 999").getBoundingClientRect().bottom < 30];
       await releaseAsync();
 
@@ -1999,8 +1989,8 @@ describe("VirtualListComponent", () => {
         viewport().scrollTop += move;
         at = viewport().scrollTop;
       }
-      await renderedFrameAsync();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
+      await RenderedFrameFixture.nextAsync();
     } finally {
       document.removeEventListener("scrollend", hold, { capture: true });
     }
@@ -2411,9 +2401,9 @@ describe("VirtualListComponent", () => {
     ["the list renders for another change and a frame is laid out", async () => {
       feed.busy.set(true);
       TestBed.inject(ApplicationRef).tick();
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
     }],
-    ["the rows' box shrinks", () => renderedFrameAsync()]
+    ["the rows' box shrinks", () => RenderedFrameFixture.nextAsync()]
   ];
   for (const [found, findAsync] of clampings)
     it(`keeps following its end when the browser clamps its scroll between two settles, the list finds the clamp as ${found}, and the content grows back before the clamp's scroll event`, async () => {
@@ -2778,7 +2768,7 @@ describe("VirtualListComponent", () => {
 
     await userEvent.click(jump());
     for (let frame = 0; frame < 3; frame++)
-      await renderedFrameAsync();
+      await RenderedFrameFixture.nextAsync();
     const waiting = [Math.round(viewport().scrollTop - top), isJumpShown(), feed.positions.length - told];
     feed.position.set(new VirtualListPosition(500, "item 500", 0, false));
     feed.source.set(newest());
