@@ -199,10 +199,12 @@ Every spec here, the kit's and the docs site's, is a component spec, since each 
 
 `npm run test:timing` is the timing check, apart from `npm test` since its pass condition is a time.
 It runs the kit's specs three times without coverage, and on Linux the docs site's too, as their tests run only there.
+Each of the kit's runs is two runs of Angular's test builder, as `npm test`'s are, so the tests in a `describe(LayoutTraceFixture.suite, ...)` trace in a browser of their own; in one browser under the whole suite, a trace could hold it past the next trace's wait ([#198](https://github.com/noldova-com/ui-components/issues/198)).
+A run fails, and the check times nothing, unless each test in the two reports passed or failed in exactly one of them and the second ran at least one test.
 It takes each test's median over the runs, with `TestTimingCheck.median` from `@noldova/context.testing`, so one slow run decides nothing, and fails a spec file whose tests' median is over 100 ms plus a margin of 20%.
 It also prints each test whose median is over 1 second, which the list below holds.
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
-Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report; it fails when that check does.
+Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report, and a run's two parts where each test ran once, where one ran in both, where one ran in neither, and where the second ran none; it fails when that check does.
 
 45 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 42 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
