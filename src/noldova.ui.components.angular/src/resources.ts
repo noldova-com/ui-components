@@ -320,6 +320,7 @@ export class Resources {
     "row-gap",
     "section-header-height",
     "section-header-caret",
+    "section-header-space-above",
     "content-padding-inline",
     "document-padding-block",
     "view-padding-block",

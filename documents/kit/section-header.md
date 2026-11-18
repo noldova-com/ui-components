@@ -6,7 +6,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 ## Default geometry
 
-1.75rem high for one line: the label's line with equal space above and below it, the same however many lines the label wraps to; text inset 0.5rem (the space-2 step), where a top-level row's icon starts in a tree without branches; 0.75rem (the space-3 step) above every header that is not the first element in its container.
+1.75rem high for one line: the label's line with equal space above and below it, the same however many lines the label wraps to; text inset 0.5rem (the space-2 step), where a top-level row's icon starts in a tree without branches; `--nol-section-header-space-above` above every header that is not the first element in its container, 0.75rem (the space-3 step) by default; a view sets that token on its own element, such as 0.25rem in a chat list, for the headers inside it.
 
 ## Text role
 
