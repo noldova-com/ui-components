@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.14
+
+- `@noldova/ui.components.angular`: its Angular peers, `@angular/common`, `@angular/core`, `@angular/forms` and `@angular/platform-browser`, move from 22.2.6 to 22.3.0, Angular's newest. Since the kit names them exactly, an app moves its own Angular packages to 22.3.0 with it. Angular's build tools, `@angular/build` and `@angular/cli`, stay at 22.2.7, their newest, which takes Angular 22.3.0, and the kit's `@angular/cdk` stays at 22.3.0.
+
 ## 0.0.13
 
 - `@noldova/ui.components.angular`: its `@angular/cdk` dependency moves from 22.2.7 to 22.3.0, the CDK's newest, which it published apart from Angular's; its peers are unchanged, so the kit's Angular stays at 22.2.6. An app that installs `@angular/cdk` itself moves it to 22.3.0 with the kit.
