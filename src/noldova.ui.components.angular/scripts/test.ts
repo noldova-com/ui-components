@@ -50,8 +50,8 @@ export class Test extends Script {
   private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
   private static readonly ANGULAR_FILTER_OPTION: string = "--filter";
   private static readonly TRACED_SUITE: string = LayoutTraceSuite.title;
-  private static readonly TRACED_MARK: string = "describe(LayoutTraceFixture.suite";
-  private static readonly UNTRACED_FILTER: string = `^(?!.*${Test.TRACED_SUITE})`;
+  private static readonly TRACED_MARK: string = LayoutTraceSuite.mark;
+  private static readonly UNTRACED_FILTER: string = LayoutTraceSuite.untracedFilter;
   private static readonly TRACED_PART: string = "part-2";
   private static readonly UNTRACED_PART: string = "part-1";
   private static readonly PARTS_PREFIX: string = "kit-coverage-parts-";
