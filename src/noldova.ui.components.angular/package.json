@@ -61,7 +61,7 @@
     "test:timing": "node scripts/test-timing.ts"
   },
   "dependencies": {
-    "@angular/cdk": "22.2.7",
+    "@angular/cdk": "22.3.0",
     "@shikijs/engine-javascript": "4.5.0",
     "@shikijs/langs": "4.5.0",
     "@shikijs/primitive": "4.5.0",
