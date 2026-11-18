@@ -31,7 +31,6 @@ export class Build extends Script {
   private static readonly FRESH_INSTALL_FOLDER: string = "../../_build/fresh-install";
   private static readonly FRESH_INSTALL_MANIFEST: string = JSON.stringify({ name: "fresh-install", private: true });
   private static readonly SAVE_DEV_OPTION: string = "--save-dev";
-  private static readonly ANGULAR_CORE: string = "@angular/core";
   private static readonly ANGULAR_BUILD_TOOLS: string = "@angular/build";
   private static readonly RELEASE_BUILD_VARIABLE: string = "RELEASE_ADDONS";
   private static readonly NPM_CONFIG_FILE_NAME: string = ".npmrc";
@@ -139,16 +138,23 @@ export class Build extends Script {
       return;
     }
     await this.runStepAsync(Build.addingBuildTools(kit.packageName), async () => {
-      const angular = peers[Build.ANGULAR_CORE];
-      if (angular === undefined)
-        throw new CommandFailedException(Build.missingPeer(kit.packageName, Build.ANGULAR_CORE));
-      await this.executeNPMCommandAsync([...Build.APP_INSTALL_ARGUMENTS, Build.SAVE_DEV_OPTION, `${Build.ANGULAR_BUILD_TOOLS}@${angular}`], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
+      // At the kit's own pin of the build tools, which Angular's newest check keeps at their newest, rather than at its Angular version, since the
+      // build tools don't publish at every Angular version.
+      const tools = (await this.readDevelopmentPinsAsync(Build.PACKAGE_MANIFEST_FILE_NAME))[Build.ANGULAR_BUILD_TOOLS];
+      if (tools === undefined)
+        throw new CommandFailedException(Build.missingPin(kit.packageName, Build.ANGULAR_BUILD_TOOLS));
+      await this.executeNPMCommandAsync([...Build.APP_INSTALL_ARGUMENTS, Build.SAVE_DEV_OPTION, `${Build.ANGULAR_BUILD_TOOLS}@${tools}`], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
     });
   }
 
   private async readPeersAsync(manifest: string): Promise<Readonly<Record<string, string>>> {
     const fields = JSON.parse(await this.readFileAsync(manifest)) as { readonly peerDependencies?: Readonly<Record<string, string>> };
     return fields.peerDependencies ?? {};
+  }
+
+  private async readDevelopmentPinsAsync(manifest: string): Promise<Readonly<Record<string, string>>> {
+    const fields = JSON.parse(await this.readFileAsync(manifest)) as { readonly devDependencies?: Readonly<Record<string, string>> };
+    return fields.devDependencies ?? {};
   }
 
   private async resolveFreshInstallAsync(packages: readonly string[]): Promise<void> {
@@ -280,15 +286,15 @@ export class Build extends Script {
   }
 
   private static addingBuildTools(packageName: string): string {
-    return `Adding Angular's build tools at "${packageName}"'s Angular version to its fresh install alone...`;
+    return `Adding Angular's build tools at "${packageName}"'s own pin of them to its fresh install alone...`;
   }
 
   private static skippingBuildTools(packageName: string): string {
-    return `Skipping Angular's build tools at "${packageName}"'s Angular version: only a release's build adds them.`;
+    return `Skipping Angular's build tools at "${packageName}"'s own pin of them: only a release's build adds them.`;
   }
 
-  private static missingPeer(packageName: string, peer: string): string {
-    return `"${packageName}" names no "${peer}" peer, so its Angular version is unknown.`;
+  private static missingPin(packageName: string, pin: string): string {
+    return `"${packageName}" names no "${pin}" development pin, so the build tools' version is unknown.`;
   }
 
   private static checkingScripts(): string {
