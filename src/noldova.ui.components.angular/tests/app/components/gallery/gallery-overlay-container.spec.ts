@@ -8,7 +8,6 @@
 
 import { OverlayContainer } from "@angular/cdk/overlay";
 import { Component, ElementRef, inject } from "@angular/core";
-import { userEvent } from "vitest/browser";
 
 import { GalleryOverlayContainer } from "../../../../src/app/components/gallery/gallery-overlay-container";
 import { GalleryScopeDirective } from "../../../../src/app/components/gallery/gallery-scope.directive";
@@ -54,6 +53,18 @@ describe("GalleryOverlayContainer", () => {
     expect(option).not.toBeNull();
     expect(getComputedStyle(option).getPropertyValue("--nol-text")).toBe(getComputedStyle(frame).getPropertyValue("--nol-text"));
     expect(getComputedStyle(option).getPropertyValue("--nol-text")).not.toBe(getComputedStyle(document.body).getPropertyValue("--nol-text"));
-    await userEvent.keyboard("{Escape}");
+  });
+
+  it("closes the open overlay with the scope, leaving its container empty and no option in the page", async () => {
+    const fixture = await GalleryFixture.showSectionAsync(ScopeHostComponent);
+    const frame = DomFixture.one(DomFixture.host(fixture), "test-scope");
+    DomFixture.oneOf(frame, ".nol-select-button", HTMLButtonElement).click();
+    await fixture.whenStable();
+    const container = DomFixture.one(frame, ".cdk-overlay-container");
+    const option = DomFixture.one(container, ".nol-select-option");
+
+    fixture.destroy();
+
+    expect([container.childElementCount, option.isConnected, document.querySelectorAll(".nol-select-option").length]).toEqual([0, false, 0]);
   });
 });

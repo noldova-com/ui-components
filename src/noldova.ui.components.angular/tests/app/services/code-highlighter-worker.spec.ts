@@ -50,14 +50,17 @@ describe("CodeHighlighter with a highlighting worker", () => {
     expect([bed.loadedOnPage(highlighter), sent(starts.started[0]), starts.started[0]?.requests[0]?.timeLimit]).toEqual([false, [[CodeWorkerMessageKind.Tokenize, json.id, "{ \"a\": 1 }"]], 0]);
   });
 
-  it("starts the worker at its first request, not when it is made", () => {
+  it("starts the worker at its first request, not when it is made", async () => {
     const starts = new CodeWorkerStartFixture();
     const highlighter = bed.serve(starts.start);
     const before = starts.started.length;
 
-    void highlighter.tokensAsync("1", json, signal);
+    const tokens = highlighter.tokensAsync("1", json, signal);
+    const started = starts.started.length;
+    // Lets the worker answer, so its grammar load ends in this test and not in a later one, which a spy on the load would then see.
+    await tokens;
 
-    expect([before, starts.started.length]).toEqual([0, 1]);
+    expect([before, started]).toEqual([0, 1]);
   });
 
   it("cancels a request in the worker when its call is aborted, gives it nothing and keeps nothing, and sends nothing for a call aborted before it starts", async () => {
