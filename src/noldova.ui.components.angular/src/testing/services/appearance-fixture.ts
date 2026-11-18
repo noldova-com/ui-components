@@ -103,7 +103,9 @@ export class AppearanceFixture {
     park.style.cssText = "position: fixed; inset: 0 auto auto 0; width: 4px; height: 4px; margin: 0; padding: 0; border: 0;";
     park.showPopover();
     try {
-      await PointerFixture.hoverAsync(park);
+      await PointerFixture.hoverAsync(park, { isForced: true });
+      if (!park.matches(":hover"))
+        throw new Error("The pointer did not move onto the park in the window's top left corner; something there, such as a modal dialog, takes the pointer.");
     }
     catch (error) {
       park.remove();

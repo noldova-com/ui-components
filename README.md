@@ -293,28 +293,43 @@ On a Windows test machine with only their two files running, the focus ring's me
 
 `message-popover.spec.ts` opens a popover from a message's actions or footer end with the keyboard, with the pointer away, and checks what the message shows meanwhile.
 Four of its six tests wait out a fade of the message's actions twice, as the trigger takes the focus and once the popover has closed: the message's opacity transition of 120 ms.
-Measured in three runs on one test machine of each system, each wait took 97 to 171 ms on Linux, 88 to 154 ms on Windows and 129 to 152 ms on macOS, and parking the pointer before it 80 to 604 ms, 125 to 730 ms and 42 to 69 ms.
+Measured in three runs on one test machine of each system, each wait took 97 to 171 ms on Linux, 88 to 154 ms on Windows and 129 to 152 ms on macOS, and parking the pointer before it 80 to 604 ms, 125 to 730 ms and 42 to 69 ms, a park that now hovers at once, as the paragraph below says.
 Each fade is what its test checks, so none was cut.
-Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS in the loaded runs of the Gallery's rows above, against 555, 563 and 402 ms in the runs of main before them.
+Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS in the loaded runs of the Gallery's rows above, against 555, 563 and 402 ms in the runs of main before them; with the park at once, it took 432, 441 and 374 ms in the runs of the table below.
+
+The pointer specs move the real pointer through Vitest's `userEvent.hover`, which first waits until Playwright finds the target visible, still over frames and able to take events.
+Measured on one test machine of each system, a hover took about 120 ms on Linux and Windows and about 50 ms on macOS, most of it those waits.
+A hover whose target is laid out and still now goes through `PointerFixture.hoverAsync` with `isForced`, which moves the real pointer at once, and the test still reads the look the pointer gives, so a hover that lands elsewhere still fails.
+That is `AppearanceFixture.parkPointerAsync`, which parks the pointer on a fixed 4 px element of its own, the tab action's buttons and the docs site's search field; a hover after a scroll or an opening, such as the scroll reveal's on its area, keeps Playwright's waits.
+The docs site's search spec types `zqzq` where it typed a 17-character query, for its check that nothing matches, since a key took about 90 ms on Linux; it still types key by key, as search as you type sees it.
+The table gives each file's median test before and after that change, in three runs on one test machine of each system, each switching between the two, every test still followed by the pointer's move off the page that [#199](https://github.com/noldova-com/ui-components/issues/199) measured.
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `icon-button-tab-action.component.spec.ts` | 246 to 116 ms | 256 to 132 ms | 116 to 50 ms |
+| `scroll-reveal.service.spec.ts` | 319 to 152 ms | 226 to 165 ms | 101 to 68 ms |
+| `tab-leading.component.spec.ts` | 174 to 102 ms | 164 to 120 ms | 67 to 33 ms |
+| `toolbar-button-open-pressed.component.spec.ts` | 215 to 138 ms | 202 to 182 ms | 100 to 67 ms |
+| docs site, `docs-search.component.spec.ts` | 341 to 287 ms | not run | not run |
+
+What stays in these files is the pointer moves, clicks and keys their checks make, and the move off the page.
+Measured in the same way, some files are bound by a wait their checks need, so none was cut:
+
+- `short-screenshot-names.spec.ts` takes a real screenshot in each test, 60 to 106 ms each on macOS; its tests took 169 to 403 ms on Linux and Windows.
+- `hang-limit.spec.ts` waits out its 100 ms stand-in for the shared bound in three of its five tests, 104 to 114 ms a test on Linux and Windows.
+- `gallery-overlays.component.spec.ts` renders its section, about 170 ms a test on Linux and Windows against 20 ms on macOS.
+- The docs site's `tokens-page.component.spec.ts` renders the tokens page, 180 to 630 ms a test on Linux.
+- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, ui-components-20261118-063447-ea50, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
 
 The rest are not measured; most drive real pointer moves, clicks or key presses.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
 | `configuration-table-row-hover.component.spec.ts` | within | 132 ms | within |
-| docs site, `docs-on-this-page.component.spec.ts` | 140 ms | not run | not run |
-| docs site, `docs-search.component.spec.ts` | 275 ms | not run | not run |
 | `focus-start.fixture.spec.ts` | 127 ms | within | within |
 | `gallery-overlay-container.spec.ts` | 146 ms | 136 ms | within |
-| `hang-limit.spec.ts` | 139 ms | 136 ms | within |
-| `icon-button-tab-action.component.spec.ts` | 218 ms | 260 ms | within |
 | `message-shell-runs.component.spec.ts` | 138 ms | 170 ms | within |
 | `pointer-rest.fixture.spec.ts` | within | 127 ms | within |
-| `scroll-reveal.service.spec.ts` | 139 ms | 155 ms | within |
-| `short-screenshot-names.spec.ts` | 149 ms | 174 ms | within |
-| `tab-leading.component.spec.ts` | within | 132 ms | within |
-| docs site, `tokens-page.component.spec.ts` | 182 ms | not run | not run |
-| `toolbar-button-open-pressed.component.spec.ts` | 170 ms | 192 ms | within |
 
 The tests over 1 second, waiting for the Owner's acceptance: every one the timing check printed at 60fda17 on one Linux, one Windows and one macOS test machine, each with its slowest median of three runs there, rounded up to 100 ms, and its cause, from what the test does, or the issue that measures it: The Gallery's Focus and Hover cell rows were printed for #173 on the same three systems, after their specs were split by specimen.
 
