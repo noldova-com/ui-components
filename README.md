@@ -319,7 +319,7 @@ Measured in the same way, some files are bound by a wait their checks need, so n
 - `hang-limit.spec.ts` waits out its 100 ms stand-in for the shared bound in three of its five tests, 104 to 114 ms a test on Linux and Windows.
 - `gallery-overlays.component.spec.ts` renders its section, about 170 ms a test on Linux and Windows against 20 ms on macOS.
 - The docs site's `tokens-page.component.spec.ts` renders the tokens page, 180 to 630 ms a test on Linux.
-- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, about 8.3 seconds on Linux, which the list of tests over 1 second names.
+- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, ui-components-20261118-063447-ea50, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
 
 The rest are not measured; most drive real pointer moves, clicks or key presses.
 

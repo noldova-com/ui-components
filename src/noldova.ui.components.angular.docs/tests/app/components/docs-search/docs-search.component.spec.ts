@@ -61,6 +61,7 @@ describe("DocsSearchComponent", () => {
   // The pointer rests on the field, so the list that opens under it never takes the pointer's hover.
   const typedAsync = async (host: HTMLElement, text: string): Promise<void> => {
     await PointerFixture.hoverAsync(field(host), { isForced: true });
+    expect(field(host).matches(":hover")).toBe(true);
     await userEvent.type(field(host), text);
     await DomChangeFixture.untilAsync(() => expect(options(host).length).toBeGreaterThan(1));
   };

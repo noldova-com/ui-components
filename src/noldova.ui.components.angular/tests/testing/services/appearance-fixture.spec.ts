@@ -68,6 +68,17 @@ describe("AppearanceFixture", () => {
     expect(document.body.childElementCount).toBe(before);
   });
 
+  it("fails and removes the park when the pointer moves but something else takes it, as a modal dialog does", async () => {
+    const dialog = document.body.appendChild(document.createElement("dialog"));
+    onTestFinished(() => dialog.remove());
+    dialog.showModal();
+    onTestFinished(() => dialog.close());
+    const before = document.body.childElementCount;
+
+    await expect(AppearanceFixture.parkPointerAsync()).rejects.toThrow("The pointer did not move onto the park in the window's top left corner; something there, such as a modal dialog, takes the pointer.");
+    expect(document.body.childElementCount).toBe(before);
+  });
+
   it("waits out a scroll's reveal and the thumb's transitions before it reads the thumb hidden, and then shown on hover", async () => {
     AppearanceFixture.apply();
     TestBed.inject(ScrollRevealService);

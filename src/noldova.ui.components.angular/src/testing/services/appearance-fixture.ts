@@ -104,6 +104,8 @@ export class AppearanceFixture {
     park.showPopover();
     try {
       await PointerFixture.hoverAsync(park, { isForced: true });
+      if (!park.matches(":hover"))
+        throw new Error("The pointer did not move onto the park in the window's top left corner; something there, such as a modal dialog, takes the pointer.");
     }
     catch (error) {
       park.remove();
