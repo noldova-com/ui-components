@@ -343,6 +343,10 @@ The other files near the line, measured before that change in three runs on one 
 
 The focus ring's 167 ms on Windows here and its 71 ms in the paragraph on the virtual list's settles above are both runs without the whole suite, on different days and loads: that one ran its file and the kit rows' alone, and this one ran seven files together, through a probe that times each test's phases, on a Windows machine whose speed moved within the hour, as the row hover spec's 146 ms and 197 ms before the change, on the same machine eight minutes apart, show.
 
+The focus ring spec now clicks its articles, and the slot between two of them, at once too, with Playwright's `force`, each click followed by the test's existing check of where the focus went; the Jump to latest button, which shows and moves, keeps its real click.
+Measured in three runs on one test machine of each system, each switching between main and that change, in runs ui-components-20261118-203800-d03b on Linux, -214650-68b2 on Windows and -203800-958d on macOS, with only this file running, its median test went from 180 to 148 ms on Linux, from 165 to 114 ms on Windows, and from 74 to 80 ms on macOS, within the line both times, and its clicks from 78 to 34 ms a test on Linux and from 72 to 16 ms on Windows.
+On Linux what stays in that test, about 113 ms, is the render, the Tab and the move off the page that every test in the file has, its theme tests taking about 75 ms with no click, so the file stays over the line on Linux under [#176](https://github.com/noldova-com/ui-components/issues/176).
+
 Not measured here: the Gallery overlay container spec, which [#199](https://github.com/noldova-com/ui-components/issues/199) takes.
 
 | File | Linux | Windows | macOS |
