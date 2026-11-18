@@ -32,11 +32,8 @@ describe("GalleryMessageComponent", () => {
       const box = host.getBoundingClientRect();
       return JSON.stringify([host.querySelectorAll("*").length, box.width, box.height]);
     }, async () => {
-      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
-      for (let round = 0; round < 3; round++) {
-        await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      }
+      await fixture.whenStable();
+      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
     });
     await fixture.whenStable();
   }

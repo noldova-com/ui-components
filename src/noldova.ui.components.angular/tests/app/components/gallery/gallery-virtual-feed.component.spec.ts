@@ -29,11 +29,8 @@ describe("GalleryVirtualFeedComponent", () => {
   async function settleAsync(): Promise<void> {
     await LayoutSettleFixture.settledAsync("the feeds' rows and scroll", () => JSON.stringify([...DomFixture.host(fixture).querySelectorAll<HTMLElement>(".nol-virtual-list-viewport")]
       .map(t => [t.querySelectorAll("[data-nol-row]").length, t.scrollHeight, t.scrollTop])), async () => {
-      // A pass is the three rounds the spec waited out before, so the settle never waits less than it did.
-      for (let round = 0; round < 3; round++) {
-        await fixture.whenStable();
-        await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
-      }
+      await fixture.whenStable();
+      await new Promise<void>(t => requestAnimationFrame(() => requestAnimationFrame(() => t())));
     });
     await fixture.whenStable();
   }
