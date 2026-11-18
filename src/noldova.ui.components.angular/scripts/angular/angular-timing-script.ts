@@ -44,6 +44,10 @@ export abstract class AngularTimingScript extends Script {
   private static readonly SELF_CHECK_PROJECT: string = "self-check";
   private static readonly SELF_CHECK: string = "The timing check checks itself on small reports in a temporary folder:";
   private static readonly SELF_CHECK_FAILED: string = "The timing check failed its own check, so it times nothing.";
+  private static readonly SELECTION_CASE: string =
+    "a workspace with a spec file that traces layout and one that doesn't runs every test outside the tracing suite first, then the suite from that file alone";
+  private static readonly TRACED_SPEC: string = "tests/traced.spec.ts";
+  private static readonly UNTRACED_SPEC: string = "tests/untraced.spec.ts";
 
   private readonly project: string;
   private readonly owner: string;
@@ -67,6 +71,9 @@ export abstract class AngularTimingScript extends Script {
       isSelfChecked &&= holds;
       await this.writeLogAsync(`${holds ? "Holds" : "Fails"}: ${check.expectation}.`);
     }
+    const isSplit = await AngularTimingScript.runSelectionCaseAsync();
+    isSelfChecked &&= isSplit;
+    await this.writeLogAsync(`${isSplit ? "Holds" : "Fails"}: ${AngularTimingScript.SELECTION_CASE}.`);
     if (!isSelfChecked)
       throw new CommandFailedException(AngularTimingScript.SELF_CHECK_FAILED);
 
@@ -75,7 +82,7 @@ export abstract class AngularTimingScript extends Script {
     await fs.rm(AngularTimingScript.DEPENDENCY_CACHE, { recursive: true, force: true });
     const timing = new AngularTestTiming(AngularTimingScript.WORKSPACE_FOLDER);
     const tests = new AngularTestReport(AngularTimingScript.WORKSPACE_FOLDER, this.project);
-    const parts = await this.partsAsync(tests);
+    const parts = await AngularTimingScript.partsAsync(AngularTimingScript.WORKSPACE_FOLDER, tests);
     for (let run = 1; run <= AngularTimingScript.RUNS; run++) {
       await this.writeLogAsync(`Timing run ${run} of ${AngularTimingScript.RUNS} of ${this.owner} specs...`);
       const reports: string[] = [];
@@ -117,10 +124,10 @@ export abstract class AngularTimingScript extends Script {
 
   // The test builder's selections for one timing run: one for every spec, or, when spec files trace layout, first every test outside the tracing
   // suite, then only the suite's tests from the files that hold it, each in a browser of its own.
-  private async partsAsync(tests: AngularTestReport): Promise<readonly (readonly string[])[]> {
+  private static async partsAsync(folder: string, tests: AngularTestReport): Promise<readonly (readonly string[])[]> {
     const traced: string[] = [];
     for (const spec of await tests.listSpecFilesAsync())
-      if ((await this.readFileAsync(path.resolve(AngularTimingScript.WORKSPACE_FOLDER, spec))).includes(LayoutTraceSuite.mark))
+      if ((await fs.readFile(path.resolve(folder, spec), AngularTimingScript.ENCODING)).includes(LayoutTraceSuite.mark))
         traced.push(spec);
     if (traced.length === 0)
       return [[]];
@@ -224,6 +231,28 @@ export abstract class AngularTimingScript extends Script {
         reports.push(report);
       }
       return check.holds(await AngularTimingScript.checkRanOnceAsync(new AngularTestReport(folder, AngularTimingScript.SELF_CHECK_PROJECT), reports));
+    }
+    finally {
+      await temporary.removeAsync(folder);
+    }
+  }
+
+  // Runs the selections on a small workspace whose one spec file holds the tracing suite and whose other doesn't.
+  private static async runSelectionCaseAsync(): Promise<boolean> {
+    const temporary = new TemporaryFolder();
+    const folder = await temporary.createAsync(process.platform, AngularTimingScript.TEMPORARY_PREFIX);
+    try {
+      const workspace = { projects: { [AngularTimingScript.SELF_CHECK_PROJECT]: { architect: { test: { options: { include: ["tests/**/*.spec.ts"] } } } } } };
+      await fs.writeFile(path.join(folder, "angular.json"), JSON.stringify(workspace), AngularTimingScript.ENCODING);
+      await fs.mkdir(path.join(folder, "tests"));
+      await fs.writeFile(path.join(folder, AngularTimingScript.TRACED_SPEC), `${LayoutTraceSuite.mark}, () => {});\n`, AngularTimingScript.ENCODING);
+      await fs.writeFile(path.join(folder, AngularTimingScript.UNTRACED_SPEC), "describe(\"Untraced\", () => {});\n", AngularTimingScript.ENCODING);
+      const parts = await AngularTimingScript.partsAsync(folder, new AngularTestReport(folder, AngularTimingScript.SELF_CHECK_PROJECT));
+      const expected = [
+        [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.untracedFilter}`],
+        [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.title}`, AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.TRACED_SPEC]
+      ];
+      return JSON.stringify(parts) === JSON.stringify(expected);
     }
     finally {
       await temporary.removeAsync(folder);
