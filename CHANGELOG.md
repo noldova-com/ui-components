@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.13
+
+- `@noldova/ui.components.angular`: its `@angular/cdk` dependency moves from 22.2.7 to 22.3.0, the CDK's newest, which it published apart from Angular's; its peers are unchanged, so the kit's Angular stays at 22.2.6. An app that installs `@angular/cdk` itself moves it to 22.3.0 with the kit.
+
 ## 0.0.12
 
 - `@noldova/ui.components.angular`: twelve new size tokens, each the value a module window writes today as a literal, so nothing such a window draws moves when it takes them. Ten are look tokens, in `theme.css`, `DefaultTheme` and `Resources.lookTokens`: `--nol-space-half` (0.125rem), between a row's two lines of text; `--nol-count-gap` (0.25em), between an inline count's numbers; `--nol-view-padding-inline` (0.625rem), a card's, row's or panel's inline padding, the twin of `--nol-view-padding-block`; `--nol-view-gap` (0.625rem), between a panel's blocks; `--nol-nested-row-indent` (2.25rem), a nested list row's start; `--nol-empty-icon` (1.25rem), an empty state's icon; `--nol-text-area-min-height`, three lines of a text field with its padding and border, `calc(3 * var(--nol-line-panel) + 2 * var(--nol-field-padding) + 2 * var(--nol-border-width))`, 4.25rem at the default panel size; `--nol-list-max-height` (18rem), a menu-like list's scroll height; and `--nol-diff-view-max-height` (24rem) and `--nol-diff-view-padding-block` (0.375rem), an inline diff's scroll height and inset. Two are in `base.css`, beside the other text sizes: `--nol-text-display` (1.75rem) and `--nol-letter-spacing-display` (0.12em). A custom theme can set the look tokens as it sets the others.
