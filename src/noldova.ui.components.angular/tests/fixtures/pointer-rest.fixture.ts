@@ -32,8 +32,21 @@ export class PointerRestFixture {
     const rest = PointerRestFixture.watch();
     if (!rest.moved)
       return;
-    await userEvent.hover(document.documentElement, { position: { x: -1, y: -1 }, force: true });
+    // Cleared before the move, so a real move that lands while it is under way, such as a late one from a failed test, marks the page again.
+    // The browser's own events that land before the move, such as its pointerover for what comes under the pointer when a test's teardown
+    // removes the element it hovered, end at the move's pointerout outside the page, which clears the mark again.
     rest.moved = false;
+    try {
+      await userEvent.hover(document.documentElement, { position: { x: -1, y: -1 }, force: true });
+    }
+    catch (error) {
+      rest.moved = true;
+      throw error;
+    }
+  }
+
+  private static inPage(event: PointerEvent): boolean {
+    return event.clientX >= 0 && event.clientY >= 0 && event.clientX < window.innerWidth && event.clientY < window.innerHeight;
   }
 
   private static watch(): PointerRest {
@@ -45,6 +58,10 @@ export class PointerRestFixture {
             rest.moved = true;
         }, { capture: true });
       }
+      window.addEventListener("pointerout", event => {
+        if (event.isTrusted && !PointerRestFixture.inPage(event))
+          rest.moved = false;
+      }, { capture: true });
       window.nolPointerRest = rest;
     }
     return window.nolPointerRest;
