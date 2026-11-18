@@ -245,7 +245,8 @@ What stays is rendering their messages, measured in two of those runs on each sy
 The message states' 25 messages with Markdown and code take 200 to 690 ms to render at once on Linux, 190 to 820 ms on Windows and 60 to 120 ms on macOS.
 The virtual feed's five lists then take 400 to 1,080 ms, 420 to 1,500 ms and 120 to 260 ms of frames as they lay out their rows.
 [#211](https://github.com/noldova-com/ui-components/issues/211) measures that cost of the product's.
-These three files' rows are from one run of `npm run test:timing` on each system with that change, on the same machines.
+These three files' rows are from one run of `npm run test:timing` on each system with that change, under more load than the 9bb5b36 rows beside them: on Linux and Windows the check found 82 and 88 files over the budget in those runs.
+A run of main without the change on the same machines, which found 75 and 71, gave the feed's 1,186, 1,088 and 283 ms, the messages' 508, 529 and 217 ms and the virtual feed's 877, 929 and 433 ms, on Linux, Windows and macOS.
 
 The code block's specs render a block and wait for its layout to settle over animation frames.
 Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
@@ -294,7 +295,7 @@ On a Windows test machine with only their two files running, the focus ring's me
 Four of its six tests wait out a fade of the message's actions twice, as the trigger takes the focus and once the popover has closed: the message's opacity transition of 120 ms.
 Measured in three runs on one test machine of each system, each wait took 97 to 171 ms on Linux, 88 to 154 ms on Windows and 129 to 152 ms on macOS, and parking the pointer before it 80 to 604 ms, 125 to 730 ms and 42 to 69 ms.
 Each fade is what its test checks, so none was cut.
-Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS, in the runs of the Gallery's rows above.
+Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS in the loaded runs of the Gallery's rows above, against 555, 563 and 402 ms in the runs of main before them.
 
 The rest are not measured; most drive real pointer moves, clicks or key presses.
 
