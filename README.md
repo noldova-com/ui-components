@@ -270,8 +270,11 @@ The code highlighter's specs and `code-block-highlighting-start.component.spec.t
 | `code-block-streaming-scroll.component.spec.ts` | 378 ms | 428 ms | 362 ms |
 | `code-block-wrap.component.spec.ts` | within | 137 ms | within |
 
-The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press; not measured.
-[#178](https://github.com/noldova-com/ui-components/issues/178) cut the focus ring's, kit rows' and spinner's settles to a pass of one rendered frame, and the spinner's file was within the budget on every system at 9bb5b36; what still takes the others' time is their tests' own steps, not measured.
+The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press, so their time is bound by the frames their checks need and by the machine that runs them.
+[#178](https://github.com/noldova-com/ui-components/issues/178) cut the focus ring's, kit rows' and spinner's settles to a pass of one rendered frame, and the spinner's file was within the budget on every system at 9bb5b36.
+It then measured the rest on one test machine of each system, three runs each: in `virtual-list.component.spec.ts` the settles take about 22 seconds of a run, about 100 ms a test, at 276 places, and 103 of them never changed the list's rows or scroll.
+Of those 103, the 4 after a step that gives the list nothing to lay out, its busy or a field's state outside it or a click on a control that resizes nothing, now wait for a stable fixture only; the rest follow a step that can move the list, so their frame is what the test checks.
+On a Windows test machine with only their two files running, the focus ring's median test took about 71 ms and the kit rows' about 85 ms, settles being 65 to 80% of each test, against the table's 171 ms and 134 ms under the whole suite.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|

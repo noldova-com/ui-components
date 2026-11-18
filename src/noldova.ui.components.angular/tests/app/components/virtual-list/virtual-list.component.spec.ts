@@ -1208,7 +1208,7 @@ describe("VirtualListComponent", () => {
     await settleAsync();
 
     host.isSearching.set(true);
-    await settleAsync();
+    await fixture.whenStable();
     const search = element().querySelector(".search");
     const afterOpening = [document.activeElement === search, search?.getAttribute("data-focused")];
     source.insert(0, ["early"]);
@@ -2124,7 +2124,7 @@ describe("VirtualListComponent", () => {
     const toggling = await renderTogglingAsync();
 
     click("item 29", ".copy");
-    await settleAsync();
+    await fixture.whenStable();
     toggling.toggle("item 29");
     await settleAsync();
 
@@ -3221,10 +3221,10 @@ describe("VirtualListComponent", () => {
     const idle = rows().getAttribute("aria-busy");
 
     feed.busy.set(true);
-    await settleAsync();
+    await fixture.whenStable();
     const busy = rows().getAttribute("aria-busy");
     feed.busy.set(false);
-    await settleAsync();
+    await fixture.whenStable();
 
     expect([idle, busy, rows().getAttribute("aria-busy")]).toEqual(["false", "true", "false"]);
   });
