@@ -8,6 +8,7 @@
 
 import { TestBed } from "@angular/core/testing";
 import { Router, provideRouter } from "@angular/router";
+import { PointerFixture } from "@noldova/ui.components.angular/testing";
 import { userEvent } from "vitest/browser";
 
 import { DocsSearchComponent } from "../../../../src/app/components/docs-search/docs-search.component.js";
@@ -48,7 +49,7 @@ describe("DocsSearchComponent", () => {
   it("says when nothing matches", async () => {
     const host = await renderAsync();
 
-    await userEvent.type(field(host), "zzzz-no-such-term");
+    await userEvent.type(field(host), "zqzq");
     await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(host, ".nol-docs-search-empty").length).toBe(1));
   });
 
@@ -59,7 +60,8 @@ describe("DocsSearchComponent", () => {
 
   // The pointer rests on the field, so the list that opens under it never takes the pointer's hover.
   const typedAsync = async (host: HTMLElement, text: string): Promise<void> => {
-    await userEvent.hover(field(host));
+    await PointerFixture.hoverAsync(field(host), { isForced: true });
+    expect(field(host).matches(":hover")).toBe(true);
     await userEvent.type(field(host), text);
     await DomChangeFixture.untilAsync(() => expect(options(host).length).toBeGreaterThan(1));
   };
