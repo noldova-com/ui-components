@@ -103,7 +103,7 @@ export class AppearanceFixture {
     park.style.cssText = "position: fixed; inset: 0 auto auto 0; width: 4px; height: 4px; margin: 0; padding: 0; border: 0;";
     park.showPopover();
     try {
-      await PointerFixture.hoverAsync(park);
+      await PointerFixture.hoverAsync(park, { isForced: true });
     }
     catch (error) {
       park.remove();

@@ -15,6 +15,7 @@ import { TabComponent } from "../../../../src/app/components/tab/tab.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { PointerFixture } from "../../../../src/testing/services/pointer-fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 @Component({
@@ -62,9 +63,9 @@ describe("IconButtonComponent's tab action size", () => {
       render(mode);
       const box = button("action").getBoundingClientRect();
       const glyph = element("button.action .nol-icon-button-glyph").getBoundingClientRect();
-      await userEvent.hover(close());
+      await PointerFixture.hoverAsync(close(), { isForced: true });
       const closeHover = fill(close()).backgroundColor;
-      await userEvent.hover(button("action"));
+      await PointerFixture.hoverAsync(button("action"), { isForced: true });
       const actionHover = fill(button("action")).backgroundColor;
 
       expect(button("action").classList.contains("nol-icon-button-tab-action")).toBe(true);
@@ -110,9 +111,9 @@ describe("IconButtonComponent's tab action size", () => {
     it(`draws a tab close's dashed Highlight outline on hover under forced colors, at the same size, in ${mode} mode`, async () => {
       render(mode);
       await ForcedColorsFixture.activateAsync();
-      await userEvent.hover(close());
+      await PointerFixture.hoverAsync(close(), { isForced: true });
       const closeOutline = [fill(close()).outlineStyle, fill(close()).outlineColor];
-      await userEvent.hover(button("action"));
+      await PointerFixture.hoverAsync(button("action"), { isForced: true });
 
       expect([fill(button("action")).outlineStyle, fill(button("action")).outlineColor]).toEqual(closeOutline);
       expect(closeOutline).toEqual(["dashed", ForcedColorsFixture.resolve("Highlight")]);
