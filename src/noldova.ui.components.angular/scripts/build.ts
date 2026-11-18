@@ -138,8 +138,7 @@ export class Build extends Script {
       return;
     }
     await this.runStepAsync(Build.addingBuildTools(kit.packageName), async () => {
-      // At the kit's own pin of the build tools, which Angular's newest check keeps at their newest, rather than at its Angular version, since the
-      // build tools don't publish at every Angular version.
+      // At the kit's own development pin of the build tools.
       const tools = (await this.readDevelopmentPinsAsync(Build.PACKAGE_MANIFEST_FILE_NAME))[Build.ANGULAR_BUILD_TOOLS];
       if (tools === undefined)
         throw new CommandFailedException(Build.missingPin(kit.packageName, Build.ANGULAR_BUILD_TOOLS));
