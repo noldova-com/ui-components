@@ -312,6 +312,22 @@ The table gives each file's median test before and after that change, in three r
 | `toolbar-button-open-pressed.component.spec.ts` | 215 to 138 ms | 202 to 182 ms | 100 to 67 ms |
 | docs site, `docs-search.component.spec.ts` | 341 to 287 ms | not run | not run |
 
+The configuration table's row hover spec and the focus start spec now move the real pointer at once too, onto cells and buttons laid out and still: the hovers through `PointerFixture.hoverAsync` with `isForced`, each followed by a check that the cell is hovered, and the clicks with Playwright's `force`, each followed by the test's check that the button has the focus.
+Measured in the same way, in runs ui-components-20261118-174927-595b on Linux, -6aec on Windows and -475b on macOS:
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `configuration-table-row-hover.component.spec.ts` | 101 to 67 ms | 197 to 166 ms | 66 to 34 ms |
+| `focus-start.fixture.spec.ts` | 115 to 84 ms | 357 to 161 ms | 77 to 46 ms |
+
+On Windows, what stays in a test is the forced hovers, 61 ms, or the forced clicks, 113 ms, and the move off the page, about 48 ms.
+Measured alone in the same way, before that change, in runs ui-components-20261118-174147-4c2b, -8ed7 and -6d02, the other files near the line took:
+
+- `message-shell-runs.component.spec.ts`: a median test of 123 ms on Linux, 112 ms on Windows and 68 ms on macOS, most of it outside the pointer and the keys, in rendering and settling its messages; its Run clicks take 96 ms a test on Linux on average.
+- `pointer-rest.fixture.spec.ts`: 165, 148 and 65 ms; its real hovers, about 110 ms a test on Linux, are the moves it checks the leave against, so none is forced.
+- `virtual-list-focus-ring.component.spec.ts`: 229, 167 and 108 ms, in real clicks, key presses and the list's scroll over frames, with none of them over 50 ms a test on average.
+- `gallery.component.spec.ts` and `gallery-forms.component.spec.ts`: 106 and 96 ms on Linux, 94 and 104 ms on Windows, 20 and 14 ms on macOS, within the line when run alone.
+
 What stays in these files is the pointer moves, clicks and keys their checks make, and the move off the page.
 Measured in the same way, some files are bound by a wait their checks need, so none was cut:
 
@@ -321,15 +337,11 @@ Measured in the same way, some files are bound by a wait their checks need, so n
 - The docs site's `tokens-page.component.spec.ts` renders the tokens page, 180 to 630 ms a test on Linux.
 - The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, ui-components-20261118-063447-ea50, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
 
-The rest are not measured; most drive real pointer moves, clicks or key presses.
+Not measured here: the Gallery overlay container spec, which [#199](https://github.com/noldova-com/ui-components/issues/199) takes.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `configuration-table-row-hover.component.spec.ts` | within | 132 ms | within |
-| `focus-start.fixture.spec.ts` | 127 ms | within | within |
 | `gallery-overlay-container.spec.ts` | 146 ms | 136 ms | within |
-| `message-shell-runs.component.spec.ts` | 138 ms | 170 ms | within |
-| `pointer-rest.fixture.spec.ts` | within | 127 ms | within |
 
 The tests over 1 second, waiting for the Owner's acceptance: every one the timing check printed at 60fda17 on one Linux, one Windows and one macOS test machine, each with its slowest median of three runs there, rounded up to 100 ms, and its cause, from what the test does, or the issue that measures it: The Gallery's Focus and Hover cell rows were printed for #173 on the same three systems, after their specs were split by specimen.
 

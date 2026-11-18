@@ -20,7 +20,7 @@ describe("FocusStartFixture", () => {
 
   it("leaves focus on the page's last button, for the next test to start after", async () => {
     document.body.append(buttons);
-    await userEvent.click(last);
+    await userEvent.click(last, { force: true });
 
     expect(document.activeElement).toBe(last);
   });
@@ -37,7 +37,7 @@ describe("FocusStartFixture", () => {
   it("moves focus from an element and starts the next Tab at the top of the page", async () => {
     document.body.append(buttons);
     onTestFinished(() => buttons.remove());
-    await userEvent.click(last);
+    await userEvent.click(last, { force: true });
 
     FocusStartFixture.reset();
     const start = document.activeElement;
