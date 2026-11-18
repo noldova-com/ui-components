@@ -38,6 +38,7 @@ describe("FocusStartFixture", () => {
     document.body.append(buttons);
     onTestFinished(() => buttons.remove());
     await userEvent.click(last, { force: true });
+    expect(document.activeElement).toBe(last);
 
     FocusStartFixture.reset();
     const start = document.activeElement;
