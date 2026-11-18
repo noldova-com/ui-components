@@ -233,11 +233,19 @@ Rendering the navigation and content sections is measured above; the other secti
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `gallery-feed.component.spec.ts` | 784 ms | 908 ms | 284 ms |
-| `gallery-message.component.spec.ts` | 383 ms | 434 ms | 217 ms |
+| `gallery-feed.component.spec.ts` | 994 ms | 1097 ms | 138 ms |
+| `gallery-message.component.spec.ts` | 357 ms | 374 ms | within |
 | `gallery-overlays.component.spec.ts` | within | 165 ms | within |
-| `gallery-virtual-feed.component.spec.ts` | 692 ms | 770 ms | 434 ms |
+| `gallery-virtual-feed.component.spec.ts` | 667 ms | 713 ms | 177 ms |
 | `gallery.component.spec.ts` | 158 ms | within | within |
+
+The feed's, the virtual feed's and the messages' specs wait for what they read to settle through `LayoutSettleFixture.settledAsync`, a pass of it a stable fixture and two frames.
+With three such rounds to a pass, in 285 settles over five runs on one test machine of each system, what they read never changed again after a round that left it unchanged, so [#176](https://github.com/noldova-com/ui-components/issues/176) made a pass one round, with the same check.
+What stays is rendering their messages, measured in two of those runs on each system.
+The message states' 25 messages with Markdown and code take 200 to 690 ms to render at once on Linux, 190 to 820 ms on Windows and 60 to 120 ms on macOS.
+The virtual feed's five lists then take 400 to 1,080 ms, 420 to 1,500 ms and 120 to 260 ms of frames as they lay out their rows.
+[#211](https://github.com/noldova-com/ui-components/issues/211) measures that cost of the product's.
+These three files' rows are from one run of `npm run test:timing` on each system with that change, on the same machines.
 
 The code block's specs render a block and wait for its layout to settle over animation frames.
 Measured on a macOS test machine in the code-size specs: the waits for the layout to settle and for frames were the largest phases.
@@ -282,6 +290,12 @@ On a Windows test machine with only their two files running, the focus ring's me
 | `virtual-list-kit-rows.spec.ts` | within | 134 ms | within |
 | `virtual-list.component.spec.ts` | 150 ms | 151 ms | 132 ms |
 
+`message-popover.spec.ts` opens a popover from a message's actions or footer end with the keyboard, with the pointer away, and checks what the message shows meanwhile.
+Four of its six tests wait out a fade of the message's actions twice, as the trigger takes the focus and once the popover has closed: the message's opacity transition of 120 ms.
+Measured in three runs on one test machine of each system, each wait took 97 to 171 ms on Linux, 88 to 154 ms on Windows and 129 to 152 ms on macOS, and parking the pointer before it 80 to 604 ms, 125 to 730 ms and 42 to 69 ms.
+Each fade is what its test checks, so none was cut.
+Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS, in the runs of the Gallery's rows above.
+
 The rest are not measured; most drive real pointer moves, clicks or key presses.
 
 | File | Linux | Windows | macOS |
@@ -293,7 +307,6 @@ The rest are not measured; most drive real pointer moves, clicks or key presses.
 | `gallery-overlay-container.spec.ts` | 146 ms | 136 ms | within |
 | `hang-limit.spec.ts` | 139 ms | 136 ms | within |
 | `icon-button-tab-action.component.spec.ts` | 218 ms | 260 ms | within |
-| `message-popover.spec.ts` | 448 ms | 480 ms | 404 ms |
 | `message-shell-runs.component.spec.ts` | 138 ms | 170 ms | within |
 | `pointer-rest.fixture.spec.ts` | within | 127 ms | within |
 | `scroll-reveal.service.spec.ts` | 139 ms | 155 ms | within |
@@ -322,7 +335,7 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line on any frame of a scrollbar drag from the top to the end over rows of mixed heights from a source that answers within a frame, and fills the rows in view within three frames of each step | 1800 ms | It jumps the scroll position in 30 steps from top to end, with up to 3 frames each. |
 | `gallery-state-hover-navigation.spec.ts`: shows in each of the Hover cells of nol-gallery-feed the look its control has when the pointer is really over it | 1800 ms | It renders the feed on its own, with its virtual feed and its messages, moves a real pointer onto each of its Hover cells and reads its computed styles until they match. |
 | `kit.spec.ts`, kit styles in forced colors: outlines every hovered control of the content section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included | 1700 ms | It renders the whole Gallery content section under forced colors before reading each Hover and Focus cell's outline. |
-| `gallery-virtual-feed.component.spec.ts`: reads older messages at a local store's speed, and shows a slow source in a cell of its own, marked with a class of its own, whose loading line shows once a read has taken 250 ms | 1700 ms | Not measured; #176 takes its file. |
+| `gallery-virtual-feed.component.spec.ts`: reads older messages at a local store's speed, and shows a slow source in a cell of its own, marked with a class of its own, whose loading line shows once a read has taken 250 ms | 1700 ms | It renders the virtual feed's five lists of messages with Markdown and code, whose cost #211 measures. |
 | `gallery-state-focus-navigation.spec.ts`: finds a Focus cell in every specimen of the section but one marked noFocus, and only in the specimens above | 1700 ms | It renders the whole navigation section, with its feed, and reads which specimens hold a Focus cell. |
 | `link-reference-chip.component.spec.ts`: gives the app each card link's address on a click, a middle click or Enter, as a link's, and hides the card | 1600 ms | It renders the chip 9 times, each with a real hover, a real click and a wait for the card to close. |
 | `appearance-fixture.spec.ts`: waits out a scroll's reveal and the thumb's transitions before it reads the thumb hidden, and then shown on hover | 1500 ms | It waits out a scroll's reveal and the thumb's transitions, then hovers the area with the real pointer and waits out the transitions again. |
@@ -332,21 +345,21 @@ The tests over 1 second, waiting for the Owner's acceptance: every one the timin
 | `message.component.spec.ts`: streams Markdown 200 characters at a time to 5,000, then 5,000 at a time to 15,000, changing and moving no block above the one that grows | 1500 ms | It renders a reply at 27 lengths up to 15,000 characters of Markdown with code, lists and tables, and measures the blocks above the growing one after each. |
 | `kit.spec.ts`, kit styles in forced colors: outlines every hovered control of the navigation section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included | 1500 ms | It renders the whole Gallery navigation section under forced colors before reading each Hover and Focus cell's outline. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: holds the scroll height and writes no scrollTop through a thumb drag in ltr to both ends, its rows following one way, and moves nothing on release | 1400 ms | It drags the thumb in 24 steps, with up to 3 frames each and 3 more after the release. |
-| `gallery-virtual-feed.component.spec.ts`: shows a conversation of 10,000 messages at its end, each named by its author and time, with code among them | 1400 ms | Not measured; #176 takes its file. |
+| `gallery-virtual-feed.component.spec.ts`: shows a conversation of 10,000 messages at its end, each named by its author and time, with code among them | 1400 ms | It renders the virtual feed's five lists of messages with Markdown and code, whose cost #211 measures. |
 | `markdown-view.component.spec.ts`, while its text streams: keeps a streaming code's ended lines past the reveal as empty token spans, the text never past the reveal and never laid out more than a line below it in any frame, with the fixture.contrast theme in Dark mode | 1400 ms | It streams 40 code lines in 5 reveals, settling each until highlighted and stepping 10 frames, then up to 500 more frames. |
 | `gallery-state-hover-navigation.spec.ts`: finds a Hover cell in every specimen of the section but one marked noHover, and only in the specimens above | 1400 ms | It renders the whole navigation section, with its feed, and reads which specimens hold a Hover cell. |
 | `gallery-state-hover-forms.spec.ts`: finds a Hover cell in every specimen of the section but one marked noHover, and only in the specimens above | 1400 ms | It renders the whole forms section and reads which specimens hold a Hover cell. |
-| `gallery-virtual-feed.component.spec.ts`: streams a reply word by word at its end, which the feed follows and marks busy meanwhile, and the message announces its end politely | 1300 ms | Not measured; #176 takes its file. |
+| `gallery-virtual-feed.component.spec.ts`: streams a reply word by word at its end, which the feed follows and marks busy meanwhile, and the message announces its end politely | 1300 ms | It renders the virtual feed's five lists of messages with Markdown and code, whose cost #211 measures. |
 | `diff-view.component.spec.ts`: heads each file with its path, status and counts, a rename with both paths, and its state below the header | 1300 ms | Not measured; #176 takes its file. |
 | `gallery.component.spec.ts`: gives every section in the kit's _GalleryNavigationComponent a long-text row, except a section marked noLongText, which has none | 1300 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`, scrolled frame by frame through 10,000 rows: never shows the loading line or a blank row in view on any frame of a fast wheel, 800 px a frame, over rows of mixed heights from a source that answers two frames later, from row 500 past row 1000 | 1300 ms | Not measured alone; its file's tests spend about 80% of their time waiting for rendered frames at 60 Hz, as #178 measured. |
-| `gallery-feed.component.spec.ts`: shows the messages, the reference chips and the virtual feed in turn, the feed's specimen right under the chips and filling its own component's box, and marks the chips' Focus cell's chip, drawn before any parser loads, keeping the gallery in place when it is clicked | 1300 ms | Not measured; #176 takes its file. |
+| `gallery-feed.component.spec.ts`: shows the messages, the reference chips and the virtual feed in turn, the feed's specimen right under the chips and filling its own component's box, and marks the chips' Focus cell's chip, drawn before any parser loads, keeping the gallery in place when it is clicked | 1300 ms | It renders the whole feed, 59 messages with Markdown and code, whose cost #211 measures. |
 | `group-header.component.spec.ts`: starts its twistie's ink at the section text's start, folded and open, at rest and hovered, in both directions, with its hover fill on its own edges, in the fixture.contrast theme in Dark mode | 1300 ms | It takes 8 screenshots, one for each direction, fold and hover, to find where the twistie's ink starts. |
 | `gallery.component.spec.ts`: keeps each long-text specimen in the kit's _GalleryNavigationComponent at most 12rem wide and inside its cell, with nothing spilling out of it | 1200 ms | Not measured; #176 takes its file. |
 | `virtual-list.component.spec.ts`: keeps a focused article rendered, with the focus in it, while the keys scroll far from it | 1200 ms | It presses Page Up 20 times as real keys in a 1,000-row feed, letting each press settle for up to 10 frames. |
 | `group-header.component.spec.ts`: starts its twistie's ink at the section text's start, folded and open, at rest and hovered, in both directions, with its hover fill on its own edges, in the noldova.default theme in Light mode | 1200 ms | It takes 8 screenshots, one for each direction, fold and hover, to find where the twistie's ink starts. |
-| `gallery-virtual-feed.component.spec.ts`: fits each feed cell's feed, list and button in a cell narrower than the list's 30rem | 1200 ms | Not measured; #176 takes its file. |
-| `gallery-virtual-feed.component.spec.ts`: shows a newest-first feed at its top, where a row added at the top shows | 1200 ms | Not measured; #176 takes its file. |
+| `gallery-virtual-feed.component.spec.ts`: fits each feed cell's feed, list and button in a cell narrower than the list's 30rem | 1200 ms | It renders the virtual feed's five lists of messages with Markdown and code, whose cost #211 measures. |
+| `gallery-virtual-feed.component.spec.ts`: shows a newest-first feed at its top, where a row added at the top shows | 1200 ms | It renders the virtual feed's five lists of messages with Markdown and code, whose cost #211 measures. |
 | `gallery-state-focus-content.spec.ts`: finds a Focus cell in every specimen of the section but one marked noFocus, and only in the specimens above | 1200 ms | It renders the whole content section and reads which specimens hold a Focus cell. |
 | `tool-call.component.spec.ts`: folds its words, then its status word, then its kind's icon as the panel narrows, and unfolds them in turn as it widens, each at one width and with one class change, and again when its spacing changes, in the noldova.default theme | 1100 ms | For each fold level it bisects the panel's width, about 9 resizes, each settling over frames, then measures the crossings again. |
 | `virtual-list-focus-ring.component.spec.ts`: shows no ring when a click between articles focuses the feed and the arrows, Page Up, Page Down, Home or End follow | 1100 ms | One real click and 6 real key presses, each settling over about 6 frames. |
