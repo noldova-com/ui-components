@@ -1,7 +1,7 @@
 # @noldova/ui.components.angular
 
 Noldova's interface kit: the design tokens, the fonts and the Angular components that Noldova's products build their interfaces from.
-Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery`, `@noldova/ui.components.angular/markdown` and `@noldova/ui.components.angular/testing`.
+Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/button`, `@noldova/ui.components.angular/code-block`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery`, `@noldova/ui.components.angular/markdown`, `@noldova/ui.components.angular/testing` and `@noldova/ui.components.angular/typography`.
 Its type declarations carry the documentation of every export and public member, which editors show on hover and in completions.
 
 ## What an app needs
@@ -19,7 +19,7 @@ Its type declarations carry the documentation of every export and public member,
   With any other version, npm nests a second copy under the kit, beside the app's, without a warning or an error, even when the kit names it as a peer as well.
   The kit's overlays, focus handling and other services from `@angular/cdk` then run from its copy, and the app's from the other: each copy has its own overlay container, so the app's overlays and the kit's can stack in the wrong order, and focus traps and keyboard handling between them can disagree.
   `npm ls @angular/cdk` lists one copy when the versions match; an app checks it in its build, failing when it lists more than one.
-- Angular's build tools at their newest patch for the kit's Angular, which they may publish apart from Angular's, such as `npm install --save-dev @angular/build@22.2.8 @angular/cli@22.2.8` with Angular 22.3.0.
+- Angular's build tools at their newest patch for the kit's Angular, which they may publish apart from Angular's, such as `npm install --save-dev @angular/build@22.3.0 @angular/cli@22.3.0` with Angular 22.3.0.
   Until 1.0 the kit names exact versions, its Angular peers included, but for its context peers below, and a new kit version moves them to Angular's newest patch.
   When Angular's newest is ahead of the kit's, adding the build tools stops with `ERESOLVE`, even at the kit's version: their optional peers, such as `@angular/service-worker`, `@angular/platform-server` and `@angular/ssr`, resolve to Angular's newest, which needs a newer `@angular/core` than the kit's.
   An app then waits for the kit version that moves to Angular's newest patch.
@@ -31,6 +31,41 @@ Its type declarations carry the documentation of every export and public member,
   Each night the repository builds and tests the kit with the newest context release inside the range.
   A second copy of the core fails when it loads, since both install the same members on `Object` and `String`, and a second copy of the exceptions splits `instanceof` checks between the two.
   Loading the core a second time in the same JavaScript realm fails the same way, so a test runner that evaluates installed packages again in one realm, such as Jest's `resetModules` or `isolateModules` over `node_modules`, fails on it.
+
+## Lazy pages
+
+An app keeps the kit's parts that only a lazy page uses, such as a route's `loadComponent`, out of its start, the first load of every page, only when its start never imports the main entry, `@noldova/ui.components.angular`.
+The main entry exports every component, and when the start imports anything from it, the app's build puts in the start every part of the kit that any page uses, lazy or not.
+So the start imports from entries that hold only what it needs, and a lazy page that shows the code block imports it from its own entry:
+
+| Entry | What it exports |
+|---|---|
+| `@noldova/ui.components.angular/button` | The button, `ButtonComponent`, with `ButtonSize` and `ButtonVariant`. |
+| `@noldova/ui.components.angular/typography` | The typography, `Typography` and `TypographyPainter`, with `TypographySizing` and `ThemeMode`. |
+| `@noldova/ui.components.angular/code-block` | The code block, `CodeBlockComponent` (`nol-code-block`), with what an app binds on it: `ShellRunOutputDirective`, `ShellRun`, `ShellRunState` and `IShellRunOutputContext`. |
+
+The code block, its toolbar and its tooltips then come in that page's chunk of the app's build.
+The main entry exports the same classes too, so an app's imports from it keep working.
+
+```ts
+// main.ts, the app's start
+import { Typography, TypographyPainter } from "@noldova/ui.components.angular/typography";
+
+TypographyPainter.paint(document.documentElement, new Typography());
+```
+
+```ts
+// download-page.component.ts, a page a route loads lazily
+import { Component } from "@angular/core";
+import { CodeBlockComponent } from "@noldova/ui.components.angular/code-block";
+
+@Component({
+  selector: "app-download-page",
+  imports: [CodeBlockComponent],
+  template: `<nol-code-block language="bash" code="shasum -a 256 app.tar.gz" />`
+})
+export class DownloadPageComponent {}
+```
 
 ## Code highlighting
 

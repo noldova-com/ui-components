@@ -8,12 +8,13 @@
 
 import type { Type } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { page, userEvent } from "vitest/browser";
+import { page } from "vitest/browser";
 
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { PointerFixture } from "../../../../src/testing/services/pointer-fixture";
 import { ConfigurationTableHostComponent } from "../../../fixtures/configuration-table-host.component";
 import { ConfigurationTableSharesHostComponent } from "../../../fixtures/configuration-table-shares-host.component";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -80,7 +81,9 @@ describe("ConfigurationTableComponent's row hover", () => {
           const hovered = find(row);
           const table = find("table").getBoundingClientRect();
           const room = AppearanceFixture.measureLook("space-2");
-          await userEvent.hover(DomFixture.one(hovered, "td"));
+          const cell = DomFixture.one(hovered, "td");
+          await PointerFixture.hoverAsync(cell, { isForced: true });
+          expect(cell.matches(":hover")).toBe(true);
 
           expect(new Set(colors(hovered))).toEqual(new Set([AppearanceFixture.readColor(theme, mode, "hover")]));
           const [left = 0, right = 0, top = 0, bottom = 0] = edges(hovered);
@@ -105,7 +108,8 @@ describe("ConfigurationTableComponent's row hover", () => {
       const hovered = find(row);
       const cell = DomFixture.one(hovered, "td");
       const room = AppearanceFixture.measureLook("space-2");
-      await userEvent.hover(cell);
+      await PointerFixture.hoverAsync(cell, { isForced: true });
+      expect(cell.matches(":hover")).toBe(true);
       const line = text(cell);
       const middle = (line.top + line.bottom) / 2;
 
@@ -121,7 +125,9 @@ describe("ConfigurationTableComponent's row hover", () => {
       await fixture.whenStable();
       const body = find(".nol-configuration-table-body");
       const hovered = find(".build");
-      await userEvent.hover(DomFixture.one(hovered, "td"));
+      const cell = DomFixture.one(hovered, "td");
+      await PointerFixture.hoverAsync(cell, { isForced: true });
+      expect(cell.matches(":hover")).toBe(true);
       const scrolls = body.scrollWidth > body.clientWidth;
       const start = edges(hovered);
       body.scrollLeft = body.scrollWidth;
@@ -139,7 +145,9 @@ describe("ConfigurationTableComponent's row hover", () => {
     owner.style.cssText = "display: block; width: 10rem; overflow-x: auto";
     await fixture.whenStable();
     const before = owner.scrollWidth;
-    await userEvent.hover(find(".short td"));
+    const cell = find(".short td");
+    await PointerFixture.hoverAsync(cell, { isForced: true });
+    expect(cell.matches(":hover")).toBe(true);
     const [, right = 0] = edges(find(".short"));
 
     expect(before).toBeGreaterThan(owner.clientWidth);

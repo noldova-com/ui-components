@@ -4,6 +4,8 @@
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
+A page an app loads lazily imports the code block from its own entry, `@noldova/ui.components.angular/code-block`, and the main entry exports it too; it stays in that page's chunk only while the app's start never imports the main entry, as the kit's README, [Lazy pages](../../src/noldova.ui.components.angular/README.md#lazy-pages), says.
+
 ## Default geometry
 
 Fills its container's width; automatic height, with an inner vertical scroll only past the maximum height its owner gives; header at least 1.625rem high, with the language's text 0.75rem from its start and the Copy glyph 0.75rem from its end; Run, when offered, is an icon button of Copy's size just before it, with the same gap as between Word wrap and Run; the code padded 0.875rem on every side, keeping its end padding when a line is scrolled to its end, with the line height's leading trimmed over the first line and under the last, so the space over and under the text is the padding at every text size, and a sideways scrollbar takes its height from the bottom padding, so the space under the last line matches the space over the first; medium radius; 1px border and header divider.

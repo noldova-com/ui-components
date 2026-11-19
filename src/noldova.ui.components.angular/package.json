@@ -22,6 +22,14 @@
       "types": "./api/index.d.ts",
       "default": "./api/index.js"
     },
+    "./button": {
+      "types": "./api/button.d.ts",
+      "default": "./api/button.js"
+    },
+    "./code-block": {
+      "types": "./api/code-block.d.ts",
+      "default": "./api/code-block.js"
+    },
     "./code-highlighting": {
       "types": "./api/code-highlighting.d.ts",
       "default": "./api/code-highlighting.js"
@@ -41,6 +49,10 @@
     "./testing": {
       "types": "./api/testing.d.ts",
       "default": "./api/testing.js"
+    },
+    "./typography": {
+      "types": "./api/typography.d.ts",
+      "default": "./api/typography.js"
     },
     "./styles/*": "./styles/*",
     "./fonts/*": "./fonts/*",
@@ -79,8 +91,8 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "@angular/build": "22.2.8",
-    "@angular/cli": "22.2.8",
+    "@angular/build": "22.3.0",
+    "@angular/cli": "22.3.0",
     "@angular/common": "22.3.0",
     "@angular/compiler": "22.3.0",
     "@angular/compiler-cli": "22.3.0",

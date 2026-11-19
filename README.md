@@ -136,7 +136,7 @@ It reads one line at a time: it refuses an assertion that a line break splits fr
 
 ### Kit bundles
 
-The Kit bundles check builds eight small apps against the packed kit, with production settings, and reads which modules each chunk of the build holds.
+The Kit bundles check builds nine small apps against the packed kit, with production settings, and reads which modules each chunk of the build holds.
 It runs on Linux x64 only, as the Kit copies and the Kit manifest checks do, since the release builds, packs and publishes the kit on Linux x64 (`.github`'s shared `release-npm.yml`), and the other targets' CI jobs are the longer ones; elsewhere `npm test` says it skipped them and Angular's newest.
 The apps are in `src/noldova.ui.components.angular/tests/fixtures/kit-bundles/`, each with its own TypeScript configuration there and its project in the kit's `angular.json`, and they resolve `@noldova/ui.components.angular` to the installed package instead of its source.
 
@@ -146,10 +146,11 @@ The apps are in `src/noldova.ui.components.angular/tests/fixtures/kit-bundles/`,
 | `bundle-code-block`, which shows a code block without highlighting | The same. |
 | `bundle-highlighted-code-block`, which adds `provideCodeHighlighting()` | No initial chunk holds the highlighter's library, and the grammars come in lazy chunks. |
 | `bundle-highlighting-worker`, which adds `provideCodeHighlightingWorker` with a worker file that calls `serveCodeHighlighting` | The same, and a chunk built from the worker file holds every grammar the page's lazy chunks hold and imports no other chunk, since Angular's build leaves out the chunks a worker's lazy imports share. |
-| `bundle-message`, which shows a message and adds `provideMarkdown()` | `markdown-it` comes in a lazy chunk; no chunk of the other seven apps holds it. |
+| `bundle-message`, which shows a message and adds `provideMarkdown()` | `markdown-it` comes in a lazy chunk; no chunk of the other eight apps holds it. |
 | `bundle-progress`, which binds `isDelayed` on a spinner and a progress bar | It builds, as an app that binds an input of a host directive needs that directive exported from the entry point, and no chunk holds the code highlighter, a grammar or `markdown-it`. |
 | `bundle-menu`, which binds `disabled` and `triggered` on a menu group action | The same as `bundle-progress`. |
 | `bundle-button`, which imports `ButtonComponent` alone | The same as `bundle-progress`. Of the kit's strings files, named `resources.js`, its chunks hold only the shared `resources.js` and those of the classes the button reaches: the spinner's delay, `reveal-delay.resources.js`, the busy guard's, `busy-guard.resources.js`, and the clock's, `clock-tokens.resources.js` and `system-time-source.resources.js`. Its initial chunks hold at most 21,200 bytes of them, about a tenth above the 19,250 they held when the cap was set; the check writes the bytes on every run. |
+| `bundle-lazy-code-block`, whose start imports `ButtonComponent` from `@noldova/ui.components.angular/button` and the typography painter from `@noldova/ui.components.angular/typography`, never the main entry, and which later loads three pages, as lazy routes do, one with `CodeBlockComponent` from `@noldova/ui.components.angular/code-block` | The same as `bundle-progress`, and no initial chunk holds the code block, its toolbar or its tooltip, which come in a lazy chunk, as the kit's README, Lazy pages, says. With three lazy pages, Angular's build merges its chunks, as it does for an app with as many lazy routes. |
 
 ### Kit copies
 
@@ -209,7 +210,7 @@ Before the runs, it checks itself on small reports in a temporary folder: a file
 
 45 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 42 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
-The times are from one run of `npm run test:timing` on each system at 9bb5b36, while [#178](https://github.com/noldova-com/ui-components/issues/178) is open.
+The times are from one run of `npm run test:timing` on each system at 9bb5b36, while [#178](https://github.com/noldova-com/ui-components/issues/178) is open; the notes after the list that give a file's time alone say so, beside these cells.
 A file near the line may fall either side on another run: against a run on each of the same machines at 9265927, 4 files left the list and 5 joined it, besides the spinner's, which #178 changed between them.
 A cause is measured where its kind says so; where it says not measured, it names only what the tests do.
 
@@ -322,17 +323,39 @@ Measured in the same way, some files are bound by a wait their checks need, so n
 - `hang-limit.spec.ts` waits out its 100 ms stand-in for the shared bound in three of its five tests, 104 to 114 ms a test on Linux and Windows.
 - `gallery-overlays.component.spec.ts` renders its section, about 170 ms a test on Linux and Windows against 20 ms on macOS.
 - The docs site's `tokens-page.component.spec.ts` renders the tokens page, 180 to 630 ms a test on Linux.
-- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, ui-components-20261118-063447-ea50, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
+- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
 
-The rest are not measured; most drive real pointer moves, clicks or key presses.
+The configuration table's row hover spec and the focus start spec now move the real pointer at once too, onto cells and buttons laid out and still: the hovers through `PointerFixture.hoverAsync` with `isForced`, each followed by a check that the cell is hovered, and the clicks with Playwright's `force`, each followed by a check that the button has the focus.
+Unlike the list above, the two tables below give each file's median test in runs of a few files alone, next to the cells the timing check at 9bb5b36 gave it under the whole suite; a file alone runs faster than under the whole suite, and its time alone also moves with what else runs beside it.
+Measured in three runs on one test machine of each system, each switching between main and that change, with only these two files running:
+
+| File | Timing check, Linux, Windows, macOS | Alone, Linux | Alone, Windows | Alone, macOS |
+|---|---|---|---|---|
+| `configuration-table-row-hover.component.spec.ts` | within, 132 ms, within | 101 to 67 ms | 197 to 166 ms | 66 to 34 ms |
+| `focus-start.fixture.spec.ts` | 127 ms, within, within | 115 to 84 ms | 357 to 161 ms | 77 to 46 ms |
+
+On Windows, what stays in a test is the forced hovers, 61 ms, or the forced clicks, 113 ms, and the move off the page, about 48 ms.
+The other files near the line, measured before that change in three runs on one test machine of each system, with these seven files running together:
+
+| File | Timing check, Linux, Windows, macOS | Alone, Linux, Windows, macOS | Where the time goes |
+|---|---|---|---|
+| `message-shell-runs.component.spec.ts` | 138 ms, 170 ms, within | 123 ms, 112 ms, 68 ms | Most of it outside the pointer and the keys, in rendering and settling its messages; its Run clicks take 96 ms a test on Linux on average. |
+| `pointer-rest.fixture.spec.ts` | within, 127 ms, within | 165 ms, 148 ms, 65 ms | Its real hovers, about 110 ms a test on Linux, are the moves it checks the leave against, so none is forced. |
+| `virtual-list-focus-ring.component.spec.ts` | 124 ms, 171 ms, within | 229 ms, 167 ms, 108 ms | Real clicks, key presses and the list's scroll over frames, with none of them over 50 ms a test on average. |
+| `gallery.component.spec.ts` | 158 ms, within, within | 106 ms, 94 ms, 20 ms | Within the line in these runs. |
+| `gallery-forms.component.spec.ts` | within, within, within | 96 ms, 104 ms, 14 ms | Within the line in both. |
+
+The focus ring's 167 ms on Windows here and its 71 ms in the paragraph on the virtual list's settles above are both runs without the whole suite, on different days and loads: that one ran its file and the kit rows' alone, and this one ran seven files together, through a probe that times each test's phases, on a Windows machine whose speed moved within the hour, as the row hover spec's 146 ms and 197 ms before the change, on the same machine eight minutes apart, show.
+
+The focus ring spec now clicks its articles, and the slot between two of them, at once too, with Playwright's `force`, each click followed by the test's existing check of where the focus went; the Jump to latest button, which shows and moves, keeps its real click.
+Measured in three runs on one test machine of each system, each switching between main and that change, with only this file running, its median test went from 180 to 148 ms on Linux, from 165 to 114 ms on Windows, and from 74 to 80 ms on macOS, within the line both times, and its clicks from 78 to 34 ms a test on Linux and from 72 to 16 ms on Windows.
+On Linux what stays in that test, about 113 ms, is the render, the Tab and the move off the page that every test in the file has, its theme tests taking about 75 ms with no click, so the file stays over the line on Linux under [#176](https://github.com/noldova-com/ui-components/issues/176).
+
+Not measured here: the Gallery overlay container spec, which [#199](https://github.com/noldova-com/ui-components/issues/199) takes.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `configuration-table-row-hover.component.spec.ts` | within | 132 ms | within |
-| `focus-start.fixture.spec.ts` | 127 ms | within | within |
 | `gallery-overlay-container.spec.ts` | 146 ms | 136 ms | within |
-| `message-shell-runs.component.spec.ts` | 138 ms | 170 ms | within |
-| `pointer-rest.fixture.spec.ts` | within | 127 ms | within |
 
 The tests over 1 second, waiting for the Owner's acceptance: every one the timing check printed at 60fda17 on one Linux, one Windows and one macOS test machine, each with its slowest median of three runs there, rounded up to 100 ms, and its cause, from what the test does, or the issue that measures it: The Gallery's Focus and Hover cell rows were printed for #173 on the same three systems, after their specs were split by specimen.
 
