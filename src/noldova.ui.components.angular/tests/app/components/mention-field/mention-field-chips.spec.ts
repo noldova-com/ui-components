@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, ViewEncapsulation, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page, userEvent } from "vitest/browser";
 
@@ -15,11 +15,13 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { MentionCandidate } from "../../../../src/app/models/mention-candidate";
 import type { Theme } from "../../../../src/app/models/theme";
+import { ThemePainter } from "../../../../src/app/services/theme-painter";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { MentionFieldResources } from "../../../../src/app/components/mention-field/mention-field.resources";
 import { CommandKeyFixture } from "../../../fixtures/command-key.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { EmulatedMediaFixture } from "../../../fixtures/emulated-media.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 const chat = new MentionCandidate("agent 7", "Chat Bot");
@@ -88,6 +90,14 @@ class FullBoxFieldHostComponent {
 })
 class StaticParentHostComponent {
   public readonly candidates: readonly MentionCandidate[] = [chat, ada];
+}
+
+@Component({
+  template: "",
+  styleUrl: "../../../../src/styles/theme.css",
+  encapsulation: ViewEncapsulation.None
+})
+class ThemeStylesheetHostComponent {
 }
 
 describe("MentionFieldDirective's chips", () => {
@@ -433,6 +443,40 @@ describe("MentionFieldDirective's chips", () => {
     expect([getComputedStyle(field()).webkitTextFillColor, backdrop.color, chip.color, chip.outlineStyle, chip.outlineColor, chip.outlineWidth, code.outlineStyle, code.outlineColor])
       .toEqual([ForcedColorsFixture.resolve("CanvasText"), "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "solid", ForcedColorsFixture.resolve("Highlight"), "1px", "dashed",
         ForcedColorsFixture.resolve("CanvasText")]);
+  });
+
+  it("gives its text the dark theme's color when the system turns dark on a page that follows it through the kit's stylesheet alone", async () => {
+    const stylesheet = TestBed.createComponent(ThemeStylesheetHostComponent);
+    stylesheet.detectChanges();
+    fixture = TestBed.createComponent(ChipFieldHostComponent);
+    await fixture.whenStable();
+    const backdrop = DomFixture.one(DomFixture.host(fixture), ".nol-mention-backdrop");
+    const light = backdrop.style.color;
+    try {
+      await EmulatedMediaFixture.emulateAsync("prefers-color-scheme", "dark");
+      await DomChangeFixture.untilAsync(() => expect(backdrop.style.color).toBe(getComputedStyle(field()).color));
+
+      expect([getComputedStyle(field()).color === light, light === String.empty]).toEqual([false, false]);
+    }
+    finally {
+      await EmulatedMediaFixture.resetAsync();
+      stylesheet.destroy();
+    }
+  });
+
+  it("gives its text the new theme's color when a subtree around it is painted in the other mode, and back when it's erased", async () => {
+    await renderAsync();
+    const backdrop = DomFixture.one(DomFixture.host(fixture), ".nol-mention-backdrop");
+    const light = backdrop.style.color;
+    const scope = field().parentElement as HTMLElement;
+    const painter = new ThemePainter(DefaultTheme.theme);
+    painter.paint(scope, DefaultTheme.theme, ThemeMode.Dark);
+    const dark = getComputedStyle(field()).color;
+    await DomChangeFixture.untilAsync(() => expect(backdrop.style.color).toBe(dark));
+    painter.erase(scope);
+    await DomChangeFixture.untilAsync(() => expect(backdrop.style.color).toBe(light));
+
+    expect([dark === light, light === getComputedStyle(field()).color]).toEqual([false, true]);
   });
 
   for (const theme of AppearanceFixture.themes)
