@@ -22,6 +22,7 @@ import { MentionOverlay } from "../../models/mention-overlay.js";
 import { MentionValue } from "../../models/mention-value.js";
 import { OverlayAnchoring } from "../../models/overlay-anchoring.js";
 import { OverlaySide } from "../../models/overlay-side.js";
+import { ThemeChangeWatch } from "../../models/theme-change-watch.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { Announcer } from "../../services/announcer.js";
 import { Resources } from "../../../resources.js";
@@ -90,6 +91,7 @@ export class MentionFieldDirective {
     const place = (): void => this.backdrop.place();
     const resizes = new ResizeObserver(place);
     const looks = new MutationObserver(place);
+    const themes = new ThemeChangeWatch(this.field, place);
     afterNextRender(() => {
       this.backdrop.attach();
       this.reportStaticParent();
@@ -98,11 +100,13 @@ export class MentionFieldDirective {
       resizes.observe(this.field);
       looks.observe(this.field.ownerDocument.documentElement, { attributes: true });
       looks.observe(this.field.ownerDocument.body, { attributes: true });
+      themes.start();
     });
     inject(DestroyRef).onDestroy(() => {
       this.field.removeEventListener(Resources.keydownEvent, handleKey, true);
       resizes.disconnect();
       looks.disconnect();
+      themes.stop();
       this.backdrop.dispose();
       this.hide();
     });
