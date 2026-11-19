@@ -11,5 +11,6 @@ import type { IVitestLogger } from "./i-vitest-logger.ts";
 export interface IVitestRun {
   readonly logger: IVitestLogger;
 
-  onClose(listener: () => void): void;
+  // Vitest's close waits for a listener's promise.
+  onClose(listener: () => void | Promise<void>): void;
 }

@@ -13,6 +13,8 @@ declare module "vitest/browser" {
     watchFailedModuleRequests: () => Promise<readonly string[]>;
     // A localhost port nothing listens on, for the spec of a request whose connection is refused.
     closedPort: () => Promise<number>;
+    // The lines a recorder of its own prints for a refused module request with the probe named, "rejecting" or "failing listing", once its run closed.
+    scriptedRefusal: (probe: string) => Promise<readonly string[]>;
   }
 }
 

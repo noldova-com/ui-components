@@ -11,6 +11,7 @@ import type { IBrowserCommandContext } from "./interfaces/i-browser-command-cont
 import type { IBrowserPage } from "./interfaces/i-browser-page.ts";
 import type { IBrowserRequest } from "./interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "./interfaces/i-browser-response.ts";
+import type { IConnectionProbe } from "./interfaces/i-connection-probe.ts";
 import { ConnectionProbe } from "./connection-probe.ts";
 
 // Prints each module request the browser fails, so a spec file that fails to import names why: one that ends in a network error, with the error, and
@@ -35,12 +36,24 @@ export class FailedModuleRequests {
   // Requests whose response was printed: the browser then cancels the request too, which would print the same import again.
   private readonly printedResponses: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly lines: string[] = [];
-  private readonly probe: ConnectionProbe = new ConnectionProbe();
+  private readonly probe: IConnectionProbe;
+  // Probes still running: the run's close waits for them, so a refusal in the run's last spec file still prints what its port held.
+  private readonly probing: Set<Promise<void>> = new Set();
+  private isWaitedForOnClose: boolean = false;
 
   // The browser command: listens on the page that calls it, once per page, and gives every line printed so far.
   public readonly watch: (context: IBrowserCommandContext) => readonly string[] = context => this.watchPage(context.page, context.project.vitest);
 
+  // The probe is ConnectionProbe unless given, as tests/network/scripted-refusal.ts gives one that fails.
+  public constructor(probe: IConnectionProbe = new ConnectionProbe()) {
+    this.probe = probe;
+  }
+
   private watchPage(page: IBrowserPage, run: IVitestRun): readonly string[] {
+    if (!this.isWaitedForOnClose) {
+      this.isWaitedForOnClose = true;
+      run.onClose(() => this.probedAsync());
+    }
     if (!this.pages.has(page)) {
       this.pages.add(page);
       page.on("requestfailed", request => this.recordRequest(request, run));
@@ -55,8 +68,16 @@ export class FailedModuleRequests {
     const error = request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR;
     this.print(`Failed module request at ${new Date().toISOString()}: ${error} ${request.url()}`, run);
     const port = new URL(request.url()).port;
-    if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "")
-      void this.printServerAsync(Number(port), request.url(), run);
+    if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "") {
+      const printing = this.printServerAsync(Number(port), request.url(), run);
+      this.probing.add(printing);
+      void printing.finally(() => this.probing.delete(printing));
+    }
+  }
+
+  // Each probe ends within ConnectionProbe's connect and listing limits, so the close waits a few seconds at most, within Vitest's teardown limit.
+  private async probedAsync(): Promise<void> {
+    await Promise.all(this.probing);
   }
 
   // Only a URL that names its port is probed, as the test server's always do.
