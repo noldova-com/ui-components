@@ -53,6 +53,40 @@ describe("failed module request setup", () => {
     expect(printed[0]).toMatch(/^Failed module response at \S+: 200 text\/html/u);
   });
 
+  it("prints, after a module request whose connection is refused, what its port held: whether Node connects there and what listens", async () => {
+    const port = await commands.closedPort();
+    const url = `http://localhost:${port}/refused-${crypto.randomUUID()}.js`;
+
+    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+
+    await expect.poll(() => printedFor(url)).toHaveLength(2);
+    const printed = await printedFor(url);
+    expect(printed[0]).toMatch(/^Failed module request at \S+: net::ERR_CONNECTION_REFUSED http:/u);
+    expect(printed[1]).toMatch(new RegExp(`^Failed module request's server at \\S+Z, port ${port}: Node connects \\S+ ECONNREFUSED(, \\S+ ECONNREFUSED)*; listening none; other sockets on the port \\S`, "u"));
+  });
+
+  it("prints, when the port's probe throws, that the port couldn't be probed and why, in place of what it held, and the run's close waits for it", async () => {
+    const printed = await commands.scriptedRefusal("rejecting");
+
+    expect(printed).toHaveLength(2);
+    expect(printed[0]).toMatch(/^Failed module request at \S+: net::ERR_CONNECTION_REFUSED http:\/\/localhost:\d+\/scripted-/u);
+    expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: the port couldn't be probed: localhost couldn't be resolved\. http:\/\/localhost:\d+\/scripted-/u);
+  });
+
+  it("prints, when the port's sockets can't be listed, what Node's connections found and why the listing failed", async () => {
+    const printed = await commands.scriptedRefusal("failing listing");
+
+    expect(printed).toHaveLength(2);
+    expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: .*no-such-listing-.*ENOENT.* http:\/\/localhost:\d+\/scripted-/u);
+  });
+
+  it("prints, when the port's socket listing never ends, that it couldn't be listed once the listing's limit stopped it, and the run's close waits for that", async () => {
+    const printed = await commands.scriptedRefusal("hanging listing");
+
+    expect(printed).toHaveLength(2);
+    expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
+  });
+
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
     const fetched = refusedAt("fetch");
     const module = refusedAt("module");
