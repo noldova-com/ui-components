@@ -80,6 +80,13 @@ describe("failed module request setup", () => {
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: .*no-such-listing-.*ENOENT.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
+  it("prints, when the port's socket listing never ends, that it couldn't be listed once the listing's limit stopped it, and the run's close waits for that", async () => {
+    const printed = await commands.scriptedRefusal("hanging listing");
+
+    expect(printed).toHaveLength(2);
+    expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
+  });
+
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
     const fetched = refusedAt("fetch");
     const module = refusedAt("module");

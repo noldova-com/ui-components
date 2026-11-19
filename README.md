@@ -505,7 +505,7 @@ The run's close waits for probes still running, so a refusal in the run's last s
 A browser connection refused while Node connects on the server's address points at the browser's side, and one refused while nothing listens at the server's.
 A response printed this way is printed once, though the browser also cancels its request.
 Every run prints eight such lines from `tests/failed-module-requests.setup.spec.ts`, which fails a module on purpose each way: four `net::ERR_UNSAFE_PORT` requests to port 1, one missing file's error status, one HTML page's `text/html`, and one `net::ERR_CONNECTION_REFUSED` request, with its server line, to a port nothing listens on, which the browser command `closedPort` in `tests/network/closed-port.ts` frees for it and keeps once Node's connection to it is refused on every address `localhost` resolves to.
-Its tests of a probe that throws and a listing that fails go through the browser command `scriptedRefusal` in `tests/network/scripted-refusal.ts`, whose recorder of its own, with the doubles in `tests/network/fakes/`, prints to its own run rather than the spec run's output.
+Its tests of a probe that throws, a listing that fails and a listing that never ends, stopped at its limit, go through the browser command `scriptedRefusal` in `tests/network/scripted-refusal.ts`, whose recorder of its own, with the doubles in `tests/network/fakes/`, prints to its own run rather than the spec run's output.
 Playwright reports every request's end whether or not anything listens, so the cost is one command call per spec file; on a Windows test machine, passes with and without that call took the same time within their spread.
 
 ### Failure screenshots

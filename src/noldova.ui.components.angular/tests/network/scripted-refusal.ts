@@ -18,12 +18,13 @@ import { RefusedRequest } from "./fakes/refused-request.ts";
 import { RejectingConnectionProbe } from "./fakes/rejecting-connection-probe.ts";
 
 // The browser command that has a recorder of its own see one module request refused at a closed port, with the probe the spec names in place of the
-// run's, and gives the lines it printed once its run closed: a probe that throws, or one whose socket listing fails, which the run's own probe
-// can't be made to do. Its lines go to its own run, not the spec run's output.
+// run's, and gives the lines it printed once its run closed: a probe that throws, one whose socket listing fails, or one whose listing never ends,
+// which the run's own probe can't be made to do. Its lines go to its own run, not the spec run's output.
 export class ScriptedRefusal {
   private static readonly PROBES: ReadonlyMap<string, () => IConnectionProbe> = new Map<string, () => IConnectionProbe>([
     ["rejecting", () => new RejectingConnectionProbe()],
-    ["failing listing", () => new ConnectionProbe([`no-such-listing-${randomUUID()}`, []])]
+    ["failing listing", () => new ConnectionProbe([`no-such-listing-${randomUUID()}`, []])],
+    ["hanging listing", () => new ConnectionProbe([process.execPath, ["-e", "setInterval(() => {}, 1000)"]])]
   ]);
 
   public readonly print: (context: unknown, probe: string) => Promise<readonly string[]> = async (_context, probe) => {
