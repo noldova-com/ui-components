@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.17
+
+- `@noldova/ui.components.angular`: a new look token, `--nol-section-header-space-above`, sets the space above every section header but the first in its container. It is `var(--nol-space-3)`, 0.75rem, by default, so every header looks as before; a view whose rows sit closer, such as a chat list at 0.25rem, sets it on its own element for the headers inside it, and a theme can set it like its other look keys.
+
 ## 0.0.16
 
 - `@noldova/ui.components.angular`: Angular's build tools, `@angular/build` and `@angular/cli`, move from 22.2.8 to 22.3.0, their newest, at the kit's Angular version; an app that installs them at the kit's pin, as the kit's README says, moves them to 22.3.0 with it.

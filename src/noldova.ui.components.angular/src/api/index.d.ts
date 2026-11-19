@@ -10468,8 +10468,10 @@ export declare class ScrollEndFollower {
  * A section header, `nol-section-header`: the label of a group of rows in a
  * list or tree, in the label size at the emphasis weight, with no fill or line.
  * Groups are separated by space: every header that is not the first
- * element in its container stands 0.75rem below what comes before it. It
- * has the heading role. A collapsible header holds one button, the whole
+ * element in its container stands `--nol-section-header-space-above`, the
+ * `section-header-space-above` look key, 0.75rem by default, below what
+ * comes before it; a view sets that token on its own element for the
+ * headers inside it. It has the heading role. A collapsible header holds one button, the whole
  * header, whose caret after the label points down while the group is open
  * and turns to the end while it is closed; the owner holds the open state
  * and shows or removes the rows.

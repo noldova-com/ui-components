@@ -129,19 +129,41 @@ describe("LayoutTraceFixture", () => {
       }
     });
 
-    it("gives the browser back once its trace ends, before it reads the trace's events, so another trace can start while they come", async () => {
+    it("gives the browser back once its trace ends, before it reads the trace's events, so another trace can start while they come, once a trace that took the browser first ends", async () => {
       const session = cdp();
       const box = document.body.appendChild(document.createElement("div"));
       let other = "not tried";
+      let isHeld = false;
+      let refused = (): void => undefined;
+      const wasRefused = new Promise<void>(resolve => refused = resolve);
       const sending = session as unknown as { send: (method: string, params?: object) => Promise<unknown> };
       const sendAsync = sending.send.bind(session);
       vi.spyOn(sending, "send").mockImplementation(async (method, params) => {
         if (method === "IO.read" && other === "not tried") {
-          other = await LayoutTraceFixture.startAsync(session, "devtools.timeline", 0).then(() => "started", (error: unknown) => error instanceof Error ? error.message : String(error));
-          if (other === "started")
+          other = "trying";
+          // A spec file in another tab can take the browser in the moment between this trace's end and the next start, as its own wait for the
+          // browser retries; here a trace takes it then and holds it until the next start has been refused once, so that start must wait it out.
+          await LayoutTraceFixture.startAsync(session, "devtools.timeline");
+          isHeld = true;
+          const started = LayoutTraceFixture.startAsync(session, "devtools.timeline").then(() => "started", (error: unknown) => error instanceof Error ? error.message : String(error));
+          await wasRefused;
+          try {
             await LayoutTraceFixture.endAsync(session);
+          }
+          finally {
+            // Whether or not the held trace's end threw, the start still waiting for the browser is awaited, and a trace it started is ended.
+            other = await started;
+            if (other === "started")
+              await LayoutTraceFixture.endAsync(session);
+          }
         }
-        return await sendAsync(method, params);
+        try {
+          return await sendAsync(method, params);
+        } catch (error) {
+          if (method === "Tracing.start" && isHeld)
+            refused();
+          throw error;
+        }
       });
       function forceLayout(): void {
         box.style.width = "10rem";

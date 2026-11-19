@@ -100,10 +100,23 @@ describe("SectionHeaderComponent", () => {
         AppearanceFixture.expectLook(`${header("first").getBoundingClientRect().height}px`, theme, "section-header-height", "height");
         AppearanceFixture.expectLook(first.paddingLeft, theme, "space-2", "padding-left");
         AppearanceFixture.expectPixels(label("first").left, icon.left);
-        AppearanceFixture.expectLook(later.marginTop, theme, "space-3", "margin-top");
+        AppearanceFixture.expectLook(later.marginTop, theme, "section-header-space-above", "margin-top");
         expect(first.marginTop).toBe("0px");
         expect([first.fontWeight, first.color]).toEqual(["500", AppearanceFixture.readColor(theme, mode, "text-strong")]);
       });
+
+  it("puts the space a view sets in --nol-section-header-space-above between a later header and the rows above it, and none above the first", async () => {
+    await renderAsync();
+    const list = DomFixture.one(DomFixture.host(fixture), ".list");
+    const above = (): number => header("later").getBoundingClientRect().top - DomFixture.present(header("later").previousElementSibling).getBoundingClientRect().bottom;
+    const defaultSpace = above();
+
+    list.style.setProperty("--nol-section-header-space-above", "0.25rem");
+
+    AppearanceFixture.expectPixels(defaultSpace, AppearanceFixture.measureLook("space-3"));
+    AppearanceFixture.expectPixels(above(), Number.parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.25);
+    expect(header("first").getBoundingClientRect().top).toBe(list.getBoundingClientRect().top);
+  });
 
   it("has as much space above its label as below it, within the header", async () => {
     await renderAsync();
