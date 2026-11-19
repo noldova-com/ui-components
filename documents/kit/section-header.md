@@ -25,7 +25,7 @@ A header the owner marks uppercase reads as a group heading over rows whose own 
 ## Surface and behavior
 
 No fill and no line.
-Groups are separated by space, never by lines: the space above a header is more than twice the space below it, so the label belongs to its own rows.
+Groups are separated by space, never by lines: at the default `--nol-section-header-space-above`, the space above a header is more than twice the space below it, so the label belongs to its own rows; a view that sets it smaller, such as a chat list's 0.25rem, keeps its groups closer and gives that up.
 A list keeps its headers and their rows as siblings in one container, and removes rather than hides an element before its first header.
 A heading of level 3 unless the owner gives another; a long label wraps.
 
