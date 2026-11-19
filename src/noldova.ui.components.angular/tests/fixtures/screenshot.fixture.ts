@@ -6,12 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { page } from "vitest/browser";
+import type {} from "@vitest/browser-playwright";
+import { cdp, server } from "vitest/browser";
 
 export class ScreenshotFixture {
+  private static readonly BROWSER: string = "chromium";
+
   public static async pixelsAsync(element: Element): Promise<ImageData> {
     const shot = new Image();
-    shot.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`;
+    shot.src = `data:image/png;base64,${await ScreenshotFixture.captureAsync(element)}`;
     await shot.decode();
     const canvas = document.createElement("canvas");
     canvas.width = shot.width;
@@ -66,5 +69,43 @@ export class ScreenshotFixture {
   public static isInsideCircle(shot: ImageData): (x: number, y: number) => boolean {
     const radius = Math.min(shot.width, shot.height) / 2 - 1;
     return (x, y) => Math.hypot(x + 0.5 - shot.width / 2, y + 0.5 - shot.height / 2) <= radius;
+  }
+
+  private static async captureAsync(element: Element): Promise<string> {
+    if (server.browser !== ScreenshotFixture.BROWSER)
+      throw new Error(`A screenshot is taken through Chromium's DevTools protocol, and this run's browser is ${server.browser}.`);
+    if (!ScreenshotFixture.isInView(element.getBoundingClientRect()))
+      element.scrollIntoView({ block: "center", inline: "center" });
+    const box = element.getBoundingClientRect();
+    const [left, top] = ScreenshotFixture.frameOrigin();
+    const [x, y] = [Math.floor(left + box.left), Math.floor(top + box.top)];
+    const clip = { x, y, width: Math.ceil(left + box.right) - x, height: Math.ceil(top + box.bottom) - y, scale: 1 };
+    const captureBeyondViewport = box.width > innerWidth || box.height > innerHeight;
+    const shot: unknown = await cdp().send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport });
+    const data = typeof shot === "object" && !Object.isNull(shot) && "data" in shot ? shot.data : undefined;
+    if (typeof data !== "string")
+      throw new Error("Chromium returned no screenshot.");
+    return data;
+  }
+
+  private static isInView(box: DOMRect): boolean {
+    return box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
+  }
+
+  private static frameOrigin(): readonly [number, number] {
+    let [left, top] = [0, 0];
+    for (let view: Window = window; view !== view.parent; view = view.parent) {
+      const frame = view.frameElement;
+      if (Object.isNull(frame))
+        throw new Error("A frame around the test can't be read, so where the test's frame lies on the page isn't known.");
+      const [box, style] = [frame.getBoundingClientRect(), view.parent.getComputedStyle(frame)];
+      const [startEdge, topEdge] = [frame.clientLeft + parseFloat(style.paddingLeft), frame.clientTop + parseFloat(style.paddingTop)];
+      const width = box.width - startEdge - parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth);
+      if (Math.abs(width - view.innerWidth) > 0.01)
+        throw new Error(`The test's frame is scaled, ${width} px wide on the page for ${view.innerWidth} px inside it, so its pixels aren't the page's.`);
+      left += box.left + startEdge;
+      top += box.top + topEdge;
+    }
+    return [left + (window.top?.scrollX ?? 0), top + (window.top?.scrollY ?? 0)];
   }
 }
