@@ -15,6 +15,7 @@ import type { TerminalOutputLine } from "../../models/terminal-output-line.js";
 import { TerminalOutputPalette } from "../../models/terminal-output-palette.js";
 import { TerminalOutputSegment } from "../../models/terminal-output-segment.js";
 import { ScrollEndFollower } from "../../models/scroll-end-follower.js";
+import { ThemeChangeWatch } from "../../models/theme-change-watch.js";
 import { Resources } from "../../../resources.js";
 import { TerminalOutputResources } from "./terminal-output.resources.js";
 
@@ -56,16 +57,12 @@ export class TerminalOutputComponent {
       };
       const sizes = new ResizeObserver(restyle);
       sizes.observe(this.sample().nativeElement, { box: TerminalOutputResources.terminalOutputSampleBox });
-      const themes = new MutationObserver(restyle);
-      themes.observe(this.host.ownerDocument.documentElement, { attributeFilter: [...TerminalOutputResources.terminalOutputThemeAttributes] });
-      const scopes = new MutationObserver(repaint);
-      for (let element = this.host.parentElement; !Object.isNull(element) && element !== this.host.ownerDocument.documentElement; element = element.parentElement)
-        scopes.observe(element, { attributeFilter: [...TerminalOutputResources.terminalOutputThemeAttributes] });
+      const themes = new ThemeChangeWatch(this.host, restyle);
+      themes.start();
       forced.addEventListener(Resources.changeEvent, restyle);
       destroyRef.onDestroy(() => {
         sizes.disconnect();
-        themes.disconnect();
-        scopes.disconnect();
+        themes.stop();
         forced.removeEventListener(Resources.changeEvent, restyle);
       });
     });

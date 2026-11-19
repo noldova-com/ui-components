@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, ViewEncapsulation, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { TerminalOutputComponent } from "../../../../src/app/components/terminal-output/terminal-output.component";
@@ -19,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { EmulatedMediaFixture } from "../../../fixtures/emulated-media.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 const colored: readonly TerminalOutputLine[] = [
@@ -40,6 +41,14 @@ class TerminalOutputHostComponent {
   public readonly lines = signal<readonly TerminalOutputLine[]>(colored);
   public readonly maxHeight = signal<number | null>(null);
   public readonly width = signal(30);
+}
+
+@Component({
+  template: "",
+  styleUrl: "../../../../src/styles/theme.css",
+  encapsulation: ViewEncapsulation.None
+})
+class ThemeStylesheetHostComponent {
 }
 
 describe("TerminalOutputComponent", () => {
@@ -201,6 +210,33 @@ describe("TerminalOutputComponent", () => {
 
     expect(spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)).toEqual([]);
   });
+
+  for (const way of ["the page's mode attribute", "the system's setting"])
+    it(`lifts its runs' text again for the dark theme's colors when ${way} turns the kit's stylesheet dark`, async () => {
+      const stylesheet = TestBed.createComponent(ThemeStylesheetHostComponent);
+      stylesheet.detectChanges();
+      await renderAsync(ThemeMode.Light);
+      AppearanceFixture.reset();
+      const light = getComputedStyle(spanOf("black")).color;
+      const lightBackground = getComputedStyle(body()).backgroundColor;
+      try {
+        if (way === "the system's setting")
+          await EmulatedMediaFixture.emulateAsync("prefers-color-scheme", "dark");
+        else
+          document.documentElement.setAttribute("data-nol-theme-mode", ThemeMode.Dark);
+        await DomChangeFixture.untilAsync(() => {
+          fixture.detectChanges();
+          expect(getComputedStyle(body()).backgroundColor).not.toBe(lightBackground);
+          expect(getComputedStyle(spanOf("black")).color).not.toBe(light);
+          expect(spans().filter(t => t.textContent.trim().length > 0).map(contrastOf).filter(t => t < 4.5)).toEqual([]);
+        });
+      }
+      finally {
+        document.documentElement.removeAttribute("data-nol-theme-mode");
+        await EmulatedMediaFixture.resetAsync();
+        stylesheet.destroy();
+      }
+    });
 
   it("lifts its runs' text again for the dark terminal set when a dark terminal scope's class is added around it, and back when it's removed", async () => {
     await renderAsync(ThemeMode.Light);
