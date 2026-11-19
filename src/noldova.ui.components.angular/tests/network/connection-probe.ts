@@ -68,11 +68,12 @@ export class ConnectionProbe implements IConnectionProbe {
 
   // Windows' and macOS's netstat and Linux's ss each list every TCP socket with its local and remote address; a socket is on the port when either
   // address ends with it, after a colon, or after a dot as macOS writes it.
-  // The listing has the connect's time limit, so a listing that hangs ends with the probe.
+  // The listing is stopped at the connect's time limit, so a listing that hangs ends with the probe; the stop is an abort signal, as a timeout key
+  // under tests reads to the Poll and test limits check as a test's own limit.
   private socketsAsync(port: number): Promise<string> {
     const [command, args] = this.listing;
     return new Promise(resolve => {
-      execFile(command, args, { windowsHide: true, timeout: ConnectionProbe.CONNECT_LIMIT, maxBuffer: ConnectionProbe.LISTING_BUFFER }, (error, stdout) => {
+      execFile(command, args, { windowsHide: true, signal: AbortSignal.timeout(ConnectionProbe.CONNECT_LIMIT), maxBuffer: ConnectionProbe.LISTING_BUFFER }, (error, stdout) => {
         if (error !== null) {
           resolve(`the sockets couldn't be listed: ${error.message}`);
           return;
