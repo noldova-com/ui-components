@@ -6,6 +6,7 @@ Each version's section is written by the pull request that changes the version, 
 
 ## 0.0.16
 
+- `@noldova/ui.components.angular`: Angular's build tools, `@angular/build` and `@angular/cli`, move from 22.2.8 to 22.3.0, their newest, at the kit's Angular version; an app that installs them at the kit's pin, as the kit's README says, moves them to 22.3.0 with it.
 - `@noldova/ui.components.angular`: three new entry points, so the kit's parts that only a lazy page uses stay out of an app's start: `@noldova/ui.components.angular/button`, with `ButtonComponent`, `ButtonSize` and `ButtonVariant`, and `@noldova/ui.components.angular/typography`, with `Typography`, `TypographyPainter`, `TypographySizing` and `ThemeMode`, for the start, and `@noldova/ui.components.angular/code-block`, with `CodeBlockComponent`, `ShellRunOutputDirective`, `ShellRun`, `ShellRunState` and `IShellRunOutputContext`, for a lazy page. An app whose start imports anything from the main entry gets in its start every part of the kit any of its pages uses, so its start imports these instead, as the README's Lazy pages says. The main entry still exports the same classes, so nothing an app imports today moves.
 
 ## 0.0.15
