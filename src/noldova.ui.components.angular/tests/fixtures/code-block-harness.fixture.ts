@@ -27,6 +27,7 @@ import { DomFixture } from "./dom.fixture";
 import { ForcedColorsFixture } from "./forced-colors.fixture";
 import { GalleryFixture } from "./gallery.fixture";
 import { LayoutSettleFixture } from "./layout-settle.fixture";
+import { RenderedFrameFixture } from "./rendered-frame.fixture";
 import { TestTimeSource } from "./test-time-source";
 
 export interface ICodeBlockRunGeometry {
@@ -130,9 +131,9 @@ export class CodeBlockHarness {
   public readonly glyphOfRun = (): HTMLElement => DomFixture.one(this.run(), ".nol-icon-button-glyph");
   public readonly body = (): HTMLElement => this.find(".nol-code-block-body");
   public readonly framesAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-  // Waits, two frames and a stable fixture at a time, until what the spec names of the block's layout stays the same, at the shared bound.
+  // Waits, a rendered frame and a stable fixture at a time, until what the spec names of the block's layout stays the same, at the shared bound.
   public readonly settledAsync = (what: string, shape: () => string): Promise<void> => LayoutSettleFixture.settledAsync(what, shape, async () => {
-    await this.framesAsync();
+    await RenderedFrameFixture.nextAsync();
     await this.fixture.whenStable();
   });
   public readonly resolve = (property: string, value: string): string => GalleryFixture.colorOf(document.body, property, value);
@@ -265,10 +266,10 @@ export class CodeBlockHarness {
 
   public readonly followAsync = async (change: () => void): Promise<void> => {
     await this.changeAsync(change);
-    await this.framesAsync();
+    await RenderedFrameFixture.nextAsync();
   };
 
-  // Waits out followAsync's two frames, checking after each that what the spec names has happened, and that it still holds once it has.
+  // Waits two frames after a change, checking after each that what the spec names has happened, and that it still holds once it has.
   public readonly followedAsync = async (what: string, change: () => void, isDone: () => boolean): Promise<void> => {
     await this.changeAsync(change);
     let isHeld = false;

@@ -12,12 +12,18 @@ import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
 import { CodeHighlights } from "../../../../src/app/services/code-highlights";
 import { CodeTokenKind } from "../../../../src/app/enums/code-token-kind";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { ChangeSignalFixture } from "../../../fixtures/change-signal.fixture";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
   const { renderAsync, changeAsync, controlTokens, settledAsync, tokens, spanColorOf, colorOf, wordTokens } = harness;
+  const tokensAfterMediaChangeAsync = (check: () => void): Promise<void> => ChangeSignalFixture.untilAsync(check, recheck => {
+    const query = matchMedia("(forced-colors: active)");
+    query.addEventListener("change", recheck);
+    return () => query.removeEventListener("change", recheck);
+  });
 
   beforeEach(harness.configure);
 
@@ -59,10 +65,14 @@ describe("CodeBlockComponent", () => {
     });
     const shown = tokens();
     const calls = [tokenizeAsync.mock.calls.length, add.mock.calls.length];
+    const forcedOn = tokensAfterMediaChangeAsync(() => expect(tokens()).toEqual([]));
     await ForcedColorsFixture.activateAsync();
+    await forcedOn;
     await settledAsync("the code's highlights", () => JSON.stringify(tokens()));
     const forced = tokens();
+    const forcedOff = tokensAfterMediaChangeAsync(() => expect(tokens()).toEqual(shown));
     await ForcedColorsFixture.resetAsync();
+    await forcedOff;
     await settledAsync("the code's highlights", () => JSON.stringify(tokens()));
 
     expect(shown).toEqual(wordTokens(harness.host.code()).map(t => [t.text, t.kind.toLowerCase()]));
