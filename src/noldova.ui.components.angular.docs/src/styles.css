@@ -41,6 +41,7 @@
   --nol-docs-kit-choice-pill-gap: var(--nol-choice-pill-gap);
   --nol-docs-kit-pill-padding: var(--nol-pill-padding);
   --nol-docs-kit-section-header-height: var(--nol-section-header-height);
+  --nol-docs-kit-section-header-space-above: var(--nol-section-header-space-above);
   --nol-docs-kit-code-header-height: var(--nol-code-header-height);
 }
 
@@ -74,6 +75,7 @@
   --nol-choice-pill-gap: calc(var(--nol-docs-kit-choice-pill-gap) * var(--nol-docs-scale));
   --nol-pill-padding: calc(var(--nol-docs-kit-pill-padding) * var(--nol-docs-scale));
   --nol-section-header-height: calc(var(--nol-docs-kit-section-header-height) * var(--nol-docs-scale));
+  --nol-section-header-space-above: calc(var(--nol-docs-kit-section-header-space-above) * var(--nol-docs-scale));
   --nol-code-header-height: calc(var(--nol-docs-kit-code-header-height) * var(--nol-docs-scale));
   font-size: var(--nol-text-panel);
   line-height: var(--nol-line-panel);
@@ -111,6 +113,7 @@
   --nol-choice-pill-gap: var(--nol-docs-kit-choice-pill-gap);
   --nol-pill-padding: var(--nol-docs-kit-pill-padding);
   --nol-section-header-height: var(--nol-docs-kit-section-header-height);
+  --nol-section-header-space-above: var(--nol-docs-kit-section-header-space-above);
   --nol-code-header-height: var(--nol-docs-kit-code-header-height);
   font-size: var(--nol-text-panel);
   line-height: var(--nol-line-panel);
