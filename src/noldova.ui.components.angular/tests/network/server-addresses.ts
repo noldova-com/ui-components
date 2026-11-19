@@ -31,8 +31,31 @@ export class ServerAddresses {
     if (this.switches++ >= ServerAddresses.MOST_SWITCHES)
       return;
     print(`#28 module responses now from ${key} at ${new Date().toISOString()}; so far ${this.tally()}`);
-    if (first)
+    if (first) {
       print(await this.probeAsync(port, "first response"));
+      await this.watchOtherFamilyAsync(address, port, print);
+    }
+  }
+
+  // Listens on the loopback address of the family the server doesn't listen on, at the server's port, and passes each connection through to the
+  // server, printing when it came: every such connection is one that a normal run refuses.
+  private async watchOtherFamilyAsync(address: string, port: number, print: (line: string) => void): Promise<void> {
+    const server = address.replace(/^\[|\]$/gu, "");
+    const family = net.isIPv6(server) ? 4 : 6;
+    const other = (await dns.lookup(ServerAddresses.LOCALHOST, { family })).address;
+    let connections = 0;
+    const sensor = net.createServer(socket => {
+      connections++;
+      if (connections <= ServerAddresses.MOST_SWITCHES)
+        print(`#28 connection ${connections} on ${other}:${port} at ${new Date().toISOString()}, passed through to ${server}`);
+      const upstream = net.connect({ host: server, port });
+      socket.pipe(upstream).pipe(socket);
+      socket.on("error", () => upstream.destroy());
+      upstream.on("error", () => socket.destroy());
+    });
+    sensor.on("error", (error: NodeJS.ErrnoException) => print(`#28 sensor on ${other}:${port} failed: ${error.code ?? error.message}`));
+    sensor.listen({ host: other, port }, () => print(`#28 sensor listening on ${other}:${port} at ${new Date().toISOString()}`));
+    sensor.unref();
   }
 
   public async refusedAsync(port: number): Promise<string> {
