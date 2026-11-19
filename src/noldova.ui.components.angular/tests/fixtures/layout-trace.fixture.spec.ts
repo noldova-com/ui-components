@@ -147,10 +147,15 @@ describe("LayoutTraceFixture", () => {
           isHeld = true;
           const started = LayoutTraceFixture.startAsync(session, "devtools.timeline").then(() => "started", (error: unknown) => error instanceof Error ? error.message : String(error));
           await wasRefused;
-          await LayoutTraceFixture.endAsync(session);
-          other = await started;
-          if (other === "started")
+          try {
             await LayoutTraceFixture.endAsync(session);
+          }
+          finally {
+            // Whether or not the held trace's end threw, the start still waiting for the browser is awaited, and a trace it started is ended.
+            other = await started;
+            if (other === "started")
+              await LayoutTraceFixture.endAsync(session);
+          }
         }
         try {
           return await sendAsync(method, params);
