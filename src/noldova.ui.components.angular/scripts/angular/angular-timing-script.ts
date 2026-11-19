@@ -10,22 +10,28 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import CommandFailedException from "../command-failed.exception.ts";
+import { LayoutTraceSuite } from "../../tests/fixtures/layout-trace-suite.ts";
 import Config from "../config.ts";
 import { TemporaryFolder } from "../processes/temporary-folder.ts";
 import Script from "../script.ts";
+import { AngularTestReport } from "./angular-test-report.ts";
 import { AngularTestTiming } from "./angular-test-timing.ts";
 import type { AngularTestTimingResult } from "./angular-test-timing-result.ts";
 import { TimedTest } from "./timed-test.ts";
 import { TimingCase } from "./timing-case.ts";
+import { TimingPartCase } from "./timing-part-case.ts";
 
 // The timing check's run loop, for the kit's and the docs site's specs alike: it checks itself on small reports, runs the project's specs several
-// times without coverage, and judges their times.
+// times without coverage, and judges their times. As npm test does, each run gives the tests that trace layout a browser of their own, since a
+// trace records every tab of its browser and the suite's other tabs make it large enough to hold the browser past the next trace's wait.
 export abstract class AngularTimingScript extends Script {
   private static readonly RUNS: number = 3;
   private static readonly ROOT: string = path.resolve(Config.ROOT);
   private static readonly ANGULAR_CLI_PATH: string = path.join(AngularTimingScript.ROOT, "node_modules/@angular/cli/bin/ng.js");
   private static readonly ANGULAR_TEST_ARGUMENTS: readonly string[] = ["--no-coverage", "--reporters=default", "--reporters=json", "--output-file"];
   private static readonly ANGULAR_TEST_COMMAND: string = "test";
+  private static readonly ANGULAR_FILTER_OPTION: string = "--filter";
+  private static readonly ANGULAR_INCLUDE_OPTION: string = "--include";
   private static readonly TIMING_FOLDER: string = "../../_build/timing";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly WORKSPACE_FOLDER: string = ".";
@@ -34,8 +40,14 @@ export abstract class AngularTimingScript extends Script {
   private static readonly SUITE: string = "Suite";
   private static readonly PASSED: string = "passed";
   private static readonly FAILED: string = "failed";
+  private static readonly SKIPPED: string = "skipped";
+  private static readonly SELF_CHECK_PROJECT: string = "self-check";
   private static readonly SELF_CHECK: string = "The timing check checks itself on small reports in a temporary folder:";
   private static readonly SELF_CHECK_FAILED: string = "The timing check failed its own check, so it times nothing.";
+  private static readonly SELECTION_CASE: string =
+    "a workspace with a spec file that traces layout and one that doesn't runs every test outside the tracing suite first, then the suite from that file alone";
+  private static readonly TRACED_SPEC: string = "tests/traced.spec.ts";
+  private static readonly UNTRACED_SPEC: string = "tests/untraced.spec.ts";
 
   private readonly project: string;
   private readonly owner: string;
@@ -54,6 +66,14 @@ export abstract class AngularTimingScript extends Script {
       isSelfChecked &&= holds;
       await this.writeLogAsync(`${holds ? "Holds" : "Fails"}: ${check.expectation}.`);
     }
+    for (const check of AngularTimingScript.partCases()) {
+      const holds = await AngularTimingScript.runPartCaseAsync(check);
+      isSelfChecked &&= holds;
+      await this.writeLogAsync(`${holds ? "Holds" : "Fails"}: ${check.expectation}.`);
+    }
+    const isSplit = await AngularTimingScript.runSelectionCaseAsync();
+    isSelfChecked &&= isSplit;
+    await this.writeLogAsync(`${isSplit ? "Holds" : "Fails"}: ${AngularTimingScript.SELECTION_CASE}.`);
     if (!isSelfChecked)
       throw new CommandFailedException(AngularTimingScript.SELF_CHECK_FAILED);
 
@@ -61,23 +81,38 @@ export abstract class AngularTimingScript extends Script {
     await fs.mkdir(folder, { recursive: true });
     await fs.rm(AngularTimingScript.DEPENDENCY_CACHE, { recursive: true, force: true });
     const timing = new AngularTestTiming(AngularTimingScript.WORKSPACE_FOLDER);
+    const tests = new AngularTestReport(AngularTimingScript.WORKSPACE_FOLDER, this.project);
+    const parts = await AngularTimingScript.partsAsync(AngularTimingScript.WORKSPACE_FOLDER, tests);
     for (let run = 1; run <= AngularTimingScript.RUNS; run++) {
-      const report = path.join(folder, `${this.project}-${run}.json`);
-      await fs.rm(report, { force: true });
       await this.writeLogAsync(`Timing run ${run} of ${AngularTimingScript.RUNS} of ${this.owner} specs...`);
-      try {
-        await this.executeProcessAsync(process.execPath,
-          [AngularTimingScript.ANGULAR_CLI_PATH, AngularTimingScript.ANGULAR_TEST_COMMAND, this.project, ...AngularTimingScript.ANGULAR_TEST_ARGUMENTS, report],
-          AngularTimingScript.WORKSPACE_FOLDER);
+      const reports: string[] = [];
+      for (const [index, selection] of parts.entries()) {
+        const report = path.join(folder, parts.length === 1 ? `${this.project}-${run}.json` : `${this.project}-${run}-${index + 1}.json`);
+        await fs.rm(report, { force: true });
+        try {
+          await this.executeProcessAsync(process.execPath,
+            [AngularTimingScript.ANGULAR_CLI_PATH, AngularTimingScript.ANGULAR_TEST_COMMAND, this.project, ...AngularTimingScript.ANGULAR_TEST_ARGUMENTS, report, ...selection],
+            AngularTimingScript.WORKSPACE_FOLDER);
+        }
+        catch (error) {
+          if (!(error instanceof CommandFailedException))
+            throw error;
+          await this.writeLogAsync(`Timing run ${run} of ${this.owner} specs failed; the timing check judges only passing specs.`);
+          process.exitCode = 1;
+          return;
+        }
+        reports.push(report);
       }
-      catch (error) {
-        if (!(error instanceof CommandFailedException))
-          throw error;
-        await this.writeLogAsync(`Timing run ${run} of ${this.owner} specs failed; the timing check judges only passing specs.`);
+      const findings = await AngularTimingScript.checkRanOnceAsync(tests, reports);
+      if (findings.length > 0) {
+        for (const finding of findings)
+          await this.writeLogAsync(finding);
+        await this.writeLogAsync(`Timing run ${run} of ${this.owner} specs ran a test in none or more than one of its parts; the timing check times nothing.`);
         process.exitCode = 1;
         return;
       }
-      await timing.readAsync(report);
+      for (const report of reports)
+        await timing.readAsync(report);
     }
 
     const result = timing.judge();
@@ -85,6 +120,28 @@ export abstract class AngularTimingScript extends Script {
       await this.writeLogAsync(line);
     if (result.over > 0)
       process.exitCode = 1;
+  }
+
+  // The test builder's selections for one timing run: one for every spec, or, when spec files trace layout, first every test outside the tracing
+  // suite, then only the suite's tests from the files that hold it, each in a browser of its own.
+  private static async partsAsync(folder: string, tests: AngularTestReport): Promise<readonly (readonly string[])[]> {
+    const traced: string[] = [];
+    for (const spec of await tests.listSpecFilesAsync())
+      if ((await fs.readFile(path.resolve(folder, spec), AngularTimingScript.ENCODING)).includes(LayoutTraceSuite.mark))
+        traced.push(spec);
+    if (traced.length === 0)
+      return [[]];
+    return [
+      [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.untracedFilter}`],
+      [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.title}`, ...traced.flatMap(t => [AngularTimingScript.ANGULAR_INCLUDE_OPTION, t])]
+    ];
+  }
+
+  private static async checkRanOnceAsync(tests: AngularTestReport, reports: readonly string[]): Promise<readonly string[]> {
+    const runs: ReadonlyMap<string, boolean>[] = [];
+    for (const report of reports)
+      runs.push(await tests.listRanAsync(report));
+    return AngularTestReport.checkRanOnce(runs);
   }
 
   private static cases(): readonly TimingCase[] {
@@ -133,6 +190,73 @@ export abstract class AngularTimingScript extends Script {
         (_, failure) => failure.includes("run-2.json is missing")
       )
     ];
+  }
+
+  private static partCases(): readonly TimingPartCase[] {
+    const passed = (title: string): TimedTest => new TimedTest("parts.spec.ts", title, 10, AngularTimingScript.PASSED);
+    const skipped = (title: string): TimedTest => new TimedTest("parts.spec.ts", title, 10, AngularTimingScript.SKIPPED);
+    const names = (findings: readonly string[], text: string, title: string): boolean => findings.some(t => t.includes(text) && t.includes(`parts.spec.ts › ${AngularTimingScript.SUITE} › ${title}`));
+    return [
+      new TimingPartCase(
+        "a run whose tests each ran in one of its two parts passes",
+        [[passed("a"), skipped("b")], [skipped("a"), passed("b")]],
+        findings => findings.length === 0
+      ),
+      new TimingPartCase(
+        "a test that ran in both parts of a run fails, named",
+        [[passed("a"), skipped("b")], [passed("a"), passed("b")]],
+        findings => findings.length === 1 && names(findings, "more than one", "a")
+      ),
+      new TimingPartCase(
+        "a test that ran in neither part of a run fails, named",
+        [[passed("a"), skipped("c")], [skipped("a"), passed("b"), skipped("c")]],
+        findings => findings.length === 1 && names(findings, "in none", "c")
+      ),
+      new TimingPartCase(
+        "a run's second part that ran no test fails",
+        [[passed("a"), passed("b")], [skipped("a"), skipped("b")]],
+        findings => findings.length === 1 && findings.every(t => t.includes("Run 2") && t.includes("ran no test"))
+      )
+    ];
+  }
+
+  private static async runPartCaseAsync(check: TimingPartCase): Promise<boolean> {
+    const temporary = new TemporaryFolder();
+    const folder = await temporary.createAsync(process.platform, AngularTimingScript.TEMPORARY_PREFIX);
+    try {
+      const reports: string[] = [];
+      for (const [index, tests] of check.parts.entries()) {
+        const report = path.join(folder, `part-${index + 1}.json`);
+        await fs.writeFile(report, AngularTimingScript.report(folder, tests), AngularTimingScript.ENCODING);
+        reports.push(report);
+      }
+      return check.holds(await AngularTimingScript.checkRanOnceAsync(new AngularTestReport(folder, AngularTimingScript.SELF_CHECK_PROJECT), reports));
+    }
+    finally {
+      await temporary.removeAsync(folder);
+    }
+  }
+
+  // Runs the selections on a small workspace whose one spec file holds the tracing suite and whose other doesn't.
+  private static async runSelectionCaseAsync(): Promise<boolean> {
+    const temporary = new TemporaryFolder();
+    const folder = await temporary.createAsync(process.platform, AngularTimingScript.TEMPORARY_PREFIX);
+    try {
+      const workspace = { projects: { [AngularTimingScript.SELF_CHECK_PROJECT]: { architect: { test: { options: { include: ["tests/**/*.spec.ts"] } } } } } };
+      await fs.writeFile(path.join(folder, "angular.json"), JSON.stringify(workspace), AngularTimingScript.ENCODING);
+      await fs.mkdir(path.join(folder, "tests"));
+      await fs.writeFile(path.join(folder, AngularTimingScript.TRACED_SPEC), `${LayoutTraceSuite.mark}, () => {});\n`, AngularTimingScript.ENCODING);
+      await fs.writeFile(path.join(folder, AngularTimingScript.UNTRACED_SPEC), "describe(\"Untraced\", () => {});\n", AngularTimingScript.ENCODING);
+      const parts = await AngularTimingScript.partsAsync(folder, new AngularTestReport(folder, AngularTimingScript.SELF_CHECK_PROJECT));
+      const expected = [
+        [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.untracedFilter}`],
+        [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.title}`, AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.TRACED_SPEC]
+      ];
+      return JSON.stringify(parts) === JSON.stringify(expected);
+    }
+    finally {
+      await temporary.removeAsync(folder);
+    }
   }
 
   private static async runCaseAsync(check: TimingCase): Promise<boolean> {
