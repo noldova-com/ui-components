@@ -11,6 +11,8 @@ import { cdp, server } from "vitest/browser";
 
 export class ScreenshotFixture {
   private static readonly BROWSER: string = "chromium";
+  private static readonly ROUNDING: number = 1e-3;
+  private static readonly SCALE_TOLERANCE: number = 0.01;
 
   public static async pixelsAsync(element: Element): Promise<ImageData> {
     const shot = new Image();
@@ -74,13 +76,17 @@ export class ScreenshotFixture {
   private static async captureAsync(element: Element): Promise<string> {
     if (server.browser !== ScreenshotFixture.BROWSER)
       throw new Error(`A screenshot is taken through Chromium's DevTools protocol, and this run's browser is ${server.browser}.`);
-    if (!ScreenshotFixture.isInView(element.getBoundingClientRect()))
+    const view = element.ownerDocument.defaultView;
+    if (Object.isNull(view))
+      throw new Error("The element to screenshot is in no window's document, so where it lies on the page isn't known.");
+    if (!ScreenshotFixture.isInView(element.getBoundingClientRect(), view))
       element.scrollIntoView({ block: "center", inline: "center" });
     const box = element.getBoundingClientRect();
-    const [left, top] = ScreenshotFixture.frameOrigin();
-    const [x, y] = [Math.floor(left + box.left), Math.floor(top + box.top)];
-    const clip = { x, y, width: Math.ceil(left + box.right) - x, height: Math.ceil(top + box.bottom) - y, scale: 1 };
-    const captureBeyondViewport = box.width > innerWidth || box.height > innerHeight;
+    const [left, top] = ScreenshotFixture.frameOrigin(view);
+    const [x, y] = [Math.floor(left + box.left + ScreenshotFixture.ROUNDING), Math.floor(top + box.top + ScreenshotFixture.ROUNDING)];
+    const [right, bottom] = [Math.ceil(left + box.right - ScreenshotFixture.ROUNDING), Math.ceil(top + box.bottom - ScreenshotFixture.ROUNDING)];
+    const clip = { x, y, width: right - x, height: bottom - y, scale: 1 };
+    const captureBeyondViewport = box.width > view.innerWidth || box.height > view.innerHeight;
     const shot: unknown = await cdp().send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport });
     const data = typeof shot === "object" && !Object.isNull(shot) && "data" in shot ? shot.data : undefined;
     if (typeof data !== "string")
@@ -88,24 +94,24 @@ export class ScreenshotFixture {
     return data;
   }
 
-  private static isInView(box: DOMRect): boolean {
-    return box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
+  private static isInView(box: DOMRect, view: Window): boolean {
+    return box.left >= 0 && box.top >= 0 && box.right <= view.innerWidth && box.bottom <= view.innerHeight;
   }
 
-  private static frameOrigin(): readonly [number, number] {
+  private static frameOrigin(start: Window): readonly [number, number] {
     let [left, top] = [0, 0];
-    for (let view: Window = window; view !== view.parent; view = view.parent) {
+    for (let view: Window = start; view !== view.parent; view = view.parent) {
       const frame = view.frameElement;
       if (Object.isNull(frame))
-        throw new Error("A frame around the test can't be read, so where the test's frame lies on the page isn't known.");
+        throw new Error("A frame around the element can't be read, so where its frame lies on the page isn't known.");
       const [box, style] = [frame.getBoundingClientRect(), view.parent.getComputedStyle(frame)];
       const [startEdge, topEdge] = [frame.clientLeft + parseFloat(style.paddingLeft), frame.clientTop + parseFloat(style.paddingTop)];
       const width = box.width - startEdge - parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth);
-      if (Math.abs(width - view.innerWidth) > 0.01)
-        throw new Error(`The test's frame is scaled, ${width} px wide on the page for ${view.innerWidth} px inside it, so its pixels aren't the page's.`);
+      if (Math.abs(width - view.innerWidth) > ScreenshotFixture.SCALE_TOLERANCE)
+        throw new Error(`A frame around the element is scaled, ${width} px wide on the page for ${view.innerWidth} px inside it, so its pixels aren't the page's.`);
       left += box.left + startEdge;
       top += box.top + topEdge;
     }
-    return [left + (window.top?.scrollX ?? 0), top + (window.top?.scrollY ?? 0)];
+    return [left + (start.top?.scrollX ?? 0), top + (start.top?.scrollY ?? 0)];
   }
 }

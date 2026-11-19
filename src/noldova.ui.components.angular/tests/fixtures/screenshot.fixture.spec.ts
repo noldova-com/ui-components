@@ -63,6 +63,32 @@ describe("ScreenshotFixture", () => {
     expect([box.top >= 0 && box.bottom <= innerHeight, image.width, image.height, isAll(image, [51, 102, 204, 255])]).toEqual([true, 30, 20, true]);
   });
 
+  const framed = (style: string): HTMLElement => {
+    const frame = placed(`left: 40px; top: 30px; width: 200px; height: 120px; border: 2px solid rgb(0, 0, 0); padding: 3px; background: none; ${style}`);
+    frame.textContent = "";
+    const child = frame.appendChild(document.createElement("iframe"));
+    child.style.cssText = "display: block; width: 160px; height: 90px; border: 4px solid rgb(0, 0, 0); padding: 5px; margin: 0";
+    const inner = child.contentDocument;
+    if (Object.isNull(inner))
+      throw new Error("The child frame has no document.");
+    inner.body.style.margin = "0";
+    const element = inner.body.appendChild(inner.createElement("div"));
+    element.style.cssText = "position: absolute; left: 7px; top: 6px; width: 30px; height: 20px; background: rgb(51, 153, 51)";
+    return element;
+  };
+
+  it("reads an element in a child frame with a border and padding as its own color, edge to edge, at its size", async () => {
+    const image = await ScreenshotFixture.pixelsAsync(framed(""));
+
+    expect([image.width, image.height, isAll(image, [51, 153, 51, 255])]).toEqual([30, 20, true]);
+  });
+
+  it("fails, naming the scaled frame, for an element in a child frame scaled on the page", async () => {
+    const element = framed("transform: scale(0.5); transform-origin: 0 0");
+
+    await expect(ScreenshotFixture.pixelsAsync(element)).rejects.toThrow("A frame around the element is scaled, 71 px wide on the page for 160 px inside it, so its pixels aren't the page's.");
+  });
+
   it("reads the same pixels, byte for byte, as Playwright's screenshot of an element at a fractional place in the test's frame", async () => {
     const results: string[] = [];
     for (const style of ["left: 13.5px; top: 41.25px", "left: 200.75px; top: 7.5px"]) {
