@@ -261,10 +261,10 @@ Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-co
 - The streaming specs follow each scroll and each change of the code with one rendered frame, an animation frame and the task after it, through `RenderedFrameFixture.nextAsync()`: the block follows its end in a `ResizeObserver` callback, which runs after that frame's layout, so a check that nothing moved has seen the frame a move would come in, though no event signals it.
   A check that the block followed its end waits two frames, checking after each, and fails if the block hasn't reached its end by the second or leaves it once there, through `CodeBlockHarness.followedAsync`.
   With these waits, a `ScrollEndFollower` that always follows fails the streaming-scroll and streaming-return specs, and one that never follows fails the streaming and streaming-return specs, on Linux and macOS test machines.
-- The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`: at least two passes of one rendered frame and a stable fixture.
+- The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`, a pass of one rendered frame and a stable fixture at a time, until a pass leaves what the spec names of the layout unchanged.
   The token-colors spec waits for the forced-colors media query's change before it settles, since the block puts its highlights back in that change's listener, which the browser runs at its next rendering step.
 - The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
-- `code-block-code-size-dark` and `code-block-wrap` are over on Windows alone, by 0.6 and 17.4 ms past the margin; not measured.
+- `code-block-wrap` is over on Linux and Windows, at 132 and 206 ms; not measured.
 - `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
 
 `src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
@@ -276,14 +276,11 @@ The code block's rows are from one run of `npm run test:timing` on each system w
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `code-block-code-size-dark.component.spec.ts` | within | within | within |
 | `code-block-forced-highlights.component.spec.ts` | 562 ms | 792 ms | 207 ms |
 | `code-block-forced-spans.component.spec.ts` | 578 ms | 889 ms | 218 ms |
-| `code-block-lines.component.spec.ts` | within | within | within |
 | `code-block-run-keys.component.spec.ts` | 251 ms | 360 ms | within |
 | `code-block-run-state.component.spec.ts` | 362 ms | 710 ms | within |
 | `code-block-run.component.spec.ts` | 139 ms | 216 ms | within |
-| `code-block-scrollbar.component.spec.ts` | within | within | within |
 | `code-block-settled-layout.component.spec.ts` | 186 ms | 294 ms | within |
 | `code-block-settled-pixels.component.spec.ts` | 601 ms | 754 ms | 242 ms |
 | `code-block-streaming-end.component.spec.ts` | within | 123 ms | within |
