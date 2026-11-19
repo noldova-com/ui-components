@@ -8,7 +8,6 @@
 
 import { LiveAnnouncer } from "@angular/cdk/a11y";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { page } from "vitest/browser";
 
 import { CodeTokenKind } from "../../src/app/enums/code-token-kind";
 import type { ThemeMode } from "../../src/app/enums/theme-mode";
@@ -28,6 +27,7 @@ import { ForcedColorsFixture } from "./forced-colors.fixture";
 import { GalleryFixture } from "./gallery.fixture";
 import { LayoutSettleFixture } from "./layout-settle.fixture";
 import { RenderedFrameFixture } from "./rendered-frame.fixture";
+import { ScreenshotFixture } from "./screenshot.fixture";
 import { TestTimeSource } from "./test-time-source";
 
 export interface ICodeBlockRunGeometry {
@@ -302,17 +302,7 @@ export class CodeBlockHarness {
     });
   };
 
-  public readonly pixelsAsync = async (element: HTMLElement): Promise<ImageData> => {
-    const image = new Image();
-    image.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`;
-    await image.decode();
-    const canvas = document.createElement("canvas");
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-    context.drawImage(image, 0, 0);
-    return context.getImageData(0, 0, image.width, image.height);
-  };
+  public readonly pixelsAsync = (element: HTMLElement): Promise<ImageData> => ScreenshotFixture.pixelsAsync(element);
 
   public readonly countNear = (image: ImageData, color: readonly number[] = []): number => {
     let found = 0;
