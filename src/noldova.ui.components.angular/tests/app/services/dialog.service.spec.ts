@@ -7,10 +7,15 @@
  */
 
 import type { DialogRef } from "@angular/cdk/dialog";
-import { ApplicationRef, Component } from "@angular/core";
+import { ApplicationRef, Component, inject } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { MenuItemComponent } from "../../../src/app/components/menu/menu-item.component";
+import { MenuTriggerDirective } from "../../../src/app/components/menu/menu-trigger.directive";
+import { MenuComponent } from "../../../src/app/components/menu/menu.component";
+import { PopoverTriggerDirective } from "../../../src/app/components/popover/popover-trigger.directive";
+import { PopoverDirective } from "../../../src/app/components/popover/popover.directive";
 import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
 import { DialogService } from "../../../src/app/services/dialog.service";
@@ -25,6 +30,30 @@ import { TestTimeSource } from "../../fixtures/test-time-source";
   template: `<button type="button" class="inside">Keep working</button><button type="button" class="other">Look elsewhere</button>`
 })
 class OpenDialogComponent {
+}
+
+@Component({
+  imports: [MenuComponent, MenuItemComponent, MenuTriggerDirective, PopoverDirective, PopoverTriggerDirective],
+  template: `
+    <button type="button" class="menu-trigger" [nolMenuTriggerFor]="menu">Actions</button>
+    <ng-template #menu>
+      <nol-menu>
+        <button nol-menu-item class="row" label="Rename" (triggered)="open()"></button>
+      </nol-menu>
+    </ng-template>
+    <button type="button" class="popover-trigger" [nolPopoverTrigger]="popover">Details</button>
+    <ng-template #popover>
+      <div nolPopover label="Details"><button type="button" class="popover-action" (click)="open()">Edit</button></div>
+    </ng-template>
+  `
+})
+class FallbackHostComponent {
+  private readonly dialogs: DialogService = inject(DialogService);
+  public opened: DialogRef<unknown, OpenDialogComponent>[] = [];
+
+  public open(): void {
+    this.opened.push(this.dialogs.open(OpenDialogComponent, ".inside"));
+  }
 }
 
 describe("DialogService", () => {
@@ -360,5 +389,75 @@ describe("DialogService", () => {
     expect([order, meanwhile]).toEqual([["fading", "shown"], [2, true, true]]);
     const left = [...document.querySelectorAll(".nol-dialog-backdrop")];
     expect([left.length, left[0] === shown, second.overlayRef.backdropElement === shown, opener.inert]).toEqual([1, true, true, true]);
+  });
+
+  it("returns the focus to the menu's trigger when the menu row that opened the dialog has gone with its menu", async () => {
+    const fixture = TestBed.createComponent(FallbackHostComponent);
+    fixture.detectChanges();
+    const trigger = DomFixture.one(DomFixture.host(fixture), ".menu-trigger");
+    await userEvent.click(trigger);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".row")).not.toBeNull());
+    await userEvent.click(DomFixture.one(document, ".row"));
+    await DomChangeFixture.untilAsync(() => expect([document.activeElement === insideOf(0), document.querySelector(".row")]).toEqual([true, null]));
+    fixture.componentInstance.opened[0]?.close();
+
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(trigger));
+    fixture.destroy();
+  });
+
+  it("returns the focus to the popover's trigger when the popover whose button opened the dialog closed on a click in the dialog", async () => {
+    const fixture = TestBed.createComponent(FallbackHostComponent);
+    fixture.detectChanges();
+    const trigger = DomFixture.one(DomFixture.host(fixture), ".popover-trigger");
+    await userEvent.click(trigger);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".popover-action")).not.toBeNull());
+    await userEvent.click(DomFixture.one(document, ".popover-action"));
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+    await userEvent.click(insideOf(0, "other"));
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".popover-action")).toBeNull());
+    fixture.componentInstance.opened[0]?.close();
+
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(trigger));
+    fixture.destroy();
+  });
+
+  it("returns the focus to the first dialog's opener when the dialog it opened from closed first", async () => {
+    const [first, second] = [await openAsync(), await openAsync()];
+    references = [];
+    first.close();
+    await DomChangeFixture.untilAsync(() => expect(document.querySelectorAll(".inside").length).toBe(1));
+    const afterFirst = document.activeElement === insideOf(0);
+    second.close();
+
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
+    expect(afterFirst).toBe(true);
+  });
+
+  it("returns the focus to the dialog underneath when the control in it that opened the dialog has gone", async () => {
+    const first = await openAsync();
+    const second = await openAsync();
+    insideOf(0).remove();
+    second.close();
+    references = [first];
+
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(DomFixture.one(document, ".cdk-dialog-container")));
+  });
+
+  it("returns the focus to the target its owner passes when the opener has gone, and leaves the focus where it is when neither is in the page", async () => {
+    const target = document.createElement("button");
+    document.body.append(target);
+    const dialogs = TestBed.inject(DialogService);
+    const first = dialogs.open(OpenDialogComponent, ".inside", target);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+    opener.remove();
+    first.close();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
+    const second = dialogs.open(OpenDialogComponent, ".inside");
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+    target.remove();
+    second.close();
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".inside")).toBeNull());
+
+    expect(document.activeElement).toBe(document.body);
   });
 });

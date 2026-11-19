@@ -16,6 +16,7 @@ import { DialogServiceResources } from "./dialog-service.resources.js";
 import type { ITimeSource } from "../interfaces/i-time-source.js";
 import { ClockTokens } from "../models/clock-tokens.js";
 import { DialogTokens } from "../models/dialog-tokens.js";
+import { OverlayOriginsService } from "./overlay-origins.service.js";
 import { Resources } from "../../resources.js";
 
 @Injectable({ providedIn: "root" })
@@ -29,6 +30,8 @@ export class DialogService {
   private readonly document: Document = inject(DOCUMENT);
   private readonly injector: Injector = inject(Injector);
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
+  private readonly origins: OverlayOriginsService = inject(OverlayOriginsService);
+  private readonly returns: WeakMap<Element, readonly Element[]> = new WeakMap();
   private background: readonly Element[] = [];
 
   public get isOpen(): boolean {
@@ -39,9 +42,9 @@ export class DialogService {
     return this.dialog.openDialogs.at(-1) === dialog;
   }
 
-  public open<T>(component: ComponentType<T>, initialFocus: string = DialogServiceResources.dialogCloseSelector): DialogRef<unknown, T> {
+  public open<T>(component: ComponentType<T>, initialFocus: string = DialogServiceResources.dialogCloseSelector, returnFocus: HTMLElement | null = null): DialogRef<unknown, T> {
     const titleId = `${DialogServiceResources.dialogTitleIdPrefix}${DialogService.count++}`;
-    const opener = this.document.activeElement as HTMLElement;
+    const returns = this.findReturns(this.document.activeElement, returnFocus);
     const byKey = this.modality.mostRecentModality === Resources.keyboardModality;
     const earlier = [...this.dialog.openDialogs];
     const container = this.overlays.getContainerElement();
@@ -63,6 +66,7 @@ export class DialogService {
       }
     });
     const backdrop = reference.overlayRef.backdropElement as HTMLElement;
+    this.returns.set(reference.overlayRef.overlayElement, returns);
     backdrop.addEventListener(Resources.mousedownEvent, event => event.preventDefault());
     if (this.dialog.openDialogs.length === 1)
       this.makeBackgroundInert();
@@ -75,7 +79,7 @@ export class DialogService {
     reference.closed.subscribe(() => {
       firstFocus.destroy();
       this.liftInert();
-      this.returnFocus(opener);
+      this.returnFocus(returns);
       if (this.dialog.openDialogs.every(t => earlier.includes(t)))
         this.fadeOut(container, backdrop, shown);
     });
@@ -127,8 +131,33 @@ export class DialogService {
     this.background = [];
   }
 
-  private returnFocus(opener: HTMLElement): void {
-    if (this.document.activeElement === this.document.body)
-      this.focus.focusVia(opener, Resources.programFocusOrigin);
+  private findReturns(opener: Element | null, owner: HTMLElement | null): readonly Element[] {
+    const returns = [opener, owner].filter((t): t is Element => !Object.isNull(t));
+    for (let at = opener; !Object.isNull(at); at = this.origins.originOf(at)) {
+      const lower = this.findLowerDialog(at);
+      if (!Object.isNull(lower))
+        return [...returns, ...lower];
+      if (at !== opener)
+        returns.push(at);
+    }
+    return returns;
+  }
+
+  private findLowerDialog(element: Element): readonly Element[] | null {
+    for (let at = element.parentElement; !Object.isNull(at); at = at.parentElement) {
+      const returns = this.returns.get(at);
+      if (!Object.isUndefined(returns))
+        return [at.querySelector(DialogServiceResources.dialogContainerSelector), ...returns].filter((t): t is Element => !Object.isNull(t));
+    }
+    return null;
+  }
+
+  private returnFocus(returns: readonly Element[]): void {
+    if (this.document.activeElement !== this.document.body)
+      return;
+    const target = returns.find((t): t is HTMLElement => t instanceof HTMLElement && t !== this.document.body && t.isConnected
+      && Object.isNull(t.closest(DialogServiceResources.inertSelector)));
+    if (!Object.isUndefined(target))
+      this.focus.focusVia(target, Resources.programFocusOrigin);
   }
 }

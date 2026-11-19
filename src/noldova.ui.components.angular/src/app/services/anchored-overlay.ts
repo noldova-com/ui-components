@@ -20,12 +20,14 @@ import type { OverlayPlacement } from "../models/overlay-placement.js";
 import { Resources } from "../../resources.js";
 import { AnchoredOverlayResources } from "./anchored-overlay.resources.js";
 import { OverlayBoundsService } from "./overlay-bounds.service.js";
+import { OverlayOriginsService } from "./overlay-origins.service.js";
 
 export class AnchoredOverlay {
   private readonly injector: Injector;
   private readonly overlay: OverlayRef;
   private readonly strategy: GlobalPositionStrategy;
   private readonly bounds: OverlayBoundsService;
+  private readonly origins: OverlayOriginsService;
   private readonly timeSource: ITimeSource;
   private readonly cleanups: (() => void)[] = [];
   private readonly originLostValue: Subject<void> = new Subject<void>();
@@ -46,6 +48,7 @@ export class AnchoredOverlay {
   public constructor(injector: Injector, panelClass: string) {
     this.injector = injector;
     this.bounds = injector.get(OverlayBoundsService);
+    this.origins = injector.get(OverlayOriginsService);
     this.timeSource = injector.get(ClockTokens.timeSource);
     this.strategy = createGlobalPositionStrategy(injector);
     this.overlay = createOverlayRef(injector, { positionStrategy: this.strategy, panelClass });
@@ -105,6 +108,7 @@ export class AnchoredOverlay {
   public follow(origin: Element, anchoring: OverlayAnchoring, area: (() => DOMRect) | null = null): void {
     this.release();
     this.origin = origin;
+    this.origins.remember(this.overlay.overlayElement, origin);
     this.anchoring = anchoring;
     this.area = area;
     const reposition = (): void => this.reposition();

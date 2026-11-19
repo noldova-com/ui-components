@@ -4153,7 +4153,11 @@ export declare class DialogService {
    * {@link DialogComponent} emits `dismissed`. While dialogs are open,
    * everything beside them is inert, except live regions, popovers and what
    * was inert already. When it closes, focus returns to the element focused
-   * when it opened, unless something else has taken focus. Its backdrop then
+   * when it opened, unless something else has taken focus. When that element
+   * is no longer in the page, or is inert, focus goes to the first of these
+   * that is: the target its owner passes, then the trigger of each menu or
+   * popover the element was in, or the dialog underneath and the elements
+   * that dialog would return focus to. Its backdrop then
    * fades out with the overlay library's transition, from the opacity it
    * got to, taking no pointer meanwhile, and goes by the library's 500ms
    * limit; it goes at once when reduced motion is preferred, or when a
@@ -4164,6 +4168,9 @@ export declare class DialogService {
    * takes focus when it opens, and nothing does when none matches; the
    * dialog's close button when left out. It shows its focus ring only when a
    * key opened the dialog, not after a click or with no input of its own.
+   * @param returnFocus The element that takes focus when the dialog closes
+   * and the element focused when it opened is no longer in the page; none
+   * when left out.
    * @returns The dialog's reference, which closes it and tells when it has
    * closed.
    * @example
@@ -4199,7 +4206,7 @@ export declare class DialogService {
    * }
    * ```
    */
-  public open<T>(component: ComponentType<T>, initialFocus?: string): DialogRef<unknown, T>;
+  public open<T>(component: ComponentType<T>, initialFocus?: string, returnFocus?: HTMLElement | null): DialogRef<unknown, T>;
 }
 
 /**
