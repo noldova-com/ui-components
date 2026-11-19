@@ -134,11 +134,11 @@ export class DialogService {
   private findReturns(opener: Element | null, owner: HTMLElement | null): readonly Element[] {
     const returns = [opener, owner].filter((t): t is Element => !Object.isNull(t));
     for (let at = opener; !Object.isNull(at); at = this.origins.originOf(at)) {
+      if (at !== opener)
+        returns.push(at);
       const lower = this.findLowerDialog(at);
       if (!Object.isNull(lower))
         return [...returns, ...lower];
-      if (at !== opener)
-        returns.push(at);
     }
     return returns;
   }
@@ -155,9 +155,11 @@ export class DialogService {
   private returnFocus(returns: readonly Element[]): void {
     if (this.document.activeElement !== this.document.body)
       return;
-    const target = returns.find((t): t is HTMLElement => t instanceof HTMLElement && t !== this.document.body && t.isConnected
-      && Object.isNull(t.closest(DialogServiceResources.inertSelector)));
-    if (!Object.isUndefined(target))
-      this.focus.focusVia(target, Resources.programFocusOrigin);
+    for (const target of returns)
+      if (target instanceof HTMLElement && target !== this.document.body && target.isConnected && Object.isNull(target.closest(DialogServiceResources.inertSelector))) {
+        this.focus.focusVia(target, Resources.programFocusOrigin);
+        if (this.document.activeElement === target)
+          return;
+      }
   }
 }

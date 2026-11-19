@@ -460,4 +460,38 @@ describe("DialogService", () => {
 
     expect(document.activeElement).toBe(document.body);
   });
+
+  for (const [kind, triggerClass, actionClass] of [["menu", "menu-trigger", "row"], ["popover", "popover-trigger", "popover-action"]] as const)
+    it(`returns the focus to a ${kind}'s trigger inside a dialog when the ${kind} whose control opened a dialog above it has gone`, async () => {
+      const lower = TestBed.inject(DialogService).open(FallbackHostComponent, `.${triggerClass}`);
+      try {
+        const trigger = DomFixture.one(DomFixture.one(document, ".cdk-dialog-container"), `.${triggerClass}`);
+        await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(trigger));
+        await userEvent.click(trigger);
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(`.${actionClass}`)).not.toBeNull());
+        await userEvent.click(DomFixture.one(document, `.${actionClass}`));
+        await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+        if (kind === "popover")
+          await userEvent.click(insideOf(0, "other"));
+        await DomChangeFixture.untilAsync(() => expect(document.querySelector(`.${actionClass}`)).toBeNull());
+        lower.componentInstance?.opened[0]?.close();
+
+        await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(trigger));
+      }
+      finally {
+        lower.close();
+      }
+    });
+
+  it("passes over an opener that can't take focus, as a disabled one, to the next fallback", async () => {
+    const target = document.createElement("button");
+    document.body.append(target);
+    const dialog = TestBed.inject(DialogService).open(OpenDialogComponent, ".inside", target);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+    opener.disabled = true;
+    dialog.close();
+
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
+    target.remove();
+  });
 });
