@@ -23,4 +23,6 @@ export class DialogServiceResources {
   public static readonly inertAttribute: string = "inert";
   public static readonly ariaLiveAttribute: string = "aria-live";
   public static readonly popoverAttribute: string = "popover";
+  public static readonly inertSelector: string = "[inert]";
+  public static readonly dialogContainerSelector: string = ".cdk-dialog-container";
 }
