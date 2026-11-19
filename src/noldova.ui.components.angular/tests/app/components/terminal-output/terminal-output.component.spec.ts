@@ -217,6 +217,8 @@ describe("TerminalOutputComponent", () => {
       stylesheet.detectChanges();
       await renderAsync(ThemeMode.Light);
       AppearanceFixture.reset();
+      await Promise.resolve();
+      fixture.detectChanges();
       const light = getComputedStyle(spanOf("black")).color;
       const lightBackground = getComputedStyle(body()).backgroundColor;
       try {
