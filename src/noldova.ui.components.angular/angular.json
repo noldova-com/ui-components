@@ -244,6 +244,26 @@
           }
         }
       }
+    },
+    "bundle-lazy-code-block": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-lazy-code-block",
+            "browser": "tests/fixtures/kit-bundles/lazy-code-block-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.lazy-code-block.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
     }
   }
 }
