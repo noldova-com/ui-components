@@ -31,6 +31,9 @@ export class KitBundleCheck implements ICheck {
   private static readonly WORKER_BUNDLE: string = "bundle-highlighting-worker";
   private static readonly WORKER_ENTRY: string = "tests/fixtures/kit-bundles/code-highlighting.worker.ts";
   private static readonly BUTTON_BUNDLE: string = "bundle-button";
+  private static readonly LAZY_CODE_BLOCK_BUNDLE: string = "bundle-lazy-code-block";
+  private static readonly CODE_BLOCK_PARTS: readonly string[] = ["/@noldova/ui.components.angular/app/components/code-block/", "/@noldova/ui.components.angular/app/components/toolbar/",
+    "/@noldova/ui.components.angular/app/components/tooltip/"];
   private static readonly KIT_FILES: string = "/@noldova/ui.components.angular/";
   private static readonly STRINGS_FILE: string = "resources.js";
   private static readonly BUTTON_STRINGS: readonly string[] = ["/@noldova/ui.components.angular/resources.js", "/@noldova/ui.components.angular/app/components/progress/reveal-delay.resources.js",
@@ -46,11 +49,13 @@ export class KitBundleCheck implements ICheck {
     [KitBundleCheck.MESSAGE_BUNDLE, false],
     ["bundle-progress", false],
     ["bundle-menu", false],
-    [KitBundleCheck.BUTTON_BUNDLE, false]
+    [KitBundleCheck.BUTTON_BUNDLE, false],
+    [KitBundleCheck.LAZY_CODE_BLOCK_BUNDLE, false]
   ]);
   private static readonly RULE: string = "an app without provideCodeHighlighting() ships neither the code highlighter nor any grammar, and an app with it loads them lazily, as src/noldova.ui.components.angular/README.md, Code highlighting, says.";
   private static readonly WORKER_RULE: string = "an app's highlighting worker holds every grammar the kit knows and imports no other chunk, since Angular's build leaves out the chunks a worker's lazy imports share, as src/noldova.ui.components.angular/README.md, Code highlighting, says.";
   private static readonly STRINGS_RULE: string = `an app that imports ButtonComponent alone ships only the shared strings and those of the classes it reaches, at most ${KitBundleCheck.STRINGS_LIMIT} bytes, since each class keeps its own strings in its own file, as documents/ARCHITECTURE.md, Code, says.`;
+  private static readonly CODE_BLOCK_RULE: string = "an app whose start imports only the button and typography entries, never the main one, ships the code block, its toolbar and its tooltip in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
   private static readonly PARSER_RULE: string = "an app without provideMarkdown() ships no markdown-it, and an app with it loads it lazily, as src/noldova.ui.components.angular/README.md, Markdown, says.";
 
   private readonly root: string;
@@ -136,6 +141,16 @@ export class KitBundleCheck implements ICheck {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
 
+  private static inspectCodeBlock(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>): readonly string[] {
+    if (project !== KitBundleCheck.LAZY_CODE_BLOCK_BUNDLE)
+      return [];
+    const findings = [...outputs].filter(([name, t]) => initial.has(name) && KitBundleCheck.holds(t, KitBundleCheck.CODE_BLOCK_PARTS))
+      .map(([name]) => `${project}: its initial chunk ${name} holds the code block, its toolbar or its tooltip; ${KitBundleCheck.CODE_BLOCK_RULE}`);
+    if (![...outputs].some(([name, t]) => !initial.has(name) && KitBundleCheck.holds(t, KitBundleCheck.CODE_BLOCK_PARTS)))
+      findings.push(`${project}: emits no lazy chunk of the code block, though its page loads later; ${KitBundleCheck.CODE_BLOCK_RULE}`);
+    return findings;
+  }
+
   private static inspectParser(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>): readonly string[] {
     const shows = project === KitBundleCheck.MESSAGE_BUNDLE;
     const parsers = [...outputs].filter(([, t]) => KitBundleCheck.holds(t, [KitBundleCheck.MARKDOWN_PARSER])).map(([t]) => t);
@@ -203,6 +218,7 @@ export class KitBundleCheck implements ICheck {
       findings.push(`${project}: emits ${lazy.length} lazy chunks of the code highlighter or its grammars, though the app provides no code highlighting; ${KitBundleCheck.RULE}`);
     if (highlights && !lazy.some(([, t]) => KitBundleCheck.holds(t, [KitBundleCheck.GRAMMARS])))
       findings.push(`${project}: emits no lazy grammar chunk, though the app provides code highlighting; ${KitBundleCheck.RULE}`);
+    findings.push(...KitBundleCheck.inspectCodeBlock(project, outputs, initial));
     findings.push(...KitBundleCheck.inspectParser(project, outputs, initial));
     findings.push(...KitBundleCheck.inspectWorker(project, outputs));
     findings.push(...KitBundleCheck.inspectStrings(project, outputs, initial, output));

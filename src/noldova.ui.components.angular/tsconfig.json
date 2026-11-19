@@ -19,6 +19,12 @@
       "@noldova/ui.components.angular": [
         "./src/api/index.ts"
       ],
+      "@noldova/ui.components.angular/button": [
+        "./src/api/button.ts"
+      ],
+      "@noldova/ui.components.angular/code-block": [
+        "./src/api/code-block.ts"
+      ],
       "@noldova/ui.components.angular/code-highlighting": [
         "./src/api/code-highlighting.ts"
       ],
@@ -33,6 +39,9 @@
       ],
       "@noldova/ui.components.angular/testing": [
         "./src/api/testing.ts"
+      ],
+      "@noldova/ui.components.angular/typography": [
+        "./src/api/typography.ts"
       ]
     }
   },
