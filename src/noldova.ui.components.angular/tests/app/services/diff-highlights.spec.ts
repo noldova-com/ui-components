@@ -11,31 +11,14 @@ import { TestBed } from "@angular/core/testing";
 import { DiffSide } from "../../../src/app/enums/diff-side";
 import { DiffChange } from "../../../src/app/models/diff-change";
 import { DiffHighlights } from "../../../src/app/services/diff-highlights";
+import { CodeHighlightsFixture } from "../../fixtures/code-highlights.fixture";
 
 describe("DiffHighlights", () => {
   const names = ["nol-diff-removed-change", "nol-diff-added-change"];
   const ranges = (): readonly string[] => names.flatMap(name => [...CSS.highlights.get(name) ?? []].map(t => `${name} ${t.startContainer.textContent?.slice(t.startOffset, t.endOffset)}`));
 
-  // Runs a check as in a browser without the CSS Highlight API, as Safari before 17.2 and Firefox before 140, and puts the API back.
-  function withoutHighlightApi(check: () => void): void {
-    const constructor = Object.getOwnPropertyDescriptor(globalThis, "Highlight");
-    const registry = Object.getOwnPropertyDescriptor(CSS, "highlights");
-    Object.defineProperty(globalThis, "Highlight", { value: undefined, configurable: true, writable: true });
-    Object.defineProperty(CSS, "highlights", { value: undefined, configurable: true });
-    try {
-      check();
-    }
-    finally {
-      for (const [target, name, descriptor] of [[globalThis, "Highlight", constructor], [CSS, "highlights", registry]] as const)
-        if (descriptor === undefined)
-          Reflect.deleteProperty(target, name);
-        else
-          Object.defineProperty(target, name, descriptor);
-    }
-  }
-
-  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", () => {
-    withoutHighlightApi(() => {
+  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    await CodeHighlightsFixture.withoutHighlightApiAsync(() => {
       const highlights = TestBed.inject(DiffHighlights);
       const remove = highlights.add(document.createTextNode("let b = 2;"), [new DiffChange(4, 5, DiffSide.New)]);
       remove();

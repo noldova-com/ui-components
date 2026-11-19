@@ -13,6 +13,7 @@ import { CodeTokenKind } from "../../../src/app/enums/code-token-kind";
 import { CodeToken } from "../../../src/app/models/code-token";
 import { CodeHighlights } from "../../../src/app/services/code-highlights";
 import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
+import { CodeHighlightsFixture } from "../../fixtures/code-highlights.fixture";
 import { ForcedColorsFixture } from "../../fixtures/forced-colors.fixture";
 
 describe("CodeHighlights", () => {
@@ -26,24 +27,6 @@ describe("CodeHighlights", () => {
     query.addEventListener("change", recheck);
     return () => query.removeEventListener("change", recheck);
   });
-
-  // Runs a check as in a browser without the CSS Highlight API, as Safari before 17.2 and Firefox before 140, and puts the API back.
-  function withoutHighlightApi(check: () => void): void {
-    const constructor = Object.getOwnPropertyDescriptor(globalThis, "Highlight");
-    const registry = Object.getOwnPropertyDescriptor(CSS, "highlights");
-    Object.defineProperty(globalThis, "Highlight", { value: undefined, configurable: true, writable: true });
-    Object.defineProperty(CSS, "highlights", { value: undefined, configurable: true });
-    try {
-      check();
-    }
-    finally {
-      for (const [target, name, descriptor] of [[globalThis, "Highlight", constructor], [CSS, "highlights", registry]] as const)
-        if (descriptor === undefined)
-          Reflect.deleteProperty(target, name);
-        else
-          Object.defineProperty(target, name, descriptor);
-    }
-  }
 
   afterEach(async () => {
     vi.restoreAllMocks();
@@ -74,8 +57,8 @@ describe("CodeHighlights", () => {
     expect([media.mock.calls.length, registered, added]).toEqual([0, [], []]);
   });
 
-  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", () => {
-    withoutHighlightApi(() => {
+  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    await CodeHighlightsFixture.withoutHighlightApiAsync(() => {
       const highlights = TestBed.inject(CodeHighlights);
       const remove = highlights.add(document.createTextNode("return 1;"), [new CodeToken(0, "return", CodeTokenKind.Control)]);
       remove();

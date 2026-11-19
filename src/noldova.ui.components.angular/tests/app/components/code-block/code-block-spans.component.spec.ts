@@ -45,6 +45,25 @@ describe("CodeBlockComponent", () => {
     expect(harness.clipboard.texts).toEqual([code]);
   });
 
+  it("shows a streaming block's code, its ended lines as token spans and its growing line plain, settles that line into spans once it stops streaming, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    const code = "const a = 1;\nlet b = \"two\";";
+    const shown: unknown[] = [];
+
+    await CodeHighlightsFixture.withoutHighlightApiAsync(async () => {
+      controlTokens(t => [...t.matchAll(/const|let/gu)].map(m => new CodeToken(m.index, m[0], CodeTokenKind.Keyword)));
+      await renderAsync();
+      await changeAsync(() => {
+        harness.host.streaming.set(true);
+        harness.host.code.set(code);
+      });
+      shown.push([tokenSpans(), lines().map(isLine), body().querySelector("code")?.textContent]);
+      await changeAsync(() => harness.host.streaming.set(false));
+      shown.push([tokenSpans(), lines().map(t => t.textContent), body().querySelector("code")?.textContent]);
+    });
+
+    expect(shown).toEqual([[1, [false, true], code], [2, ["const a = 1;\n", "let b = \"two\";"], code]]);
+  });
+
   it("colors a streaming block's ended lines with token spans and its growing line with highlight ranges on its one text node, then settles that line into spans of the same colors and text once it stops streaming", async () => {
     const code = "const a = 1;\nlet b = \"two\";";
     controlTokens(t => [...t.matchAll(/const|let/gu)].map(m => new CodeToken(m.index, m[0], CodeTokenKind.Keyword)));
