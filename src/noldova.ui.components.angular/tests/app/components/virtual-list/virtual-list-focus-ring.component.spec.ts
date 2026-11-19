@@ -131,7 +131,7 @@ describe("VirtualListComponent's feed focus ring", () => {
   it("shows no ring when a click on an article is followed by the arrows, Page Up, Page Down, Home or End", async () => {
     await renderAsync();
     const clicked = articles().at(-1) as HTMLElement;
-    await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 } });
+    await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 }, force: true });
     await fixture.whenStable();
     await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(clicked));
     const looks: (readonly unknown[])[] = [];
@@ -149,7 +149,7 @@ describe("VirtualListComponent's feed focus ring", () => {
     it(`rings the feed when Tab comes back in after a press in a focused article ends outside the list with ${end}`, async () => {
       await renderAsync();
       const clicked = articles().at(-1) as HTMLElement;
-      await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 } });
+      await userEvent.click(DomFixture.one(clicked, ".column"), { position: { x: 4, y: 4 }, force: true });
       await fixture.whenStable();
       await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(clicked));
 
@@ -163,7 +163,7 @@ describe("VirtualListComponent's feed focus ring", () => {
   it("shows no ring when a click between articles focuses the feed and the arrows, Page Up, Page Down, Home or End follow", async () => {
     await renderAsync();
     const slot = articles().at(-2)?.parentElement as HTMLElement;
-    await userEvent.click(slot, { position: { x: 4, y: slot.getBoundingClientRect().height - 1 } });
+    await userEvent.click(slot, { position: { x: 4, y: slot.getBoundingClientRect().height - 1 }, force: true });
     await fixture.whenStable();
     await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(feed()));
     const focused = [document.activeElement === feed(), feed().matches(":focus-visible")];
