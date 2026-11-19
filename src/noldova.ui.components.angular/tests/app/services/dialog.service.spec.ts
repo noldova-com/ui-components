@@ -446,19 +446,26 @@ describe("DialogService", () => {
   it("returns the focus to the target its owner passes when the opener has gone, and leaves the focus where it is when neither is in the page", async () => {
     const target = document.createElement("button");
     document.body.append(target);
-    const dialogs = TestBed.inject(DialogService);
-    const first = dialogs.open(OpenDialogComponent, ".inside", target);
-    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
-    opener.remove();
-    first.close();
-    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
-    const second = dialogs.open(OpenDialogComponent, ".inside");
-    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
-    target.remove();
-    second.close();
-    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".inside")).toBeNull());
+    try {
+      const dialogs = TestBed.inject(DialogService);
+      const first = dialogs.open(OpenDialogComponent, ".inside", target);
+      references.push(first);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+      opener.remove();
+      first.close();
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
+      const second = dialogs.open(OpenDialogComponent, ".inside");
+      references.push(second);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+      target.remove();
+      second.close();
+      await DomChangeFixture.untilAsync(() => expect(document.querySelector(".inside")).toBeNull());
 
-    expect(document.activeElement).toBe(document.body);
+      expect(document.activeElement).toBe(document.body);
+    }
+    finally {
+      target.remove();
+    }
   });
 
   for (const [kind, triggerClass, actionClass] of [["menu", "menu-trigger", "row"], ["popover", "popover-trigger", "popover-action"]] as const)
@@ -486,12 +493,17 @@ describe("DialogService", () => {
   it("passes over an opener that can't take focus, as a disabled one, to the next fallback", async () => {
     const target = document.createElement("button");
     document.body.append(target);
-    const dialog = TestBed.inject(DialogService).open(OpenDialogComponent, ".inside", target);
-    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
-    opener.disabled = true;
-    dialog.close();
+    try {
+      const dialog = TestBed.inject(DialogService).open(OpenDialogComponent, ".inside", target);
+      references.push(dialog);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(insideOf(0)));
+      opener.disabled = true;
+      dialog.close();
 
-    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
-    target.remove();
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(target));
+    }
+    finally {
+      target.remove();
+    }
   });
 });
