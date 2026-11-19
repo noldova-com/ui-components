@@ -11,6 +11,8 @@ import { commands } from "vitest/browser";
 declare module "vitest/browser" {
   interface BrowserCommands {
     watchFailedModuleRequests: () => Promise<readonly string[]>;
+    // A localhost port nothing listens on, for the spec of a request whose connection is refused.
+    closedPort: () => Promise<number>;
   }
 }
 

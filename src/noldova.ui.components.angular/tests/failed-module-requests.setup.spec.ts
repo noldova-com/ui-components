@@ -53,6 +53,18 @@ describe("failed module request setup", () => {
     expect(printed[0]).toMatch(/^Failed module response at \S+: 200 text\/html/u);
   });
 
+  it("prints, after a module request whose connection is refused, what its port held: whether Node connects there and what listens", async () => {
+    const port = await commands.closedPort();
+    const url = `http://localhost:${port}/refused-${crypto.randomUUID()}.js`;
+
+    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+
+    await expect.poll(() => printedFor(url)).toHaveLength(2);
+    const printed = await printedFor(url);
+    expect(printed[0]).toMatch(/^Failed module request at \S+: net::ERR_CONNECTION_REFUSED http:/u);
+    expect(printed[1]).toMatch(new RegExp(`^Failed module request's server at \\S+Z, port ${port}: Node connects \\S+ ECONNREFUSED(, \\S+ ECONNREFUSED)*; listening none; other sockets on the port \\S`, "u"));
+  });
+
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
     const fetched = refusedAt("fetch");
     const module = refusedAt("module");

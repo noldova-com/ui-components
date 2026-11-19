@@ -12,6 +12,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { defineConfig } from "vitest/config";
 
 import { ClassMetadataCoverage } from "./tests/coverage/class-metadata-coverage.ts";
+import { ClosedPort } from "./tests/network/closed-port.ts";
 import { FailedModuleRequests } from "./tests/network/failed-module-requests.ts";
 import { ShortScreenshotNames } from "./tests/screenshots/short-screenshot-names.ts";
 
@@ -44,7 +45,7 @@ export default defineConfig({
   test: {
     api: { port: 24315 },
     // __vitest_screenshot replaces Vitest's own screenshot command, so a failure screenshot whose name is too long for a file still saves.
-    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
+    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, closedPort: new ClosedPort().find, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
     expect: { poll: { timeout: pollLimit } },
     hookTimeout: hangLimit,
