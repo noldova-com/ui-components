@@ -308,7 +308,7 @@ Its median test took 622 ms on Linux, 593 ms on Windows and 401 ms on macOS in t
 The pointer specs move the real pointer through Vitest's `userEvent.hover`, which first waits until Playwright finds the target visible, still over frames and able to take events.
 Measured on one test machine of each system, a hover took about 120 ms on Linux and Windows and about 50 ms on macOS, most of it those waits.
 A hover whose target is laid out and still now goes through `PointerFixture.hoverAsync` with `isForced`, which moves the real pointer at once, and the test still reads the look the pointer gives, so a hover that lands elsewhere still fails.
-That is `AppearanceFixture.parkPointerAsync`, which parks the pointer on a fixed 4 px element of its own, the tab action's buttons and the docs site's search field; a hover after a scroll or an opening, such as the scroll reveal's on its area, keeps Playwright's waits.
+That is the tab action's buttons and the docs site's search field, and was `AppearanceFixture.parkPointerAsync`'s move onto a fixed 4 px element of its own until the change below; a hover after a scroll or an opening, such as the scroll reveal's on its area, keeps Playwright's waits.
 The docs site's search spec types `zqzq` where it typed a 17-character query, for its check that nothing matches, since a key took about 90 ms on Linux; it still types key by key, as search as you type sees it.
 The table gives each file's median test before and after that change, in three runs on one test machine of each system, each switching between the two, every test still followed by the pointer's move off the page that [#199](https://github.com/noldova-com/ui-components/issues/199) measured.
 
@@ -321,6 +321,22 @@ The table gives each file's median test before and after that change, in three r
 | docs site, `docs-search.component.spec.ts` | 341 to 287 ms | not run | not run |
 
 What stays in these files is the pointer moves, clicks and keys their checks make, and the move off the page.
+
+`AppearanceFixture.parkPointerAsync` now moves the pointer off the page, just outside the window's top left corner, the same move as the move off the page after each test, and fails if anything in the page is still hovered; that move then has nothing to do, so a test that parks the pointer makes one forced move where it made two.
+A forced move took 56 to 66 ms on Linux and Windows and about 16 ms on macOS, measured with nine of these files running alone in three runs on one test machine of each system.
+The park still shows its 4 px element in the corner, for a test to hover when it moves the pointer away from something later; while the pointer is off the page, the page's `html` and `body` aren't hovered, so the page's own scrollbar thumb, which shows on a hovered element, stays hidden, and no spec reads it.
+The table gives each file's median test before and after that change, with only the park's spec files running, in three runs on one test machine of each system, each switching between the two:
+
+| File | Linux | Windows | macOS |
+|---|---|---|---|
+| `message-popover.spec.ts` | 560 to 443 ms | 486 to 508 ms | 375 to 368 ms |
+| `scroll-reveal.service.spec.ts` | 243 to 153 ms | 178 to 152 ms | 67 to 50 ms |
+| `split-button.component.spec.ts` | 134 to 71 ms | 76 to 52 ms | 6 to 7 ms |
+| `tab-leading.component.spec.ts` | 172 to 101 ms | 132 to 102 ms | 33 to 17 ms |
+| `toolbar-button-open-pressed.component.spec.ts` | 218 to 90 ms | 141 to 116 ms | 67 to 50 ms |
+
+What stays in the scroll reveal's spec is its hovers after a scroll, which keep Playwright's waits, and in the popover's its fades, as above.
+In the same runs of the nine files alone, the tab action's spec spends 154 to 157 ms a test on Linux and Windows in the forced hovers onto the tab close and the action whose look it reads, and the configuration table's row hover spec 76 to 81 ms in its forced hovers onto the cells it checks, each followed by the move off the page, so neither was cut.
 Measured in the same way, some files are bound by a wait their checks need, so none was cut:
 
 - `short-screenshot-names.spec.ts` takes a real screenshot in each test, 60 to 106 ms each on macOS; its tests took 169 to 403 ms on Linux and Windows.
