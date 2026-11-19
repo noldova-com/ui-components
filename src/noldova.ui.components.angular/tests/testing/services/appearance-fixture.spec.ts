@@ -8,6 +8,7 @@
 
 import { TestBed } from "@angular/core/testing";
 import { onTestFinished, vi } from "vitest";
+import { userEvent } from "vitest/browser";
 
 import { ThemeMode } from "../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
@@ -16,6 +17,7 @@ import { ScrollRevealService } from "../../../src/app/services/scroll-reveal.ser
 import { FixtureTheme } from "../../../src/testing/models/fixture-theme";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 import { PointerFixture } from "../../../src/testing/services/pointer-fixture";
+import { PointerRestFixture } from "../../fixtures/pointer-rest.fixture";
 
 describe("AppearanceFixture", () => {
   afterEach(() => AppearanceFixture.reset());
@@ -52,30 +54,44 @@ describe("AppearanceFixture", () => {
     expect(AppearanceFixture.contrast("none", "rgb(0, 0, 0)")).toBe(1);
   });
 
-  it("parks the pointer on a shown element in the top left corner, and removes it when the pointer cannot move onto it", async () => {
+  it("parks the pointer outside the page, over none of its elements, so the move off the page after the test has none to make, and shows a 4 px element in the top left corner", async () => {
+    const cover = document.body.appendChild(document.createElement("div"));
+    cover.style.cssText = "position: fixed; inset: 0;";
+    onTestFinished(() => cover.remove());
+    await PointerFixture.hoverAsync(cover, { isForced: true });
+    const before = [cover.matches(":hover"), PointerRestFixture.moved];
+
     const park = await AppearanceFixture.parkPointerAsync();
+    onTestFinished(() => park.remove());
     const box = park.getBoundingClientRect();
+    const hover = vi.spyOn(userEvent, "hover");
+    onTestFinished(() => hover.mockRestore());
+    await PointerRestFixture.leavePageAsync();
 
-    expect([park.matches(":popover-open"), park.matches(":hover"), box.left, box.top, box.width]).toEqual([true, true, 0, 0, 4]);
-    park.remove();
+    expect([before, [...document.querySelectorAll(":hover")], PointerRestFixture.moved, hover.mock.calls.length]).toEqual([[true, true], [], false, 0]);
+    expect([park.matches(":popover-open"), box.left, box.top, box.width, box.height]).toEqual([true, 0, 0, 4, 4]);
+  });
 
+  it("fails and removes the park when the pointer cannot move", async () => {
     const failure = new Error("The pointer did not move.");
-    const hoverAsync = vi.spyOn(PointerFixture, "hoverAsync").mockRejectedValueOnce(failure);
-    onTestFinished(() => hoverAsync.mockRestore());
+    const hover = vi.spyOn(userEvent, "hover").mockRejectedValueOnce(failure);
+    onTestFinished(() => hover.mockRestore());
     const before = document.body.childElementCount;
 
     await expect(AppearanceFixture.parkPointerAsync()).rejects.toBe(failure);
     expect(document.body.childElementCount).toBe(before);
   });
 
-  it("fails and removes the park when the pointer moves but something else takes it, as a modal dialog does", async () => {
-    const dialog = document.body.appendChild(document.createElement("dialog"));
-    onTestFinished(() => dialog.remove());
-    dialog.showModal();
-    onTestFinished(() => dialog.close());
+  it("fails naming what the pointer still hovers, and removes the park, when the pointer stays in the page", async () => {
+    const cover = document.body.appendChild(document.createElement("section"));
+    cover.style.cssText = "position: fixed; inset: 0;";
+    onTestFinished(() => cover.remove());
+    await PointerFixture.hoverAsync(cover, { isForced: true });
+    const hover = vi.spyOn(userEvent, "hover").mockResolvedValueOnce(undefined);
+    onTestFinished(() => hover.mockRestore());
     const before = document.body.childElementCount;
 
-    await expect(AppearanceFixture.parkPointerAsync()).rejects.toThrow("The pointer did not move onto the park in the window's top left corner; something there, such as a modal dialog, takes the pointer.");
+    await expect(AppearanceFixture.parkPointerAsync()).rejects.toThrow("The pointer did not leave the page; it still hovers section.");
     expect(document.body.childElementCount).toBe(before);
   });
 
