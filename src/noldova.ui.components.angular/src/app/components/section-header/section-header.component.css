@@ -24,7 +24,7 @@
 }
 
 :host(:not(:first-child)) {
-  margin-block-start: var(--nol-space-3);
+  margin-block-start: var(--nol-section-header-space-above);
 }
 
 :host(.nol-section-header-with-icon) {

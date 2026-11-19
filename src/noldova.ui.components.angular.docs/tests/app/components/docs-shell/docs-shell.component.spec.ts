@@ -676,6 +676,20 @@ describe("DocsShellComponent", () => {
         await DomChangeFixture.untilAsync(() => expect(Math.round(pixels(DocsFixture.one(host, ".nol-docs-outline-link")))).toBe(14));
     });
 
+    it("puts the kit's 12px space above a section header, scaled to the site's text, above each of the menu's group headers, beside the menu's gap, and the kit's own above a later section header in an example", async () => {
+      const host = await pageAsync("/components/section-header");
+      const scale = 14 / 13;
+      const menu = DocsFixture.all(host, ".nol-docs-menu nol-section-header");
+      const example = DocsFixture.all(host, ".nol-docs-example-preview nol-section-header").filter(t => t.previousElementSibling !== null);
+      const margin = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).marginTop);
+
+      expect(menu.map(t => margin(t))).toEqual(menu.map(() => expect.closeTo(12 * scale, 2)));
+      expect(example.map(t => margin(t))).toEqual([12]);
+      if (width >= DocsFixture.DESKTOP_WIDTH)
+        expect(menu.map(t => t.getBoundingClientRect().top - (t.previousElementSibling?.getBoundingClientRect().bottom ?? Number.NaN)))
+          .toEqual(menu.map(() => expect.closeTo((12 + 4) * scale, 1)));
+    });
+
     it("draws the site's own code blocks at 13px with lines one and a half times as tall, leaving the kit's code block in an example at its 12px and code in the text at the site's code size", async () => {
       const host = await pageAsync("/components/code-block");
       const line = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).lineHeight);

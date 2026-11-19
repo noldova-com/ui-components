@@ -474,6 +474,7 @@ export class DefaultTheme {
       ["row-gap", "calc(2 * var(--nol-tab-inset))"],
       ["section-header-height", "1.75rem"],
       ["section-header-caret", "0.875rem"],
+      ["section-header-space-above", "var(--nol-space-3)"],
       ["content-padding-inline", "calc(3 * var(--nol-tab-inset) + var(--nol-pill-padding))"],
       ["document-padding-block", "1rem"],
       ["view-padding-block", "0.5rem"],
