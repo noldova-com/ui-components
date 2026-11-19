@@ -27,6 +27,24 @@ describe("CodeHighlights", () => {
     return () => query.removeEventListener("change", recheck);
   });
 
+  // Runs a check as in a browser without the CSS Highlight API, as Safari before 17.2 and Firefox before 140, and puts the API back.
+  function withoutHighlightApi(check: () => void): void {
+    const constructor = Object.getOwnPropertyDescriptor(globalThis, "Highlight");
+    const registry = Object.getOwnPropertyDescriptor(CSS, "highlights");
+    Object.defineProperty(globalThis, "Highlight", { value: undefined, configurable: true, writable: true });
+    Object.defineProperty(CSS, "highlights", { value: undefined, configurable: true });
+    try {
+      check();
+    }
+    finally {
+      for (const [target, name, descriptor] of [[globalThis, "Highlight", constructor], [CSS, "highlights", registry]] as const)
+        if (descriptor === undefined)
+          Reflect.deleteProperty(target, name);
+        else
+          Object.defineProperty(target, name, descriptor);
+    }
+  }
+
   afterEach(async () => {
     vi.restoreAllMocks();
     await ForcedColorsFixture.resetAsync();
@@ -54,6 +72,17 @@ describe("CodeHighlights", () => {
     scoped.destroy();
 
     expect([media.mock.calls.length, registered, added]).toEqual([0, [], []]);
+  });
+
+  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", () => {
+    withoutHighlightApi(() => {
+      const highlights = TestBed.inject(CodeHighlights);
+      const remove = highlights.add(document.createTextNode("return 1;"), [new CodeToken(0, "return", CodeTokenKind.Control)]);
+      remove();
+      TestBed.resetTestingModule();
+    });
+
+    expect([shown(), ranges()]).toEqual([[], []]);
   });
 
   it("highlights each token's range of a text in its kind's highlight with a static range, and takes them back when asked", () => {

@@ -9,6 +9,8 @@
 import { isPlatformBrowser } from "@angular/common";
 import { DestroyRef, Injectable, PLATFORM_ID, inject } from "@angular/core";
 
+import "@noldova/context.core";
+
 import { CodeTokenKind } from "../enums/code-token-kind.js";
 import type { CodeToken } from "../models/code-token.js";
 import { Resources } from "../../resources.js";
@@ -16,7 +18,8 @@ import { CodeHighlightsResources } from "./code-highlights.resources.js";
 
 @Injectable({ providedIn: "root" })
 export class CodeHighlights {
-  private readonly highlights: Readonly<Record<CodeTokenKind, Highlight>> | null = isPlatformBrowser(inject(PLATFORM_ID)) ? CodeHighlights.createHighlights() : null;
+  private readonly highlights: Readonly<Record<CodeTokenKind, Highlight>> | null = isPlatformBrowser(inject(PLATFORM_ID)) && CodeHighlights.canHighlight()
+    ? CodeHighlights.createHighlights() : null;
 
   public constructor() {
     if (Object.isNull(this.highlights))
@@ -58,6 +61,10 @@ export class CodeHighlights {
 
   public static nameOf(kind: CodeTokenKind): string {
     return `${CodeHighlightsResources.codeHighlightPrefix}${kind.toLowerCase()}`;
+  }
+
+  public static canHighlight(): boolean {
+    return Object.isFunction(globalThis.Highlight) && !Object.isNullOrUndefined(globalThis.CSS.highlights);
   }
 
   private static createHighlights(): Readonly<Record<CodeTokenKind, Highlight>> {
