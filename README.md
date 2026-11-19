@@ -323,11 +323,11 @@ Measured in the same way, some files are bound by a wait their checks need, so n
 - `hang-limit.spec.ts` waits out its 100 ms stand-in for the shared bound in three of its five tests, 104 to 114 ms a test on Linux and Windows.
 - `gallery-overlays.component.spec.ts` renders its section, about 170 ms a test on Linux and Windows against 20 ms on macOS.
 - The docs site's `tokens-page.component.spec.ts` renders the tokens page, 180 to 630 ms a test on Linux.
-- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, ui-components-20261118-063447-ea50, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
+- The docs site's `docs-on-this-page.component.spec.ts` goes to every page of the catalog in one test, which took 8.3 seconds on Linux in the run that timed each test for #176, against the 3,300 ms the list of tests over 1 second below gives from the timing check at 60fda17; that run's probe timed every test as it ran, which adds its own time.
 
 The configuration table's row hover spec and the focus start spec now move the real pointer at once too, onto cells and buttons laid out and still: the hovers through `PointerFixture.hoverAsync` with `isForced`, each followed by a check that the cell is hovered, and the clicks with Playwright's `force`, each followed by a check that the button has the focus.
 Unlike the list above, the two tables below give each file's median test in runs of a few files alone, next to the cells the timing check at 9bb5b36 gave it under the whole suite; a file alone runs faster than under the whole suite, and its time alone also moves with what else runs beside it.
-Measured in three runs on one test machine of each system, each switching between main and that change, in runs ui-components-20261118-174927-595b on Linux, -6aec on Windows and -475b on macOS, with only these two files running:
+Measured in three runs on one test machine of each system, each switching between main and that change, with only these two files running:
 
 | File | Timing check, Linux, Windows, macOS | Alone, Linux | Alone, Windows | Alone, macOS |
 |---|---|---|---|---|
@@ -335,7 +335,7 @@ Measured in three runs on one test machine of each system, each switching betwee
 | `focus-start.fixture.spec.ts` | 127 ms, within, within | 115 to 84 ms | 357 to 161 ms | 77 to 46 ms |
 
 On Windows, what stays in a test is the forced hovers, 61 ms, or the forced clicks, 113 ms, and the move off the page, about 48 ms.
-The other files near the line, measured before that change in three runs on one test machine of each system, in runs ui-components-20261118-174147-4c2b, -8ed7 and -6d02, with these seven files running together:
+The other files near the line, measured before that change in three runs on one test machine of each system, with these seven files running together:
 
 | File | Timing check, Linux, Windows, macOS | Alone, Linux, Windows, macOS | Where the time goes |
 |---|---|---|---|
@@ -346,6 +346,10 @@ The other files near the line, measured before that change in three runs on one 
 | `gallery-forms.component.spec.ts` | within, within, within | 96 ms, 104 ms, 14 ms | Within the line in both. |
 
 The focus ring's 167 ms on Windows here and its 71 ms in the paragraph on the virtual list's settles above are both runs without the whole suite, on different days and loads: that one ran its file and the kit rows' alone, and this one ran seven files together, through a probe that times each test's phases, on a Windows machine whose speed moved within the hour, as the row hover spec's 146 ms and 197 ms before the change, on the same machine eight minutes apart, show.
+
+The focus ring spec now clicks its articles, and the slot between two of them, at once too, with Playwright's `force`, each click followed by the test's existing check of where the focus went; the Jump to latest button, which shows and moves, keeps its real click.
+Measured in three runs on one test machine of each system, each switching between main and that change, with only this file running, its median test went from 180 to 148 ms on Linux, from 165 to 114 ms on Windows, and from 74 to 80 ms on macOS, within the line both times, and its clicks from 78 to 34 ms a test on Linux and from 72 to 16 ms on Windows.
+On Linux what stays in that test, about 113 ms, is the render, the Tab and the move off the page that every test in the file has, its theme tests taking about 75 ms with no click, so the file stays over the line on Linux under [#176](https://github.com/noldova-com/ui-components/issues/176).
 
 Not measured here: the Gallery overlay container spec, which [#199](https://github.com/noldova-com/ui-components/issues/199) takes.
 
