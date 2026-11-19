@@ -4,6 +4,8 @@
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
+An app's start imports the button from its own entry, `@noldova/ui.components.angular/button`, and the main entry exports it too; a start that never imports the main entry keeps the parts only a lazy page uses out of it, as the kit's README, [Lazy pages](../../src/noldova.ui.components.angular/README.md#lazy-pages), says.
+
 ## Default geometry
 
 1.625rem minimum high; 0.5rem side padding; small radius; never wider than its container.

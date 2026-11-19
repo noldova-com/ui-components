@@ -41,12 +41,14 @@ export class DocsApiGenerator {
     const project = new ApiProject(this.root, DocsApiGenerator.PURPOSE, DocsApiGenerator.PROJECT_ID);
     await project.writeAsync(base, this.root, entries.flatMap(t => [t.apiPackage.declarations, t.apiPackage.implementation]));
     const reader = new DocsApiReader(ApiProgram.open(project.file));
-    const read = entries.flatMap(({ entry, apiPackage }) =>
-      reader.read(apiPackage.declarations, apiPackage.implementation, DocsApiGenerator.formatEntry(packageName, entry)));
-    // A component that more than one entry exports, such as the button, gets one page, from the first entry the package lists, the main one.
-    const components = read.filter((t, index) => read.findIndex(u => u.name === t.name) === index);
+    const components = DocsApiGenerator.onePagePerComponent(entries.flatMap(({ entry, apiPackage }) =>
+      reader.read(apiPackage.declarations, apiPackage.implementation, DocsApiGenerator.formatEntry(packageName, entry))));
     await new DocsModuleWriter(this.root).writeAsync(DocsApiGenerator.MODULE_FILE, DocsApiGenerator.EXPORT_NAME, components);
     return components;
+  }
+
+  private static onePagePerComponent(components: readonly DocsComponent[]): readonly DocsComponent[] {
+    return components.filter((t, index) => components.findIndex(u => u.name === t.name) === index);
   }
 
   private static formatEntry(packageName: string, entry: ApiEntry): string {
