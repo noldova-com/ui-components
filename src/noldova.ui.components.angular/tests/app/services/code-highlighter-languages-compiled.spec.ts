@@ -16,9 +16,17 @@ import { CodeHighlighterFixture } from "../../fixtures/code-highlighter.fixture"
 describe("CodeHighlighter", () => {
   const { languageShares, sampleResultsAsync } = CodeHighlighterFixture;
 
-  beforeEach(() => TestBed.configureTestingModule({ providers: [{ provide: CodeHighlighterTokens.tokenizeTimeLimit, useValue: 0 }, CodeHighlightingFixture.sharedShiki] }));
+  const configure = (): TestBed => TestBed.configureTestingModule({ providers: [{ provide: CodeHighlighterTokens.tokenizeTimeLimit, useValue: 0 }, CodeHighlightingFixture.sharedShiki] });
 
-  // One test per language, since each loads its own grammar, the most of a test's time.
+  beforeAll(async () => {
+    configure();
+    const highlighter = TestBed.inject(CodeHighlighter);
+    await Promise.all(languageShares.compiled.map(t => sampleResultsAsync(highlighter, [t])));
+    TestBed.resetTestingModule();
+  });
+
+  beforeEach(() => configure());
+
   it.each(languageShares.compiled)("colors a sample of %s, of its compiled share, each token at its place in the sample", async language => {
     expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), [language])).toEqual([[language, true, true]]);
   });
