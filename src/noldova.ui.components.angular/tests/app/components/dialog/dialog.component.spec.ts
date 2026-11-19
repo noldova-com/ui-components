@@ -236,6 +236,16 @@ describe("DialogComponent", () => {
     await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
   });
 
+  it("tells its owner once when Escape is pressed while its container has the focus, after a click on its text", async () => {
+    const opened = await openAsync();
+    await userEvent.click(DomFixture.one(document, ".nol-dialog-probe"));
+    const focused = document.activeElement === container();
+
+    await userEvent.keyboard("{Escape}");
+
+    expect([focused, opened.componentInstance?.dismissals]).toEqual([true, 1]);
+  });
+
   for (const theme of AppearanceFixture.themes)
     for (const mode of AppearanceFixture.modes)
       it(`dims the window behind it and takes its geometry and surface from the ${theme.id} theme in ${mode} mode, with its title, body, actions and Close's × on one edge each side`, async () => {

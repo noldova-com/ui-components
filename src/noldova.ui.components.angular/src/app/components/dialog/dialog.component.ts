@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { DialogRef } from "@angular/cdk/dialog";
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, type Signal, signal, type WritableSignal } from "@angular/core";
 
 import { Resources } from "../../../resources.js";
@@ -54,7 +55,12 @@ export class DialogComponent {
 
   public constructor() {
     const resizes = new ResizeObserver(() => this.keepInside());
+    const keys = inject(DialogRef, { optional: true })?.keydownEvents.subscribe(event => {
+      if (event.key === Resources.escapeKey)
+        this.dismiss(event);
+    });
     inject(DestroyRef).onDestroy(() => {
+      keys?.unsubscribe();
       resizes.disconnect();
       this.endDrag();
     });

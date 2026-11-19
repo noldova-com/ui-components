@@ -4059,8 +4059,9 @@ export declare class DialogComponent {
   public readonly size: InputSignal<DialogSize>;
 
   /**
-   * Emits when the person asks to dismiss the dialog, by Escape or by its
-   * Close button. The owner closes the dialog, or keeps it open.
+   * Emits when the person asks to dismiss the dialog, by Escape wherever the
+   * focus is in it, the dialog itself included, or by its Close button. The
+   * owner closes the dialog, or keeps it open.
    */
   public readonly dismissed: OutputEmitterRef<void>;
 }
