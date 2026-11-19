@@ -321,11 +321,14 @@ export declare class AppearanceFixture {
   public static readShownThumb(): string;
 
   /**
-   * Moves the pointer onto a small element in the window's top left corner,
-   * shown above everything else, so nothing else is hovered.
+   * Moves the pointer off the page, just outside the window's top left
+   * corner, so nothing in the page is hovered, and shows a small element in
+   * that corner, above everything else, for the caller to hover when it moves
+   * the pointer away from something later.
    *
    * @returns The element, which the caller removes when done; when the pointer
-   * cannot move onto it, it removes the element itself and fails.
+   * cannot move, or something in the page is still hovered after the move, it
+   * removes the element itself and fails.
    * @example
    * ```ts
    * import { AppearanceFixture } from "@noldova/ui.components.angular/testing";

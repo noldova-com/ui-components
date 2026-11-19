@@ -17,7 +17,6 @@ import { ThemePainter } from "../../app/services/theme-painter.js";
 import { TypographyPainter } from "../../app/services/typography-painter.js";
 import { DefaultTheme } from "../../app/models/default-theme.js";
 import { FixtureTheme } from "../models/fixture-theme.js";
-import { PointerFixture } from "./pointer-fixture.js";
 
 export class AppearanceFixture {
   public static readonly modes: readonly ThemeMode[] = [ThemeMode.Light, ThemeMode.Dark];
@@ -103,9 +102,10 @@ export class AppearanceFixture {
     park.style.cssText = "position: fixed; inset: 0 auto auto 0; width: 4px; height: 4px; margin: 0; padding: 0; border: 0;";
     park.showPopover();
     try {
-      await PointerFixture.hoverAsync(park, { isForced: true });
-      if (!park.matches(":hover"))
-        throw new Error("The pointer did not move onto the park in the window's top left corner; something there, such as a modal dialog, takes the pointer.");
+      await userEvent.hover(document.documentElement, { position: { x: -1, y: -1 }, force: true });
+      const hovered = [...document.querySelectorAll(":hover")].at(-1);
+      if (!Object.isUndefined(hovered))
+        throw new Error(`The pointer did not leave the page; it still hovers ${hovered.localName}.`);
     }
     catch (error) {
       park.remove();
