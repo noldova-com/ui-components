@@ -14,4 +14,5 @@ export interface IBrowserResponse {
   status(): number;
   headers(): Record<string, string>;
   request(): IBrowserRequest;
+  serverAddr(): Promise<{ ipAddress: string; port: number } | null>;
 }

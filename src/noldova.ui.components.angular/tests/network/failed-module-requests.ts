@@ -11,6 +11,7 @@ import type { IBrowserCommandContext } from "./interfaces/i-browser-command-cont
 import type { IBrowserPage } from "./interfaces/i-browser-page.ts";
 import type { IBrowserRequest } from "./interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "./interfaces/i-browser-response.ts";
+import { ServerAddresses } from "./server-addresses.ts";
 
 // Prints each module request the browser fails, so a spec file that fails to import names why: one that ends in a network error, with the error, and
 // one answered with an error status or with a type the browser won't run as a module, with the status and the type. Playwright reports every
@@ -32,6 +33,7 @@ export class FailedModuleRequests {
   // Requests whose response was printed: the browser then cancels the request too, which would print the same import again.
   private readonly printedResponses: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly lines: string[] = [];
+  private readonly addresses: ServerAddresses = new ServerAddresses();
 
   // The browser command: listens on the page that calls it, once per page, and gives every line printed so far.
   public readonly watch: (context: IBrowserCommandContext) => readonly string[] = context => this.watchPage(context.page, context.project.vitest);
@@ -46,8 +48,13 @@ export class FailedModuleRequests {
   }
 
   private recordRequest(request: IBrowserRequest, run: IVitestRun): void {
-    if (request.resourceType() === FailedModuleRequests.MODULE && !this.printedResponses.has(request))
-      this.print(`Failed module request at ${new Date().toISOString()}: ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR} ${request.url()}`, run);
+    if (request.resourceType() === FailedModuleRequests.MODULE && !this.printedResponses.has(request)) {
+      const error = request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR;
+      this.print(`Failed module request at ${new Date().toISOString()}: ${error} ${request.url()}`, run);
+      const url = new URL(request.url());
+      if (error.includes("ERR_CONNECTION") && url.port !== "")
+        void this.addresses.refusedAsync(Number(url.port)).then(line => this.print(line, run), (error: unknown) => this.print(`#28 probe failed: ${String(error)}`, run));
+    }
   }
 
   // A redirect's response is followed by the one it leads to, and a 304 lets the browser run the copy it holds, so only an error status, or a success
@@ -55,6 +62,9 @@ export class FailedModuleRequests {
   private recordResponse(response: IBrowserResponse, run: IVitestRun): void {
     if (response.request().resourceType() !== FailedModuleRequests.MODULE)
       return;
+    void response.serverAddr().then(address => address === null ? undefined
+      : this.addresses.responseFromAsync(address.ipAddress, address.port, line => this.print(line, run)))
+      .catch((error: unknown) => this.print(`#28 address read failed: ${String(error)}`, run));
     const status = response.status();
     const type = response.headers()[FailedModuleRequests.CONTENT_TYPE] ?? FailedModuleRequests.NO_TYPE;
     const isJavaScript = FailedModuleRequests.JAVASCRIPT.has(type.replace(FailedModuleRequests.PARAMETERS, "").trim().toLowerCase());
