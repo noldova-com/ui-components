@@ -54,6 +54,7 @@ export class SelectComponent {
   private titledIndex: number = -1;
 
   protected readonly partResources: typeof SelectResources = SelectResources;
+  protected readonly resources: typeof Resources = Resources;
   protected readonly isOpen: WritableSignal<boolean> = signal(false);
   protected readonly optionTooltipSide: OverlaySide = OverlaySide.below;
   protected readonly tagKind: ChipKind = ChipKind.Status;
@@ -78,7 +79,7 @@ export class SelectComponent {
     afterEveryRender(() => this.followActive());
     effect(() => {
       if (this.disabled())
-        untracked(() => this.close());
+        untracked(() => this.closeDisabled());
     });
     inject(DestroyRef).onDestroy(() => this.close());
   }
@@ -88,6 +89,8 @@ export class SelectComponent {
   }
 
   protected toggle(button: HTMLButtonElement, list: TemplateRef<unknown>): void {
+    if (this.disabled())
+      return;
     if (this.isOpen()) {
       this.close();
       return;
@@ -116,6 +119,8 @@ export class SelectComponent {
 
   protected choose(event: ListboxValueChangeEvent<string>, button: HTMLButtonElement): void {
     this.closeTo(button);
+    if (this.disabled())
+      return;
     for (const chosen of event.value)
       this.valueChange.emit(chosen);
   }
@@ -154,6 +159,14 @@ export class SelectComponent {
       else
         tooltip.hide();
     });
+  }
+
+  private closeDisabled(): void {
+    const button = this.button().nativeElement;
+    const isInList = this.overlay?.element.contains(button.ownerDocument.activeElement) === true;
+    this.close();
+    if (isInList)
+      button.focus();
   }
 
   private closeTo(button: HTMLButtonElement): void {

@@ -350,7 +350,41 @@ describe("SelectComponent", () => {
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
 
-    expect([list(), button().getAttribute("aria-expanded"), select.isExpanded()]).toEqual([null, "false", false]);
+    expect([list(), button().getAttribute("aria-expanded"), select.isExpanded(), button().getAttribute("aria-disabled"), document.activeElement === button()])
+      .toEqual([null, "false", false, "true", true]);
+  });
+
+  it("keeps the focus on its button when its owner disables it while closed, and a click, Enter or Space then opens nothing", async () => {
+    render();
+    button().focus();
+
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    const kept = document.activeElement === button();
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard(" ");
+    await userEvent.click(button());
+    fixture.detectChanges();
+
+    expect([kept, list(), document.activeElement === button(), button().getAttribute("aria-expanded")]).toEqual([true, null, true, "false"]);
+  });
+
+  it("closes its list and emits nothing when an option is chosen after it is disabled and before change detection runs", async () => {
+    const direct = TestBed.createComponent(SelectComponent);
+    direct.componentRef.setInput("options", [new SelectOption("Light", "Light"), new SelectOption("Dark", "Dark")]);
+    direct.componentRef.setInput("value", "Light");
+    direct.componentRef.setInput("label", "Mode");
+    direct.detectChanges();
+    const emitted: string[] = [];
+    direct.componentInstance.valueChange.subscribe(t => emitted.push(t));
+    DomFixture.oneOf(DomFixture.host(direct), ".nol-select-button", HTMLButtonElement).click();
+    direct.detectChanges();
+    await DomChangeFixture.untilAsync(() => expect(options().length).toBe(2));
+
+    direct.componentRef.setInput("disabled", true);
+    DomFixture.present(options()[1]).click();
+
+    expect([emitted, list()]).toEqual([[], null]);
   });
 
   it("chooses nothing from the keyboard once its owner disables it with the list open", async () => {

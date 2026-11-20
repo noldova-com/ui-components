@@ -18,7 +18,7 @@ Panel.
 
 Field geometry with the dropdown tokens; arrow in readable foreground; shrinks to its container.
 A value that matches no option shows as itself, and its list opens with no option marked.
-Disabling the select closes its open list, so nothing can be chosen from it.
+A disabled select dims its button to half strength and is read as unavailable, but stays focusable, as a disabled [checkbox](checkbox.md) or [choice row](choice-row.md) does: a click, Enter or Space on it opens nothing, and a select that turns disabled while it holds the focus keeps it. Disabling the select closes its open list, returning the focus to the button when the list held it, so nothing can be chosen from it.
 An option's tag is read with its title, type-ahead matches the title alone, and the button, which shows only the title, adds the chosen option's tag to its name; a title too long for the list is cut before the tag, which never wraps, and the tag takes the chosen option's text color while its option is chosen or active.
 Options can be given in labeled groups, a `SelectGroup` each, in their place among the rest: a group shows its label above its options, muted, in the style of a [menu](menu.md)'s group label, and names the group for screen readers; the label takes no focus, and the arrow keys and type-ahead move across the groups' options as across any.
 A disabled option is drawn as a disabled menu item is, its title and tag at half opacity with no hover fill, in GrayText in forced colors; it is read as unavailable, a press on it does nothing, and the arrow keys, Home, End and type-ahead pass over it.
