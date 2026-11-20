@@ -737,6 +737,80 @@ describe("TabComponent", () => {
     }
   });
 
+  function watchFocusListeners(): () => readonly string[] {
+    const calls: [string, unknown][] = [];
+    let listener: unknown = null;
+    const added = vi.spyOn(document, "addEventListener");
+    const removed = vi.spyOn(document, "removeEventListener");
+    added.mockImplementation(function (this: Document, ...call: Parameters<Document["addEventListener"]>) {
+      if (call[0] === "focusin") {
+        listener ??= call[1];
+        calls.push(["added", call[1]]);
+      }
+      EventTarget.prototype.addEventListener.apply(this, call);
+    });
+    removed.mockImplementation(function (this: Document, ...call: Parameters<Document["removeEventListener"]>) {
+      if (call[0] === "focusin")
+        calls.push(["removed", call[1]]);
+      EventTarget.prototype.removeEventListener.apply(this, call);
+    });
+    return () => {
+      const result = calls.map(([kind, fn]) => `${kind}${fn === listener ? String.empty : " another"}`);
+      calls.length = 0;
+      return result;
+    };
+  }
+
+  it("listens for the focus on the document only from its field's blur into a menu opened on it until the focus leaves that menu", async () => {
+    const outside = document.body.appendChild(document.createElement("button"));
+    try {
+      const shown = await startEditingAsync();
+      const taken = watchFocusListeners();
+
+      await openFieldMenuAsync(shown);
+      const inMenu = taken();
+      await userEvent.keyboard("{Escape}");
+      await expect.poll(() => document.activeElement).toBe(shown);
+      const back = taken();
+      outside.focus();
+
+      expect(inMenu).toEqual(["added"]);
+      expect(back.at(-1)).toBe("removed");
+      expect(back.filter(t => t === "added")).toEqual([]);
+      expect(taken()).toEqual([]);
+    }
+    finally {
+      vi.restoreAllMocks();
+      host.fieldMenu().close();
+      outside.remove();
+    }
+  });
+
+  it("stops listening for the focus on the document when editing ends or the tab goes while the focus is in a menu opened on its field", async () => {
+    try {
+      const taken = watchFocusListeners();
+      await openFieldMenuAsync(await startEditingAsync());
+      const opened = taken();
+      stopEditing();
+      await fixture.whenStable();
+      const ended = taken();
+      host.fieldMenu().close();
+      await openFieldMenuAsync(await startEditingAsync());
+      taken();
+      fixture.destroy();
+      const gone = taken();
+
+      expect(opened.at(-1)).toBe("added");
+      expect(ended).toContain("removed");
+      expect(ended).not.toContain("added");
+      expect(gone).toContain("removed");
+      expect(host.kept).toEqual([]);
+    }
+    finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it("ignores an Enter that ends a composition", async () => {
     const shown = await startEditingAsync();
 

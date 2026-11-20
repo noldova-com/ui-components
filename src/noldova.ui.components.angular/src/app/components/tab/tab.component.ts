@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, ElementRef, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, inject, input, linkedSignal, output, untracked,
+import { Component, DestroyRef, ElementRef, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, inject, input, linkedSignal, output, untracked,
   viewChild } from "@angular/core";
 
 import { ComposingKey } from "../../models/composing-key.js";
@@ -47,8 +47,7 @@ import { ViewBadgeComponent } from "../view-badge/view-badge.component.js";
     "(keydown.space)": "onSpace($event)",
     "(keydown.delete)": "requestClose()",
     "(mousedown)": "onMouseDown($event)",
-    "(auxclick)": "onAuxiliaryClick($event)",
-    "(document:focusin)": "onDocumentFocusIn($event)"
+    "(auxclick)": "onAuxiliaryClick($event)"
   }
 })
 export class TabComponent {
@@ -86,21 +85,22 @@ export class TabComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly fieldElement: Signal<ElementRef<HTMLInputElement> | undefined> = viewChild("field", { read: ElementRef });
   private isSettled: boolean = false;
-  private isInMenu: boolean = false;
+  private readonly onMenuFocusLeft: (event: Event) => void = event => this.leaveMenu(event);
   private hadField: boolean = false;
 
   public constructor() {
+    inject(DestroyRef).onDestroy(() => this.stopWaitingOnMenu());
     afterRenderEffect(() => {
       const field = this.fieldElement()?.nativeElement;
       const hadField = this.hadField;
       this.hadField = !Object.isUndefined(field);
+      this.stopWaitingOnMenu();
       if (Object.isUndefined(field)) {
         if (hadField && (Object.isNull(document.activeElement) || document.activeElement === document.body))
           this.host.focus();
         return;
       }
       this.isSettled = false;
-      this.isInMenu = false;
       field.value = untracked(this.label);
       field.focus();
       field.select();
@@ -145,16 +145,8 @@ export class TabComponent {
 
   protected onFieldBlur(event: FocusEvent): void {
     if (TabComponent.isMenu(event.relatedTarget))
-      this.isInMenu = true;
+      document.addEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
     else
-      this.keep();
-  }
-
-  protected onDocumentFocusIn(event: FocusEvent): void {
-    if (!this.isInMenu || TabComponent.isMenu(event.target))
-      return;
-    this.isInMenu = false;
-    if (event.target !== this.fieldElement()?.nativeElement)
       this.keep();
   }
 
@@ -171,6 +163,18 @@ export class TabComponent {
 
   private static isMenu(target: EventTarget | null): boolean {
     return target instanceof Element && !Object.isNull(target.closest(TabResources.menuPaneSelector));
+  }
+
+  private leaveMenu(event: Event): void {
+    if (TabComponent.isMenu(event.target))
+      return;
+    this.stopWaitingOnMenu();
+    if (event.target !== this.fieldElement()?.nativeElement)
+      this.keep();
+  }
+
+  private stopWaitingOnMenu(): void {
+    document.removeEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
   }
 
   private settle(report: () => void): void {
