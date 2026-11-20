@@ -200,8 +200,8 @@ export class CodeBlockHarness {
     });
   };
 
-  public readonly leftsAt = (places: readonly ICodeSpanPlace[]): readonly number[] => {
-    const nodes = this.lineNodes();
+  public readonly leftsAt = (places: readonly ICodeSpanPlace[], code: HTMLElement = this.find(".nol-code-block-body > code")): readonly number[] => {
+    const nodes = [...code.childNodes].map(t => t.firstChild);
     return places.map(t => {
       const range = document.createRange();
       const node = nodes[t.line];
@@ -335,12 +335,17 @@ export class CodeBlockHarness {
     this.controlTokens(this.wordTokens);
     await this.renderAsync();
     await this.changeAsync(() => {
+      this.host.twin.set(true);
       this.host.streaming.set(isStreaming);
       if (!Object.isNull(width))
         this.host.width.set(width);
       if (!Object.isNull(code))
         this.host.code.set(code);
     });
+    const twin = this.find(".frame.twin");
+    const plainBlock = (selector: string): HTMLElement => DomFixture.one(twin, selector);
+    const below = plainBlock(".nol-code-block-body").getBoundingClientRect().top - this.body().getBoundingClientRect().top;
+    twin.style.marginTop = `${Math.ceil(below) - below}px`;
     const [ranges, spans] = [this.allRanges(), this.tokenSpans()];
     await ForcedColorsFixture.activateAsync();
     await this.framesAsync();
@@ -349,17 +354,16 @@ export class CodeBlockHarness {
     const [highlight, text, canvas] = ["Highlight", "CanvasText", "Canvas"].map(t => channels(t));
     const colors = [getComputedStyle(this.find("nol-code-block")).backgroundColor, getComputedStyle(this.body()).color];
     const expected = ["Canvas", "CanvasText"].map(t => ForcedColorsFixture.resolve(t));
-    const colored = await this.pixelsAsync(this.body());
+    const pieces = await ScreenshotFixture.piecesAsync([this.body(), plainBlock(".nol-code-block-body")]);
+    const [colored, plain] = [DomFixture.at(pieces, 0), DomFixture.at(pieces, 1)];
     const origin = this.body().getBoundingClientRect();
     const scale = colored.width / origin.width;
     const places = this.spanPlaces();
     const tokens = places.map(t => t.box);
     const isAtEdge = (x: number, y: number): boolean => tokens.some(t => (t.top - origin.top) * scale <= y && y < (t.bottom - origin.top) * scale
       && [t.left, t.right].some(edge => Math.abs((edge - origin.left) * scale - x) <= 1.5));
-    await this.changeAsync(() => this.host.language.set(null));
-    const [plainRanges, plainSpans] = [this.allRanges(), this.tokenSpans()];
-    const plainLefts = this.leftsAt(places);
-    const plain = await this.pixelsAsync(this.body());
+    const [plainRanges, plainSpans] = [this.allRanges(), plainBlock(".nol-code-block-body > code").querySelectorAll(".nol-code-line > span").length];
+    const plainLefts = this.leftsAt(places, plainBlock(".nol-code-block-body > code"));
     await ForcedColorsFixture.resetAsync();
     const differing: string[] = [];
     for (let at = 0; at < colored.data.length; at += 4) {

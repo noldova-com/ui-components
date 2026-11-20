@@ -21,6 +21,11 @@ import type { ShellRun } from "../../src/app/models/shell-run";
           [runnable]="runnable()" [runState]="runState()" (run)="runs.push($event)" />
       }
     </div>
+    @if (twin()) {
+      <div class="frame twin" [style.width]="width()">
+        <nol-code-block [code]="code()" [language]="null" [wrapped]="wrapped()" [maxHeight]="maxHeight()" [streaming]="streaming()" />
+      </div>
+    }
   `
 })
 export class CodeBlockHostComponent {
@@ -33,5 +38,6 @@ export class CodeBlockHostComponent {
   public readonly runnable: WritableSignal<boolean> = signal(false);
   public readonly runState: WritableSignal<ShellRunState> = signal(ShellRunState.Idle);
   public readonly streaming: WritableSignal<boolean> = signal(false);
+  public readonly twin: WritableSignal<boolean> = signal(false);
   public readonly runs: ShellRun[] = [];
 }
