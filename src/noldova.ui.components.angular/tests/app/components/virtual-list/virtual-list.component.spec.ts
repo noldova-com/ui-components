@@ -1331,6 +1331,29 @@ describe("VirtualListComponent", () => {
     expect([kept === outside, document.activeElement === outside]).toEqual([true, true]);
   });
 
+  it("moves the focus to the first row in view, without scrolling, when Retry is chosen from the keyboard while the tab stop is out of view", async () => {
+    const source = new VirtualListSourceFixture(200, 30);
+    await renderAsync(source);
+    await source.readAt(0).answerAsync();
+    await settleAsync();
+    await scrollAsync(2000);
+    for (const read of source.reads.filter(t => !t.isSettled && !t.abort.aborted))
+      await read.refuseAsync(new Error("The store went away."));
+    await settleAsync();
+    const top = viewport().scrollTop;
+    const reads = source.reads.length;
+    DomFixture.one(DomFixture.present(failure()), "button").focus();
+
+    await pressAsync("{Enter}");
+    await settleAsync();
+    const box = viewport().getBoundingClientRect();
+    const row = document.activeElement?.getBoundingClientRect();
+
+    expect([viewport().scrollTop, source.reads.slice(reads).some(t => t.abort.aborted), source.reads.length > reads, listbox().contains(document.activeElement), stops().includes("1")])
+      .toEqual([top, false, true, true, false]);
+    expect([(row?.bottom ?? 0) > box.top, (row?.top ?? box.bottom) < box.bottom]).toEqual([true, true]);
+  });
+
   it("keeps the focus in the list when the read Retry started from the keyboard succeeds", async () => {
     const source = new VirtualListSourceFixture(200, 30);
     await renderAsync(source);
@@ -1346,13 +1369,13 @@ describe("VirtualListComponent", () => {
     expect([listbox().contains(document.activeElement), failure(), option("item 0").isConnected]).toEqual([true, null, true]);
   });
 
-  it("leaves the focus where it is when Retry is clicked without having it, also when the read fails again", async () => {
+  it("leaves the focus where the click put it when Retry is clicked, also when the read fails again", async () => {
     const source = new VirtualListSourceFixture(200, 30);
     await renderAsync(source);
     await source.readAt(0).refuseAsync(new Error("The store went away."));
     await settleAsync();
 
-    DomFixture.one(DomFixture.present(failure()), "button").click();
+    await userEvent.click(DomFixture.one(DomFixture.present(failure()), "button"));
     await settleAsync();
     const kept = document.activeElement;
     await source.readAt(source.reads.length - 1).refuseAsync(new Error("The store went away again."));

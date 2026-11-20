@@ -435,15 +435,15 @@ export class VirtualListComponent<T> {
       this.activated.emit(new VirtualListChoice(index, item));
   }
 
-  protected retry(event: Event): void {
-    const hadFocus = event.currentTarget === this.document.activeElement;
+  protected retry(event: MouseEvent): void {
+    const isFromKeys = event.detail === 0 && event.currentTarget === this.document.activeElement;
     this.state().cache.retry();
-    if (!hadFocus)
+    if (!isFromKeys)
       return;
     this.isRetryHeld = true;
     afterNextRender(() => {
       if (this.isFocusOnPage())
-        this.focus();
+        this.focusInView();
     }, { injector: this.injector });
   }
 
@@ -649,6 +649,17 @@ export class VirtualListComponent<T> {
     const item = cache.itemAt(this.anchor.index);
     this.toldFollowing = this.isFollowing();
     this.positionChange.emit(new VirtualListPosition(this.anchor.index, Object.isUndefined(item) ? null : source.keyOf(item), this.anchor.distance, this.isFollowing()));
+  }
+
+  private focusInView(): void {
+    const stop = this.stop();
+    const visible = this.rangeFor(0);
+    if (this.isFeed() || Object.isNull(stop) || stop >= visible.start && stop < visible.end) {
+      this.focus();
+      return;
+    }
+    this.focusIndex.set(visible.start);
+    this.isFocusPending = true;
   }
 
   private rangeFor(margin: number): VirtualRange {
