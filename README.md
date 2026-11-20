@@ -487,6 +487,8 @@ Vitest ignores port 0, so it can't ask the system for a free port.
 
 - Angular's test builder gives the setting to its root server and to its browser project, so during a run 24315 and 24316 both listen: the root takes 24315 and the browser project, finding it in use, moves on to 24316, where the test page loads from.
 - A machine whose reserved ranges, or whose lowered dynamic range, cover 24315 or 24316 still fails with `EACCES`.
+- It also sets `test.api.host` to 127.0.0.1, which Angular's builder gives the browser project too, so both servers listen there and the test page loads from `http://127.0.0.1:24316`, with no name for the browser to resolve, as `tests/test-server-address.spec.ts` checks; the Failure screenshots check's own config, `tests/fixtures/failure-screenshot/vitest.config.mts`, sets the same host.
+- On `localhost` the servers listened on `::1` alone, the address Node takes first for it on Windows, and on GitHub's Windows runners a browser request was at times refused, a module such as a grammar chunk or a spec file then failing to load, while Node, a moment later, connected on `::1` and was refused on 127.0.0.1; which address the browser had tried isn't recorded.
 
 ### Tests that run alone
 
