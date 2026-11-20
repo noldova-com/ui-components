@@ -665,6 +665,20 @@ describe("ContextMenuTriggerDirective around editable fields", () => {
     return { event, reached };
   }
 
+  function press(selector: string, init: KeyboardEventInit): { readonly event: KeyboardEvent; readonly reached: boolean } {
+    let reached = false;
+    const note = (): void => {
+      reached = true;
+    };
+    document.addEventListener("keydown", note);
+    const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+    DomFixture.oneOf(DomFixture.host(fixture), selector, Element).dispatchEvent(event);
+    document.removeEventListener("keydown", note);
+    return { event, reached };
+  }
+
+  const keys: readonly (readonly [string, KeyboardEventInit])[] = [["the ContextMenu key", { key: "ContextMenu" }], ["Shift+F10", { key: "F10", shiftKey: true }]];
+
   it.each([".text", ".search", ".notes", ".editable", ".inside"])("leaves a right click on the editable field %s to the field, opening no menu and neither preventing nor stopping it", async selector => {
     const { event, reached } = rightClick(selector);
     fixture.detectChanges();
@@ -682,5 +696,24 @@ describe("ContextMenuTriggerDirective around editable fields", () => {
     await DomChangeFixture.untilAsync(() => expect(menu()).not.toBeNull());
 
     expect([event.defaultPrevented, reached]).toEqual([true, false]);
+  });
+
+  it.each(keys.flatMap(([name, init]) => [".text", ".notes", ".editable"].map(t => [name, t, init] as const)))("leaves %s on the editable field %s to the field, opening no menu and preventing nothing", async (_, selector, init) => {
+    const { event, reached } = press(selector, init);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    expect([event.defaultPrevented, reached]).toEqual([false, true]);
+    expect(menu()).toBeNull();
+  });
+
+  it.each(keys)("opens its menu for %s on its host", async (_, init) => {
+    const { event } = press(".host", init);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(menu()).not.toBeNull());
+
+    expect(event.defaultPrevented).toBe(true);
   });
 });
