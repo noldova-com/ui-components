@@ -52,6 +52,8 @@ export class TreeComponent {
   private readonly stopId: WritableSignal<string | null> = signal(null);
   private tops: ReadonlyMap<string, number> | null = null;
   private refocus: string | null = null;
+  private isKeyedRightToLeft: boolean = false;
+  private turning: KeyboardEvent | null = null;
 
   public readonly nodes = input.required<readonly TreeNode[]>();
   public readonly label = input.required<string>();
@@ -79,6 +81,10 @@ export class TreeComponent {
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => this.session.stop());
+    // CdkTree's key manager takes the direction the tree has when it is first shown, and keeps it.
+    afterNextRender(() => {
+      this.isKeyedRightToLeft = this.host.matches(Resources.rightToLeftSelector);
+    });
     afterRenderEffect(() => {
       for (const branch of this.nodes().flatMap(t => t.startOpenBranches).filter(t => !this.opened.has(t.id))) {
         this.opened.add(branch.id);
@@ -109,6 +115,8 @@ export class TreeComponent {
   }
 
   protected nudge(event: KeyboardEvent, node: TreeNode): void {
+    if (this.turn(event))
+      return;
     const step = this.movable() && event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey ? this.stepOf(event.key) : undefined;
     if (Object.isUndefined(step))
       return;
@@ -142,6 +150,20 @@ export class TreeComponent {
   private openBranch(node: TreeNode): void {
     this.tree().expand(node);
     afterNextRender(() => this.session.reevaluate(), { injector: this.injector });
+  }
+
+  // A plain Left or Right in a direction the tree took after it was first shown goes to CdkTree as the other key, so it moves as Alt with it does.
+  private turn(event: KeyboardEvent): boolean {
+    const other = TreeResources.otherArrowKeys.get(event.key);
+    const isPlain = !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+    if (event === this.turning || !isPlain || Object.isUndefined(other) || !(event.target instanceof Element) || this.host.matches(Resources.rightToLeftSelector) === this.isKeyedRightToLeft)
+      return false;
+    event.preventDefault();
+    event.stopPropagation();
+    this.turning = new KeyboardEvent(event.type, { key: other, bubbles: true, cancelable: true });
+    event.target.dispatchEvent(this.turning);
+    this.turning = null;
+    return true;
   }
 
   private stepOf(key: string): TreeStep | undefined {
