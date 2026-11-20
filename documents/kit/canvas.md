@@ -9,7 +9,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 The owner sizes the canvas; it is at least 12rem high, with a 1px `--nol-card-border` border and a large radius, and clips its content.
 Its content sits on one plane, laid out at 100%, which the canvas moves and scales from its top-left corner.
 The toolbar stands `space-2`, 0.5rem, inside the canvas's top-left corner: a panel with a 1px card border, a medium radius and `space-1` padding and gaps, holding zoom out, the zoom as a percentage at least 3rem wide, zoom in, Fit, 100% and the map's toggle.
-The overview map stands `space-2` inside the canvas's bottom-right corner: 7rem high and at most 14rem wide, in the proportions of the content and the visible area together, with a 1px card border and a medium radius.
+The overview map stands `space-2` inside the canvas's bottom-right corner: its drawing 7rem high and at most 14rem wide, never stretched, in the proportions of the content and the visible area together, inside a 1px card border and a medium radius.
 Fit leaves the toolbar's band at the top and, while the map shows, everything from the map's top down clear, and `space-2` at each side, so no item stands under either.
 
 ## Text role

@@ -24,7 +24,7 @@ import { CanvasMapResources } from "./canvas-map.resources.js";
   host: {
     "role": "img",
     "[attr.aria-label]": "partResources.canvasMapLabel",
-    "[style.aspect-ratio]": "aspectRatio()",
+    "[style.--nol-canvas-map-ratio]": "ratio()",
     "(pointerdown)": "onPointerDown($event)"
   }
 })
@@ -46,9 +46,9 @@ export class CanvasMapComponent {
     const frame = this.frame();
     return `${frame.left} ${frame.top} ${Math.max(frame.width, 1)} ${Math.max(frame.height, 1)}`;
   });
-  protected readonly aspectRatio: Signal<string> = computed(() => {
+  protected readonly ratio: Signal<number> = computed(() => {
     const frame = this.frame();
-    return `${Math.max(frame.width, 1)} / ${Math.max(frame.height, 1)}`;
+    return Math.max(frame.width, 1) / Math.max(frame.height, 1);
   });
 
   public readonly content = input.required<CanvasBox>();

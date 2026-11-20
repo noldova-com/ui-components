@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, computed, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
@@ -24,7 +24,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
     <div [hidden]="hidden()">
       <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [(mapShown)]="mapShown">
         @if (cards().length > 0) {
-          <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(6, 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
+          <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(' + columns() + ', 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
             @for (card of cards(); track card) {
               <div nolCanvasItem class="card" [style.height.rem]="5">{{ card }} <button type="button" class="open">Open</button></div>
             }
@@ -36,6 +36,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 })
 class CanvasHostComponent {
   public readonly cards = signal(Array.from({ length: 24 }, (_, t) => t + 1));
+  public readonly columns = computed(() => Math.min(this.cards().length, 6));
   public readonly mapShown = signal(true);
   public readonly hidden = signal(false);
 }
@@ -342,13 +343,13 @@ describe("CanvasComponent", () => {
     [1, 2, 3].forEach(() => button("zoom-in").click());
     await fixture.whenStable();
     const overview = map().getBoundingClientRect();
+    const content = DomFixture.oneOf(map(), "svg", SVGSVGElement).viewBox.baseVal;
+    const spot = [content.x + (overview.width - 2) / overview.width * content.width, content.y + (overview.height - 2) / overview.height * content.height];
     pointer(map(), "pointerdown", 21, overview.right - 2, overview.bottom - 2);
     pointer(map(), "pointerup", 21, overview.right - 2, overview.bottom - 2);
     await fixture.whenStable();
     const shown = instance().view().visible(canvas().clientWidth, canvas().clientHeight);
     const centre = [shown.left + shown.width / 2, shown.top + shown.height / 2];
-    const content = DomFixture.oneOf(map(), "svg", SVGSVGElement).viewBox.baseVal;
-    const spot = [content.x + (overview.width - 2) / overview.width * content.width, content.y + (overview.height - 2) / overview.height * content.height];
     const drawn = mapView().getBoundingClientRect();
     const before = view();
     pointer(map(), "pointerdown", 22, drawn.left + drawn.width / 2, drawn.top + drawn.height / 2);
