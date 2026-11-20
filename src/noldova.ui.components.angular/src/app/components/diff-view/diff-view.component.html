@@ -15,7 +15,7 @@ LICENSE file in the root directory of this source tree.
 @for (file of files(); track file.id; let fileIndex = $index) {
   @let isOpen = !collapsed().has(file.id);
   @let fileState = fileStateOf(file);
-  <section class="nol-diff-file" [attr.aria-labelledby]="id + '-file-' + fileIndex">
+  <section #fileSection class="nol-diff-file" [attr.aria-labelledby]="id + '-file-' + fileIndex">
     <div class="nol-diff-file-header">
       <button type="button" class="nol-diff-file-toggle" data-nol-resizes-row [id]="id + '-file-' + fileIndex" [attr.aria-expanded]="isOpen" (click)="toggleFile(file)">
         <span class="nol-diff-file-twistie material-symbols-rounded" aria-hidden="true">{{ resources.twistieGlyph }}</span>
@@ -46,7 +46,7 @@ LICENSE file in the root directory of this source tree.
         @if (isHeld(file)) {
           <div class="nol-diff-held">
             <p class="nol-diff-note">{{ partResources.diffHeldText }}</p>
-            <button type="button" nol-button class="nol-diff-load" data-nol-resizes-row [variant]="secondary" (click)="reveal(file, $event)">{{ partResources.diffLoadLabel }}</button>
+            <button type="button" nol-button class="nol-diff-load" data-nol-resizes-row [variant]="secondary" (click)="reveal(file, $event, fileSection)">{{ partResources.diffLoadLabel }}</button>
           </div>
         } @else {
           @for (hunk of file.content.hunks; track hunk.id; let hunkIndex = $index, isLast = $last) {

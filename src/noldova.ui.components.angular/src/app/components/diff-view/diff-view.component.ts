@@ -266,18 +266,11 @@ export class DiffViewComponent {
     this.collapsed.update(t => DiffViewComponent.toggled(t, file.id));
   }
 
-  protected reveal(file: DiffFile, event: Event): void {
-    const button = event.currentTarget;
+  protected reveal(file: DiffFile, event: Event, section: HTMLElement): void {
+    const hadFocus = event.currentTarget === this.host.ownerDocument.activeElement;
     this.revealed.update(t => new Set([...t, file.id]));
-    if (!(button instanceof HTMLElement) || button.ownerDocument.activeElement !== button)
-      return;
-    const section = button.closest<HTMLElement>(DiffViewResources.diffFileSelector);
-    if (Object.isNull(section))
-      return;
-    afterNextRender(() => {
-      const target = section.querySelector<HTMLElement>(DiffViewResources.diffLineStopSelector) ?? section.querySelector<HTMLElement>(DiffViewResources.diffFileToggleSelector);
-      target?.focus();
-    }, { injector: this.injector });
+    if (hadFocus)
+      afterNextRender(() => section.querySelector<HTMLElement>(DiffViewResources.diffLineStopSelector)?.focus(), { injector: this.injector });
   }
 
   protected toggleLayout(): void {
