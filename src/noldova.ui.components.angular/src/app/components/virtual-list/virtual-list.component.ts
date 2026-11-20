@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import {
-  Component, DOCUMENT, DestroyRef, type ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
+  Component, DOCUMENT, DestroyRef, ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
   signal, untracked, viewChild, viewChildren
 } from "@angular/core";
 
