@@ -421,6 +421,28 @@ describe("DiffViewComponent", () => {
     expect([[...host.revealed()], hunks().length, DomFixture.maybe(DomFixture.host(fixture), ".nol-diff-held")]).toEqual([["f1"], 2, null]);
   });
 
+  it("moves the focus from Load diff to the file's first line stop once its lines show, so the keyboard stays in the file", async () => {
+    await renderAsync(t => t.collapseLimit.set(new DiffCollapseLimit(2, 1000)));
+    find(".nol-diff-load").focus();
+
+    await userEvent.keyboard("{Enter}");
+    await fixture.whenStable();
+
+    const first = item(cells(find(".nol-diff-hunk-lines")), 0);
+    expect([document.activeElement === first, first.tabIndex, hunks().length]).toEqual([true, 0, 2]);
+  });
+
+  it("leaves the focus where it is when Load diff is used without having it", async () => {
+    await renderAsync(t => t.collapseLimit.set(new DiffCollapseLimit(2, 1000)));
+    const toggle = find(".nol-diff-file-toggle");
+    toggle.focus();
+
+    find(".nol-diff-load").click();
+    await fixture.whenStable();
+
+    expect([document.activeElement === toggle, hunks().length]).toEqual([true, 2]);
+  });
+
   it("holds a file of more than 2,000 changed lines and one of more than 1,000,000 characters behind Load diff by default", async () => {
     const long = new DiffHunk("h1", 0, 0, 1, 2001, Array.from({ length: 2001 }, (_, index) => new DiffAddedLine(index + 1, "x")));
     const wide = new DiffHunk("h1", 0, 0, 1, 1, [new DiffAddedLine(1, "x".repeat(1000001))]);

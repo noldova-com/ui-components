@@ -14,4 +14,4 @@ Accessible name, which the owner gives.
 
 ## Surface and behavior
 
-No surface of its own; one tab stop, at the item the owner names or else the first until focus moves, with the arrow keys moving between its items; items added or removed while it shows join or leave it; dragging belongs to the strip's owner.
+No surface of its own; one tab stop, at the item the owner names or else the first until focus moves, with the arrow keys moving between its items; items added or removed while it shows join or leave it, and when the focused item goes, the new tab stop takes the focus; dragging belongs to the strip's owner.

@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import {
-  Component, DestroyRef, ElementRef, ErrorHandler, Injector, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, effect, inject, input, model,
+  Component, DestroyRef, ElementRef, ErrorHandler, Injector, type Signal, ViewEncapsulation, type WritableSignal, afterNextRender, afterRenderEffect, computed, effect, inject, input, model,
   output, signal, untracked
 } from "@angular/core";
 
@@ -77,6 +77,7 @@ export class DiffViewComponent {
   private static nextId: number = 0;
 
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly injector: Injector = inject(Injector);
   private readonly answer: RowAnswer = new RowAnswer(this.host, inject(Injector));
   private readonly announcer: Announcer = inject(Announcer);
   private readonly highlighter: ICodeHighlighter | null = inject(CodeHighlighterTokens.highlighter);
@@ -265,8 +266,16 @@ export class DiffViewComponent {
     this.collapsed.update(t => DiffViewComponent.toggled(t, file.id));
   }
 
-  protected reveal(file: DiffFile): void {
+  protected reveal(file: DiffFile, button: HTMLElement): void {
+    const section = button.closest<HTMLElement>(DiffViewResources.diffFileSelector);
+    const hadFocus = button.ownerDocument.activeElement === button;
     this.revealed.update(t => new Set([...t, file.id]));
+    if (!hadFocus || Object.isNull(section))
+      return;
+    afterNextRender(() => {
+      const target = section.querySelector<HTMLElement>(DiffViewResources.diffLineStopSelector) ?? section.querySelector<HTMLElement>(DiffViewResources.diffFileToggleSelector);
+      target?.focus();
+    }, { injector: this.injector });
   }
 
   protected toggleLayout(): void {

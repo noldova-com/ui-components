@@ -182,4 +182,31 @@ describe("ToolbarDirective", () => {
     await updateAsync(() => host.items.set(["Undo"]));
     expect(tabStops()).toEqual(["Undo"]);
   });
+
+  it("moves the focus to the new tab stop when the focused item is removed, so Tab goes on from the toolbar", async () => {
+    item("Italic").focus();
+    await fixture.whenStable();
+
+    await updateAsync(() => host.items.set(["Bold", "|", "Locked", "Link"]));
+    const after = [focused(), tabStops()];
+    await userEvent.tab();
+
+    expect(after).toEqual(["Bold", ["Bold"]]);
+    expect(document.activeElement?.className).toBe("after");
+  });
+
+  it("leaves the focus where it went when an item that had it before is removed: on another control or on the page", async () => {
+    item("Italic").focus();
+    DomFixture.one(DomFixture.host(fixture), ".after").focus();
+    await fixture.whenStable();
+    await updateAsync(() => host.items.set(["Bold", "|", "Locked", "Link"]));
+    const elsewhere = document.activeElement?.className;
+    item("Link").focus();
+    item("Link").blur();
+    await fixture.whenStable();
+
+    await updateAsync(() => host.items.set(["Bold", "|", "Locked"]));
+
+    expect([elsewhere, document.activeElement]).toEqual(["after", document.body]);
+  });
 });

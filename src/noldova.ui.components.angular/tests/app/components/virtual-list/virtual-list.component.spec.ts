@@ -2650,6 +2650,40 @@ describe("VirtualListComponent", () => {
     expect([Math.round(fromEnd()), isJumpShown(), document.activeElement === feedList()]).toEqual([0, false, true]);
   });
 
+  it("moves the focus to the feed without scrolling when Jump to latest hides while it has the focus, as a scroll back to the end does", async () => {
+    await renderFeedAsync();
+    await scrollAsync(1000);
+    jump().focus();
+
+    await scrollAsync(viewport().scrollHeight - viewport().clientHeight);
+    await settleAsync();
+
+    expect([isJumpShown(), document.activeElement === feedList(), Math.round(fromEnd())]).toEqual([false, true, 0]);
+  });
+
+  it("moves the focus to the feed when its owner replaces the feed while one of its articles has the focus", async () => {
+    await renderFeedAsync();
+    article("item 999").focus();
+    await settleAsync();
+
+    host.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
+    await settleAsync();
+
+    expect([document.activeElement === feedList(), articles().some(t => t.querySelector(".label")?.textContent === "other 999")]).toEqual([true, true]);
+  });
+
+  it("leaves the focus on the page when its owner replaces the feed after the focus left it", async () => {
+    await renderFeedAsync();
+    article("item 999").focus();
+    article("item 999").blur();
+    await settleAsync();
+
+    host.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
+    await settleAsync();
+
+    expect(document.activeElement).toBe(document.body);
+  });
+
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
       it(`draws Jump to latest as a circle the button's height across, on the raised fill with the border color and no shadow, its glyph centred, and takes the hover fill under the pointer, in the ${theme.id} theme in ${mode} mode`, async () => {
