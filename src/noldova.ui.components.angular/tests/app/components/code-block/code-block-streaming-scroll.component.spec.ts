@@ -17,7 +17,7 @@ describe("CodeBlockComponent", () => {
   afterEach(harness.resetAsync);
 
   describe("while it streams", () => {
-    it("stops following once the reader scrolls up, even 1px at a time with new lines arriving before each scroll event", async () => {
+    it("stops following once the reader scrolls up, even 1px at a time with new lines arriving before each scroll event, and stays there as more arrive", async () => {
       await streamAsync(40);
       const steps: number[] = [];
       for (const lines of [41, 42, 43]) {
@@ -28,8 +28,10 @@ describe("CodeBlockComponent", () => {
         await followAsync(() => undefined);
         steps.push(top - body().scrollTop);
       }
+      const held = body().scrollTop;
+      await followAsync(() => harness.host.code.set(linesOf(60)));
 
-      expect(steps).toEqual([0, 0, 0]);
+      expect([steps, body().scrollTop]).toEqual([[0, 0, 0], held]);
     });
 
     it("stays where the reader scrolled up to as new lines arrive, and at its top", async () => {
