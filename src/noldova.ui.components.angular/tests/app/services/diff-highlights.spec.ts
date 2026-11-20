@@ -11,10 +11,22 @@ import { TestBed } from "@angular/core/testing";
 import { DiffSide } from "../../../src/app/enums/diff-side";
 import { DiffChange } from "../../../src/app/models/diff-change";
 import { DiffHighlights } from "../../../src/app/services/diff-highlights";
+import { CodeHighlightsFixture } from "../../fixtures/code-highlights.fixture";
 
 describe("DiffHighlights", () => {
   const names = ["nol-diff-removed-change", "nol-diff-added-change"];
   const ranges = (): readonly string[] => names.flatMap(name => [...CSS.highlights.get(name) ?? []].map(t => `${name} ${t.startContainer.textContent?.slice(t.startOffset, t.endOffset)}`));
+
+  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    await CodeHighlightsFixture.withoutHighlightApiAsync(() => {
+      const highlights = TestBed.inject(DiffHighlights);
+      const remove = highlights.add(document.createTextNode("let b = 2;"), [new DiffChange(4, 5, DiffSide.New)]);
+      remove();
+      TestBed.resetTestingModule();
+    });
+
+    expect([names.some(t => CSS.highlights.has(t)), ranges()]).toEqual([false, []]);
+  });
 
   it("registers a highlight for each side's changes under the code's token colors, and removes them all when it goes", () => {
     TestBed.inject(DiffHighlights);

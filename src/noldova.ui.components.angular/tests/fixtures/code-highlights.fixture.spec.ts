@@ -31,4 +31,17 @@ describe("CodeHighlightsFixture", () => {
 
     expect([heardInCall, heard]).toEqual([[], [1, 0]]);
   });
+
+  it("takes the CSS Highlight API away while a check runs, and puts it back once the check has failed", async () => {
+    const [constructor, registry] = [globalThis.Highlight, CSS.highlights];
+    const seen: unknown[] = [];
+
+    const failure = await CodeHighlightsFixture.withoutHighlightApiAsync(async () => {
+      await Promise.resolve();
+      seen.push(globalThis.Highlight, CSS.highlights);
+      throw new Error("failed");
+    }).catch((error: unknown) => error);
+
+    expect([seen, failure instanceof Error, globalThis.Highlight === constructor, CSS.highlights === registry]).toEqual([[undefined, undefined], true, true, true]);
+  });
 });

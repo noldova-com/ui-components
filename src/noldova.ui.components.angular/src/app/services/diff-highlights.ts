@@ -8,22 +8,28 @@
 
 import { DestroyRef, Injectable, inject } from "@angular/core";
 
+import "@noldova/context.core";
+
 import { DiffSide } from "../enums/diff-side.js";
 import type { DiffChange } from "../models/diff-change.js";
+import { CodeHighlights } from "./code-highlights.js";
 import { DiffHighlightsResources } from "./diff-highlights.resources.js";
 
 @Injectable({ providedIn: "root" })
 export class DiffHighlights {
-  private readonly highlights: Readonly<Record<DiffSide, Highlight>> = {
+  private readonly highlights: Readonly<Record<DiffSide, Highlight>> | null = CodeHighlights.canHighlight() ? {
     [DiffSide.Old]: new Highlight(),
     [DiffSide.New]: new Highlight()
-  };
+  } : null;
 
   public constructor() {
+    const highlights = this.highlights;
+    if (Object.isNull(highlights))
+      return;
     const sides = Object.values(DiffSide);
     for (const side of sides) {
-      this.highlights[side].priority = DiffHighlightsResources.diffChangeHighlightPriority;
-      CSS.highlights.set(DiffHighlightsResources.diffChangeHighlightNames[side], this.highlights[side]);
+      highlights[side].priority = DiffHighlightsResources.diffChangeHighlightPriority;
+      CSS.highlights.set(DiffHighlightsResources.diffChangeHighlightNames[side], highlights[side]);
     }
     inject(DestroyRef).onDestroy(() => {
       for (const side of sides)
@@ -32,8 +38,11 @@ export class DiffHighlights {
   }
 
   public add(text: Text, changes: readonly DiffChange[]): () => void {
+    const highlights = this.highlights;
+    if (Object.isNull(highlights))
+      return DiffHighlights.removeNothing;
     const removals = changes.map(t => {
-      const highlight = this.highlights[t.side];
+      const highlight = highlights[t.side];
       const range = new StaticRange({ startContainer: text, startOffset: t.start, endContainer: text, endOffset: t.end });
       highlight.add(range);
       return (): boolean => highlight.delete(range);
@@ -42,5 +51,9 @@ export class DiffHighlights {
       for (const remove of removals)
         remove();
     };
+  }
+
+  private static removeNothing(): void {
+    return;
   }
 }
