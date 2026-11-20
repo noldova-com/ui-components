@@ -58,7 +58,7 @@ describe("CanvasComponent", () => {
   const overlaps = (a: DOMRect, b: DOMRect): boolean => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
   const measuredAsync = async (count: number = cards().length): Promise<void> => {
-    await DomChangeFixture.untilAsync(() => expect(DomFixture.all(map(), ".nol-canvas-map-box")).toHaveLength(count));
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.allOf(map(), ".nol-canvas-map-box", SVGRectElement)).toHaveLength(count));
   };
 
   const changedAsync = async (before: string): Promise<void> => {
@@ -127,7 +127,7 @@ describe("CanvasComponent", () => {
           .toEqual([]);
         expect([`${Math.round(instance().view().zoom * 100)}%`, instance().view().zoom < 1]).toEqual([zoomText(), true]);
         expect([getComputedStyle(canvas()).backgroundColor, getComputedStyle(tools()).backgroundColor, getComputedStyle(map()).backgroundColor,
-          getComputedStyle(mapView()).stroke, getComputedStyle(DomFixture.one(map(), ".nol-canvas-map-box")).fill])
+          getComputedStyle(mapView()).stroke, getComputedStyle(DomFixture.oneOf(map(), ".nol-canvas-map-box", SVGRectElement)).fill])
           .toEqual([AppearanceFixture.readColor(theme, mode, "window"), AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "panel"),
             AppearanceFixture.readColor(theme, mode, "accent"), AppearanceFixture.readColor(theme, mode, "badge")]);
         AppearanceFixture.expectPixels(toolbar.left - frame.left, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
