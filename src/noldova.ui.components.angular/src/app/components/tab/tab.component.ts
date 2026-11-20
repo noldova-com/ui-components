@@ -9,6 +9,7 @@
 import { Component, ElementRef, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, inject, input, linkedSignal, output, untracked,
   viewChild } from "@angular/core";
 
+import { ComposingKey } from "../../models/composing-key.js";
 import type { TabMarker } from "../../models/tab-marker.js";
 import type { TabStatus } from "../../models/tab-status.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
@@ -127,7 +128,7 @@ export class TabComponent {
 
   protected onFieldKeyDown(event: KeyboardEvent): void {
     event.stopPropagation();
-    if (event.isComposing)
+    if (ComposingKey.isComposing(event))
       return;
     if (event.key === Resources.enterKey) {
       event.preventDefault();

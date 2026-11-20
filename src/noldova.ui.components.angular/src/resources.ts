@@ -401,6 +401,7 @@ export class Resources {
   public static readonly pageUpKey: string = "PageUp";
   public static readonly enterKey: string = "Enter";
   public static readonly escapeKey: string = "Escape";
+  public static readonly inputMethodKeyCode: number = 229;
   public static readonly keydownEvent: "keydown" = "keydown";
   public static readonly wordWrapGlyph: string = "wrap_text";
   public static readonly wordWrapLabel: string = "Word wrap";

@@ -292,11 +292,11 @@ describe("MentionFieldDirective", () => {
   it("ignores a key while text is being composed or with Ctrl, Alt or the system key held", async () => {
     await renderAsync();
     await writeAsync("@al");
-    const ignored: KeyboardEventInit[] = [{ key: "Enter", isComposing: true }, { key: "Enter", ctrlKey: true }, { key: "ArrowDown", altKey: true }, { key: "Tab", metaKey: true }];
+    const ignored: KeyboardEventInit[] = [{ key: "Enter", isComposing: true }, { key: "Enter", keyCode: 229 }, { key: "Enter", ctrlKey: true }, { key: "ArrowDown", altKey: true }, { key: "Tab", metaKey: true }];
     const handled = ignored.map(t => press(t));
     await fixture.whenStable();
 
-    expect([handled, selected(), host.mentioned, field().value]).toEqual([[true, true, true, true], ["true", "false", "false"], [], "@al"]);
+    expect([handled, selected(), host.mentioned, field().value]).toEqual([[true, true, true, true, true], ["true", "false", "false"], [], "@al"]);
   });
 
   it("closes when the field loses the focus, when the content around it moves it, and when the field goes", async () => {
