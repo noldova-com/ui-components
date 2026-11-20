@@ -12227,7 +12227,8 @@ export declare class ToolbarButtonComponent {
  * End move focus between the items, left to right in a horizontal toolbar;
  * the tab stop follows focus and starts at the item
  * {@link ToolbarDirective.start} names. When the focused item is removed,
- * the new tab stop takes the focus, unless another element took it first.
+ * the new tab stop takes the focus, unless another element took it first;
+ * when no item is left, items added later don't take the focus.
  */
 export declare class ToolbarDirective {
   /**
@@ -13077,7 +13078,8 @@ export declare class TooltipDirective {
  * tree that assistive technology has not yet spoken, so a held key is heard
  * as its last move. When the owner removes the focused node, the next row
  * takes the focus, or the row before it when it was the last, unless another
- * element took the focus first.
+ * element took the focus first; when no row is left, rows added later don't
+ * take the focus.
  */
 export declare class TreeComponent {
   /**
