@@ -46,8 +46,8 @@ export default defineConfig({
     alias: Object.entries(compilerOptions.paths).map(([name, targets]) => aliasOf(name, String(targets[0])))
   },
   test: {
-    // The servers listen on 127.0.0.1, and the test page loads from it: on "localhost" they listened on ::1 alone, as Node resolves it on Windows, while
-    // the browser at times connected on 127.0.0.1 and was refused.
+    // The servers listen on 127.0.0.1, and the test page loads from it, so the browser resolves no name: on "localhost" they listened on ::1 alone, as
+    // Node resolves it on Windows, and a browser request was at times refused there while Node still connected on ::1.
     api: { port: 24315, host: "127.0.0.1" },
     // __vitest_screenshot replaces Vitest's own screenshot command, so a failure screenshot whose name is too long for a file still saves.
     browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, closedPort: new ClosedPort().find, scriptedRefusal: new ScriptedRefusal().print,
