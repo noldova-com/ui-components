@@ -8,6 +8,7 @@
 
 import { Component } from "@angular/core";
 
+import { GalleryCanvasComponent } from "./gallery-canvas.component.js";
 import { GalleryFeedComponent } from "./gallery-feed.component.js";
 import { GalleryGroupHeaderComponent } from "./gallery-group-header.component.js";
 import { GalleryPanelCardComponent } from "./gallery-panel-card.component.js";
@@ -22,7 +23,7 @@ import { GalleryVirtualListComponent } from "./gallery-virtual-list.component.js
 
 @Component({
   selector: "nol-gallery-navigation",
-  imports: [GalleryFeedComponent, GalleryGroupHeaderComponent, GalleryPanelCardComponent, GallerySashComponent, GallerySectionHeaderComponent, GalleryTabComponent, GalleryToolbarButtonComponent,
+  imports: [GalleryCanvasComponent, GalleryFeedComponent, GalleryGroupHeaderComponent, GalleryPanelCardComponent, GallerySashComponent, GallerySectionHeaderComponent, GalleryTabComponent, GalleryToolbarButtonComponent,
     GalleryToolbarComponent, GalleryTreeComponent, GalleryViewBadgeComponent, GalleryVirtualListComponent],
   templateUrl: "./gallery-navigation.component.html",
   styleUrl: "./gallery-navigation.component.css"

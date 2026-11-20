@@ -1,0 +1,37 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.canvas" [size]="sizes.Full" noHover noLongText>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-canvas class="nol-gallery-canvas" [label]="text.canvasLabel">
+      <div class="nol-gallery-canvas-grid">
+        @for (team of teams; track team) {
+          <div nolCanvasItem class="nol-gallery-canvas-card">{{ team }}</div>
+        }
+      </div>
+    </nol-canvas>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.canvasNoMap">
+    <nol-canvas class="nol-gallery-canvas" [label]="text.canvasLabel" [mapShown]="false">
+      <div class="nol-gallery-canvas-grid">
+        @for (team of teams; track team) {
+          <div nolCanvasItem class="nol-gallery-canvas-card">{{ team }}</div>
+        }
+      </div>
+    </nol-canvas>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-canvas nolGalleryFocus class="nol-gallery-canvas" [label]="text.canvasLabel">
+      <div class="nol-gallery-canvas-grid">
+        @for (team of teams; track team) {
+          <div nolCanvasItem class="nol-gallery-canvas-card">{{ team }}</div>
+        }
+      </div>
+    </nol-canvas>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

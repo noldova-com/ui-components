@@ -28,6 +28,7 @@ export class GalleryResources {
   public static readonly mentionListIdPrefix: string = "nol-gallery-mention-";
   public static readonly hoveredMention: string = ".nol-mention-option[aria-selected=false]";
   public static readonly completionListIdPrefix: string = "nol-gallery-completion-";
+  public static readonly canvasTeams: readonly string[] = ["Design", "Engineering", "Research", "Support", "Sales", "Finance"];
   public static readonly hoveredCompletion: string = ".nol-completion-option[aria-selected=false]";
   public static readonly completionRoom: number = 72;
   public static readonly fieldMessageIdPrefix: string = "nol-gallery-field-message-";
@@ -381,6 +382,9 @@ export class GalleryResources {
     toolbarButtons: "Toolbar button",
     toolbarButtonsLabel: "Gallery toolbar buttons",
     toolbarWithLabel: "With its label",
+    canvas: "Canvas",
+    canvasLabel: "Teams",
+    canvasNoMap: "Map hidden",
     sash: "Sash",
     sashVertical: "Resize the side",
     sashHorizontal: "Resize the bottom",
