@@ -127,7 +127,8 @@ export class TreeComponent {
       return;
     }
     queueMicrotask(() => {
-      this.hasFocus = this.host.contains(this.host.ownerDocument.activeElement) || (target instanceof Node && !target.isConnected && this.isFocusOnPage());
+      if (target instanceof Node && target.isConnected && !this.host.contains(this.host.ownerDocument.activeElement))
+        this.hasFocus = false;
     });
   }
 
