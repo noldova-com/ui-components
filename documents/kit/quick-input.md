@@ -16,6 +16,9 @@ Panel; details, group headings and the footer small; matches and group headings 
 
 Quick-input surface, `--nol-menu-border` border and extra-large shadow; non-modal, placed by the owner, scrolling its results under the thin scrollbar.
 The field is a combobox over a listbox, focused on opening, with the first result active; the owner filters the results as the person types, which makes the first result active again; Up, Down, Home, End, Page Up and Page Down move the active result, and a change to the results keeps it where the person put it while it is listed, until the query changes, and otherwise makes the first result active; the active result stays in view by scrolling the results alone, never the page around them, and uses the selected fill, Enter or a click chooses it, and Escape asks the owner to close it.
+An owner that finds results asynchronously gives `itemsQuery`, the query its results answer, so Enter pressed while they are still an earlier query's waits for the results of the query typed and then chooses the active one, once however often it was pressed.
+Typing or Escape while Enter waits drops the wait, so results that come later choose nothing.
+`itemsQuery` must equal the query exactly as typed, not trimmed or parsed, and be given for a search that failed or found nothing too, or Enter waits for results that never come.
 While the person composes text with an input method, such as Japanese, the keys belong to the composition: Enter commits it and the arrows and Escape move or close its candidates, and none of them moves, chooses or closes until the composition ends, nor does the Enter that Safari sends just after it.
 The owner closes it on `dismissed` or a click outside, returning focus to where it was.
 With Shift, Ctrl, Alt or Meta held, those keys go to the field instead, so Shift+Home selects the query.

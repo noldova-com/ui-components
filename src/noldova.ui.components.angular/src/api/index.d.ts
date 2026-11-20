@@ -3735,7 +3735,10 @@ export declare class ConfigurationTableShareDirective {
  * every text field under it, through
  * {@link ContextMenuTriggerDirective.openAtPointer} and
  * {@link ContextMenuTriggerDirective.openFromKeyboard} with a target, which
- * then takes the host's place. It extends the CDK's menu trigger base, from which it inherits
+ * then takes the host's place. A right click, the ContextMenu key or
+ * Shift+F10 on an editable field under the host, a text input, a textarea or
+ * editable content, is left to the field: the trigger opens no menu and
+ * neither prevents nor stops the event, so the field gets its own context menu. It extends the CDK's menu trigger base, from which it inherits
  * `menuTemplateRef`, `menuData`, `isOpen()`, `opened` and `closed`.
  */
 export declare class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
@@ -10115,6 +10118,16 @@ export declare class QuickInputComponent {
   public readonly query: ModelSignal<string>;
 
   /**
+   * The query the items answer, for an owner that finds them asynchronously,
+   * so the items can still be an earlier query's while new ones load. It must
+   * equal {@link QuickInputComponent.query} exactly as typed, not trimmed or
+   * parsed, and be given for a search that failed or found nothing too, or
+   * Enter waits for results that never come. Null, when not bound, says the
+   * items always answer the query, as a filter computed from it does.
+   */
+  public readonly itemsQuery: InputSignal<string | null>;
+
+  /**
    * Whether the field takes focus after the component first renders; true
    * when not bound.
    */
@@ -10123,9 +10136,12 @@ export declare class QuickInputComponent {
   /**
    * Emits the result the person chose with Enter or a click. When Enter
    * comes right after typing, it waits until the items for the new query
-   * have rendered and chooses the active one of those. Nothing is emitted
-   * while there are no results, or for an Enter while the person composes
-   * text with an input method.
+   * have rendered, and, while {@link QuickInputComponent.itemsQuery} names
+   * another query, until items for this one come, and chooses the active one
+   * of those, once however often Enter was pressed. A query typed or Escape
+   * pressed while it waits drops the wait, so later items choose nothing.
+   * Nothing is emitted while there are no results, or for an Enter while the
+   * person composes text with an input method.
    */
   public readonly chosen: OutputEmitterRef<QuickInputItem>;
 
