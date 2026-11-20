@@ -35,6 +35,35 @@ describe("MessagePart", () => {
       .toEqual([["run-0", "slot:working-0"], ["slot:activity-0", "run-0"], ["run-0", "slot:card-0", "Attachment-0", "run-1", "slot:card-1", "Attachment-1"]]);
   });
 
+  it("keeps a run's key from the run that held one of its keyed texts before, when a run before it goes", () => {
+    const slot = new MessageSlot("plan");
+    const last = new MessageText("c", false, "c");
+    const before = MessagePart.partsOf([new MessageText("a", false, "a"), slot, new MessageText("b", false, "b"), last]);
+
+    expect([before.map(t => t.key), MessagePart.partsOf([slot, last], before).map(t => t.key)]).toEqual([["run-0", "slot:plan-0", "run-1"], ["slot:plan-0", "run-1"]]);
+  });
+
+  it("gives a run with no kept key the first run key no kept run holds, and a run whose earlier run's key went to a run before it a new one", () => {
+    const first = new MessageText("a", false, "a");
+    const second = new MessageText("b", false, "b");
+    const before = MessagePart.partsOf([first, new MessageCode("x"), second]);
+
+    const added = MessagePart.partsOf([new MessageText("new"), new MessageSlot("card"), first], before).map(t => t.key);
+    const split = MessagePart.partsOf([first, new MessageSlot("card"), second], before).map(t => t.key);
+
+    expect([before.map(t => t.key), added, split]).toEqual([["run-0"], ["run-1", "slot:card-0", "run-0"], ["run-0", "slot:card-0", "run-1"]]);
+  });
+
+  it("gives two runs joined by the going of the slot between them the earlier run's key", () => {
+    const first = new MessageText("a", false, "a");
+    const last = new MessageText("c", false, "c");
+    const before = MessagePart.partsOf([first, new MessageSlot("card"), last]);
+
+    const joined = MessagePart.partsOf([first, last], before).map(t => [t.key, t.blocks]);
+
+    expect([before.map(t => t.key), joined]).toEqual([["run-0", "slot:card-0", "run-1"], [["run-0", [first, last]]]]);
+  });
+
   it("makes no part of no blocks, and one part of blocks without text", () => {
     const slot = new MessageSlot("card");
 

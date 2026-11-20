@@ -8,6 +8,7 @@
 
 import { Component, DestroyRef, type ElementRef, Injector, type Signal, ViewEncapsulation, type WritableSignal, afterNextRender, afterRenderEffect,
   computed, effect, inject, input, output, signal, untracked, viewChild } from "@angular/core";
+import "@noldova/context.core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
 import type { ILinkReferenceSource } from "../../interfaces/i-link-reference-source.js";
@@ -84,6 +85,11 @@ export class MessageRunComponent {
       if (this.streaming())
         untracked(() => this.isExpanded.set(true));
     });
+  }
+
+  protected keyOf(block: MessageBlock, index: number): string {
+    return block instanceof MessageText && !Object.isNull(block.key) ? MessageRunResources.formatMessageRunKeyedBlock(block.key)
+      : MessageRunResources.formatMessageRunPlacedBlock(index);
   }
 
   protected isText(block: MessageBlock): block is MessageText {

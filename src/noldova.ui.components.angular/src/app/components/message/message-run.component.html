@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 <div class="nol-message-run-body" #body [id]="bodyId" [class.nol-message-collapsed]="isCollapsed()" [class.nol-message-clipped]="isCollapsed() && canCollapse()"
   (focusin)="reveal($event)">
   <div class="nol-message-run-content" #content>
-    @for (block of blocks(); track $index) {
+    @for (block of blocks(); track keyOf(block, $index)) {
       @if (isText(block)) {
         <nol-markdown-view [class.nol-message-interim]="block.interim" [text]="block.text" [streaming]="streaming() && $last && !block.interim" [paced]="streaming()" [entering]="entering().has(block)"
           [mentions]="mentions()" [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns() && !streaming()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"

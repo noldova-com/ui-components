@@ -13,6 +13,10 @@ describe("MessageText", () => {
   it("keeps its Markdown as its text", () => {
     const block = new MessageText("**a**");
 
-    expect([block.kind, block.text]).toEqual([MessageBlockKind.Text, "**a**"]);
+    expect([block.kind, block.text, block.key]).toEqual([MessageBlockKind.Text, "**a**", null]);
+  });
+
+  it("keeps the key it is known by", () => {
+    expect(new MessageText("a", true, "segment-3").key).toBe("segment-3");
   });
 });

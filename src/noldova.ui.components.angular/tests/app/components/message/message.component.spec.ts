@@ -389,6 +389,16 @@ describe("MessageComponent", () => {
       .toEqual(["let a;", ["photo.png", "notes.txt"], ["PNG image, 1.5 kB", "Text, 12 byte"], 1, [0, 1]]);
   });
 
+  it("keeps the element of a keyed paragraph that stays when the paragraphs before it go, in its own run and in a run before a slot", async () => {
+    await renderAsync(t => t.blocks.set([new MessageText("Planned", false, "a"), new MessageSlot("card"), new MessageText("Read", false, "b"), new MessageText("Last", false, "c")]));
+    const before = all("nol-markdown-view");
+
+    await changeAsync(() => host.blocks.set([new MessageSlot("card"), new MessageText("Last", false, "c")]));
+
+    const after = all("nol-markdown-view");
+    expect([before.map(t => t.textContent?.trim()), after.length, after[0] === before[2], after[0]?.textContent?.trim()]).toEqual([["Planned", "Read", "Last"], 1, true, "Last"]);
+  });
+
   it("offers Run on the shell blocks of its text and its own code blocks only once the app takes shell runs and the message has stopped streaming, and hands each run to its run output", async () => {
     const labels = (): (string | null)[] => all(".nol-code-block-run").map(t => t.getAttribute("aria-label"));
     await renderAsync(t => t.blocks.set([new MessageText("Run:\n\n```sh\nls -la\n```"), new MessageCode("npm ci", "bash"), new MessageCode("let a;", "ts")]));
