@@ -77,6 +77,23 @@ class FilteringHostComponent {
 
 @Component({
   imports: [QuickInputComponent],
+  template: `<nol-quick-input [items]="items()" [itemsQuery]="itemsQuery()" label="Search commands" [(query)]="query" (chosen)="chosen.push($event.id)" />`
+})
+class AsyncHostComponent {
+  public readonly query = signal("");
+  public readonly items = signal<readonly QuickInputItem[]>(many);
+  public readonly itemsQuery = signal<string | null>("");
+  public readonly chosen: string[] = [];
+
+  public answer(): void {
+    const query = this.query();
+    this.items.set(many.filter(t => t.title.includes(query)));
+    this.itemsQuery.set(query);
+  }
+}
+
+@Component({
+  imports: [QuickInputComponent],
   template: `
     <div style="display: flex; height: 4000px;">
       <nol-quick-input [items]="items" label="Search commands" [isFocusing]="false" />
@@ -383,6 +400,82 @@ describe("QuickInputComponent", () => {
 
     expect(before).toEqual([]);
     expect(filtering.componentInstance.chosen).toEqual(["notes.command7"]);
+  });
+
+  async function asyncHostAsync(): Promise<ComponentFixture<AsyncHostComponent>> {
+    const fixture = create(AsyncHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return fixture;
+  }
+
+  async function typeAsync(fixture: ComponentFixture<AsyncHostComponent>, text: string): Promise<HTMLInputElement> {
+    const input = DomFixture.oneOf(DomFixture.host(fixture), ".nol-quick-input-field", HTMLInputElement);
+    input.value = text;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return input;
+  }
+
+  it("waits on Enter, while an owner's results are still an earlier query's, for the results of the query typed, and chooses from them once", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 7");
+
+    press(input, "Enter");
+    press(input, "Enter");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const before = [...fixture.componentInstance.chosen];
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(before).toEqual([]);
+    expect(fixture.componentInstance.chosen).toEqual(["notes.command7"]);
+  });
+
+  it("drops a waiting Enter once the query changes, so the next query's results choose nothing", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 1");
+
+    press(input, "Enter");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await typeAsync(fixture, "Command 2");
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.chosen).toEqual([]);
+  });
+
+  it("drops a waiting Enter on Escape, so results that come after it choose nothing", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 7");
+
+    press(input, "Enter");
+    press(input, "Escape");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.chosen).toEqual([]);
+  });
+
+  it("chooses at once on Enter when an owner's results answer the query typed", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 2");
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    press(input, "ArrowDown");
+    press(input, "Enter");
+
+    expect(fixture.componentInstance.chosen).toEqual(["notes.command20"]);
   });
 
   it("chooses at once when Enter comes after the options for its text are shown", async () => {
