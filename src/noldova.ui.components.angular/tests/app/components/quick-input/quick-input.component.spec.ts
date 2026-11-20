@@ -435,6 +435,36 @@ describe("QuickInputComponent", () => {
     expect(fixture.componentInstance.chosen).toEqual(["notes.command7"]);
   });
 
+  it("drops a waiting Enter once the query changes, so the next query's results choose nothing", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 1");
+
+    press(input, "Enter");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await typeAsync(fixture, "Command 2");
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.chosen).toEqual([]);
+  });
+
+  it("drops a waiting Enter on Escape, so results that come after it choose nothing", async () => {
+    const fixture = await asyncHostAsync();
+    const input = await typeAsync(fixture, "Command 7");
+
+    press(input, "Enter");
+    press(input, "Escape");
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.componentInstance.answer();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.chosen).toEqual([]);
+  });
+
   it("chooses at once on Enter when an owner's results answer the query typed", async () => {
     const fixture = await asyncHostAsync();
     const input = await typeAsync(fixture, "Command 2");

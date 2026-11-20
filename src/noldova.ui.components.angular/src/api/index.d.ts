@@ -10114,9 +10114,11 @@ export declare class QuickInputComponent {
 
   /**
    * The query the items answer, for an owner that finds them asynchronously,
-   * so the items can still be an earlier query's while new ones load. Null,
-   * when not bound, says the items always answer the query, as a filter
-   * computed from it does.
+   * so the items can still be an earlier query's while new ones load. It must
+   * equal {@link QuickInputComponent.query} exactly as typed, not trimmed or
+   * parsed, and be given for a search that failed or found nothing too, or
+   * Enter waits for results that never come. Null, when not bound, says the
+   * items always answer the query, as a filter computed from it does.
    */
   public readonly itemsQuery: InputSignal<string | null>;
 
@@ -10131,8 +10133,9 @@ export declare class QuickInputComponent {
    * comes right after typing, it waits until the items for the new query
    * have rendered, and, while {@link QuickInputComponent.itemsQuery} names
    * another query, until items for this one come, and chooses the active one
-   * of those, once however often Enter was pressed. Nothing is emitted while
-   * there are no results.
+   * of those, once however often Enter was pressed. A query typed or Escape
+   * pressed while it waits drops the wait, so later items choose nothing.
+   * Nothing is emitted while there are no results.
    */
   public readonly chosen: OutputEmitterRef<QuickInputItem>;
 

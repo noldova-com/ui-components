@@ -41,7 +41,7 @@ export class QuickInputComponent {
       !Object.isUndefined(previous) && previous.source.query === source.query && source.items.some(t => t.id === previous.value) ? previous.value : null
   });
   private shownQuery: string = String.empty;
-  private readonly isChoosing: WritableSignal<boolean> = signal(false);
+  private readonly choosingQuery: WritableSignal<string | null> = signal(null);
   private readonly isAnswered: Signal<boolean> = computed(() => {
     const answered = this.itemsQuery();
     return Object.isNull(answered) || answered === this.query();
@@ -87,10 +87,12 @@ export class QuickInputComponent {
       this.shownQuery = this.query();
     });
     afterRenderEffect(() => {
-      if (!this.isChoosing() || !this.isAnswered())
+      const choosing = this.choosingQuery();
+      if (Object.isNull(choosing) || (choosing === this.query() && !this.isAnswered()))
         return;
-      this.isChoosing.set(false);
-      this.choose(this.active());
+      this.choosingQuery.set(null);
+      if (choosing === this.query())
+        this.choose(this.active());
     });
     afterRenderEffect(() => {
       const list = this.list().nativeElement;
@@ -131,6 +133,7 @@ export class QuickInputComponent {
     }
     else if (event.key === Resources.escapeKey && !event.defaultPrevented) {
       event.preventDefault();
+      this.choosingQuery.set(null);
       this.dismissed.emit();
     }
     else if (event.key === Resources.tabKey && !event.ctrlKey && !event.altKey && !event.metaKey)
@@ -159,7 +162,7 @@ export class QuickInputComponent {
     if (this.query() === this.shownQuery && this.isAnswered())
       this.choose(this.active());
     else
-      this.isChoosing.set(true);
+      this.choosingQuery.set(this.query());
   }
 
   private follow(): void {
