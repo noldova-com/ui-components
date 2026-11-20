@@ -46,15 +46,18 @@ describe("PressFixture", () => {
     expect(PressFixture.blockers(button)).toEqual([]);
   });
 
-  it("finds a button moving while it or what holds it animates, and still while only its own content turns", () => {
+  it("finds a button moving while it or what holds it moves, and still while only its own content turns or it fades", () => {
     const content = button.firstElementChild?.animate([{ rotate: "0turn" }, { rotate: "1turn" }], 10_000);
     const turning = PressFixture.blockers(button);
     content?.cancel();
+    const fade = button.animate([{ opacity: 1 }, { opacity: 0.5 }], 10_000);
+    const fading = PressFixture.blockers(button);
+    fade.cancel();
     const holder = document.body.animate([{ translate: "0" }, { translate: "1rem" }], 10_000);
     const held = PressFixture.blockers(button);
     holder.cancel();
 
-    expect([turning, held]).toEqual([[], ["moving"]]);
+    expect([turning, fading, held]).toEqual([[], [], ["moving"]]);
   });
 
   it("names each check a forced click would skip that the button fails: hidden, disabled, covered and moving", () => {
@@ -68,7 +71,7 @@ describe("PressFixture", () => {
     button.setAttribute("aria-disabled", "true");
     const marked = PressFixture.blockers(button);
     button.removeAttribute("aria-disabled");
-    const moving = button.animate([{ opacity: 1 }, { opacity: 0.5 }], 10_000);
+    const moving = button.animate([{ width: "4rem" }, { width: "6rem" }], 10_000);
     const animated = PressFixture.blockers(button);
     moving.cancel();
     const cover = document.body.appendChild(document.createElement("div"));

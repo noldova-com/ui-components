@@ -21,6 +21,7 @@ describe("EmulatedMediaFixture", () => {
 
   it("keeps reduced motion emulated when forced colors reset", async () => {
     await MotionFixture.reduceAsync();
+    await ForcedColorsFixture.activateAsync();
     await ForcedColorsFixture.resetAsync();
 
     expect(emulated()).toEqual([true, false]);
@@ -28,6 +29,7 @@ describe("EmulatedMediaFixture", () => {
 
   it("keeps no reduced motion emulated when forced colors reset, on a machine that prefers reduced motion", async () => {
     await MotionFixture.resetAsync();
+    await ForcedColorsFixture.activateAsync();
     await ForcedColorsFixture.resetAsync();
 
     expect(emulated()).toEqual([false, false]);
