@@ -96,8 +96,11 @@ export class ScreenshotFixture {
     const view = first.ownerDocument.defaultView;
     if (Object.isNull(view))
       throw new Error("The element to screenshot is in no window's document, so where it lies on the page isn't known.");
-    if (!elements.every(t => ScreenshotFixture.isInView(t.getBoundingClientRect(), view)))
-      first.scrollIntoView({ block: elements.length === 1 ? "center" : "start", inline: elements.length === 1 ? "center" : "start" });
+    const isAllInView = (): boolean => elements.every(t => ScreenshotFixture.isInView(t.getBoundingClientRect(), view));
+    if (!isAllInView())
+      first.scrollIntoView({ block: "center", inline: "center" });
+    if (elements.length > 1 && !isAllInView())
+      throw new Error("Elements read in one capture must all lie in the frame's viewport, since a capture beyond it draws them otherwise.");
     const [left, top] = ScreenshotFixture.frameOrigin(view);
     const clips = elements.map(element => {
       const box = element.getBoundingClientRect();

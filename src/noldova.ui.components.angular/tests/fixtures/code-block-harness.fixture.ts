@@ -334,23 +334,18 @@ export class CodeBlockHarness {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
     this.controlTokens(this.wordTokens);
     await this.renderAsync();
-    const plainFixture = TestBed.createComponent(CodeBlockHostComponent);
-    const plainBlock = (selector: string): HTMLElement => DomFixture.one(DomFixture.host(plainFixture), selector);
     await this.changeAsync(() => {
-      for (const host of [this.host, plainFixture.componentInstance]) {
-        host.streaming.set(isStreaming);
-        if (!Object.isNull(width))
-          host.width.set(width);
-        if (!Object.isNull(code))
-          host.code.set(code);
-      }
-      plainFixture.componentInstance.language.set(null);
+      this.host.twin.set(true);
+      this.host.streaming.set(isStreaming);
+      if (!Object.isNull(width))
+        this.host.width.set(width);
+      if (!Object.isNull(code))
+        this.host.code.set(code);
     });
-    await plainFixture.whenStable();
-    const under = DomFixture.host(plainFixture).style;
-    under.cssText = "display: block; position: absolute; left: 0; top: 0";
-    const [shown, placed] = [this.body().getBoundingClientRect(), plainBlock(".nol-code-block-body").getBoundingClientRect()];
-    [under.left, under.top] = [`${shown.left - placed.left}px`, `${shown.top - placed.top + Math.ceil(shown.height) + 16}px`];
+    const twin = this.find(".frame.twin");
+    const plainBlock = (selector: string): HTMLElement => DomFixture.one(twin, selector);
+    const below = plainBlock(".nol-code-block-body").getBoundingClientRect().top - this.body().getBoundingClientRect().top;
+    twin.style.marginTop = `${Math.ceil(below) - below}px`;
     const [ranges, spans] = [this.allRanges(), this.tokenSpans()];
     await ForcedColorsFixture.activateAsync();
     await this.framesAsync();
