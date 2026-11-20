@@ -44,7 +44,7 @@
   }
 }
 
-.nol-select-button:disabled {
+.nol-select-button[aria-disabled="true"] {
   opacity: 0.5;
   cursor: default;
 }

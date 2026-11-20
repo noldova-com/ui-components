@@ -9,8 +9,8 @@
 import { CdkListbox, CdkOption, type ListboxValueChangeEvent } from "@angular/cdk/listbox";
 import { TemplatePortal } from "@angular/cdk/portal";
 import {
-  Component, DestroyRef, type ElementRef, Injector, type Signal, type TemplateRef, ViewContainerRef, type WritableSignal, afterEveryRender, computed, inject, input, output,
-  signal, viewChild, viewChildren
+  Component, DestroyRef, type ElementRef, Injector, type Signal, type TemplateRef, ViewContainerRef, type WritableSignal, afterEveryRender, computed, effect, inject, input, output,
+  signal, untracked, viewChild, viewChildren
 } from "@angular/core";
 
 import "@noldova/context.core";
@@ -54,6 +54,7 @@ export class SelectComponent {
   private titledIndex: number = -1;
 
   protected readonly partResources: typeof SelectResources = SelectResources;
+  protected readonly resources: typeof Resources = Resources;
   protected readonly isOpen: WritableSignal<boolean> = signal(false);
   protected readonly optionTooltipSide: OverlaySide = OverlaySide.below;
   protected readonly tagKind: ChipKind = ChipKind.Status;
@@ -76,6 +77,10 @@ export class SelectComponent {
 
   public constructor() {
     afterEveryRender(() => this.followActive());
+    effect(() => {
+      if (this.disabled())
+        untracked(() => this.closeDisabled());
+    });
     inject(DestroyRef).onDestroy(() => this.close());
   }
 
@@ -84,6 +89,8 @@ export class SelectComponent {
   }
 
   protected toggle(button: HTMLButtonElement, list: TemplateRef<unknown>): void {
+    if (this.disabled())
+      return;
     if (this.isOpen()) {
       this.close();
       return;
@@ -112,6 +119,8 @@ export class SelectComponent {
 
   protected choose(event: ListboxValueChangeEvent<string>, button: HTMLButtonElement): void {
     this.closeTo(button);
+    if (this.disabled())
+      return;
     for (const chosen of event.value)
       this.valueChange.emit(chosen);
   }
@@ -150,6 +159,14 @@ export class SelectComponent {
       else
         tooltip.hide();
     });
+  }
+
+  private closeDisabled(): void {
+    const button = this.button().nativeElement;
+    const isInList = this.overlay?.element.contains(button.ownerDocument.activeElement) === true;
+    this.close();
+    if (isInList)
+      button.focus();
   }
 
   private closeTo(button: HTMLButtonElement): void {
