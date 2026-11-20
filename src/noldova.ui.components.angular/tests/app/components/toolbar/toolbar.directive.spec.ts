@@ -41,10 +41,11 @@ class ToolbarHostComponent {
 
   private readonly injector: Injector = inject(Injector);
 
-  // Sets the items and, once they render, focuses the target before the toolbar can, as an owner moving the focus after a removal does.
+  // Sets the items and, once they render, focuses the target in the render's write phase, before the toolbar's own refocus, as an owner moving the
+  // focus after a removal does.
   public setItemsFocusing(items: readonly string[], target: HTMLElement): void {
     this.items.set(items);
-    afterNextRender(() => target.focus(), { injector: this.injector });
+    afterNextRender({ write: () => target.focus() }, { injector: this.injector });
   }
 }
 
