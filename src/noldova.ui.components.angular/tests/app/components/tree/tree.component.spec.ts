@@ -207,6 +207,39 @@ describe("TreeComponent", () => {
     expect([held, toCurrent, stops()]).toEqual([[-1, -1, 0], [-1, 0], [0, -1]]);
   });
 
+  it("passes the focus to the next row when the focused row leaves the tree, or to the row before it when it was the last, and the arrow keys go on from there", async () => {
+    await renderAsync();
+    row("Notes").focus();
+
+    fixture.componentInstance.nodes.update(t => t.filter(u => u.id !== "notes"));
+    await fixture.whenStable();
+    const next = focused();
+    await pressAsync("{ArrowUp}");
+    const up = focused();
+    await pressAsync("{ArrowDown}");
+    fixture.componentInstance.nodes.update(t => t.filter(u => u.id !== "trash"));
+    await fixture.whenStable();
+
+    expect([next, up, focused(), rows().map(t => t.tabIndex)]).toEqual(["Trash", "Project", "Project", [0]]);
+  });
+
+  it("leaves the focus on the control that took it when the focused row left the tree, and on the page once that control lets it go", async () => {
+    await renderAsync();
+    const other = document.createElement("button");
+    document.body.append(other);
+    row("Notes").focus();
+
+    fixture.componentInstance.setNodesFocusing(fixture.componentInstance.nodes().filter(t => t.id !== "notes"), other);
+    await fixture.whenStable();
+    const taken = document.activeElement === other;
+    other.blur();
+    fixture.componentInstance.nodes.update(t => t.filter(u => u.id !== "trash"));
+    await fixture.whenStable();
+    other.remove();
+
+    expect([taken, document.activeElement]).toEqual([true, document.body]);
+  });
+
   it("opens a branch that starts open once, so a branch the person closed stays closed when the nodes change", async () => {
     await renderAsync();
     row("Open").click();

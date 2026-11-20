@@ -8,7 +8,7 @@
 
 import { CdkTree, CdkTreeNode, CdkTreeNodeDef } from "@angular/cdk/tree";
 import { DOCUMENT } from "@angular/common";
-import { Component, DestroyRef, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, afterRenderEffect, computed, inject, input, output, signal, viewChild, viewChildren } from "@angular/core";
+import { Component, DestroyRef, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, afterRenderEffect, computed, inject, input, output, signal, untracked, viewChild, viewChildren } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -35,7 +35,7 @@ import { TreeResources } from "./tree.resources.js";
   templateUrl: "./tree.component.html",
   styleUrl: "./tree.component.css",
   providers: [ElementDirectionality.provide()],
-  host: { "[class.nol-tree-movable]": "movable()" }
+  host: { "[class.nol-tree-movable]": "movable()", "(focusin)": "follow()", "(focusout)": "leave($event)" }
 })
 export class TreeComponent {
   private static count: number = 0;
@@ -54,6 +54,8 @@ export class TreeComponent {
   private refocus: string | null = null;
   private isKeyedRightToLeft: boolean = false;
   private turning: KeyboardEvent | null = null;
+  private hasFocus: boolean = false;
+  private order: readonly string[] = [];
 
   public readonly nodes = input.required<readonly TreeNode[]>();
   public readonly label = input.required<string>();
@@ -92,17 +94,41 @@ export class TreeComponent {
       }
     });
     afterRenderEffect(() => {
-      const stop = this.rowOf(this.stopId()) ?? this.rowOf(this.current()) ?? this.rows()[0];
-      for (const row of this.rows())
+      const rows = this.rows();
+      const stopId = this.stopId();
+      const held = this.rowOf(stopId);
+      const isGone = !Object.isNull(stopId) && Object.isUndefined(held) && this.hasFocus;
+      const stop = (isGone ? this.neighbourOf(this.order.findIndex(t => t === stopId)) : held) ?? this.rowOf(this.current()) ?? rows[0];
+      for (const row of rows)
         if (row === stop)
           row.makeFocusable();
         else
           row.unfocus();
+      this.order = rows.map(t => t.data.id);
+      if (isGone)
+        untracked(() => this.pass(stop));
     });
   }
 
   public focus(): void {
     (this.rowOf(this.current()) ?? this.rows()[0])?.focus();
+  }
+
+  protected follow(): void {
+    this.hasFocus = true;
+  }
+
+  protected leave(event: FocusEvent): void {
+    const { relatedTarget, target } = event;
+    if (relatedTarget instanceof Node && this.host.contains(relatedTarget))
+      return;
+    if (relatedTarget instanceof Node && relatedTarget.isConnected) {
+      this.hasFocus = false;
+      return;
+    }
+    queueMicrotask(() => {
+      this.hasFocus = this.host.contains(this.host.ownerDocument.activeElement) || (target instanceof Node && !target.isConnected && this.isFocusOnPage());
+    });
   }
 
   protected take(row: CdkTreeNode<TreeNode, string>): void {
@@ -213,5 +239,22 @@ export class TreeComponent {
 
   private rowOf(id: string | null): CdkTreeNode<TreeNode, string> | undefined {
     return this.rows().find(t => t.data.id === id);
+  }
+
+  private neighbourOf(index: number): CdkTreeNode<TreeNode, string> | undefined {
+    const first = (ids: readonly string[]): CdkTreeNode<TreeNode, string> | undefined => ids.map(t => this.rowOf(t)).find(t => !Object.isUndefined(t));
+    return first(this.order.slice(index + 1)) ?? first(this.order.slice(0, index).reverse());
+  }
+
+  private pass(stop: CdkTreeNode<TreeNode, string> | undefined): void {
+    if (this.isFocusOnPage())
+      stop?.focus();
+    else
+      this.hasFocus = false;
+  }
+
+  private isFocusOnPage(): boolean {
+    const active = this.host.ownerDocument.activeElement;
+    return Object.isNull(active) || active === this.host.ownerDocument.body;
   }
 }
