@@ -10,6 +10,7 @@ import { userEvent } from "vitest/browser";
 
 import { ShellRun } from "../../../../src/app/models/shell-run";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { PressFixture } from "../../../fixtures/press.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -25,6 +26,7 @@ describe("CodeBlockComponent", () => {
   it("emits its code and language when Run is chosen by pointer, copying and announcing nothing", async () => {
     await runnableAsync("Bash");
     const writeAsync = vi.spyOn(harness.clipboard, "writeTextAsync");
+    expect(PressFixture.blockers(run())).toEqual([]);
     await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([[true, harness.host.code(), "Bash"]]);

@@ -10,6 +10,7 @@ import { userEvent } from "vitest/browser";
 
 import { ShellRunState } from "../../../../src/app/enums/shell-run-state";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { PressFixture } from "../../../fixtures/press.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
@@ -37,6 +38,7 @@ describe("CodeBlockComponent", () => {
   it("emits its code, language and block 0 when Run is chosen by pointer while running", async () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Running));
+    expect(PressFixture.blockers(run())).toEqual([]);
     await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
@@ -54,6 +56,7 @@ describe("CodeBlockComponent", () => {
   it("emits its code, language and block 0 when Run is chosen by pointer once ended, as while running", async () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Ended));
+    expect(PressFixture.blockers(run())).toEqual([]);
     await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
