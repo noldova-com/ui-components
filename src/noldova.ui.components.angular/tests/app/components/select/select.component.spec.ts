@@ -363,7 +363,7 @@ describe("SelectComponent", () => {
     const kept = document.activeElement === button();
     await userEvent.keyboard("{Enter}");
     await userEvent.keyboard(" ");
-    await userEvent.click(button());
+    await userEvent.click(button(), { force: true });
     fixture.detectChanges();
 
     expect([kept, list(), document.activeElement === button(), button().getAttribute("aria-expanded")]).toEqual([true, null, true, "false"]);
