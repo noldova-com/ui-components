@@ -10124,12 +10124,14 @@ export declare class QuickInputComponent {
    * Emits the result the person chose with Enter or a click. When Enter
    * comes right after typing, it waits until the items for the new query
    * have rendered and chooses the active one of those. Nothing is emitted
-   * while there are no results.
+   * while there are no results, or for an Enter while the person composes
+   * text with an input method.
    */
   public readonly chosen: OutputEmitterRef<QuickInputItem>;
 
   /**
-   * Emits when the person presses Escape; the owner closes the search.
+   * Emits when the person presses Escape, except while the person composes
+   * text with an input method; the owner closes the search.
    */
   public readonly dismissed: OutputEmitterRef<void>;
 
@@ -10137,6 +10139,7 @@ export declare class QuickInputComponent {
    * Emits Tab and Shift+Tab pressed in the field, with the key's event, such
    * as to move to the next filter. The owner that calls `preventDefault` on
    * the event keeps the focus in the field; otherwise the focus moves on.
+   * Nothing is emitted while the person composes text with an input method.
    */
   public readonly tabKey: OutputEmitterRef<KeyboardEvent>;
 
@@ -11243,7 +11246,8 @@ export declare class TabComponent {
    * Emits the field's trimmed text, possibly empty, when the person presses
    * Enter or the field loses the focus while editing; the owner decides
    * what the text means and leaves the mode. Emits at most once per editing
-   * session, and not for an Enter that ends a composition.
+   * session, and not for an Enter that ends a composition, including the one
+   * Safari sends just after it.
    *
    * @example
    * ```ts

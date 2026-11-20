@@ -684,4 +684,13 @@ describe("TabComponent", () => {
     expect(host.kept).toEqual([]);
     expect(field()).toBe(shown);
   });
+
+  it("ignores the Enter that Safari sends after a composition ends, with the input method's key code", async () => {
+    const shown = await startEditingAsync();
+
+    shown.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 229, bubbles: true }));
+
+    expect(host.kept).toEqual([]);
+    expect(field()).toBe(shown);
+  });
 });

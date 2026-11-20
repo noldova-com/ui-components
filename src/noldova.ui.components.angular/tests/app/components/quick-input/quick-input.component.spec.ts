@@ -354,10 +354,10 @@ describe("QuickInputComponent", () => {
     expect(host.query()).toBe("clo");
   });
 
-  it("leaves Enter, the arrows and Escape to the field while the person composes text, and a key the browser gives as Process", async () => {
+  it("leaves Enter, the arrows and Escape to the field while the person composes text, and the Enter that ends a composition in Safari", async () => {
     await pressAsync("ArrowDown");
     const composed = ["Enter", "ArrowDown", "ArrowUp", "End", "PageDown", "Escape"].map(key => press(field(), key, { isComposing: true }));
-    const processed = press(field(), "Process");
+    const processed = press(field(), "Enter", { keyCode: 229 });
     fixture.detectChanges();
     await fixture.whenStable();
 
