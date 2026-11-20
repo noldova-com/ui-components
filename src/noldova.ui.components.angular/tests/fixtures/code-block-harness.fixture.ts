@@ -357,7 +357,6 @@ export class CodeBlockHarness {
     const isAtEdge = (x: number, y: number): boolean => tokens.some(t => (t.top - origin.top) * scale <= y && y < (t.bottom - origin.top) * scale
       && [t.left, t.right].some(edge => Math.abs((edge - origin.left) * scale - x) <= 1.5));
     await this.changeAsync(() => this.host.language.set(null));
-    await this.framesAsync();
     const [plainRanges, plainSpans] = [this.allRanges(), this.tokenSpans()];
     const plainLefts = this.leftsAt(places);
     const plain = await this.pixelsAsync(this.body());

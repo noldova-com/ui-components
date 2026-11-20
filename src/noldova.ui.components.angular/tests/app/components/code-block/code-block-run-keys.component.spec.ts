@@ -10,19 +10,24 @@ import { userEvent } from "vitest/browser";
 
 import { ShellRun } from "../../../../src/app/models/shell-run";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { PressFixture } from "../../../fixtures/press.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
   const { wrap, copy, run, glyph, runnableAsync } = harness;
 
-  beforeEach(harness.configure);
+  beforeEach(() => {
+    harness.configure();
+    harness.controlTokens(harness.wordTokens);
+  });
 
   afterEach(harness.resetAsync);
 
   it("emits its code and language when Run is chosen by pointer, copying and announcing nothing", async () => {
     await runnableAsync("Bash");
     const writeAsync = vi.spyOn(harness.clipboard, "writeTextAsync");
-    await userEvent.click(run());
+    expect(PressFixture.blockers(run())).toEqual([]);
+    await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([[true, harness.host.code(), "Bash"]]);
     expect([writeAsync.mock.calls.length, harness.announcements, glyph(run())]).toEqual([0, [], "play_arrow"]);
@@ -32,8 +37,7 @@ describe("CodeBlockComponent", () => {
     await runnableAsync("Bash");
     const writeAsync = vi.spyOn(harness.clipboard, "writeTextAsync");
     run().focus();
-    await userEvent.keyboard("{Enter}");
-    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{Enter} ");
 
     expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([0, 1].map(() => [true, harness.host.code(), "Bash"]));
     expect([writeAsync.mock.calls.length, harness.announcements, glyph(run())]).toEqual([0, [], "play_arrow"]);

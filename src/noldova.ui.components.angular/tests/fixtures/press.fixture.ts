@@ -7,6 +7,21 @@
  */
 
 export class PressFixture {
+  private static readonly MOVES: RegExp = /^(?:transform|translate|rotate|scale|inset|left|top|right|bottom|width|height|margin|padding|zoom)/u;
+
+  public static blockers(element: HTMLElement): readonly string[] {
+    element.scrollIntoView({ block: "nearest", inline: "nearest" });
+    const box = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    return [
+      box.width > 0 && box.height > 0 && element.checkVisibility({ visibilityProperty: true }) ? null : "hidden",
+      element.matches(":disabled") || element.getAttribute("aria-disabled") === "true" ? "disabled" : null,
+      !Object.isNull(hit) && element.contains(hit) ? null : "covered",
+      document.getAnimations().some(t => t.playState === "running" && t.effect instanceof KeyframeEffect && t.effect.target?.contains(element) === true
+        && t.effect.getKeyframes().some(frame => Object.keys(frame).some(name => PressFixture.MOVES.test(name)))) ? "moving" : null
+    ].filter(t => !Object.isNull(t));
+  }
+
   public static click(button: HTMLButtonElement): void {
     button.scrollIntoView({ block: "nearest", inline: "nearest" });
     const box = button.getBoundingClientRect();

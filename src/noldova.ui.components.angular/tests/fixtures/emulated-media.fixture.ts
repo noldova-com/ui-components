@@ -19,6 +19,10 @@ export class EmulatedMediaFixture {
     return EmulatedMediaFixture.sendAsync();
   }
 
+  public static holds(name: string, value: string): boolean {
+    return EmulatedMediaFixture.features.get(name) === value;
+  }
+
   public static resetAsync(): Promise<unknown> {
     for (const [name, value] of EmulatedMediaFixture.PLAYWRIGHT_DEFAULTS)
       EmulatedMediaFixture.features.set(name, value);
