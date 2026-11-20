@@ -2765,6 +2765,12 @@ export declare class CanvasComponent {
   public readonly view: Signal<CanvasView>;
 
   /**
+   * Creates the canvas, which listens to the wheel on its host until it is
+   * destroyed. Angular creates it from its selector.
+   */
+  public constructor();
+
+  /**
    * Shows the whole content, centred, never above 100%, below the toolbar
    * and, while the map shows, above it.
    */
@@ -2840,6 +2846,12 @@ export declare class CanvasMapComponent {
    * 100%: the visible area follows it.
    */
   public readonly move: OutputEmitterRef<CanvasPoint>;
+
+  /**
+   * Creates the map, which ends a drag on it when it is destroyed. Angular
+   * creates it from its selector.
+   */
+  public constructor();
 }
 
 /**
