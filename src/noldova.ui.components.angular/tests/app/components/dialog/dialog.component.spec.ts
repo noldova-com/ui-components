@@ -15,6 +15,9 @@ import { page, userEvent } from "vitest/browser";
 import { ButtonComponent } from "../../../../src/app/components/button/button.component";
 import { DialogComponent } from "../../../../src/app/components/dialog/dialog.component";
 import { IconButtonComponent } from "../../../../src/app/components/icon-button/icon-button.component";
+import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item.component";
+import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
+import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
 import { ButtonVariant } from "../../../../src/app/enums/button-variant";
 import { DialogSize } from "../../../../src/app/enums/dialog-size";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
@@ -87,6 +90,23 @@ class MediumDialogHostComponent {
 })
 class ControlledDialogHostComponent {
   protected readonly large: DialogSize = DialogSize.Large;
+}
+
+@Component({
+  imports: [DialogComponent, MenuComponent, MenuItemComponent, MenuTriggerDirective],
+  template: `
+    <nol-dialog title="Sort" (dismissed)="dismissals = dismissals + 1">
+      <button type="button" class="sort" [nolMenuTriggerFor]="sort">Sort by</button>
+    </nol-dialog>
+    <ng-template #sort>
+      <nol-menu class="sort-menu">
+        <button nol-menu-item label="By name"></button>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class MenuDialogHostComponent {
+  public dismissals: number = 0;
 }
 
 describe("DialogComponent", () => {
@@ -234,6 +254,66 @@ describe("DialogComponent", () => {
     expect(dismissals).toBe(1);
     expect(isOpenAfterEscape).toBe(true);
     await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(opener));
+  });
+
+  it("tells its owner once when Escape is pressed while its container has the focus, after a click on its text", async () => {
+    const opened = await openAsync();
+    await userEvent.click(DomFixture.one(document, ".nol-dialog-probe"));
+    const focused = document.activeElement === container();
+
+    await userEvent.keyboard("{Escape}");
+
+    expect([focused, opened.componentInstance?.dismissals]).toEqual([true, 1]);
+  });
+
+  it("leaves Escape with Shift, Ctrl, Alt or Meta to its owner's controls, whether a control inside or its container has the focus", async () => {
+    const opened = await openAsync();
+    const heard: number[] = [];
+
+    for (const target of ["[data-wait]", ".nol-dialog-probe"]) {
+      await userEvent.click(DomFixture.one(document, target));
+      for (const modifier of ["Shift", "Control", "Alt", "Meta"])
+        await userEvent.keyboard(`{${modifier}>}{Escape}{/${modifier}}`);
+      heard.push(opened.componentInstance?.dismissals ?? Number.NaN);
+    }
+    await userEvent.keyboard("{Escape}");
+
+    expect([...heard, opened.componentInstance?.dismissals]).toEqual([0, 0, 1]);
+  });
+
+  it("tells only the topmost of two dialogs when Escape is pressed while its container has the focus", async () => {
+    const first = await openAsync();
+    const second = TestBed.inject(DialogService).open(DialogHostComponent, "[data-wait]");
+    try {
+      await DomChangeFixture.untilAsync(() => expect(document.querySelectorAll("nol-dialog").length).toBe(2));
+      await userEvent.click(DomFixture.one(second.overlayRef.overlayElement, ".nol-dialog-probe"));
+      const focused = document.activeElement === DomFixture.one(second.overlayRef.overlayElement, "[role=dialog]");
+
+      await userEvent.keyboard("{Escape}");
+
+      expect([focused, first.componentInstance?.dismissals, second.componentInstance?.dismissals]).toEqual([true, 0, 1]);
+    }
+    finally {
+      second.close();
+    }
+  });
+
+  it("leaves the Escape that closes a menu inside it to the menu, and tells its owner on the next", async () => {
+    const opened = TestBed.inject(DialogService).open(MenuDialogHostComponent, ".sort");
+    reference = opened;
+    const sort = await DomChangeFixture.untilAsync(() => {
+      expect(document.activeElement?.classList.contains("sort")).toBe(true);
+      return DomFixture.one(document, ".sort");
+    });
+    await userEvent.click(sort);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".sort-menu")).not.toBeNull());
+
+    await userEvent.keyboard("{Escape}");
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".sort-menu")).toBeNull());
+    const afterMenu = opened.componentInstance?.dismissals;
+    await userEvent.keyboard("{Escape}");
+
+    expect([afterMenu, opened.componentInstance?.dismissals]).toEqual([0, 1]);
   });
 
   for (const theme of AppearanceFixture.themes)
