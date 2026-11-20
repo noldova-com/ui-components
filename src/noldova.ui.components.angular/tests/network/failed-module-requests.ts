@@ -13,6 +13,7 @@ import type { IBrowserRequest } from "./interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "./interfaces/i-browser-response.ts";
 import type { IConnectionProbe } from "./interfaces/i-connection-probe.ts";
 import { ConnectionProbe } from "./connection-probe.ts";
+import { NetLogTrace } from "./net-log-trace.ts";
 
 // Prints each module request the browser fails, so a spec file that fails to import names why: one that ends in a network error, with the error, and
 // one answered with an error status or with a type the browser won't run as a module, with the status and the type. A request whose connection
@@ -40,6 +41,7 @@ export class FailedModuleRequests {
   // Probes still running: the run's close waits for them, so a refusal in the run's last spec file still prints what its port held.
   private readonly probing: Set<Promise<void>> = new Set();
   private isWaitedForOnClose: boolean = false;
+  private readonly trace: NetLogTrace = new NetLogTrace();
 
   // The browser command: listens on the page that calls it, once per page, and gives every line printed so far.
   public readonly watch: (context: IBrowserCommandContext) => readonly string[] = context => this.watchPage(context.page, context.project.vitest);
@@ -50,9 +52,13 @@ export class FailedModuleRequests {
   }
 
   private watchPage(page: IBrowserPage, run: IVitestRun): readonly string[] {
+    this.trace.start(page);
     if (!this.isWaitedForOnClose) {
       this.isWaitedForOnClose = true;
-      run.onClose(() => this.probedAsync());
+      run.onClose(async () => {
+        await this.probedAsync();
+        await this.trace.flushedAsync();
+      });
     }
     if (!this.pages.has(page)) {
       this.pages.add(page);
@@ -69,6 +75,7 @@ export class FailedModuleRequests {
     this.print(`Failed module request at ${new Date().toISOString()}: ${error} ${request.url()}`, run);
     const port = new URL(request.url()).port;
     if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "") {
+      void this.trace.save(port, line => this.print(line, run));
       const printing = this.printServerAsync(Number(port), request.url(), run);
       this.probing.add(printing);
       void printing.finally(() => this.probing.delete(printing));
