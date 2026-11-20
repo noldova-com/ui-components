@@ -52,7 +52,7 @@ export class FailedModuleRequests {
   }
 
   private watchPage(page: IBrowserPage, run: IVitestRun): readonly string[] {
-    this.trace.start(page);
+    this.trace.start(page, line => this.print(line, run));
     if (!this.isWaitedForOnClose) {
       this.isWaitedForOnClose = true;
       run.onClose(async () => {

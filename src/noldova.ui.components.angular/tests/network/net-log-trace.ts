@@ -9,7 +9,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { Browser, CDPSession, Page } from "playwright";
+import type { Browser, CDPSession, Page, Request } from "playwright";
 
 // Probe only, never merged: records Chromium's network log in a ring buffer through tracing, and saves it a moment after a refused connection,
 // with the connection attempts it holds printed, so a refusal names the address the browser tried and what each attempt got.
@@ -21,7 +21,8 @@ export class NetLogTrace {
   private queue: Promise<void> = Promise.resolve();
   private lastSave: number = 0;
 
-  public start(page: unknown): void {
+  public start(page: unknown, print: (line: string) => void): void {
+    this.watchStalls(page as Page, print);
     if (this.session !== null)
       return;
     this.session = (async () => {
@@ -30,6 +31,7 @@ export class NetLogTrace {
         const session = await browser.newBrowserCDPSession();
         await NetLogTrace.beginAsync(session);
         console.log(`Net-log trace started at ${new Date().toISOString()}`);
+        setTimeout(() => void this.save("sample", print), 5_000);
         return session;
       } catch (error) {
         console.log(`Net-log trace failed to start: ${error instanceof Error ? error.message : String(error)}`);
@@ -45,6 +47,39 @@ export class NetLogTrace {
     this.lastSave = now;
     this.queue = this.queue.then(() => this.saveAsync(port, print)).catch((error: unknown) => print(`Net-log save failed: ${error instanceof Error ? error.message : String(error)}`));
     return this.queue;
+  }
+
+  private readonly pending: Map<Request, number> = new Map();
+  private readonly watched: WeakSet<Page> = new WeakSet();
+  private readonly reported: WeakSet<Request> = new WeakSet();
+  private stallSaves: number = 0;
+  private timer: ReturnType<typeof setInterval> | null = null;
+
+  private watchStalls(page: Page, print: (line: string) => void): void {
+    if (this.watched.has(page))
+      return;
+    this.watched.add(page);
+    page.on("request", request => this.pending.set(request, Date.now()));
+    page.on("requestfinished", request => this.pending.delete(request));
+    page.on("requestfailed", request => this.pending.delete(request));
+    if (this.timer === null) {
+      this.timer = setInterval(() => this.checkStalls(print), 2_000);
+      this.timer.unref();
+    }
+  }
+
+  private checkStalls(print: (line: string) => void): void {
+    const now = Date.now();
+    for (const [request, at] of this.pending) {
+      if (now - at < 10_000 || this.reported.has(request))
+        continue;
+      this.reported.add(request);
+      print(`Stalled request at ${new Date().toISOString()}, open ${Math.round((now - at) / 1000)} s since ${new Date(at).toISOString()}: ${request.resourceType()} ${request.url()}`);
+      if (this.stallSaves < 5) {
+        this.stallSaves++;
+        void this.save(new URL(request.url()).port, print);
+      }
+    }
   }
 
   public flushedAsync(): Promise<void> {
