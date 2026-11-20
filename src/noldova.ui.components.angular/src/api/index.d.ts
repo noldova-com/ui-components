@@ -12155,8 +12155,10 @@ export declare class ToolbarButtonComponent {
 
   /**
    * Whether the button is unavailable: it looks and is announced disabled
-   * but stays focusable and still receives clicks, which its owner ignores.
-   * False when not bound.
+   * but stays focusable, and ignores clicks, middle clicks, Enter and Space,
+   * and, when it opens a menu, the up and down arrows, as while busy, so
+   * neither its own handlers, its menu nor its parents hear them. False when
+   * not bound.
    */
   public readonly isUnavailable: InputSignal<boolean>;
 

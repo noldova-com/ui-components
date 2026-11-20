@@ -44,6 +44,6 @@ export class ToolbarButtonComponent {
   public readonly busy = input<boolean>(false);
 
   public constructor() {
-    BusyGuard.watch(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, () => this.busy());
+    BusyGuard.watch(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, () => this.busy() || this.isUnavailable());
   }
 }

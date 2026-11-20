@@ -14,7 +14,7 @@ Inherited.
 
 ## Surface and behavior
 
-Toolbar hover; pressed fills as hover does and exposes its state; a disabled item stays focusable, dims its glyph and label but not its keyboard focus outline, draws them in `GrayText` under forced colors, keeps half its pressed fill, or under forced colors draws a pressed one on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces, shows no hover and marks itself aria-disabled; never wider than its toolbar; its glyph and chevron never shrink, and a label too long for its width ends with an ellipsis inside the button, and the owner gives it a tooltip with the full label, shown while it is cut.
+Toolbar hover; pressed fills as hover does and exposes its state; a disabled item stays focusable, dims its glyph and label but not its keyboard focus outline, draws them in `GrayText` under forced colors, keeps half its pressed fill, or under forced colors draws a pressed one on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces, shows no hover, marks itself aria-disabled and, as while busy, ignores clicks, Enter and Space, and the up and down arrows when it opens a menu, so neither its handler nor its menu runs; never wider than its toolbar; its glyph and chevron never shrink, and a label too long for its width ends with an ellipsis inside the button, and the owner gives it a tooltip with the full label, shown while it is cut.
 
 ## Pressed while its menu is open
 
