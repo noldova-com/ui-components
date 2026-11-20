@@ -1296,6 +1296,52 @@ describe("VirtualListComponent", () => {
     expect([onRetry, source.reads.length, announceAsync.mock.calls]).toEqual(["Retry", reads + 1, [["Loading…", "polite"], ["Loading… These items couldn't load.", "assertive"]]]);
   });
 
+  it("moves the focus into the list when Retry is chosen from the keyboard, and back to Retry when the read fails again", async () => {
+    const source = new VirtualListSourceFixture(200, 30);
+    await renderAsync(source);
+    await source.readAt(0).refuseAsync(new Error("The store went away."));
+    await settleAsync();
+    DomFixture.one(DomFixture.present(failure()), "button").focus();
+
+    await pressAsync("{Enter}");
+    await settleAsync();
+    const inList = [listbox().contains(document.activeElement), failure()];
+    await source.readAt(source.reads.length - 1).refuseAsync(new Error("The store went away again."));
+    await settleAsync();
+
+    expect([inList, document.activeElement?.textContent?.trim()]).toEqual([[true, null], "Retry"]);
+  });
+
+  it("keeps the focus in the list when the read Retry started from the keyboard succeeds", async () => {
+    const source = new VirtualListSourceFixture(200, 30);
+    await renderAsync(source);
+    await source.readAt(0).refuseAsync(new Error("The store went away."));
+    await settleAsync();
+    DomFixture.one(DomFixture.present(failure()), "button").focus();
+
+    await pressAsync("{Enter}");
+    await settleAsync();
+    await source.readAt(source.reads.length - 1).answerAsync();
+    await settleAsync();
+
+    expect([listbox().contains(document.activeElement), failure(), option("item 0").isConnected]).toEqual([true, null, true]);
+  });
+
+  it("leaves the focus where it is when Retry is clicked without having it, also when the read fails again", async () => {
+    const source = new VirtualListSourceFixture(200, 30);
+    await renderAsync(source);
+    await source.readAt(0).refuseAsync(new Error("The store went away."));
+    await settleAsync();
+
+    DomFixture.one(DomFixture.present(failure()), "button").click();
+    await settleAsync();
+    const kept = document.activeElement;
+    await source.readAt(source.reads.length - 1).refuseAsync(new Error("The store went away again."));
+    await settleAsync();
+
+    expect([kept, document.activeElement]).toEqual([document.body, document.body]);
+  });
+
   it("shows a failure at the end of the view when the rows before it have loaded", async () => {
     const source = new VirtualListSourceFixture(200, 30);
     await renderAsync(source);

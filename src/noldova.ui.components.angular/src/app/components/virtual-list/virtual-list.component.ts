@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import {
-  Component, DOCUMENT, DestroyRef, ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
+  Component, DOCUMENT, DestroyRef, ElementRef, Injector, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
   signal, untracked, viewChild, viewChildren
 } from "@angular/core";
 
@@ -51,12 +51,16 @@ export class VirtualListComponent<T> {
 
   private readonly id: string = `${VirtualListResources.virtualListIdPrefix}${VirtualListComponent.count++}`;
   private readonly document: Document = inject(DOCUMENT);
+  private readonly injector: Injector = inject(Injector);
+  // Retry was chosen with the focus, which went into the list: Retry takes it back when the read fails again, until the items show.
+  private isRetryHeld: boolean = false;
   private readonly announcer: Announcer = inject(Announcer);
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
   private readonly viewport: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("viewport");
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly slots: Signal<readonly ElementRef<HTMLElement>[]> = viewChildren<ElementRef<HTMLElement>>("slot");
   private readonly jumpButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("jumpButton", { read: ElementRef });
+  private readonly retryButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("retryButton", { read: ElementRef });
   private readonly observer: ResizeObserver = new ResizeObserver(t => this.measure(t));
   private readonly checker: ResizeObserver = new ResizeObserver(() => this.keepClamp(this.viewport().nativeElement));
   private readonly observed: Set<Element> = new Set();
@@ -243,6 +247,20 @@ export class VirtualListComponent<T> {
       this.viewport().nativeElement.focus({ preventScroll: true });
     });
     effect(() => {
+      const button = this.retryButton()?.nativeElement;
+      if (Object.isUndefined(button) || !this.isRetryHeld)
+        return;
+      this.isRetryHeld = false;
+      afterNextRender(() => {
+        if (this.isFocusOnPage() || this.viewport().nativeElement.contains(this.document.activeElement))
+          button.focus();
+      }, { injector: this.injector });
+    });
+    effect(() => {
+      if (Object.isNull(this.gap()))
+        this.isRetryHeld = false;
+    });
+    effect(() => {
       if (this.isFailing())
         this.announcer.announce(VirtualListResources.virtualListFailed, AnnouncementPoliteness.Assertive);
     });
@@ -417,8 +435,16 @@ export class VirtualListComponent<T> {
       this.activated.emit(new VirtualListChoice(index, item));
   }
 
-  protected retry(): void {
+  protected retry(event: Event): void {
+    const hadFocus = event.currentTarget === this.document.activeElement;
     this.state().cache.retry();
+    if (!hadFocus)
+      return;
+    this.isRetryHeld = true;
+    afterNextRender(() => {
+      if (this.isFocusOnPage())
+        this.focus();
+    }, { injector: this.injector });
   }
 
   protected jump(event: MouseEvent): void {
@@ -1016,7 +1042,7 @@ export class VirtualListComponent<T> {
     }
     const stop = this.stop();
     if (Object.isNull(stop)) {
-      if (this.isFeed() && this.isFocused() && (Object.isNull(this.document.activeElement) || this.document.activeElement === this.document.body)) {
+      if (this.isFeed() && this.isFocused() && this.isFocusOnPage()) {
         this.isFocused.set(false);
         viewport.focus({ preventScroll: true });
       }
@@ -1027,6 +1053,11 @@ export class VirtualListComponent<T> {
       return;
     this.isFocusPending = false;
     row.focus({ preventScroll: true });
+  }
+
+  private isFocusOnPage(): boolean {
+    const active = this.document.activeElement;
+    return Object.isNull(active) || active === this.document.body;
   }
 
   private padRowsWithoutBinding(top: number): void {

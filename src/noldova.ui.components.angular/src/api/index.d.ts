@@ -13738,7 +13738,9 @@ export declare class VirtualListJump {
  * Once a read of rows in view has taken 250 ms, either kind says so in a
  * status line, and announces it if the focused row is among them, so a
  * source that answers quickly never shows it; when a read fails, it says
- * and announces that the items couldn't load and offers Retry.
+ * and announces that the items couldn't load and offers Retry. Retry chosen
+ * while it has the focus moves the focus into the list, and back to Retry
+ * when that read fails again.
  *
  * A feed with the keyboard focus rings its view, inside its edges, in the
  * accent color, or `Highlight` under forced colors, and no article shows a
