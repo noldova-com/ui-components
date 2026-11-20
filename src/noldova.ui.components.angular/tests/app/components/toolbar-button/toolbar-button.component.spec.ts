@@ -180,7 +180,7 @@ describe("ToolbarButtonComponent", () => {
     const sort = DomFixture.oneOf(DomFixture.host(host), ".sort", HTMLButtonElement);
 
     sort.focus();
-    await userEvent.click(sort);
+    await userEvent.click(sort, { force: true });
     for (const key of ["{Enter}", " ", "{ArrowDown}", "{ArrowUp}"])
       await userEvent.keyboard(key);
     host.detectChanges();
