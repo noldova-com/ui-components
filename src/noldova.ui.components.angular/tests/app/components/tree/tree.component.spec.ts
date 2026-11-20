@@ -240,6 +240,21 @@ describe("TreeComponent", () => {
     expect([taken, document.activeElement]).toEqual([true, document.body]);
   });
 
+  it("leaves the focus on the control the person moved it to before the focused row left the tree", async () => {
+    await renderAsync();
+    const other = document.createElement("button");
+    document.body.append(other);
+    row("Notes").focus();
+    other.focus();
+
+    fixture.componentInstance.nodes.update(t => t.filter(u => u.id !== "notes"));
+    await fixture.whenStable();
+    const kept = document.activeElement === other;
+    other.remove();
+
+    expect([kept, rows().map(t => t.tabIndex)]).toEqual([true, [0, -1]]);
+  });
+
   it("opens a branch that starts open once, so a branch the person closed stays closed when the nodes change", async () => {
     await renderAsync();
     row("Open").click();
