@@ -24,6 +24,7 @@ import { TreeNode } from "../../models/tree.node.js";
 import { TreePlace } from "../../models/tree-place.js";
 import { TreePlan } from "../../models/tree-plan.js";
 import { Announcer } from "../../services/announcer.js";
+import { ElementDirectionality } from "../../services/element-directionality.js";
 import { TreeDragSession } from "../../services/tree-drag-session.js";
 import { TreeRowDirective } from "./tree-row.directive.js";
 import { TreeResources } from "./tree.resources.js";
@@ -33,6 +34,7 @@ import { TreeResources } from "./tree.resources.js";
   imports: [CdkTree, CdkTreeNode, CdkTreeNodeDef, TreeRowDirective],
   templateUrl: "./tree.component.html",
   styleUrl: "./tree.component.css",
+  providers: [ElementDirectionality.provide()],
   host: { "[class.nol-tree-movable]": "movable()" }
 })
 export class TreeComponent {
