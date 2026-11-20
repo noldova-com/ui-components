@@ -210,7 +210,7 @@ It also prints each test whose median is over 1 second, which the list below hol
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
 Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report, and a run's two parts where each test ran once, where one ran in both, where one ran in neither, and where the second ran none, and a small workspace whose one spec file traces layout, which must give every test outside the tracing suite first and then the suite from that file alone, give only the named files in those parts when spec files are named, and refuse a name no spec file has; it fails when that check does.
 
-45 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 42 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+44 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 41 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
 The times are from one run of `npm run test:timing` on each system at 9bb5b36, while [#178](https://github.com/noldova-com/ui-components/issues/178) is open; the notes after the list that give a file's time alone say so, beside these cells.
 A file near the line may fall either side on another run: against a run on each of the same machines at 9265927, 4 files left the list and 5 joined it, besides the spinner's, which #178 changed between them.
@@ -281,7 +281,6 @@ The code block's rows are from one run of `npm run test:timing` on each system w
 | `code-block-forced-spans.component.spec.ts` | 289 ms | 389 ms | 150 ms |
 | `code-block-run-keys.component.spec.ts` | 274 ms | 436 ms | within |
 | `code-block-run-state.component.spec.ts` | 410 ms | 418 ms | within |
-| `code-block-run.component.spec.ts` | 183 ms | 174 ms | within |
 | `code-block-settled-layout.component.spec.ts` | 196 ms | 274 ms | within |
 | `code-block-settled-pixels.component.spec.ts` | 208 ms | 226 ms | 160 ms |
 | `code-block-streaming-return.component.spec.ts` | within | 125 ms | within |
