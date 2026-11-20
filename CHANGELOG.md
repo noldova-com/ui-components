@@ -4,6 +4,14 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.20
+
+- `@noldova/ui.components.angular`: a tab's rename field no longer reports its text when the focus moves into a kit menu opened on it, such as its context menu: the field has the focus back when that menu closes and the rename goes on, and the text is reported once the focus goes from the menu anywhere else.
+- `@noldova/ui.components.angular`: disabling a select closes its open list, returning the focus to the button when the list held it, so nothing can be chosen from it, also when the select is disabled through `setInput` before the next change detection. A disabled select's button is marked `aria-disabled` rather than `disabled`, as a disabled checkbox or choice row is, so it stays focusable and a select that turns disabled while it holds the focus keeps it; a click, Enter or Space on it opens nothing.
+- `@noldova/ui.components.angular`: Retry chosen from the keyboard in a virtual list's failed read moves the focus into the list, to its tab stop row when that is in view, else to the first row in view without scrolling, or to the feed, so the focus no longer falls to the page; when the read fails again the focus goes back to Retry, never from a control outside the list that took it. A clicked Retry leaves the focus where the click put it.
+- `@noldova/ui.components.angular`: when a toolbar's focused item leaves with no item left, the toolbar lets the focus go, so items added later no longer take the focus from the page.
+- `@noldova/ui.components.angular`: its peers `@noldova/context.core` and `@noldova/context.exceptions` need 0.0.9 or later, below 0.1.0, instead of 0.0.8 or later.
+
 ## 0.0.19
 
 - `@noldova/ui.components.angular`: a context-menu trigger leaves a right click, the ContextMenu key and Shift+F10 on an editable field under its host, a textarea, an `input` that takes text or editable content, to the field: it opens no menu and neither prevents nor stops the event, so the field keeps its own edit menu, such as a tab's rename field.
