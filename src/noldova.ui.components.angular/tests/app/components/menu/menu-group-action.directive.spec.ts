@@ -176,6 +176,12 @@ describe("MenuGroupActionDirective", () => {
     expect(reached).toEqual(["refresh", "default", "refresh", "low"]);
   });
 
+  it("leaves the menu to open on its group's first row, not on itself, when no row is checked", async () => {
+    await openAsync();
+
+    expect(focused()).toBe("default");
+  });
+
   it("stays focused and the menu open when it is disabled while focused, looks disabled, and is reached by the arrow keys but inert", async () => {
     await openAsync();
     const action = find(".refresh") as HTMLButtonElement;

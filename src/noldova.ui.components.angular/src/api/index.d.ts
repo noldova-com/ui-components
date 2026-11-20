@@ -7223,8 +7223,9 @@ export declare class MenuGroupComponent {
  * `button[nol-icon-button][nolMenuGroupAction]`, such as Refresh models: an
  * icon button on the label's line, its pad's end on the rows' trailing edge,
  * which never closes the menu. It is one of the menu's `menuitem`s, named by
- * the icon button's label, which the arrow keys reach before the group's
- * rows and type-ahead finds by that label. Like a {@link MenuItemComponent},
+ * the icon button's label, which the arrow keys, Home and End reach before
+ * the group's rows wherever the template writes it, and type-ahead finds by
+ * that label; a menu with no row checked opens on its first row, not on it. Like a {@link MenuItemComponent},
  * it keeps the `disabled` input and `triggered` output of its CDK menu item,
  * {@link KeptOpenMenuItemDirective}, under those names. While `disabled` it
  * is aria-disabled: it looks disabled and
