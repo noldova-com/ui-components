@@ -11,10 +11,19 @@ declare module "vitest/browser" {
   interface BrowserCommands {
     // What a recorder of its own prints when a browser page fails to open in the way named, "refused", "other" or "unwatchable", and how the opening ended.
     scriptedPageRefusal: (failure: "refused" | "other" | "unwatchable") => Promise<readonly string[]>;
+    // How many projects the run's own recorder watches, and each server's events so far.
+    watchedPageOpenings: () => Promise<readonly [number, readonly string[]]>;
   }
 }
 
 describe("browser page refusals", () => {
+  it("watches the run's own projects and follows the server this page came from", async () => {
+    const [watched, servers] = await commands.watchedPageOpenings();
+
+    expect(watched).toBeGreaterThan(0);
+    expect(servers.filter(t => t.includes(` port ${location.port} (IPv`))).toHaveLength(1);
+  });
+
   it("prints, when a browser page's navigation is refused, the URL's host and port, each server's addresses and family as it listened and closed, and what the port held, before the error goes on", async () => {
     const printed = await commands.scriptedPageRefusal("refused");
 

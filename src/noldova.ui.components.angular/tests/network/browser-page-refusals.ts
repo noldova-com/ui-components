@@ -24,12 +24,16 @@ export class BrowserPageRefusals {
   private readonly probe: IConnectionProbe;
   // Each server's events, in the order the run created the servers.
   private readonly servers: string[][] = [];
+  private watched: number = 0;
 
   public readonly plugin = {
     name: "noldova:browser-page-refusals",
     configureServer: (server: { readonly httpServer: IListeningServer | null }): void => this.follow(server.httpServer),
     configureVitest: (context: { readonly project: IVitestProject }): void => this.watch(context.project)
   };
+
+  // The browser command that tells a spec what the run's own recorder follows: how many projects it watches, and each server's events so far.
+  public readonly watching: () => readonly [number, readonly string[]] = () => [this.watched, this.servers.map(t => t.join(", then "))];
 
   // The probe is ConnectionProbe unless given, as tests/network/scripted-page-refusal.ts gives one that fails.
   public constructor(probe: IConnectionProbe = new ConnectionProbe()) {
@@ -50,6 +54,7 @@ export class BrowserPageRefusals {
     const open: unknown = Reflect.get(project, BrowserPageRefusals.OPEN);
     if (typeof open !== "function")
       throw new Error(`Vitest's project has no ${BrowserPageRefusals.OPEN}, so a browser page's refused connection can't be explained; see tests/network/browser-page-refusals.ts.`);
+    this.watched++;
     Reflect.set(project, BrowserPageRefusals.OPEN, async (...args: unknown[]): Promise<void> => {
       try {
         const opening: unknown = Reflect.apply(open, project, args);
