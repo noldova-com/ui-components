@@ -31,16 +31,29 @@ describe("CodeBlockComponent", () => {
       ["Run zsh command", null, false, "play_arrow"]]);
   });
 
-  it("emits its code, language and block 0 when Run is chosen by pointer, Enter or Space while running, as when ended", async () => {
+  it("emits its code, language and block 0 when Run is chosen by pointer while running", async () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Running));
     await userEvent.click(run());
+
+    expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
+  });
+
+  it("emits its code, language and block 0 when Run is chosen by Enter or Space while running", async () => {
+    await runnableAsync("bash");
+    await changeAsync(() => harness.host.runState.set(ShellRunState.Running));
     run().focus();
     await userEvent.keyboard("{Enter}");
     await userEvent.keyboard(" ");
+
+    expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([0, 1].map(() => [harness.host.code(), "bash", 0]));
+  });
+
+  it("emits its code, language and block 0 when Run is chosen by pointer once ended, as while running", async () => {
+    await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Ended));
     await userEvent.click(run());
 
-    expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([0, 1, 2, 3].map(() => [harness.host.code(), "bash", 0]));
+    expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
   });
 });

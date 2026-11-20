@@ -19,12 +19,19 @@ export class TestDocsTiming extends AngularTimingScript {
   private static readonly OWNER: string = "the docs site's";
   private static readonly PLATFORM: NodeJS.Platform = "linux";
   private static readonly SKIPPED_OFF_PLATFORM: string = "The docs site's timing check runs only on Linux, as its tests do; skipped.";
+  private static readonly NAMES_REFUSED: string = "The docs site's timing check times its whole suite and takes no spec file names; "
+    + "to time some of the kit's spec files, run npm run test:timing -- <names> in src/noldova.ui.components.angular.";
 
   public constructor() {
     super(TestDocsTiming.ANGULAR_PROJECT, TestDocsTiming.OWNER);
   }
 
   public override async runAsync(): Promise<void> {
+    if (process.argv.length > 2) {
+      await this.writeLogAsync(TestDocsTiming.NAMES_REFUSED);
+      process.exitCode = 1;
+      return;
+    }
     if (process.platform !== TestDocsTiming.PLATFORM) {
       await this.writeLogAsync(TestDocsTiming.SKIPPED_OFF_PLATFORM);
       return;

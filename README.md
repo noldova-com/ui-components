@@ -202,14 +202,15 @@ Every spec here, the kit's and the docs site's, is a component spec, since each 
 
 `npm run test:timing` is the timing check, apart from `npm test` since its pass condition is a time.
 It runs the kit's specs three times without coverage, and on Linux the docs site's too, as their tests run only there.
+In the kit's folder, `npm run test:timing -- <file name> ...`, such as `npm run test:timing -- code-block-run.component.spec.ts`, times only the kit's spec files so named, in the same parts, and fails naming any name no spec file has or two spec files share, which a path from the kit's folder, such as `tests/styles/theme.spec.ts`, tells apart; from the repository's root the docs site's check refuses names and fails, since it times its whole suite; the test machines take only such runs of the specs a change touches, never the whole suite.
 Each of the kit's runs is two runs of Angular's test builder, as `npm test`'s are, so the tests in a `describe(LayoutTraceFixture.suite, ...)` trace in a browser of their own; in one browser under the whole suite, a trace could hold it past the next trace's wait ([#198](https://github.com/noldova-com/ui-components/issues/198)).
 A run fails, and the check times nothing, unless each test in the two reports passed or failed in exactly one of them and the second ran at least one test.
 It takes each test's median over the runs, with `TestTimingCheck.median` from `@noldova/context.testing`, so one slow run decides nothing, and fails a spec file whose tests' median is over 100 ms plus a margin of 20%.
 It also prints each test whose median is over 1 second, which the list below holds.
 Its code is `src/noldova.ui.components.angular/scripts/angular/angular-test-timing.ts`, run by `scripts/angular/angular-timing-script.ts`, which each package's `scripts/test-timing.ts` or `scripts/test-docs-timing.ts` starts.
-Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report, and a run's two parts where each test ran once, where one ran in both, where one ran in neither, and where the second ran none, and a small workspace whose one spec file traces layout, which must give every test outside the tracing suite first and then the suite from that file alone; it fails when that check does.
+Before the runs, it checks itself on small reports in a temporary folder: a file within the budget, over it and inside its margin, a test's median over runs, a test over 1 second, a failed test, a file missing from a run and a run with no report, and a run's two parts where each test ran once, where one ran in both, where one ran in neither, and where the second ran none, and a small workspace whose one spec file traces layout, which must give every test outside the tracing suite first and then the suite from that file alone, give only the named files in those parts when spec files are named, and refuse a name no spec file has; it fails when that check does.
 
-45 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 42 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
+44 spec files are over the budget today on a Linux, a Windows or a macOS test machine, 41 of the kit's and 3 of the docs site's, so the timing check fails until they fit; [#148](https://github.com/noldova-com/ui-components/issues/148) brought them down from 76.
 Each is listed below by kind with its median test on one test machine of each system, a cell within the budget saying so, and the docs site's tests running only on Linux.
 The times are from one run of `npm run test:timing` on each system at 9bb5b36, while [#178](https://github.com/noldova-com/ui-components/issues/178) is open; the notes after the list that give a file's time alone say so, beside these cells.
 A file near the line may fall either side on another run: against a run on each of the same machines at 9265927, 4 files left the list and 5 joined it, besides the spinner's, which #178 changed between them.
@@ -264,7 +265,7 @@ Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-co
   With these waits, a `ScrollEndFollower` that always follows fails the streaming-scroll and streaming-return specs, and one that never follows fails the streaming and streaming-return specs, on Linux and macOS test machines.
 - The scrollbar and settled-layout specs wait for their layout to settle, through `CodeBlockHarness.settledAsync`, a pass of one rendered frame and a stable fixture at a time, until a pass leaves what the spec names of the layout unchanged.
   The token-colors spec waits for the forced-colors media query's change before it settles, since the block puts its highlights back in that change's listener, which the browser runs at its next rendering step.
-- The Run specs, `run`, `run-keys` and `run-state`, and the `lines` spec press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
+- The Run specs `run-keys` and `run-state`, and the `lines` spec, press real keys and click with a real pointer: a click costs 60 to 155 ms and a key 10 to 30 ms.
 - `code-block-highlighting-start.component.spec.ts` checks a page's first TypeScript highlight, which takes 335 to 705 ms; [#184](https://github.com/noldova-com/ui-components/issues/184) keeps that cost of the product's in view.
 
 `src/noldova.ui.components.angular/tests/typescript-grammar.setup.ts` highlights a TypeScript sample once a page, through the highlighter's own tokenizer, before each spec file's first test, so that cost doesn't fall on whichever test renders the page's first block: with it, a page's first code block render took 124 to 149 ms instead of 335 to 705 ms.
@@ -280,7 +281,6 @@ The code block's rows are from one run of `npm run test:timing` on each system w
 | `code-block-forced-spans.component.spec.ts` | 289 ms | 389 ms | 150 ms |
 | `code-block-run-keys.component.spec.ts` | 274 ms | 436 ms | within |
 | `code-block-run-state.component.spec.ts` | 410 ms | 418 ms | within |
-| `code-block-run.component.spec.ts` | 183 ms | 174 ms | within |
 | `code-block-settled-layout.component.spec.ts` | 196 ms | 274 ms | within |
 | `code-block-settled-pixels.component.spec.ts` | 208 ms | 226 ms | 160 ms |
 | `code-block-streaming-return.component.spec.ts` | within | 125 ms | within |
