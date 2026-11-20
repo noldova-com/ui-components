@@ -27,8 +27,8 @@ import { ContextMenuTriggerResources } from "./context-menu-trigger.resources.js
   host: {
     "[attr.data-cdk-menu-stack-id]": "null",
     "[attr.aria-controls]": "isOpen() ? childMenu?.id : null",
-    "(contextmenu)": "openAtPointer($event)",
-    "(keydown)": "openFromKeyboard($event)"
+    "(contextmenu)": "openUnlessEditable($event)",
+    "(keydown)": "openFromKeyboardUnlessEditable($event)"
   },
   providers: [{ provide: MENU_STACK, useClass: MenuStack }]
 })
@@ -62,6 +62,14 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
     this.anchored.originLost.pipe(takeUntil(this.destroyed)).subscribe(() => this.menuStack.closeAll());
   }
 
+  private static isEditable(target: EventTarget | null): boolean {
+    if (target instanceof HTMLTextAreaElement)
+      return true;
+    if (target instanceof HTMLInputElement)
+      return ContextMenuTriggerResources.textInputTypes.includes(target.type);
+    return target instanceof HTMLElement && target.isContentEditable;
+  }
+
   public open(point: DOMRect, origin: FocusOrigin): void {
     this.openOn(this.host, point, origin);
   }
@@ -84,6 +92,16 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
 
   public close(): void {
     this.menuStack.closeAll();
+  }
+
+  protected openUnlessEditable(event: MouseEvent): void {
+    if (!ContextMenuTriggerDirective.isEditable(event.target))
+      this.openAtPointer(event);
+  }
+
+  protected openFromKeyboardUnlessEditable(event: KeyboardEvent): void {
+    if (!ContextMenuTriggerDirective.isEditable(event.target))
+      this.openFromKeyboard(event);
   }
 
   private openOn(target: HTMLElement, point: DOMRect, origin: FocusOrigin): void {
