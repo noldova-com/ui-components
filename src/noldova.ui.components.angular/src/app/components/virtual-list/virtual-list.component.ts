@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import {
-  Component, DOCUMENT, DestroyRef, type ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
+  Component, DOCUMENT, DestroyRef, ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, computed, contentChild, effect, inject, input, output,
   signal, untracked, viewChild, viewChildren
 } from "@angular/core";
 
@@ -56,6 +56,7 @@ export class VirtualListComponent<T> {
   private readonly viewport: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("viewport");
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly slots: Signal<readonly ElementRef<HTMLElement>[]> = viewChildren<ElementRef<HTMLElement>>("slot");
+  private readonly jumpButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("jumpButton", { read: ElementRef });
   private readonly observer: ResizeObserver = new ResizeObserver(t => this.measure(t));
   private readonly checker: ResizeObserver = new ResizeObserver(() => this.keepClamp(this.viewport().nativeElement));
   private readonly observed: Set<Element> = new Set();
@@ -234,6 +235,12 @@ export class VirtualListComponent<T> {
         if (!this.isFollowing() && this.isDistanceKnown(top))
           this.follow(this.distanceOf(top));
       });
+    });
+    effect(() => {
+      const jump = this.jumpButton()?.nativeElement;
+      if (!this.isFollowing() && !this.isJumpHeld() || Object.isUndefined(jump) || this.document.activeElement !== jump)
+        return;
+      this.viewport().nativeElement.focus({ preventScroll: true });
     });
     effect(() => {
       if (this.isFailing())
@@ -1008,8 +1015,13 @@ export class VirtualListComponent<T> {
       this.checker.observe(viewport);
     }
     const stop = this.stop();
-    if (Object.isNull(stop))
+    if (Object.isNull(stop)) {
+      if (this.isFeed() && this.isFocused() && (Object.isNull(this.document.activeElement) || this.document.activeElement === this.document.body)) {
+        this.isFocused.set(false);
+        viewport.focus({ preventScroll: true });
+      }
       return;
+    }
     const row = viewport.querySelector<HTMLElement>(VirtualListResources.formatVirtualListRowSelector(stop));
     if (Object.isNull(row) || !(this.isFocusPending || this.isFocused() && !row.contains(this.document.activeElement)))
       return;

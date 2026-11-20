@@ -5085,7 +5085,8 @@ export declare class DiffShortcut {
  * to the next or previous change, and Alt+Shift with Down or Up to the next
  * or previous file; {@link DiffViewComponent.shortcuts} lists them for an
  * app's list of shortcuts. A file over the view's collapse limit waits
- * behind Load diff. A review state that changes after the person acts on a
+ * behind Load diff, which, when it has the focus, passes it to the file's
+ * first line once its lines show. A review state that changes after the person acts on a
  * file in the view is announced politely: the file's when its own state
  * changes, otherwise each hunk's. A change the person didn't make here, such
  * as an agent's edit, is not announced.
@@ -12204,7 +12205,8 @@ export declare class ToolbarButtonComponent {
  * items form one tab stop. The arrow keys along its orientation, Home and
  * End move focus between the items, left to right in a horizontal toolbar;
  * the tab stop follows focus and starts at the item
- * {@link ToolbarDirective.start} names.
+ * {@link ToolbarDirective.start} names. When the focused item is removed,
+ * the new tab stop takes the focus, unless another element took it first.
  */
 export declare class ToolbarDirective {
   /**
@@ -13702,7 +13704,9 @@ export declare class VirtualListJump {
  * at its start, never follows its end, and shows the button at its top.
  * The feed itself is its one Tab stop, and Tab goes on to the controls in
  * its articles; its articles take the focus from a click or from assistive
- * technology, not from Tab. Its keys scroll it as a scrolling area does, and
+ * technology, not from Tab. When Jump to latest hides while it has the
+ * focus, or the owner replaces the feed while an article has it, the feed
+ * takes the focus. Its keys scroll it as a scrolling area does, and
  * never move the focus between its articles: Down and Up by 40px, Page Down
  * and Page Up by seven eighths of its height, and Home and End to its start
  * and end. Page Down and Page Up do so from anywhere in it, unless a control
