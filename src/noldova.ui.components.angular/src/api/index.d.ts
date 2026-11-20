@@ -10639,7 +10639,8 @@ export declare class SelectComponent {
   public readonly describedBy: InputSignal<string | null>;
 
   /**
-   * Whether the button is disabled; false when not bound.
+   * Whether the button is disabled; false when not bound. Disabling it
+   * closes its open list.
    */
   public readonly disabled: InputSignal<boolean>;
 
