@@ -8,4 +8,12 @@
 
 export class MessageRunResources {
   public static readonly messageCodeHeight: number = 32;
+
+  public static formatMessageRunKeyedBlock(key: string): string {
+    return `key:${key}`;
+  }
+
+  public static formatMessageRunPlacedBlock(index: number): string {
+    return `place:${index}`;
+  }
 }
