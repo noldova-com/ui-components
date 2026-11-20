@@ -7,8 +7,8 @@
  */
 
 import {
-  Component, ElementRef, Injector, type Signal, type WritableSignal, afterEveryRender, afterNextRender, afterRenderEffect, computed, inject, input, linkedSignal,
-  model, output, viewChild, viewChildren
+  Component, ElementRef, type Signal, type WritableSignal, afterEveryRender, afterNextRender, afterRenderEffect, computed, inject, input, linkedSignal,
+  model, output, signal, viewChild, viewChildren
 } from "@angular/core";
 
 import "@noldova/context.core";
@@ -33,7 +33,6 @@ export class QuickInputComponent {
   private static count: number = 0;
 
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private readonly injector: Injector = inject(Injector);
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly optionTooltips: Signal<readonly TooltipDirective[]> = viewChildren(TooltipDirective);
   private readonly movedId: WritableSignal<string | null> = linkedSignal({
@@ -42,7 +41,11 @@ export class QuickInputComponent {
       !Object.isUndefined(previous) && previous.source.query === source.query && source.items.some(t => t.id === previous.value) ? previous.value : null
   });
   private shownQuery: string = String.empty;
-  private isChoosing: boolean = false;
+  private readonly isChoosing: WritableSignal<boolean> = signal(false);
+  private readonly isAnswered: Signal<boolean> = computed(() => {
+    const answered = this.itemsQuery();
+    return Object.isNull(answered) || answered === this.query();
+  });
   private followsKeys: boolean = false;
   private titled: TooltipDirective | null = null;
 
@@ -73,6 +76,7 @@ export class QuickInputComponent {
   public readonly emptyText = input<string>(String.empty);
   public readonly isEmptyTextAlert = input<boolean>(false);
   public readonly query = model<string>(String.empty);
+  public readonly itemsQuery = input<string | null>(null);
   public readonly isFocusing = input<boolean>(true);
   public readonly chosen = output<QuickInputItem>();
   public readonly dismissed = output<void>();
@@ -81,6 +85,12 @@ export class QuickInputComponent {
   public constructor() {
     afterRenderEffect(() => {
       this.shownQuery = this.query();
+    });
+    afterRenderEffect(() => {
+      if (!this.isChoosing() || !this.isAnswered())
+        return;
+      this.isChoosing.set(false);
+      this.choose(this.active());
     });
     afterRenderEffect(() => {
       const list = this.list().nativeElement;
@@ -146,15 +156,10 @@ export class QuickInputComponent {
   }
 
   private chooseActive(): void {
-    if (this.query() === this.shownQuery)
+    if (this.query() === this.shownQuery && this.isAnswered())
       this.choose(this.active());
-    else if (!this.isChoosing) {
-      this.isChoosing = true;
-      afterNextRender(() => {
-        this.isChoosing = false;
-        this.choose(this.active());
-      }, { injector: this.injector });
-    }
+    else
+      this.isChoosing.set(true);
   }
 
   private follow(): void {

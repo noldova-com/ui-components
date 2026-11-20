@@ -10113,6 +10113,14 @@ export declare class QuickInputComponent {
   public readonly query: ModelSignal<string>;
 
   /**
+   * The query the items answer, for an owner that finds them asynchronously,
+   * so the items can still be an earlier query's while new ones load. Null,
+   * when not bound, says the items always answer the query, as a filter
+   * computed from it does.
+   */
+  public readonly itemsQuery: InputSignal<string | null>;
+
+  /**
    * Whether the field takes focus after the component first renders; true
    * when not bound.
    */
@@ -10121,8 +10129,10 @@ export declare class QuickInputComponent {
   /**
    * Emits the result the person chose with Enter or a click. When Enter
    * comes right after typing, it waits until the items for the new query
-   * have rendered and chooses the active one of those. Nothing is emitted
-   * while there are no results.
+   * have rendered, and, while {@link QuickInputComponent.itemsQuery} names
+   * another query, until items for this one come, and chooses the active one
+   * of those, once however often Enter was pressed. Nothing is emitted while
+   * there are no results.
    */
   public readonly chosen: OutputEmitterRef<QuickInputItem>;
 
