@@ -74,7 +74,7 @@ const kitSectionControls: readonly { readonly section: Type<unknown>; readonly c
   },
   {
     section: GalleryNavigationComponent,
-    controls: ["AvatarComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "MessageActionDirective",
+    controls: ["AvatarComponent", "CanvasComponent", "CanvasItemDirective", "CanvasMapComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "MessageActionDirective",
       "MessageComponent", "MessageFooterEndDirective", "MessageImageDirective", "MessageSlotDirective", "PanelCardComponent", "SashComponent",
       "SectionHeaderComponent", "TabComponent", "ToolbarButtonComponent", "ToolbarDirective", "ToolbarItemDirective", "TreeComponent", "ViewBadgeComponent",
       "VirtualListComponent", "VirtualRowDirective"]
