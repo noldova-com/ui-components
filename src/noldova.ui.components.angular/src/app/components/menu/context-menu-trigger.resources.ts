@@ -8,4 +8,5 @@
 
 export class ContextMenuTriggerResources {
   public static readonly auxclickEvent: string = "auxclick";
+  public static readonly textInputTypes: readonly string[] = ["text", "search", "url", "tel", "email", "password", "number"];
 }

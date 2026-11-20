@@ -105,6 +105,26 @@ class LongMenuHostComponent {
 })
 class OnPushHostComponent {}
 
+@Component({
+  imports: [ContextMenuTriggerDirective, MenuComponent, MenuItemComponent],
+  template: `
+    <div class="host" tabindex="0" style="position: fixed; top: 0; left: 0; width: 400px; height: 200px;" [nolContextMenuTriggerFor]="actions">
+      <input class="text">
+      <input class="search" type="search">
+      <input class="check" type="checkbox">
+      <textarea class="notes"></textarea>
+      <div class="editable" contenteditable="true"><span class="inside">Notes</span></div>
+      <svg class="icon" width="10" height="10"></svg>
+    </div>
+    <ng-template #actions>
+      <nol-menu class="actions">
+        <button nol-menu-item label="Rename"></button>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class FieldHostComponent {}
+
 describe("ContextMenuTriggerDirective", () => {
   let fixture: ComponentFixture<ContextHostComponent>;
 
@@ -611,5 +631,56 @@ describe("ContextMenuTriggerDirective in an OnPush host", () => {
     controls.push(await closedAsync("its host moving away"));
 
     expect(controls).toEqual(["names the menu", null, "names the menu", null, "names the menu", null]);
+  });
+});
+
+describe("ContextMenuTriggerDirective around editable fields", () => {
+  let fixture: ComponentFixture<FieldHostComponent>;
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(FieldHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  function menu(): HTMLElement | null {
+    return document.querySelector<HTMLElement>(".cdk-overlay-container nol-menu.actions");
+  }
+
+  function rightClick(selector: string): { readonly event: MouseEvent; readonly reached: boolean } {
+    let reached = false;
+    const note = (): void => {
+      reached = true;
+    };
+    document.addEventListener("contextmenu", note);
+    const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 20, clientY: 20, button: 2 });
+    DomFixture.oneOf(DomFixture.host(fixture), selector, Element).dispatchEvent(event);
+    document.removeEventListener("contextmenu", note);
+    return { event, reached };
+  }
+
+  it.each([".text", ".search", ".notes", ".editable", ".inside"])("leaves a right click on the editable field %s to the field, opening no menu and neither preventing nor stopping it", async selector => {
+    const { event, reached } = rightClick(selector);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    expect([event.defaultPrevented, reached]).toEqual([false, true]);
+    expect(menu()).toBeNull();
+  });
+
+  it.each([".host", ".check", ".icon"])("opens its menu for a right click on %s, which is no editable field, and keeps the click to itself", async selector => {
+    const { event, reached } = rightClick(selector);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(menu()).not.toBeNull());
+
+    expect([event.defaultPrevented, reached]).toEqual([true, false]);
   });
 });

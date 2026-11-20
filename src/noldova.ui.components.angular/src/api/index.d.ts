@@ -3735,7 +3735,9 @@ export declare class ConfigurationTableShareDirective {
  * every text field under it, through
  * {@link ContextMenuTriggerDirective.openAtPointer} and
  * {@link ContextMenuTriggerDirective.openFromKeyboard} with a target, which
- * then takes the host's place. It extends the CDK's menu trigger base, from which it inherits
+ * then takes the host's place. A right click on an editable field under the
+ * host, a text input, a textarea or editable content, is left to the field:
+ * the trigger opens no menu and neither prevents nor stops it. It extends the CDK's menu trigger base, from which it inherits
  * `menuTemplateRef`, `menuData`, `isOpen()`, `opened` and `closed`.
  */
 export declare class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
