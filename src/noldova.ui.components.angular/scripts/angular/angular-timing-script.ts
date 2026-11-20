@@ -49,6 +49,7 @@ export abstract class AngularTimingScript extends Script {
     + "and spec files named by their file names run only those files, in the same parts";
   private static readonly TRACED_SPEC: string = "tests/traced.spec.ts";
   private static readonly UNTRACED_SPEC: string = "tests/untraced.spec.ts";
+  private static readonly SHARED_NAME_SPEC: string = "tests/other/untraced.spec.ts";
 
   private readonly project: string;
   private readonly owner: string;
@@ -128,10 +129,15 @@ export abstract class AngularTimingScript extends Script {
   // suite, then only the suite's tests from the files that hold it, each in a browser of its own.
   private static async partsAsync(folder: string, tests: AngularTestReport, specs: readonly string[] = []): Promise<readonly (readonly string[])[]> {
     const files = await tests.listSpecFilesAsync();
-    const unknown = specs.filter(t => !files.some(u => path.posix.basename(u) === t));
+    const matches = specs.map(t => [t, files.filter(u => u === t || path.posix.basename(u) === t)] as const);
+    const unknown = matches.filter(([, t]) => t.length === 0).map(([t]) => t);
     if (unknown.length > 0)
-      throw new CommandFailedException(`No spec file is named ${unknown.join(", ")}; name each spec file to time by its file name, such as code-block-run.component.spec.ts.`);
-    const chosen = specs.length === 0 ? files : files.filter(t => specs.includes(path.posix.basename(t)));
+      throw new CommandFailedException(`No spec file is named ${unknown.join(", ")}; name each spec file to time by its file name, such as code-block-run.component.spec.ts, `
+        + "or by its path from the workspace's folder.");
+    const shared = matches.filter(([, t]) => t.length > 1);
+    if (shared.length > 0)
+      throw new CommandFailedException(`${shared.map(([t, u]) => `${t} names ${u.join(" and ")}`).join("; ")}; name such a spec file by its path from the workspace's folder.`);
+    const chosen = specs.length === 0 ? files : files.filter(t => matches.some(([, u]) => u.includes(t)));
     const include = (selected: readonly string[]): readonly string[] => selected.flatMap(t => [AngularTimingScript.ANGULAR_INCLUDE_OPTION, t]);
     const traced: string[] = [];
     for (const spec of chosen)
@@ -256,18 +262,23 @@ export abstract class AngularTimingScript extends Script {
       await fs.mkdir(path.join(folder, "tests"));
       await fs.writeFile(path.join(folder, AngularTimingScript.TRACED_SPEC), `${LayoutTraceSuite.mark}, () => {});\n`, AngularTimingScript.ENCODING);
       await fs.writeFile(path.join(folder, AngularTimingScript.UNTRACED_SPEC), "describe(\"Untraced\", () => {});\n", AngularTimingScript.ENCODING);
+      await fs.mkdir(path.join(folder, path.posix.dirname(AngularTimingScript.SHARED_NAME_SPEC)));
+      await fs.writeFile(path.join(folder, AngularTimingScript.SHARED_NAME_SPEC), "describe(\"Shared name\", () => {});\n", AngularTimingScript.ENCODING);
       const report = new AngularTestReport(folder, AngularTimingScript.SELF_CHECK_PROJECT);
       const tracedPart = [`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.title}`, AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.TRACED_SPEC];
       const selections = [
         [[], [[`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.untracedFilter}`], tracedPart]],
-        [[path.posix.basename(AngularTimingScript.UNTRACED_SPEC)], [[AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.UNTRACED_SPEC]]],
+        [[AngularTimingScript.UNTRACED_SPEC], [[AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.UNTRACED_SPEC]]],
         [[path.posix.basename(AngularTimingScript.TRACED_SPEC)],
           [[`${AngularTimingScript.ANGULAR_FILTER_OPTION}=${LayoutTraceSuite.untracedFilter}`, AngularTimingScript.ANGULAR_INCLUDE_OPTION, AngularTimingScript.TRACED_SPEC], tracedPart]]
       ] as const;
       for (const [specs, expected] of selections)
         if (JSON.stringify(await AngularTimingScript.partsAsync(folder, report, specs)) !== JSON.stringify(expected))
           return false;
-      return await AngularTimingScript.partsAsync(folder, report, ["missing.spec.ts"]).then(() => false, (error: unknown) => error instanceof CommandFailedException);
+      for (const specs of [["missing.spec.ts"], [path.posix.basename(AngularTimingScript.UNTRACED_SPEC)]])
+        if (await AngularTimingScript.partsAsync(folder, report, specs).then(() => true, (error: unknown) => !(error instanceof CommandFailedException)))
+          return false;
+      return true;
     }
     finally {
       await temporary.removeAsync(folder);
