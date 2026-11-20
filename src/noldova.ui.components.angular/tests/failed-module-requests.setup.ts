@@ -16,7 +16,7 @@ declare module "vitest/browser" {
     // The lines a recorder of its own prints for a refused module request with the probe named, "rejecting", "failing listing" or "hanging listing", once its run closed.
     scriptedRefusal: (probe: string) => Promise<readonly string[]>;
     // The lines a recorder of its own prints for requests that stall in the scenario named, "crowd" or "alone", once its run closed.
-    scriptedStall: (scenario: string) => Promise<readonly string[]>;
+    scriptedStall: (scenario: string, waitLimit?: number) => Promise<readonly string[]>;
   }
 }
 
