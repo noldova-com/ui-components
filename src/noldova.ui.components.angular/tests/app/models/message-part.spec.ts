@@ -54,6 +54,16 @@ describe("MessagePart", () => {
     expect([before.map(t => t.key), added, split]).toEqual([["run-0"], ["run-1", "slot:card-0", "run-0"], ["run-0", "slot:card-0", "run-1"]]);
   });
 
+  it("gives two runs joined by the going of the slot between them the earlier run's key", () => {
+    const first = new MessageText("a", false, "a");
+    const last = new MessageText("c", false, "c");
+    const before = MessagePart.partsOf([first, new MessageSlot("card"), last]);
+
+    const joined = MessagePart.partsOf([first, last], before).map(t => [t.key, t.blocks]);
+
+    expect([before.map(t => t.key), joined]).toEqual([["run-0", "slot:card-0", "run-1"], [["run-0", [first, last]]]]);
+  });
+
   it("makes no part of no blocks, and one part of blocks without text", () => {
     const slot = new MessageSlot("card");
 

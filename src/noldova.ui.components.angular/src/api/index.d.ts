@@ -8721,7 +8721,9 @@ export declare class MessageText extends MessageBlock {
   /**
    * What the text stays known by across changes to its message's blocks, or
    * null to be known by its place: a text that keeps its key keeps its element
-   * when blocks before it go, so a host can hold the reader's place across them.
+   * when blocks before it go, so a host can hold the reader's place across them,
+   * unless a block between its run and the run before goes: the joined run keeps
+   * the earlier run's elements, and the later run's texts get new ones.
    * Keys are unique within a message.
    */
   public readonly key: string | null;
