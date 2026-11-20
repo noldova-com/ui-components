@@ -6,7 +6,7 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [disabled]="disabled()"
+<button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [attr.aria-disabled]="disabled() ? resources.trueValue : null"
   [attr.aria-label]="name()" [attr.aria-describedby]="describedBy()" (click)="toggle(button, list)">
   <span class="nol-select-value" data-truncates>{{ title() }}</span>
   <span class="nol-select-arrow material-symbols-rounded" aria-hidden="true">{{ partResources.selectGlyph }}</span>
