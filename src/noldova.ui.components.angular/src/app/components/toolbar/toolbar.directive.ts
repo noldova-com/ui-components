@@ -99,6 +99,8 @@ export class ToolbarDirective {
       const active = this.host.ownerDocument.activeElement;
       if (this.items().includes(stop) && (Object.isNull(active) || active === this.host.ownerDocument.body))
         this.keys.setActiveItem(stop);
+      else
+        this.hasFocus = false;
     }, { injector: this.injector });
   }
 }

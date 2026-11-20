@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, Injector, afterNextRender, inject, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
@@ -38,6 +38,14 @@ class ToolbarHostComponent {
   public readonly isWrapping = signal(false);
   public readonly start = signal(0);
   public readonly items = signal<readonly string[]>(["Bold", "Italic", "|", "Locked", "Link"]);
+
+  private readonly injector: Injector = inject(Injector);
+
+  // Sets the items and, once they render, focuses the target before the toolbar can, as an owner moving the focus after a removal does.
+  public setItemsFocusing(items: readonly string[], target: HTMLElement): void {
+    this.items.set(items);
+    afterNextRender(() => target.focus(), { injector: this.injector });
+  }
 }
 
 describe("ToolbarDirective", () => {
@@ -193,6 +201,19 @@ describe("ToolbarDirective", () => {
 
     expect(after).toEqual(["Bold", ["Bold"]]);
     expect(document.activeElement?.className).toBe("after");
+  });
+
+  it("forgets the focus once another control takes it before the new tab stop can, so a later change of its items leaves the focus on the page", async () => {
+    const after = DomFixture.one(DomFixture.host(fixture), ".after");
+    item("Italic").focus();
+    await fixture.whenStable();
+    await updateAsync(() => host.setItemsFocusing(["Bold", "|", "Locked", "Link"], after));
+    const taken = document.activeElement === after;
+    after.blur();
+
+    await updateAsync(() => host.items.set(["Bold", "|", "Locked"]));
+
+    expect([taken, document.activeElement]).toEqual([true, document.body]);
   });
 
   it("leaves the focus where it went when an item that had it before is removed: on another control or on the page", async () => {
