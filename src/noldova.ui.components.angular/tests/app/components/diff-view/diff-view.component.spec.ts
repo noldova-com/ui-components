@@ -215,6 +215,22 @@ describe("DiffViewComponent", () => {
     expect(lines.map(t => text(find(".nol-diff-text", t)))).toEqual(["Line 10 const a = 1;", "Removed line 11 const b = 1;", "Added line 11 const b = 2;", "Added line 12 const c = 3;", "Line 13 return a;"]);
   });
 
+  it("shows each line's sign and code, its changed lines marked, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    const shown: unknown[] = [];
+
+    await CodeHighlightsFixture.withoutHighlightApiAsync(async () => {
+      await renderAsync(t => t.files.set([modified]));
+      const lines = cells(item(hunks(), 0));
+      shown.push(lines.map(t => text(find(".nol-diff-sign", t))), lines.map(t => text(find(".nol-diff-text", t))), lines.map(t => t.classList.contains("nol-diff-cell-changed")));
+    });
+
+    expect(shown).toEqual([
+      ["", "-", "+", "+", ""],
+      ["Line 10 const a = 1;", "Removed line 11 const b = 1;", "Added line 11 const b = 2;", "Added line 12 const c = 3;", "Line 13 return a;"],
+      [false, true, true, true, false]
+    ]);
+  });
+
   it("pairs removed and added lines side by side, old before new in reading order, and switches its layout with its toolbar", async () => {
     await renderAsync();
     find(".nol-diff-view-layout").click();

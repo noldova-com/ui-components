@@ -13,6 +13,7 @@ import { CodeTokenKind } from "../../../src/app/enums/code-token-kind";
 import { CodeToken } from "../../../src/app/models/code-token";
 import { CodeHighlights } from "../../../src/app/services/code-highlights";
 import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
+import { CodeHighlightsFixture } from "../../fixtures/code-highlights.fixture";
 import { ForcedColorsFixture } from "../../fixtures/forced-colors.fixture";
 
 describe("CodeHighlights", () => {
@@ -54,6 +55,17 @@ describe("CodeHighlights", () => {
     scoped.destroy();
 
     expect([media.mock.calls.length, registered, added]).toEqual([0, [], []]);
+  });
+
+  it("registers and adds no highlight, and throws nothing, in a browser without the CSS Highlight API", async () => {
+    await CodeHighlightsFixture.withoutHighlightApiAsync(() => {
+      const highlights = TestBed.inject(CodeHighlights);
+      const remove = highlights.add(document.createTextNode("return 1;"), [new CodeToken(0, "return", CodeTokenKind.Control)]);
+      remove();
+      TestBed.resetTestingModule();
+    });
+
+    expect([shown(), ranges()]).toEqual([[], []]);
   });
 
   it("highlights each token's range of a text in its kind's highlight with a static range, and takes them back when asked", () => {

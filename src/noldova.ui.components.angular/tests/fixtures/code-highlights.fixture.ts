@@ -29,4 +29,23 @@ export class CodeHighlightsFixture {
     });
     return changes;
   }
+
+  // Runs a check as in a browser without the CSS Highlight API, as Safari before 17.2 and Firefox before 140, and puts the API back once the check
+  // ends, failed or not. A check makes what reads the API, such as the TestBed's CodeHighlights, inside it.
+  public static async withoutHighlightApiAsync(check: () => void | Promise<void>): Promise<void> {
+    const constructor = Object.getOwnPropertyDescriptor(globalThis, "Highlight");
+    const registry = Object.getOwnPropertyDescriptor(CSS, "highlights");
+    Object.defineProperty(globalThis, "Highlight", { value: undefined, configurable: true, writable: true });
+    Object.defineProperty(CSS, "highlights", { value: undefined, configurable: true });
+    try {
+      await check();
+    }
+    finally {
+      for (const [target, name, descriptor] of [[globalThis, "Highlight", constructor], [CSS, "highlights", registry]] as const)
+        if (descriptor === undefined)
+          Reflect.deleteProperty(target, name);
+        else
+          Object.defineProperty(target, name, descriptor);
+    }
+  }
 }
