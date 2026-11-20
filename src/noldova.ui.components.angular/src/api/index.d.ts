@@ -12227,7 +12227,8 @@ export declare class ToolbarButtonComponent {
  * End move focus between the items, left to right in a horizontal toolbar;
  * the tab stop follows focus and starts at the item
  * {@link ToolbarDirective.start} names. When the focused item is removed,
- * the new tab stop takes the focus, unless another element took it first.
+ * the new tab stop takes the focus, unless another element took it first;
+ * when no item is left, items added later don't take the focus.
  */
 export declare class ToolbarDirective {
   /**
