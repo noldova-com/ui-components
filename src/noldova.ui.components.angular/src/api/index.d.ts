@@ -11263,7 +11263,10 @@ export declare class TabComponent {
   /**
    * Emits the field's trimmed text, possibly empty, when the person presses
    * Enter or the field loses the focus while editing; the owner decides
-   * what the text means and leaves the mode. Emits at most once per editing
+   * what the text means and leaves the mode. The focus moving into a kit
+   * menu, such as a context menu opened on the field, doesn't count, so the
+   * field takes it back when the menu closes; it counts once the focus goes
+   * from the menu anywhere else. Emits at most once per editing
    * session, and not for an Enter that ends a composition, including the one
    * Safari sends just after it.
    *
