@@ -8,6 +8,7 @@
 
 import { page } from "vitest/browser";
 
+import { DomFixture } from "./dom.fixture";
 import { ScreenshotFixture } from "./screenshot.fixture";
 
 describe("ScreenshotFixture", () => {
@@ -105,5 +106,16 @@ describe("ScreenshotFixture", () => {
       results.push(sameAs(await ScreenshotFixture.pixelsAsync(element), await playwrightPixelsAsync(element)).replace(/^\S+ /u, ""));
 
     expect(results).toEqual(["true", "true"]);
+  });
+
+  it("reads several elements at fractional places in one capture, each the same pixels, byte for byte, as its own read, also when one lies below the frame's viewport", async () => {
+    const first = placed("left: 3.5px; top: 4.25px", "absolute");
+    const others = [placed("left: 61.75px; top: 52.5px", "absolute"), placed(`left: 20.5px; top: ${innerHeight + 40.25}px`, "absolute")];
+    const together = await ScreenshotFixture.piecesAsync([first, ...others]);
+    const results: string[] = [];
+    for (const [index, element] of [first, ...others].entries())
+      results.push(sameAs(DomFixture.at(together, index), await ScreenshotFixture.pixelsAsync(element)).replace(/^\S+ /u, ""));
+
+    expect(results).toEqual(["true", "true", "true"]);
   });
 });

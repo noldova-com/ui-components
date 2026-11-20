@@ -9,14 +9,28 @@
 import type {} from "@vitest/browser-playwright";
 import { cdp, server } from "vitest/browser";
 
+import { DomFixture } from "./dom.fixture";
+
+interface IScreenshotClip {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 export class ScreenshotFixture {
   private static readonly BROWSER: string = "chromium";
   private static readonly ROUNDING: number = 1e-3;
   private static readonly SCALE_TOLERANCE: number = 0.01;
 
   public static async pixelsAsync(element: Element): Promise<ImageData> {
+    return DomFixture.at(await ScreenshotFixture.piecesAsync([element]), 0);
+  }
+
+  public static async piecesAsync(elements: readonly [Element, ...Element[]]): Promise<readonly ImageData[]> {
+    const [data, whole, clips] = await ScreenshotFixture.captureAsync(elements);
     const shot = new Image();
-    shot.src = `data:image/png;base64,${await ScreenshotFixture.captureAsync(element)}`;
+    shot.src = `data:image/png;base64,${data}`;
     await shot.decode();
     const canvas = document.createElement("canvas");
     canvas.width = shot.width;
@@ -25,7 +39,9 @@ export class ScreenshotFixture {
     if (Object.isNull(context))
       throw new Error("The canvas has no 2D context.");
     context.drawImage(shot, 0, 0);
-    return context.getImageData(0, 0, shot.width, shot.height);
+    const scale = shot.width / whole.width;
+    return clips.map(t => context.getImageData(Math.round((t.x - whole.x) * scale), Math.round((t.y - whole.y) * scale),
+      Math.round(t.width * scale), Math.round(t.height * scale)));
   }
 
   public static largestDifference(first: ImageData, second: ImageData, isCounted: (x: number, y: number) => boolean = () => true): number {
@@ -73,25 +89,30 @@ export class ScreenshotFixture {
     return (x, y) => Math.hypot(x + 0.5 - shot.width / 2, y + 0.5 - shot.height / 2) <= radius;
   }
 
-  private static async captureAsync(element: Element): Promise<string> {
+  private static async captureAsync(elements: readonly [Element, ...Element[]]): Promise<readonly [string, IScreenshotClip, readonly IScreenshotClip[]]> {
     if (server.browser !== ScreenshotFixture.BROWSER)
       throw new Error(`A screenshot is taken through Chromium's DevTools protocol, and this run's browser is ${server.browser}.`);
-    const view = element.ownerDocument.defaultView;
+    const [first] = elements;
+    const view = first.ownerDocument.defaultView;
     if (Object.isNull(view))
       throw new Error("The element to screenshot is in no window's document, so where it lies on the page isn't known.");
-    if (!ScreenshotFixture.isInView(element.getBoundingClientRect(), view))
-      element.scrollIntoView({ block: "center", inline: "center" });
-    const box = element.getBoundingClientRect();
+    if (!elements.every(t => ScreenshotFixture.isInView(t.getBoundingClientRect(), view)))
+      first.scrollIntoView({ block: elements.length === 1 ? "center" : "start", inline: elements.length === 1 ? "center" : "start" });
     const [left, top] = ScreenshotFixture.frameOrigin(view);
-    const [x, y] = [Math.floor(left + box.left + ScreenshotFixture.ROUNDING), Math.floor(top + box.top + ScreenshotFixture.ROUNDING)];
-    const [right, bottom] = [Math.ceil(left + box.right - ScreenshotFixture.ROUNDING), Math.ceil(top + box.bottom - ScreenshotFixture.ROUNDING)];
-    const clip = { x, y, width: right - x, height: bottom - y, scale: 1 };
-    const captureBeyondViewport = box.width > view.innerWidth || box.height > view.innerHeight;
+    const clips = elements.map(element => {
+      const box = element.getBoundingClientRect();
+      const [x, y] = [Math.floor(left + box.left + ScreenshotFixture.ROUNDING), Math.floor(top + box.top + ScreenshotFixture.ROUNDING)];
+      const [right, bottom] = [Math.ceil(left + box.right - ScreenshotFixture.ROUNDING), Math.ceil(top + box.bottom - ScreenshotFixture.ROUNDING)];
+      return { x, y, width: right - x, height: bottom - y };
+    });
+    const [x, y] = [Math.min(...clips.map(t => t.x)), Math.min(...clips.map(t => t.y))];
+    const clip = { x, y, width: Math.max(...clips.map(t => t.x + t.width)) - x, height: Math.max(...clips.map(t => t.y + t.height)) - y, scale: 1 };
+    const captureBeyondViewport = clip.width > view.innerWidth || clip.height > view.innerHeight;
     const shot: unknown = await cdp().send("Page.captureScreenshot", { format: "png", clip, captureBeyondViewport });
     const data = typeof shot === "object" && !Object.isNull(shot) && "data" in shot ? shot.data : undefined;
     if (typeof data !== "string")
       throw new Error("Chromium returned no screenshot.");
-    return data;
+    return [data, clip, clips];
   }
 
   private static isInView(box: DOMRect, view: Window): boolean {
