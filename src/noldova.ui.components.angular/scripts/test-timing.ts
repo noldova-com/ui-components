@@ -17,7 +17,7 @@ export class TestTiming extends AngularTimingScript {
   }
 
   public override async runAsync(): Promise<void> {
-    await this.runTimingAsync();
+    await this.runTimingAsync(process.argv.slice(2));
   }
 }
 
