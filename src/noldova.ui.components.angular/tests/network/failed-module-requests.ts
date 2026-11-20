@@ -35,6 +35,8 @@ export class FailedModuleRequests {
   private static readonly MILLISECONDS_PER_SECOND: number = 1_000;
   // The oldest other open requests a stall lists: those are what it most likely waits behind, for one of the browser's six connections to a server.
   private static readonly LISTED_OTHERS: number = 20;
+  // A run prints its first stalls only, and counts the rest, so a run that holds many requests doesn't flood its log.
+  private static readonly PRINTED_STALLS: number = 20;
   private static readonly FINISHED: string = "finished";
   // The JavaScript MIME type essences the WHATWG MIME Sniffing standard lists; the browser runs a module script only with one of them.
   private static readonly JAVASCRIPT: ReadonlySet<string> = new Set(["application/ecmascript", "application/javascript", "application/x-ecmascript",
@@ -51,6 +53,9 @@ export class FailedModuleRequests {
   private isWaitedForOnClose: boolean = false;
   private readonly openRequests: Map<IBrowserRequest, number> = new Map();
   private readonly printedStalls: WeakSet<IBrowserRequest> = new WeakSet();
+  private readonly countedStalls: WeakSet<IBrowserRequest> = new WeakSet();
+  private stallsPrinted: number = 0;
+  private unprintedStalls: number = 0;
   private readonly stallLimit: number;
   private readonly stallCheck: number;
 
@@ -71,6 +76,8 @@ export class FailedModuleRequests {
       const check = setInterval(() => this.printStalls(run), this.stallCheck).unref();
       run.onClose(() => {
         clearInterval(check);
+        if (this.unprintedStalls > 0)
+          this.log(`Stalled requests not printed, past the first ${FailedModuleRequests.PRINTED_STALLS}: ${this.unprintedStalls}`, run);
         return this.probedAsync();
       });
     }
@@ -129,14 +136,20 @@ export class FailedModuleRequests {
     const now = Date.now();
     const open = [...this.openRequests].sort((a, b) => a[1] - b[1]);
     for (const [request, start] of open) {
-      if (now - start < this.stallLimit || this.printedStalls.has(request))
+      if (now - start < this.stallLimit || this.countedStalls.has(request))
         continue;
+      this.countedStalls.add(request);
+      if (this.stallsPrinted === FailedModuleRequests.PRINTED_STALLS) {
+        this.unprintedStalls++;
+        continue;
+      }
+      this.stallsPrinted++;
       this.printedStalls.add(request);
       const others = open.filter(t => t[0] !== request);
       const listed = others.slice(0, FailedModuleRequests.LISTED_OTHERS).map(([t, u]) => `${t.resourceType()} ${t.url()} open ${FailedModuleRequests.seconds(now - u)} s`);
       const unlisted = others.length - listed.length;
       const list = listed.length === 0 ? "" : `, oldest first: ${listed.join(", ")}${unlisted === 0 ? "" : `, and ${unlisted} more`}`;
-      this.print(`Stalled request at ${new Date(now).toISOString()}: ${request.resourceType()} ${request.url()} open ${FailedModuleRequests.seconds(now - start)} s since ${new Date(start).toISOString()}; ${others.length} other requests open${list}`, run);
+      this.log(`Stalled request at ${new Date(now).toISOString()}: ${request.resourceType()} ${request.url()} open ${FailedModuleRequests.seconds(now - start)} s since ${new Date(start).toISOString()}; ${others.length} other requests open${list}`, run);
     }
   }
 
@@ -145,15 +158,20 @@ export class FailedModuleRequests {
     const start = this.openRequests.get(request);
     this.openRequests.delete(request);
     if (start !== undefined && this.printedStalls.has(request))
-      this.print(`Stalled request ended at ${new Date().toISOString()}: ${end} after ${FailedModuleRequests.seconds(Date.now() - start)} s, ${request.resourceType()} ${request.url()}`, run);
+      this.log(`Stalled request ended at ${new Date().toISOString()}: ${end} after ${FailedModuleRequests.seconds(Date.now() - start)} s, ${request.resourceType()} ${request.url()}`, run);
   }
 
   private static seconds(milliseconds: number): string {
     return (milliseconds / FailedModuleRequests.MILLISECONDS_PER_SECOND).toFixed(1);
   }
 
+  // Failure lines are given back to the spec files that ask; stall lines go to the log only.
   private print(line: string, run: IVitestRun): void {
     this.lines.push(line);
+    this.log(line, run);
+  }
+
+  private log(line: string, run: IVitestRun): void {
     run.logger.log(line);
   }
 }
