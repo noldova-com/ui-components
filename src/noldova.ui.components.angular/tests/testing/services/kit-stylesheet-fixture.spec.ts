@@ -9,6 +9,8 @@
 import { KitStylesheetFixture } from "../../../src/testing/services/kit-stylesheet-fixture";
 
 describe("KitStylesheetFixture", () => {
+  // The browser's default size of its buffer of resource timing entries.
+  const TIMING_BUFFER_SIZE = 250;
   let page: HTMLLinkElement[];
   let added: HTMLLinkElement[];
   let sheets: HTMLStyleElement[];
@@ -31,6 +33,7 @@ describe("KitStylesheetFixture", () => {
     sheets.forEach(t => t.remove());
     scripted.forEach(t => document.fonts.delete(t));
     page.forEach(t => t.media = "");
+    performance.setResourceTimingBufferSize(TIMING_BUFFER_SIZE);
   });
 
   function link(rel: string | null): HTMLLinkElement {
@@ -173,6 +176,8 @@ describe("KitStylesheetFixture", () => {
 
   it("says what the page's own load of each source got before asking again: its status, whole body and time, or that it left no timing", async () => {
     page.forEach(t => t.media = "");
+    // A full buffer of timing entries, as after many spec files in one page, takes no more; the report still has the loads' timing.
+    performance.setResourceTimingBufferSize(performance.getEntriesByType("resource").length);
     const notFont = addressOf(`styles.css?face=${crypto.randomUUID()}`);
     sheet([
       `@font-face { font-family: "Not A Font"; src: url("${notFont}"); }`,

@@ -28,31 +28,38 @@ export class KitStylesheetFixture {
     await KitStylesheetFixture.loadFacesAsync();
   }
 
+  // The loads' timing comes from an observer, which takes every entry the page adds while it watches, and those the page holds from before, since the
+  // page's own buffer of entries stops taking more once full, as it is after many spec files in one page.
   private static async loadFacesAsync(): Promise<void> {
     const faces = [...document.fonts];
+    const timings: PerformanceEntry[] = [];
+    const observer = new PerformanceObserver(list => timings.push(...list.getEntries()));
+    observer.observe({ type: "resource", buffered: true });
     const outcomes = await Promise.all(faces.map(t => t.load().then(() => null, (error: unknown) => ({ face: t, error }))));
+    timings.push(...observer.takeRecords());
+    observer.disconnect();
     const failures = outcomes.filter(t => t !== null);
     if (failures.length === 0)
       return;
-    const reports = await Promise.all(failures.map(t => KitStylesheetFixture.describeAsync(t.face)));
+    const reports = await Promise.all(failures.map(t => KitStylesheetFixture.describeAsync(t.face, timings)));
     throw new AggregateError(failures.map(t => t.error), `${failures.length} of the page's ${faces.length} font faces did not load:\n${reports.join("\n")}`);
   }
 
-  private static async describeAsync(face: FontFace): Promise<string> {
+  private static async describeAsync(face: FontFace, timings: readonly PerformanceEntry[]): Promise<string> {
     const name = `${KitStylesheetFixture.unquoted(face.family)} ${face.weight} ${face.style}`;
     const sources = KitStylesheetFixture.sourcesOf(face);
     if (sources.length === 0)
       return `${name}: no @font-face rule in the page's stylesheets declares it`;
-    const loads = sources.map(t => KitStylesheetFixture.loadOf(t));
+    const loads = sources.map(t => KitStylesheetFixture.loadOf(t, timings));
     const answers = await Promise.all(sources.map(t => KitStylesheetFixture.answerAsync(t)));
     return `${name}: ${answers.map((t, i) => `${t}, and ${loads[i]}`).join("; ")}`;
   }
 
   // What the page's own load of a source got, read before the fixture asks the server again: a whole body that still failed to load is a font the
   // browser couldn't decode, and a load with no response or no timing failed on its way. A fetch's entries are the fixture's or a spec's own.
-  private static loadOf(url: string): string {
-    const entry = performance.getEntriesByName(url, "resource")
-      .findLast((t): t is PerformanceResourceTiming => t instanceof PerformanceResourceTiming && t.initiatorType !== KitStylesheetFixture.FETCH_INITIATOR);
+  private static loadOf(url: string, timings: readonly PerformanceEntry[]): string {
+    const entry = timings.findLast((t): t is PerformanceResourceTiming => t instanceof PerformanceResourceTiming && t.name === url
+      && t.initiatorType !== KitStylesheetFixture.FETCH_INITIATOR);
     return entry === undefined ? "the page's own load of it left no timing"
       : `the page's own load of it got HTTP ${entry.responseStatus} and ${entry.decodedBodySize} bytes in ${Math.round(entry.duration)} ms`;
   }
