@@ -133,7 +133,7 @@ describe("CanvasComponent", () => {
             AppearanceFixture.readColor(theme, mode, "accent"), AppearanceFixture.readColor(theme, mode, "badge")]);
         AppearanceFixture.expectPixels(toolbar.left - frame.left, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
         AppearanceFixture.expectPixels(frame.right - overview.right, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
-        AppearanceFixture.expectPixels(overview.height, AppearanceFixture.toPixels(7));
+        AppearanceFixture.expectPixels(map().clientHeight, AppearanceFixture.toPixels(7));
       });
 
   it("fits its items clear of its toolbar and its map under forced colors, drawing them in system colors", async () => {

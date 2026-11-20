@@ -24,7 +24,8 @@ import { CanvasMapResources } from "./canvas-map.resources.js";
   host: {
     "role": "img",
     "[attr.aria-label]": "partResources.canvasMapLabel",
-    "[style.--nol-canvas-map-ratio]": "ratio()",
+    "[style.width.rem]": "widthRem()",
+    "[style.height.rem]": "heightRem()",
     "(pointerdown)": "onPointerDown($event)"
   }
 })
@@ -46,7 +47,9 @@ export class CanvasMapComponent {
     const frame = this.frame();
     return `${frame.left} ${frame.top} ${Math.max(frame.width, 1)} ${Math.max(frame.height, 1)}`;
   });
-  protected readonly ratio: Signal<number> = computed(() => {
+  protected readonly widthRem: Signal<number> = computed(() => Math.min(CanvasMapResources.canvasMapWidestRem, CanvasMapResources.canvasMapHeightRem * this.ratio()));
+  protected readonly heightRem: Signal<number> = computed(() => this.widthRem() / this.ratio());
+  private readonly ratio: Signal<number> = computed(() => {
     const frame = this.frame();
     return Math.max(frame.width, 1) / Math.max(frame.height, 1);
   });

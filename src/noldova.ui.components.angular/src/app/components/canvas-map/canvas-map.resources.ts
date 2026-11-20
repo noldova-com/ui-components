@@ -9,4 +9,6 @@
 export class CanvasMapResources {
   public static readonly canvasMapLabel: string = "Overview map";
   public static readonly canvasMapPreserveAspectRatio: string = "none";
+  public static readonly canvasMapHeightRem: number = 7;
+  public static readonly canvasMapWidestRem: number = 14;
 }

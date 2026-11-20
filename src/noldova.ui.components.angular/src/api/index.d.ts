@@ -2814,8 +2814,8 @@ export declare class CanvasItemDirective {
 /**
  * A canvas's overview map, `nol-canvas-map`: the content's items as boxes and
  * the visible area as a rectangle in the accent color, on the panel surface,
- * 7rem high and at most 14rem wide in the proportions of the content and the
- * visible area together. A press outside the rectangle reports the spot to
+ * its drawing at most 7rem high and 14rem wide, in the proportions of the
+ * content and the visible area together. A press outside the rectangle reports the spot to
  * centre; dragging then reports each move. {@link CanvasComponent} shows one;
  * an owner that draws its own canvas can use it alone.
  */

@@ -18,6 +18,7 @@ import { DragGesture } from "../../models/drag-gesture.js";
 import { Resources } from "../../../resources.js";
 import { ButtonComponent } from "../button/button.component.js";
 import { CanvasMapComponent } from "../canvas-map/canvas-map.component.js";
+import { CanvasMapResources } from "../canvas-map/canvas-map.resources.js";
 import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { ToolbarItemDirective } from "../toolbar/toolbar-item.directive.js";
 import { ToolbarDirective } from "../toolbar/toolbar.directive.js";
@@ -95,7 +96,7 @@ export class CanvasComponent {
     const inset = tools.offsetTop;
     const top = inset + tools.offsetHeight + inset;
     const map = this.map()?.nativeElement;
-    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop - inset;
+    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
     this.shown.set(CanvasView.fit(this.contentBox(), new CanvasBox(inset, top, size.width - inset * 2, bottom - top)));
   }
 

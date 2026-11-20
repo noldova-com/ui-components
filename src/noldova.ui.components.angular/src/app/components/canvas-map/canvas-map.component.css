@@ -9,8 +9,6 @@
 :host {
   display: block;
   box-sizing: content-box;
-  width: min(14rem, 7rem * var(--nol-canvas-map-ratio));
-  aspect-ratio: var(--nol-canvas-map-ratio);
   overflow: hidden;
   border: var(--nol-border-width) solid var(--nol-card-border);
   border-radius: var(--nol-radius-medium);
