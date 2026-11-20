@@ -114,6 +114,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(MarkdownViewPage.content, "markdown-view", DocsGroup.Content)
   ];
   public static readonly excludedComponents: ReadonlySet<string> = new Set([
+    "CanvasMapComponent",
     "DiffViewComponent",
     "DockingGuideComponent",
     "DockingPlateComponent",

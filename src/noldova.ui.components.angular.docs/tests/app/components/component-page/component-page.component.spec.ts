@@ -374,7 +374,7 @@ describe("ComponentPageComponent", () => {
         "nol-canvas button.nol-canvas-map-toggle[aria-label=\"Hide the overview map\"][aria-pressed=\"true\"]", "nol-canvas-map[role=\"img\"][aria-label=\"Overview map\"] svg[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Left", "Arrow Right", "Arrow Up", "Arrow Down", "+", "-", "0"],
       inputs: ["label", "mapShown"],
-      outputs: ["mapShownChange"]
+      outputs: []
     },
     TabComponent: {
       specimen: "Tab",

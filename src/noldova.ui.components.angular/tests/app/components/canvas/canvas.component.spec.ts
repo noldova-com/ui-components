@@ -54,7 +54,7 @@ describe("CanvasComponent", () => {
   const zoomText = (): string => DomFixture.one(canvas(), ".nol-canvas-zoom").textContent.trim();
   const button = (name: string): HTMLButtonElement => DomFixture.oneOf(canvas(), `.nol-canvas-${name}`, HTMLButtonElement);
   const at = (index: number): DOMRect => DomFixture.at(cards(), index).getBoundingClientRect();
-  const view = (): number[] => [instance().view().x, instance().view().y, instance().view().zoom];
+  const view = (): { readonly x: number; readonly y: number; readonly zoom: number } => ({ x: instance().view().x, y: instance().view().y, zoom: instance().view().zoom });
   const overlaps = (a: DOMRect, b: DOMRect): boolean => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
   const measuredAsync = async (count: number = cards().length): Promise<void> => {
@@ -200,7 +200,7 @@ describe("CanvasComponent", () => {
     const turned = view();
     await wheelAsync({ deltaY: 2, deltaMode: WheelEvent.DOM_DELTA_LINE });
 
-    expect([plain.defaultPrevented, panned[1] - start[1], sideways[0] - panned[0], turned[0] - sideways[0], view()[1] - turned[1]]).toEqual([true, -40, -30, -20, -32]);
+    expect([plain.defaultPrevented, panned.y - start.y, sideways.x - panned.x, turned.x - sideways.x, view().y - turned.y]).toEqual([true, -40, -30, -20, -32]);
   });
 
   it("reads a page-mode wheel as the canvas's height", async () => {
@@ -208,7 +208,7 @@ describe("CanvasComponent", () => {
     const start = view();
     await wheelAsync({ deltaY: 1, deltaMode: WheelEvent.DOM_DELTA_PAGE });
 
-    expect(start[1] - view()[1]).toBe(canvas().getBoundingClientRect().height);
+    expect(start.y - view().y).toBe(canvas().getBoundingClientRect().height);
   });
 
   it("pans by dragging its background once the pointer moves 4px, and stops at its release", async () => {
@@ -225,7 +225,7 @@ describe("CanvasComponent", () => {
     pointer(canvas(), "pointerup", 3, frame.right - 60, frame.top + 100);
     await fixture.whenStable();
 
-    expect([still, view()[0] - start[0], view()[1] - start[1], dragging, canvas().classList.contains("nol-canvas-dragging")]).toEqual([[start, false], -20, 20, true, false]);
+    expect([still, view().x - start.x, view().y - start.y, dragging, canvas().classList.contains("nol-canvas-dragging")]).toEqual([[start, false], -20, 20, true, false]);
   });
 
   it("never starts a pan from a control in its content or its toolbar, from another button, or for a pointer it doesn't hold", async () => {
@@ -270,7 +270,7 @@ describe("CanvasComponent", () => {
     const moved = ["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].map(t => {
       const before = view();
       const event = key(canvas(), t);
-      return [event.defaultPrevented, view()[0] - DomFixture.at(before, 0), view()[1] - DomFixture.at(before, 1)];
+      return [event.defaultPrevented, view().x - before.x, view().y - before.y];
     });
     const zoom = instance().view().zoom;
     const ratio = (): number => Math.round(instance().view().zoom / zoom * 1e6) / 1e6;
@@ -358,7 +358,7 @@ describe("CanvasComponent", () => {
     await fixture.whenStable();
 
     expect(centre.map((t, i) => Math.abs(t - DomFixture.at(spot, i)) < 1)).toEqual([true, true]);
-    expect([view()[0] > DomFixture.at(before, 0), view()[1]]).toEqual([true, DomFixture.at(before, 1)]);
+    expect([view().x > before.x, view().y]).toEqual([true, before.y]);
   });
 
   it("leaves its map to a press of another button", async () => {
