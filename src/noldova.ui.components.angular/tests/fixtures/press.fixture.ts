@@ -15,7 +15,8 @@ export class PressFixture {
       box.width > 0 && box.height > 0 && element.checkVisibility({ visibilityProperty: true }) ? null : "hidden",
       element.matches(":disabled") || element.getAttribute("aria-disabled") === "true" ? "disabled" : null,
       !Object.isNull(hit) && element.contains(hit) ? null : "covered",
-      element.getAnimations({ subtree: true }).some(t => t.playState === "running") ? "moving" : null
+      document.getAnimations().some(t => t.playState === "running" && t.effect instanceof KeyframeEffect && t.effect.target?.contains(element) === true)
+        ? "moving" : null
     ].filter(t => !Object.isNull(t));
   }
 

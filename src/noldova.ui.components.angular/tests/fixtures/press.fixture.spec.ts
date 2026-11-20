@@ -46,6 +46,17 @@ describe("PressFixture", () => {
     expect(PressFixture.blockers(button)).toEqual([]);
   });
 
+  it("finds a button moving while it or what holds it animates, and still while only its own content turns", () => {
+    const content = button.firstElementChild?.animate([{ rotate: "0turn" }, { rotate: "1turn" }], 10_000);
+    const turning = PressFixture.blockers(button);
+    content?.cancel();
+    const holder = document.body.animate([{ translate: "0" }, { translate: "1rem" }], 10_000);
+    const held = PressFixture.blockers(button);
+    holder.cancel();
+
+    expect([turning, held]).toEqual([[], ["moving"]]);
+  });
+
   it("names each check a forced click would skip that the button fails: hidden, disabled, covered and moving", () => {
     const shown = PressFixture.blockers(button);
     button.style.visibility = "hidden";
