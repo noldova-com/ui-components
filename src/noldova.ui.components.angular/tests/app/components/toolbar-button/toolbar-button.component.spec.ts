@@ -10,6 +10,9 @@ import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item.component";
+import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
+import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
 import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-button/toolbar-button.component";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
@@ -44,6 +47,25 @@ class ToolbarButtonHostComponent {
   public readonly pressed = signal<boolean | undefined>(undefined);
   public readonly isUnavailable = signal(false);
   public readonly busy = signal(false);
+}
+
+@Component({
+  imports: [ToolbarButtonComponent, MenuComponent, MenuItemComponent, MenuTriggerDirective],
+  template: `
+    <div class="owner" (click)="heard.push('owner')" (keydown)="heard.push($event.key)">
+      <button type="button" nol-toolbar-button class="sort" label="Sort" icon="sort" [hasMenu]="true" [isUnavailable]="isUnavailable()" [nolMenuTriggerFor]="sort"
+        (click)="heard.push('handler')"></button>
+    </div>
+    <ng-template #sort>
+      <nol-menu class="sort-menu">
+        <button nol-menu-item label="By name"></button>
+      </nol-menu>
+    </ng-template>
+  `
+})
+class MenuToolbarButtonHostComponent {
+  public readonly isUnavailable = signal(true);
+  public readonly heard: string[] = [];
 }
 
 describe("ToolbarButtonComponent", () => {
@@ -138,7 +160,7 @@ describe("ToolbarButtonComponent", () => {
     expect(getComputedStyle(button()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
   });
 
-  it("fills on hover, but not while unavailable, and stays focusable and clickable as a native button", async () => {
+  it("fills on hover, but not while unavailable, and stays focusable as a native button", async () => {
     await userEvent.hover(button());
     expect(getComputedStyle(button()).backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
 
@@ -150,6 +172,30 @@ describe("ToolbarButtonComponent", () => {
 
     set(t => t.isUnavailable.set(false));
     expect(button().hasAttribute("aria-disabled")).toBe(false);
+  });
+
+  it("runs neither its handler nor its menu, and its owner hears nothing, for a click, Enter, Space or an arrow while unavailable, and opens its menu once available", async () => {
+    const host = TestBed.createComponent(MenuToolbarButtonHostComponent);
+    host.detectChanges();
+    const sort = DomFixture.oneOf(DomFixture.host(host), ".sort", HTMLButtonElement);
+
+    sort.focus();
+    await userEvent.click(sort, { force: true });
+    for (const key of ["{Enter}", " ", "{ArrowDown}", "{ArrowUp}"])
+      await userEvent.keyboard(key);
+    host.detectChanges();
+    const unavailable = [[...host.componentInstance.heard], document.querySelector(".sort-menu"), document.activeElement === sort];
+    host.componentInstance.isUnavailable.set(false);
+    host.detectChanges();
+    await userEvent.click(sort);
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".sort-menu")).not.toBeNull());
+    const available = [...host.componentInstance.heard];
+    await userEvent.keyboard("{Escape}");
+    await DomChangeFixture.untilAsync(() => expect(document.querySelector(".sort-menu")).toBeNull());
+    host.destroy();
+
+    expect(unavailable).toEqual([[], null, true]);
+    expect(available).toEqual(["handler", "owner"]);
   });
 
   async function focusAsync(): Promise<void> {
