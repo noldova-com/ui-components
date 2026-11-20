@@ -143,6 +143,27 @@ describe("failed module request setup", () => {
     expect(printed[0]).toMatch(/^Stalled request at \S+Z: stylesheet http:\/\/localhost:24316\/styles\.css open \d+\.\d s since \S+Z; 0 other requests open$/u);
   });
 
+  it("prints a font request the browser fails once, with when it failed, its network error and its URL", async () => {
+    const url = `http://localhost:1/font-${crypto.randomUUID()}.woff2`;
+    const fontPrintedFor = async (): Promise<readonly string[]> => (await commands.watchFailedModuleRequests()).filter(line => line.startsWith("Failed font request ") && line.endsWith(` ${url}`));
+
+    await expect(new FontFace(`Refused ${crypto.randomUUID()}`, `url("${url}")`).load()).rejects.toThrow();
+
+    await expect.poll(fontPrintedFor).toHaveLength(1);
+    expect((await fontPrintedFor())[0]).toMatch(/^Failed font request at \d{4}-\d\d-\d\dT[\d:.]+Z: net::ERR_[A-Z_]+ http:/u);
+  });
+
+  it("prints the browser's warning for a downloaded font it couldn't decode, and the font sanitizer's reason after it", async () => {
+    const url = new URL(`styles.css?font=${crypto.randomUUID()}`, document.baseURI).href;
+    const decodeAt = async (): Promise<number> => (await commands.watchFailedModuleRequests()).findIndex(line => /^Font decode warning at \S+Z: Failed to decode downloaded font: /u.test(line) && line.endsWith(url));
+
+    await expect(new FontFace(`Not a font ${crypto.randomUUID()}`, `url("${url}")`).load()).rejects.toThrow();
+
+    await expect.poll(decodeAt).toBeGreaterThanOrEqual(0);
+    const printed = await commands.watchFailedModuleRequests();
+    expect(printed.slice(await decodeAt() + 1).some(line => /^Font decode warning at \S+Z: OTS parsing error: \S/u.test(line))).toBe(true);
+  });
+
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
     const fetched = refusedAt("fetch");
     const module = refusedAt("module");

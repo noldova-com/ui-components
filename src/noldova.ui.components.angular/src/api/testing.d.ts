@@ -527,8 +527,14 @@ export declare class KitStylesheetFixture {
    * it fails with an `AggregateError` of the browser's errors whose message
    * names each such face by its family, weight and style, with each source
    * URL of its `@font-face` rule and the answer to one fetch of it: the HTTP
-   * status, the fetch's own error when the server gave none, or that it did
-   * not answer within 5 seconds. It loads nothing again.
+   * status with the server's `Content-Length` or that it gave none, the
+   * fetch's own error when the server gave no status, or that it did not
+   * answer within 5 seconds. After each answer it says what the page's own
+   * load of that URL got, from the browser's resource timing: its status, its
+   * body's size in bytes and its time, or that it left no timing. A body as
+   * long as the `Content-Length` that the browser still rejected reads as a
+   * font it couldn't decode; a short body shows as fewer bytes than that. It
+   * loads nothing again.
    *
    * @param link The stylesheet's link element; by default the page's, or a
    * new one added to the page's head.
