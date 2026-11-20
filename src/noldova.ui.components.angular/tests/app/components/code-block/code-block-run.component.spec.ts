@@ -16,17 +16,12 @@ describe("CodeBlockComponent", () => {
 
   afterEach(harness.resetAsync);
 
-  it("offers Run between Word wrap and Copy, named Run and its language with a play glyph, on a runnable block tagged as any shell in any case", async () => {
-    const shown: unknown[] = [];
-    for (const language of ["bash", "sh", "shell", "zsh", "powershell", "pwsh", "cmd", "PowerShell", "BASH"]) {
+  for (const language of ["bash", "sh", "shell", "zsh", "powershell", "pwsh", "cmd", "PowerShell", "BASH"])
+    it(`offers Run between Word wrap and Copy, named Run and its language with a play glyph, on a runnable block tagged ${language}`, async () => {
       await runnableAsync(language);
-      shown.push([actions(), glyph(run()), run().getAttribute("type")]);
-      harness.fixture.destroy();
-    }
 
-    expect(shown).toEqual(["bash", "sh", "shell", "zsh", "powershell", "pwsh", "cmd", "PowerShell", "BASH"]
-      .map(t => [["Word wrap", `Run ${t} command`, "Copy"], "play_arrow", "button"]));
-  });
+      expect([actions(), glyph(run()), run().getAttribute("type")]).toEqual([["Word wrap", `Run ${language} command`, "Copy"], "play_arrow", "button"]);
+    });
 
   it("has no Run unless it is runnable and tagged as a shell", async () => {
     await renderAsync();

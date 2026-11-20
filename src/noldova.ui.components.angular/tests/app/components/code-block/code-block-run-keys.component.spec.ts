@@ -19,15 +19,23 @@ describe("CodeBlockComponent", () => {
 
   afterEach(harness.resetAsync);
 
-  it("emits its code and language when Run is chosen by pointer, Enter or Space, copying and announcing nothing", async () => {
+  it("emits its code and language when Run is chosen by pointer, copying and announcing nothing", async () => {
     await runnableAsync("Bash");
     const writeAsync = vi.spyOn(harness.clipboard, "writeTextAsync");
     await userEvent.click(run());
+
+    expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([[true, harness.host.code(), "Bash"]]);
+    expect([writeAsync.mock.calls.length, harness.announcements, glyph(run())]).toEqual([0, [], "play_arrow"]);
+  });
+
+  it("emits its code and language when Run is chosen by Enter or Space, copying and announcing nothing", async () => {
+    await runnableAsync("Bash");
+    const writeAsync = vi.spyOn(harness.clipboard, "writeTextAsync");
     run().focus();
     await userEvent.keyboard("{Enter}");
     await userEvent.keyboard(" ");
 
-    expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([0, 1, 2].map(() => [true, harness.host.code(), "Bash"]));
+    expect(harness.host.runs.map(t => [t instanceof ShellRun, t.code, t.language])).toEqual([0, 1].map(() => [true, harness.host.code(), "Bash"]));
     expect([writeAsync.mock.calls.length, harness.announcements, glyph(run())]).toEqual([0, [], "play_arrow"]);
   });
 
