@@ -56,7 +56,7 @@ export class DialogComponent {
   public constructor() {
     const resizes = new ResizeObserver(() => this.keepInside());
     const keys = inject(DialogRef, { optional: true })?.keydownEvents.subscribe(event => {
-      if (event.key === Resources.escapeKey)
+      if (event.key === Resources.escapeKey && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey)
         this.dismiss(event);
     });
     inject(DestroyRef).onDestroy(() => {
