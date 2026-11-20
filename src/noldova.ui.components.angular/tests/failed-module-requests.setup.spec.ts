@@ -87,6 +87,33 @@ describe("failed module request setup", () => {
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
+  it("prints a request of any type still open past the stall limit once, with its start and the 20 oldest other open requests, counting the rest, and leaves out a request that finished", async () => {
+    const printed = await commands.scriptedStall("crowd");
+    const stalls = printed.filter(line => line.startsWith("Stalled request at "));
+
+    expect(stalls).toHaveLength(22);
+    const listed = Array.from({ length: 20 }, (_, i) => `script http://localhost:24316/chunk-${i}\\.js open \\d+\\.\\d s`).join(", ");
+    expect(stalls[0]).toMatch(new RegExp(`^Stalled request at \\S+Z: stylesheet http://localhost:24316/styles\\.css open \\d+\\.\\d s since \\S+Z; 21 other requests open, oldest first: ${listed}, and 1 more$`, "u"));
+    expect(printed.filter(line => line.includes("finished.json"))).toEqual([]);
+  });
+
+  it("prints when a stalled request finishes or fails, with how and after how long, before a failed module's own line", async () => {
+    const printed = await commands.scriptedStall("crowd");
+    const ends = printed.filter(line => !line.startsWith("Stalled request at "));
+
+    expect(ends).toHaveLength(3);
+    expect(ends[0]).toMatch(/^Stalled request ended at \S+Z: finished after \d+\.\d s, stylesheet http:\/\/localhost:24316\/styles\.css$/u);
+    expect(ends[1]).toMatch(/^Stalled request ended at \S+Z: failed, net::ERR_ABORTED after \d+\.\d s, script http:\/\/localhost:24316\/chunk-0\.js$/u);
+    expect(ends[2]).toMatch(/^Failed module request at \S+Z: net::ERR_ABORTED http:\/\/localhost:24316\/chunk-0\.js$/u);
+  });
+
+  it("says no other request is open when a stalled request is alone", async () => {
+    const printed = await commands.scriptedStall("alone");
+
+    expect(printed).toHaveLength(1);
+    expect(printed[0]).toMatch(/^Stalled request at \S+Z: stylesheet http:\/\/localhost:24316\/styles\.css open \d+\.\d s since \S+Z; 0 other requests open$/u);
+  });
+
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
     const fetched = refusedAt("fetch");
     const module = refusedAt("module");
