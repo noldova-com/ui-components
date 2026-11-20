@@ -13078,7 +13078,8 @@ export declare class TooltipDirective {
  * tree that assistive technology has not yet spoken, so a held key is heard
  * as its last move. When the owner removes the focused node, the next row
  * takes the focus, or the row before it when it was the last, unless another
- * element took the focus first.
+ * element took the focus first; when no row is left, rows added later don't
+ * take the focus.
  */
 export declare class TreeComponent {
   /**
