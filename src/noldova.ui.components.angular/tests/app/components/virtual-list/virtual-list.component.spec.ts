@@ -2666,7 +2666,7 @@ describe("VirtualListComponent", () => {
     article("item 999").focus();
     await settleAsync();
 
-    host.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
+    feed.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
     await settleAsync();
 
     expect([document.activeElement === feedList(), articles().some(t => t.querySelector(".label")?.textContent === "other 999")]).toEqual([true, true]);
@@ -2678,7 +2678,7 @@ describe("VirtualListComponent", () => {
     article("item 999").blur();
     await settleAsync();
 
-    host.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
+    feed.source.set(new ArrayVirtualListSource(Array.from({ length: 1000 }, (_, t) => `other ${t}`), t => t, 30));
     await settleAsync();
 
     expect(document.activeElement).toBe(document.body);
