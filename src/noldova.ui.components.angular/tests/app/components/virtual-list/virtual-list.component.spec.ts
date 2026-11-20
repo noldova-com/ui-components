@@ -1312,6 +1312,25 @@ describe("VirtualListComponent", () => {
     expect([inList, document.activeElement?.textContent?.trim()]).toEqual([[true, null], "Retry"]);
   });
 
+  it("leaves the focus on another control that takes it after Retry is chosen from the keyboard, also when the read fails again", async () => {
+    const source = new VirtualListSourceFixture(200, 30);
+    await renderAsync(source);
+    await source.readAt(0).refuseAsync(new Error("The store went away."));
+    await settleAsync();
+    const outside = DomFixture.one(element(), ".outside");
+    const retry = DomFixture.one(DomFixture.present(failure()), "button");
+    retry.addEventListener("click", () => outside.focus());
+    retry.focus();
+
+    await pressAsync("{Enter}");
+    await settleAsync();
+    const kept = document.activeElement;
+    await source.readAt(source.reads.length - 1).refuseAsync(new Error("The store went away again."));
+    await settleAsync();
+
+    expect([kept === outside, document.activeElement === outside]).toEqual([true, true]);
+  });
+
   it("keeps the focus in the list when the read Retry started from the keyboard succeeds", async () => {
     const source = new VirtualListSourceFixture(200, 30);
     await renderAsync(source);
