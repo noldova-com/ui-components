@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { cdp } from "vitest/browser";
+
 import { EmulatedMediaFixture } from "./emulated-media.fixture";
 import { ForcedColorsFixture } from "./forced-colors.fixture";
 import { MotionFixture } from "./motion.fixture";
@@ -29,6 +31,16 @@ describe("EmulatedMediaFixture", () => {
     await ForcedColorsFixture.resetAsync();
 
     expect(emulated()).toEqual([false, false]);
+  });
+
+  it("sends nothing on a forced colors reset while what it emulates already has none, so a test that never forced colors pays no reset", async () => {
+    await cdp().send("Emulation.setEmulatedMedia", { features: [{ name: "forced-colors", value: "active" }] });
+    await ForcedColorsFixture.resetAsync();
+    const kept = emulated()[1];
+
+    await EmulatedMediaFixture.resetAsync();
+
+    expect([kept, emulated()[1]]).toEqual([true, false]);
   });
 
   it("keeps forced colors emulated when motion resets", async () => {

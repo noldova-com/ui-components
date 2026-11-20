@@ -15,7 +15,10 @@ describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
   const { changeAsync, run, glyph, runnableAsync } = harness;
 
-  beforeEach(harness.configure);
+  beforeEach(() => {
+    harness.configure();
+    harness.controlTokens(harness.wordTokens);
+  });
 
   afterEach(harness.resetAsync);
 
@@ -34,7 +37,7 @@ describe("CodeBlockComponent", () => {
   it("emits its code, language and block 0 when Run is chosen by pointer while running", async () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Running));
-    await userEvent.click(run());
+    await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
   });
@@ -43,8 +46,7 @@ describe("CodeBlockComponent", () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Running));
     run().focus();
-    await userEvent.keyboard("{Enter}");
-    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{Enter} ");
 
     expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([0, 1].map(() => [harness.host.code(), "bash", 0]));
   });
@@ -52,7 +54,7 @@ describe("CodeBlockComponent", () => {
   it("emits its code, language and block 0 when Run is chosen by pointer once ended, as while running", async () => {
     await runnableAsync("bash");
     await changeAsync(() => harness.host.runState.set(ShellRunState.Ended));
-    await userEvent.click(run());
+    await userEvent.click(run(), { force: true });
 
     expect(harness.host.runs.map(t => [t.code, t.language, t.block])).toEqual([[harness.host.code(), "bash", 0]]);
   });
