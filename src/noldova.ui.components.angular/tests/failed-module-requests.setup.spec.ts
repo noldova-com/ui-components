@@ -11,7 +11,8 @@ import { commands } from "vitest/browser";
 describe("failed module request setup", () => {
   // Port 1 is one the browser refuses to connect to, so a request there fails in the browser at once, before any server answers.
   const refusedAt = (name: string): string => `http://localhost:1/${name}-${crypto.randomUUID()}.js`;
-  const printedFor = async (url: string): Promise<readonly string[]> => (await commands.watchFailedModuleRequests()).filter(line => line.endsWith(` ${url}`));
+  // The recorder gives back failure lines only; the filter keeps these specs to the failure lines should that change.
+  const printedFor = async (url: string): Promise<readonly string[]> => (await commands.watchFailedModuleRequests()).filter(line => line.startsWith("Failed module ") && line.endsWith(` ${url}`));
 
   it("prints a module request the browser fails once, with when it failed, its network error and its URL", async () => {
     const url = refusedAt("module");
@@ -85,6 +86,61 @@ describe("failed module request setup", () => {
 
     expect(printed).toHaveLength(2);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
+  });
+
+  it("prints a request of any type still open past the stall limit once, with its start and the 20 oldest other open requests, counting the rest, and leaves out a request that finished", async () => {
+    const printed = await commands.scriptedStall("crowd");
+    const stalls = printed.filter(line => line.startsWith("Stalled request at "));
+
+    expect(stalls).toHaveLength(20);
+    const listed = Array.from({ length: 20 }, (_, i) => `script http://localhost:24316/chunk-${i}\\.js open \\d+\\.\\d s`).join(", ");
+    expect(stalls[0]).toMatch(new RegExp(`^Stalled request at \\S+Z: stylesheet http://localhost:24316/styles\\.css open \\d+\\.\\d s since \\S+Z; 21 other requests open, oldest first: ${listed}, and 1 more$`, "u"));
+    expect(printed.filter(line => line.includes("finished.json"))).toEqual([]);
+  });
+
+  it("prints when a stalled request finishes or fails, with how and after how long, before a failed module's own line", async () => {
+    const printed = await commands.scriptedStall("crowd");
+    const ends = printed.filter(line => !line.startsWith("Stalled request at "));
+
+    expect(ends).toHaveLength(4);
+    expect(ends[0]).toMatch(/^Stalled request ended at \S+Z: finished after \d+\.\d s, stylesheet http:\/\/localhost:24316\/styles\.css$/u);
+    expect(ends[1]).toMatch(/^Stalled request ended at \S+Z: failed, net::ERR_ABORTED after \d+\.\d s, script http:\/\/localhost:24316\/chunk-0\.js$/u);
+    expect(ends[2]).toMatch(/^Failed module request at \S+Z: net::ERR_ABORTED http:\/\/localhost:24316\/chunk-0\.js$/u);
+    expect(ends[3]).toBe("Stalled requests not printed, past the first 20: 2");
+  });
+
+  it("prints a run's first 20 stalls and their ends alone, and once the run closes how many more it didn't print", async () => {
+    const printed = await commands.scriptedStall("many");
+
+    expect(printed.filter(line => line.startsWith("Stalled request at ")).map(line => line.split(" ")[5])).toEqual(Array.from({ length: 20 }, (_, i) => `http://localhost:24316/chunk-${i}.js`));
+    expect(printed.filter(line => line.startsWith("Stalled request ended at "))).toHaveLength(20);
+    expect(printed.at(-1)).toBe("Stalled requests not printed, past the first 20: 3");
+  });
+
+  it("gives back only its failure lines, not the stall lines it printed", async () => {
+    const answer = await commands.scriptedStall("answer");
+
+    expect(answer).toHaveLength(1);
+    expect(answer[0]).toMatch(/^Failed module request at \S+Z: net::ERR_ABORTED http:\/\/localhost:24316\/chunk-0\.js$/u);
+  });
+
+  it("prints a request once it has been open past the stall limit, with its open time and its start at least that limit before, and leaves out a request that finished at once", async () => {
+    const printed = await commands.scriptedStall("limit");
+
+    expect(printed).toHaveLength(1);
+    const [, at, open, since] = /^Stalled request at (\S+Z): stylesheet http:\/\/localhost:24316\/styles\.css open (\d+\.\d) s since (\S+Z); 0 other requests open$/u.exec(printed[0] ?? "") ?? [];
+    expect([Number(open) >= 0.5, Date.parse(at ?? "") - Date.parse(since ?? "") >= 500]).toEqual([true, true]);
+  });
+
+  it("fails naming how many stall lines it saw when the recorder doesn't print them within the wait limit", async () => {
+    await expect(commands.scriptedStall("never", 100)).rejects.toThrow("The recorder printed 0 of 1 stall lines in 0.1 s.");
+  });
+
+  it("says no other request is open when a stalled request is alone", async () => {
+    const printed = await commands.scriptedStall("alone");
+
+    expect(printed).toHaveLength(1);
+    expect(printed[0]).toMatch(/^Stalled request at \S+Z: stylesheet http:\/\/localhost:24316\/styles\.css open \d+\.\d s since \S+Z; 0 other requests open$/u);
   });
 
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
