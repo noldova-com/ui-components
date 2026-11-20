@@ -11,6 +11,7 @@ import type { IBrowserCommandContext } from "./interfaces/i-browser-command-cont
 import type { IBrowserPage } from "./interfaces/i-browser-page.ts";
 import type { IBrowserRequest } from "./interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "./interfaces/i-browser-response.ts";
+import type { IConsoleMessage } from "./interfaces/i-console-message.ts";
 import type { IConnectionProbe } from "./interfaces/i-connection-probe.ts";
 import { ConnectionProbe } from "./connection-probe.ts";
 
@@ -19,9 +20,13 @@ import { ConnectionProbe } from "./connection-probe.ts";
 // failed also prints what its port held just after, from ConnectionProbe. Playwright reports every request's end whether or not anything listens,
 // so the listeners add no work of their own beyond these checks. A request of any type still open 10 s after it started is printed too, with the
 // other open requests it may wait behind, and again once it ends, so a stylesheet or module that never arrives names itself before its file's
-// import fails.
+// import fails. A font request the browser fails prints with its network error, and the browser's warning for a font it couldn't decode prints
+// too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was.
 export class FailedModuleRequests {
   private static readonly MODULE: string = "script";
+  private static readonly FONT: string = "font";
+  // Chromium's console warnings for a downloaded font it couldn't decode, the second giving the font sanitizer's reason.
+  private static readonly FONT_DECODE_WARNINGS: readonly string[] = ["Failed to decode downloaded font", "OTS parsing error"];
   private static readonly NO_ERROR: string = "no network error given";
   private static readonly CONNECTION_ERROR: string = "net::ERR_CONNECTION_";
   private static readonly CONTENT_TYPE: string = "content-type";
@@ -87,12 +92,17 @@ export class FailedModuleRequests {
       page.on("requestfinished", request => this.endRequest(request, FailedModuleRequests.FINISHED, run));
       page.on("requestfailed", request => this.recordRequest(request, run));
       page.on("response", response => this.recordResponse(response, run));
+      page.on("console", message => this.recordConsole(message, run));
     }
     return [...this.lines];
   }
 
   private recordRequest(request: IBrowserRequest, run: IVitestRun): void {
     this.endRequest(request, `failed, ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR}`, run);
+    if (request.resourceType() === FailedModuleRequests.FONT) {
+      this.print(`Failed font request at ${new Date().toISOString()}: ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR} ${request.url()}`, run);
+      return;
+    }
     if (request.resourceType() !== FailedModuleRequests.MODULE || this.printedResponses.has(request))
       return;
     const error = request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR;
@@ -115,6 +125,12 @@ export class FailedModuleRequests {
     const at = new Date().toISOString();
     const found = await this.probe.probeAsync(port).catch((error: unknown) => `the port couldn't be probed: ${error instanceof Error ? error.message : String(error)}`);
     this.print(`Failed module request's server at ${at}, port ${port}: ${found} ${url}`, run);
+  }
+
+  private recordConsole(message: IConsoleMessage, run: IVitestRun): void {
+    const text = message.text();
+    if (FailedModuleRequests.FONT_DECODE_WARNINGS.some(t => text.startsWith(t)))
+      this.print(`Font decode warning at ${new Date().toISOString()}: ${text}`, run);
   }
 
   // A redirect's response is followed by the one it leads to, and a 304 lets the browser run the copy it holds, so only an error status, or a success

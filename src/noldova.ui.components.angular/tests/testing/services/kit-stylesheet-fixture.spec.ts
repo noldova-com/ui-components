@@ -76,7 +76,8 @@ describe("KitStylesheetFixture", () => {
   }
 
   function reported(failure: AggregateError): string[] {
-    return failure.message.split("\n").map(t => t.replace(/ answered HTTP (\d+).*/u, " answered HTTP $1").replace(/ failed with TypeError: .*/u, " failed with TypeError"));
+    return failure.message.split("\n").map(t => t.replace(/, and the page's own load of it .*/u, "").replace(/ answered HTTP (\d+).*/u, " answered HTTP $1")
+      .replace(/ failed with TypeError: .*/u, " failed with TypeError"));
   }
 
   it("waits for the page's own stylesheet that is still loading, adding no copy", async () => {
@@ -168,6 +169,25 @@ describe("KitStylesheetFixture", () => {
       "Script Face normal normal: no @font-face rule in the page's stylesheets declares it"
     ]);
     expect(failure.errors).toHaveLength(5);
+  });
+
+  it("says what the page's own load of each source got before asking again: its status, whole body and time, or that it left no timing", async () => {
+    page.forEach(t => t.media = "");
+    const notFont = addressOf(`styles.css?face=${crypto.randomUUID()}`);
+    sheet([
+      `@font-face { font-family: "Not A Font"; src: url("${notFont}"); }`,
+      `@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`,
+      `@font-face { font-family: "Missing Plain"; src: url("unsupported-scheme:missing-plain"); }`
+    ].join("\n"));
+    const bytes = (await (await fetch(notFont)).arrayBuffer()).byteLength;
+
+    const failure = await failureAsync();
+    const lines = failure.message.split("\n").slice(1).toSorted();
+
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toMatch(/^Missing Face 400 normal: \S+ answered HTTP 404 .*, and the page's own load of it got HTTP 404 and \d+ bytes in \d+ ms$/u);
+    expect(lines[1]).toMatch(/^Missing Plain normal normal: fetching unsupported-scheme:missing-plain failed with TypeError: .*, and the page's own load of it left no timing$/u);
+    expect(lines[2]).toMatch(new RegExp(`^Not A Font normal normal: \\S+ answered HTTP 200 OK, and the page's own load of it got HTTP 200 and ${bytes} bytes in \\d+ ms$`, "u"));
   });
 
   it("says a source's server did not answer once it has waited its limit, and still fails", async () => {

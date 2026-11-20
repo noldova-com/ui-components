@@ -16,6 +16,7 @@ export class KitStylesheetFixture {
   private static readonly ANSWER_LIMIT: number = 5_000;
   private static readonly REFUSED_RULES: string = "SecurityError";
   private static readonly ABORTED: string = "AbortError";
+  private static readonly FETCH_INITIATOR: string = "fetch";
 
   public static get isApplied(): boolean {
     return getComputedStyle(document.documentElement).getPropertyValue(KitStylesheetFixture.APPLIED_PROPERTY) !== "";
@@ -42,8 +43,18 @@ export class KitStylesheetFixture {
     const sources = KitStylesheetFixture.sourcesOf(face);
     if (sources.length === 0)
       return `${name}: no @font-face rule in the page's stylesheets declares it`;
+    const loads = sources.map(t => KitStylesheetFixture.loadOf(t));
     const answers = await Promise.all(sources.map(t => KitStylesheetFixture.answerAsync(t)));
-    return `${name}: ${answers.join("; ")}`;
+    return `${name}: ${answers.map((t, i) => `${t}, and ${loads[i]}`).join("; ")}`;
+  }
+
+  // What the page's own load of a source got, read before the fixture asks the server again: a whole body that still failed to load is a font the
+  // browser couldn't decode, and a load with no response or no timing failed on its way. A fetch's entries are the fixture's or a spec's own.
+  private static loadOf(url: string): string {
+    const entry = performance.getEntriesByName(url, "resource")
+      .findLast((t): t is PerformanceResourceTiming => t instanceof PerformanceResourceTiming && t.initiatorType !== KitStylesheetFixture.FETCH_INITIATOR);
+    return entry === undefined ? "the page's own load of it left no timing"
+      : `the page's own load of it got HTTP ${entry.responseStatus} and ${entry.decodedBodySize} bytes in ${Math.round(entry.duration)} ms`;
   }
 
   private static sourcesOf(face: FontFace): readonly string[] {

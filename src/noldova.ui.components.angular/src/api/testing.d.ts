@@ -528,7 +528,11 @@ export declare class KitStylesheetFixture {
    * names each such face by its family, weight and style, with each source
    * URL of its `@font-face` rule and the answer to one fetch of it: the HTTP
    * status, the fetch's own error when the server gave none, or that it did
-   * not answer within 5 seconds. It loads nothing again.
+   * not answer within 5 seconds. After each answer it says what the page's own
+   * load of that URL got, from the browser's resource timing: its status, its
+   * body's size in bytes and its time, or that it left no timing, so a whole
+   * body the browser still rejected reads as a font it couldn't decode. It
+   * loads nothing again.
    *
    * @param link The stylesheet's link element; by default the page's, or a
    * new one added to the page's head.
