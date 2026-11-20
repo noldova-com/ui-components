@@ -6,10 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, signal, viewChild } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { ContextMenuTriggerDirective } from "../../../../src/app/components/menu/context-menu-trigger.directive";
+import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item.component";
+import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
 import { TabComponent } from "../../../../src/app/components/tab/tab.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
@@ -22,15 +25,23 @@ import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
 
 @Component({
-  imports: [TabComponent],
+  imports: [ContextMenuTriggerDirective, MenuComponent, MenuItemComponent, TabComponent],
   template: `
     <div role="tablist">
       <nol-tab [label]="label()" [icon]="icon()" [selected]="selected()" [preview]="preview()" [working]="working()" [waiting]="waiting()" [closable]="closable()" [badge]="badge()" [badgeCount]="badgeCount()"
         [editing]="editing()" (activate)="activations = activations + 1" (close)="closes = closes + 1" (labelKept)="kept.push($event)" (labelCancelled)="cancels = cancels + 1" />
     </div>
+    <span [nolContextMenuTriggerFor]="fieldMenu"></span>
+    <ng-template #fieldMenu>
+      <nol-menu class="field-menu">
+        <button nol-menu-item label="Cut"></button>
+        <button nol-menu-item label="Copy"></button>
+      </nol-menu>
+    </ng-template>
   `
 })
 class TabHostComponent {
+  public readonly fieldMenu = viewChild.required(ContextMenuTriggerDirective);
   public readonly label = signal("Readme");
   public readonly icon = signal<string | undefined>(undefined);
   public readonly selected = signal(false);
@@ -674,6 +685,56 @@ describe("TabComponent", () => {
     expect([press.defaultPrevented, middle.defaultPrevented]).toEqual([false, false]);
     expect(host.kept).toEqual([]);
     expect(field()).toBe(shown);
+  });
+
+  async function openFieldMenuAsync(shown: HTMLInputElement): Promise<void> {
+    const box = shown.getBoundingClientRect();
+    host.fieldMenu().openAtPointer(new MouseEvent("contextmenu", { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2, bubbles: true, cancelable: true }), shown);
+    await expect.poll(() => document.activeElement?.closest(".field-menu") ?? null).not.toBeNull();
+  }
+
+  it("keeps editing while the focus is in a menu opened on its field, takes the focus back when the menu closes, and keeps the text once the field then loses the focus", async () => {
+    const outside = document.body.appendChild(document.createElement("button"));
+    try {
+      const shown = await startEditingAsync();
+      await userEvent.keyboard(" Draft");
+
+      await openFieldMenuAsync(shown);
+      const inMenu = [...host.kept];
+      await userEvent.keyboard("{ArrowDown}{Escape}");
+      await expect.poll(() => document.activeElement).toBe(shown);
+      const back = [[...host.kept], host.cancels, field() === shown];
+      outside.focus();
+
+      expect(inMenu).toEqual([]);
+      expect(back).toEqual([[], 0, true]);
+      expect(host.kept).toEqual(["Draft"]);
+    }
+    finally {
+      host.fieldMenu().close();
+      outside.remove();
+    }
+  });
+
+  it("keeps the text once when the focus leaves a menu opened on its field for somewhere else", async () => {
+    const outside = document.body.appendChild(document.createElement("button"));
+    try {
+      const shown = await startEditingAsync();
+      await userEvent.keyboard(" Draft");
+
+      await openFieldMenuAsync(shown);
+      const inMenu = [...host.kept];
+      outside.focus();
+      shown.focus();
+      outside.focus();
+
+      expect(inMenu).toEqual([]);
+      expect(host.kept).toEqual(["Draft"]);
+    }
+    finally {
+      host.fieldMenu().close();
+      outside.remove();
+    }
   });
 
   it("ignores an Enter that ends a composition", async () => {

@@ -47,7 +47,8 @@ import { ViewBadgeComponent } from "../view-badge/view-badge.component.js";
     "(keydown.space)": "onSpace($event)",
     "(keydown.delete)": "requestClose()",
     "(mousedown)": "onMouseDown($event)",
-    "(auxclick)": "onAuxiliaryClick($event)"
+    "(auxclick)": "onAuxiliaryClick($event)",
+    "(document:focusin)": "onDocumentFocusIn($event)"
   }
 })
 export class TabComponent {
@@ -85,6 +86,7 @@ export class TabComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly fieldElement: Signal<ElementRef<HTMLInputElement> | undefined> = viewChild("field", { read: ElementRef });
   private isSettled: boolean = false;
+  private isInMenu: boolean = false;
   private hadField: boolean = false;
 
   public constructor() {
@@ -98,6 +100,7 @@ export class TabComponent {
         return;
       }
       this.isSettled = false;
+      this.isInMenu = false;
       field.value = untracked(this.label);
       field.focus();
       field.select();
@@ -140,6 +143,21 @@ export class TabComponent {
     }
   }
 
+  protected onFieldBlur(event: FocusEvent): void {
+    if (TabComponent.isMenu(event.relatedTarget))
+      this.isInMenu = true;
+    else
+      this.keep();
+  }
+
+  protected onDocumentFocusIn(event: FocusEvent): void {
+    if (!this.isInMenu || TabComponent.isMenu(event.target))
+      return;
+    this.isInMenu = false;
+    if (event.target !== this.fieldElement()?.nativeElement)
+      this.keep();
+  }
+
   protected keep(): void {
     const field = this.fieldElement()?.nativeElement;
     if (this.editing() && !Object.isUndefined(field))
@@ -149,6 +167,10 @@ export class TabComponent {
   protected requestClose(): void {
     if (this.closable())
       this.close.emit();
+  }
+
+  private static isMenu(target: EventTarget | null): boolean {
+    return target instanceof Element && !Object.isNull(target.closest(TabResources.menuPaneSelector));
   }
 
   private settle(report: () => void): void {
