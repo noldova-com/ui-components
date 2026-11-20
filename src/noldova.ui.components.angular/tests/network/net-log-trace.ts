@@ -9,7 +9,13 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { Browser, CDPSession, Page, Request } from "playwright";
+type CDPSession = {
+  send(method: string, params?: object): Promise<{ data?: string; eof?: boolean; base64Encoded?: boolean }>;
+  once(event: string, listener: (payload: { stream?: string }) => void): unknown;
+};
+type Browser = { newBrowserCDPSession(): Promise<CDPSession> };
+type Request = { url(): string; resourceType(): string };
+type Page = { on(event: string, listener: (request: Request) => void): unknown; context(): { browser(): Browser | null } };
 
 // Probe only, never merged: records Chromium's network log in a ring buffer through tracing, and saves it a moment after a refused connection,
 // with the connection attempts it holds printed, so a refusal names the address the browser tried and what each attempt got.
@@ -102,7 +108,7 @@ export class NetLogTrace {
     if (stream !== undefined) {
       for (;;) {
         const chunk = await session.send("IO.read", { handle: stream });
-        text += chunk.base64Encoded === true ? Buffer.from(chunk.data, "base64").toString("utf8") : chunk.data;
+        text += chunk.base64Encoded === true ? Buffer.from(chunk.data ?? "", "base64").toString("utf8") : chunk.data ?? "";
         if (chunk.eof)
           break;
       }
