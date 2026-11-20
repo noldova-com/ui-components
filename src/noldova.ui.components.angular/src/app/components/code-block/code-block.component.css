@@ -104,76 +104,109 @@
   }
 }
 
-.nol-code-block-body > code::highlight(nol-code-comment),
+.nol-code-block-body > code::highlight(nol-code-comment) {
+  color: var(--nol-code-comment);
+}
+
 .nol-code-line > .nol-code-comment {
   color: var(--nol-code-comment);
 }
 
-.nol-code-block-body > code::highlight(nol-code-keyword),
+.nol-code-block-body > code::highlight(nol-code-keyword) {
+  color: var(--nol-code-keyword);
+}
+
 .nol-code-line > .nol-code-keyword {
   color: var(--nol-code-keyword);
 }
 
-.nol-code-block-body > code::highlight(nol-code-control),
+.nol-code-block-body > code::highlight(nol-code-control) {
+  color: var(--nol-code-control);
+}
+
 .nol-code-line > .nol-code-control {
   color: var(--nol-code-control);
 }
 
-.nol-code-block-body > code::highlight(nol-code-string),
+.nol-code-block-body > code::highlight(nol-code-string) {
+  color: var(--nol-code-string);
+}
+
 .nol-code-line > .nol-code-string {
   color: var(--nol-code-string);
 }
 
-.nol-code-block-body > code::highlight(nol-code-number),
+.nol-code-block-body > code::highlight(nol-code-number) {
+  color: var(--nol-code-number);
+}
+
 .nol-code-line > .nol-code-number {
   color: var(--nol-code-number);
 }
 
-.nol-code-block-body > code::highlight(nol-code-type),
+.nol-code-block-body > code::highlight(nol-code-type) {
+  color: var(--nol-code-type);
+}
+
 .nol-code-line > .nol-code-type {
   color: var(--nol-code-type);
 }
 
-.nol-code-block-body > code::highlight(nol-code-function),
+.nol-code-block-body > code::highlight(nol-code-function) {
+  color: var(--nol-code-function);
+}
+
 .nol-code-line > .nol-code-function {
   color: var(--nol-code-function);
 }
 
-.nol-code-block-body > code::highlight(nol-code-variable),
+.nol-code-block-body > code::highlight(nol-code-variable) {
+  color: var(--nol-code-variable);
+}
+
 .nol-code-line > .nol-code-variable {
   color: var(--nol-code-variable);
 }
 
-.nol-code-block-body > code::highlight(nol-code-regex),
+.nol-code-block-body > code::highlight(nol-code-regex) {
+  color: var(--nol-code-regex);
+}
+
 .nol-code-line > .nol-code-regex {
   color: var(--nol-code-regex);
 }
 
-.nol-code-block-body > code::highlight(nol-code-meta),
+.nol-code-block-body > code::highlight(nol-code-meta) {
+  color: var(--nol-code-meta);
+}
+
 .nol-code-line > .nol-code-meta {
   color: var(--nol-code-meta);
 }
 
 @media (forced-colors: active) {
   .nol-code-block-body > code::highlight(nol-code-comment),
-  .nol-code-line > .nol-code-comment,
   .nol-code-block-body > code::highlight(nol-code-keyword),
-  .nol-code-line > .nol-code-keyword,
   .nol-code-block-body > code::highlight(nol-code-control),
-  .nol-code-line > .nol-code-control,
   .nol-code-block-body > code::highlight(nol-code-string),
-  .nol-code-line > .nol-code-string,
   .nol-code-block-body > code::highlight(nol-code-number),
-  .nol-code-line > .nol-code-number,
   .nol-code-block-body > code::highlight(nol-code-type),
-  .nol-code-line > .nol-code-type,
   .nol-code-block-body > code::highlight(nol-code-function),
-  .nol-code-line > .nol-code-function,
   .nol-code-block-body > code::highlight(nol-code-variable),
-  .nol-code-line > .nol-code-variable,
   .nol-code-block-body > code::highlight(nol-code-regex),
+  .nol-code-block-body > code::highlight(nol-code-meta) {
+    color: CanvasText;
+  }
+
+  .nol-code-line > .nol-code-comment,
+  .nol-code-line > .nol-code-keyword,
+  .nol-code-line > .nol-code-control,
+  .nol-code-line > .nol-code-string,
+  .nol-code-line > .nol-code-number,
+  .nol-code-line > .nol-code-type,
+  .nol-code-line > .nol-code-function,
+  .nol-code-line > .nol-code-variable,
   .nol-code-line > .nol-code-regex,
-  .nol-code-block-body > code::highlight(nol-code-meta),
   .nol-code-line > .nol-code-meta {
     color: CanvasText;
   }
