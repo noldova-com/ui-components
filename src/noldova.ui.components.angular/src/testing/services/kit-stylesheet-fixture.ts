@@ -17,6 +17,7 @@ export class KitStylesheetFixture {
   private static readonly REFUSED_RULES: string = "SecurityError";
   private static readonly ABORTED: string = "AbortError";
   private static readonly FETCH_INITIATOR: string = "fetch";
+  private static readonly CONTENT_LENGTH: string = "Content-Length";
 
   public static get isApplied(): boolean {
     return getComputedStyle(document.documentElement).getPropertyValue(KitStylesheetFixture.APPLIED_PROPERTY) !== "";
@@ -93,7 +94,9 @@ export class KitStylesheetFixture {
     const deadline = setTimeout(() => controller.abort(), KitStylesheetFixture.ANSWER_LIMIT);
     try {
       const response = await fetch(url, { cache: "no-store", signal: controller.signal });
-      return `${url} answered HTTP ${`${response.status} ${response.statusText}`.trim()}`;
+      const length = response.headers.get(KitStylesheetFixture.CONTENT_LENGTH);
+      return `${url} answered HTTP ${`${response.status} ${response.statusText}`.trim()} ${length === null ? `with no ${KitStylesheetFixture.CONTENT_LENGTH}`
+        : `with ${KitStylesheetFixture.CONTENT_LENGTH} ${length}`}`;
     } catch (error) {
       if (!(error instanceof TypeError) && !(error instanceof DOMException && error.name === KitStylesheetFixture.ABORTED))
         throw error;

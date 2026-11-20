@@ -192,7 +192,7 @@ describe("KitStylesheetFixture", () => {
     expect(lines).toHaveLength(3);
     expect(lines[0]).toMatch(/^Missing Face 400 normal: \S+ answered HTTP 404 .*, and the page's own load of it got HTTP 404 and \d+ bytes in \d+ ms$/u);
     expect(lines[1]).toMatch(/^Missing Plain normal normal: fetching unsupported-scheme:missing-plain failed with TypeError: .*, and the page's own load of it left no timing$/u);
-    expect(lines[2]).toMatch(new RegExp(`^Not A Font normal normal: \\S+ answered HTTP 200 OK, and the page's own load of it got HTTP 200 and ${bytes} bytes in \\d+ ms$`, "u"));
+    expect(lines[2]).toMatch(new RegExp(`^Not A Font normal normal: \\S+ answered HTTP 200 OK with Content-Length ${bytes}, and the page's own load of it got HTTP 200 and ${bytes} bytes in \\d+ ms$`, "u"));
   });
 
   it("says a source's server did not answer once it has waited its limit, and still fails", async () => {
@@ -212,6 +212,18 @@ describe("KitStylesheetFixture", () => {
     const failure = await failing;
 
     expect(reported(failure).slice(1)).toEqual([`Missing Face 400 normal: ${addressOf("missing-face.woff2")} did not answer within 5000 ms`]);
+  });
+
+  it("says a source's server gave no Content-Length when its answer has none", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("A short body.", { status: 200, statusText: "OK" }));
+
+    const failure = await failureAsync();
+
+    const lines = failure.message.split("\n").slice(1);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^Missing Face 400 normal: \S+ answered HTTP 200 OK with no Content-Length, and the page's own load of it /u);
   });
 
   it("rethrows an error other than a network failure or its own deadline that asking a source's server raises", async () => {
