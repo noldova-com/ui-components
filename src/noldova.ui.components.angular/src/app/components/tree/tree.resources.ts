@@ -11,6 +11,7 @@ import "@noldova/context.core";
 export class TreeResources {
   public static readonly arrowLeftKey: string = "ArrowLeft";
   public static readonly arrowRightKey: string = "ArrowRight";
+  public static readonly otherArrowKeys: ReadonlyMap<string, string> = new Map([[TreeResources.arrowLeftKey, TreeResources.arrowRightKey], [TreeResources.arrowRightKey, TreeResources.arrowLeftKey]]);
   public static readonly treeMoveGroupPrefix: string = "nol-tree-move-";
   public static readonly treeShiftDuration: number = 150;
   public static readonly treeShiftEasing: string = "ease-out";

@@ -97,6 +97,43 @@ describe("TreeComponent", () => {
     expect([fixture.componentInstance.activations, rows().map(t => t.tabIndex)]).toEqual([["notes"], [-1, 0, -1]]);
   });
 
+  it("swaps Right and Left in a right-to-left container on a left-to-right page: Left expands and enters a branch, Right leaves and closes it", async () => {
+    AppearanceFixture.apply(DefaultTheme.theme, ThemeMode.Light);
+    fixture = TestBed.createComponent(TreeHostComponent);
+    DomFixture.host(fixture).dir = "rtl";
+    await fixture.whenStable();
+    row("Project").focus();
+
+    await pressAsync("{ArrowLeft}");
+    const opened = [focused(), row("Project").getAttribute("aria-expanded")];
+    await pressAsync("{ArrowLeft}");
+    const child = focused();
+    await pressAsync("{ArrowRight}");
+    const parent = focused();
+    await pressAsync("{ArrowRight}");
+    const closed = [focused(), row("Project").getAttribute("aria-expanded")];
+
+    expect([document.body.matches(":dir(ltr)"), opened, child, parent, closed]).toEqual([true, ["Project", "true"], "Source", "Project", ["Project", "false"]]);
+  });
+
+  it("follows a direction its container takes after it is shown: Left and Right swap once the container turns right-to-left, and swap back once it turns left-to-right again", async () => {
+    await renderAsync();
+    DomFixture.host(fixture).dir = "rtl";
+    row("Project").focus();
+
+    await pressAsync("{ArrowLeft}");
+    const opened = [focused(), row("Project").getAttribute("aria-expanded")];
+    await pressAsync("{ArrowLeft}");
+    const child = focused();
+    await pressAsync("{ArrowRight}");
+    const parent = focused();
+    DomFixture.host(fixture).dir = "ltr";
+    await pressAsync("{ArrowLeft}");
+    const closed = [focused(), row("Project").getAttribute("aria-expanded")];
+
+    expect([opened, child, parent, closed]).toEqual([["Project", "true"], "Source", "Project", ["Project", "false"]]);
+  });
+
   it("opens and closes a branch with Enter, and follows a change of the current row", async () => {
     await renderAsync();
     row("Project").focus();
