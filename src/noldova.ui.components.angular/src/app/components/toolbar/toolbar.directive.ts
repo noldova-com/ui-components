@@ -84,7 +84,7 @@ export class ToolbarDirective {
       return;
     }
     queueMicrotask(() => {
-      this.hasFocus = target instanceof Node && !target.isConnected;
+      this.hasFocus = this.host.contains(this.host.ownerDocument.activeElement) || (target instanceof Node && !target.isConnected && this.isFocusOnPage());
     });
   }
 
@@ -96,11 +96,15 @@ export class ToolbarDirective {
 
   private refocus(stop: ToolbarItemDirective): void {
     afterNextRender(() => {
-      const active = this.host.ownerDocument.activeElement;
-      if (this.items().includes(stop) && (Object.isNull(active) || active === this.host.ownerDocument.body))
+      if (this.items().includes(stop) && this.isFocusOnPage())
         this.keys.setActiveItem(stop);
       else
         this.hasFocus = false;
     }, { injector: this.injector });
+  }
+
+  private isFocusOnPage(): boolean {
+    const active = this.host.ownerDocument.activeElement;
+    return Object.isNull(active) || active === this.host.ownerDocument.body;
   }
 }
