@@ -59,6 +59,10 @@ export class MenuComponent {
       if (!menu.isInline && !Object.isUndefined(row))
         menu.setActiveMenuItem(row[1]);
     };
+    const ordered = menu.items.changes.subscribe(() => menu.items.reset(menu.items.toArray().sort((a, b) => {
+      const position = a._elementRef.nativeElement.compareDocumentPosition(b._elementRef.nativeElement);
+      return (position & Node.DOCUMENT_POSITION_PRECEDING) - (position & Node.DOCUMENT_POSITION_FOLLOWING);
+    })));
     const focusFirstItem = menu.focusFirstItem.bind(menu);
     const focusLastItem = menu.focusLastItem.bind(menu);
     menu.focusFirstItem = (origin?: FocusOrigin): void => {
@@ -68,7 +72,8 @@ export class MenuComponent {
         return;
       }
       focusFirstItem(origin);
-      focusRow(rows().find(([t]) => t.checked() === true));
+      const own = rows();
+      focusRow(own.find(([t]) => t.checked() === true) ?? own[0]);
     };
     menu.focusLastItem = (origin?: FocusOrigin): void => {
       const mark = marked();
@@ -104,6 +109,9 @@ export class MenuComponent {
     };
     host.addEventListener(MenuResources.mouseenterEvent, holdEnter, true);
     document.addEventListener(Resources.pointermoveEvent, release, true);
-    inject(DestroyRef).onDestroy(stop);
+    inject(DestroyRef).onDestroy(() => {
+      stop();
+      ordered.unsubscribe();
+    });
   }
 }
