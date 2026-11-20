@@ -41,7 +41,7 @@ LICENSE file in the root directory of this source tree.
   </div>
 }
 @if (isFeed()) {
-  <button #jump type="button" nol-icon-button class="nol-virtual-list-jump" [class.nol-virtual-list-jump-shown]="!isFollowing() && !isJumpHeld()" [class.nol-virtual-list-jump-start]="isLatestAtStart()"
+  <button #jumpButton type="button" nol-icon-button class="nol-virtual-list-jump" [class.nol-virtual-list-jump-shown]="!isFollowing() && !isJumpHeld()" [class.nol-virtual-list-jump-start]="isLatestAtStart()"
     [icon]="isLatestAtStart() ? partResources.virtualListJumpStartGlyph : partResources.virtualListJumpGlyph"
     [label]="partResources.virtualListJumpLabel" [nolTooltip]="partResources.virtualListJumpLabel" (click)="jump($event)"></button>
 }

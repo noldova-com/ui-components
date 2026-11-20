@@ -56,7 +56,7 @@ export class VirtualListComponent<T> {
   private readonly viewport: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("viewport");
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly slots: Signal<readonly ElementRef<HTMLElement>[]> = viewChildren<ElementRef<HTMLElement>>("slot");
-  private readonly jumpButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("jump", { read: ElementRef });
+  private readonly jumpButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("jumpButton", { read: ElementRef });
   private readonly observer: ResizeObserver = new ResizeObserver(t => this.measure(t));
   private readonly checker: ResizeObserver = new ResizeObserver(() => this.keepClamp(this.viewport().nativeElement));
   private readonly observed: Set<Element> = new Set();

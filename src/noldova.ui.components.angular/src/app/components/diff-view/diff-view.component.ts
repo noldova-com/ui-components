@@ -266,11 +266,13 @@ export class DiffViewComponent {
     this.collapsed.update(t => DiffViewComponent.toggled(t, file.id));
   }
 
-  protected reveal(file: DiffFile, button: HTMLElement): void {
-    const section = button.closest<HTMLElement>(DiffViewResources.diffFileSelector);
-    const hadFocus = button.ownerDocument.activeElement === button;
+  protected reveal(file: DiffFile, event: Event): void {
+    const button = event.currentTarget;
     this.revealed.update(t => new Set([...t, file.id]));
-    if (!hadFocus || Object.isNull(section))
+    if (!(button instanceof HTMLElement) || button.ownerDocument.activeElement !== button)
+      return;
+    const section = button.closest<HTMLElement>(DiffViewResources.diffFileSelector);
+    if (Object.isNull(section))
       return;
     afterNextRender(() => {
       const target = section.querySelector<HTMLElement>(DiffViewResources.diffLineStopSelector) ?? section.querySelector<HTMLElement>(DiffViewResources.diffFileToggleSelector);

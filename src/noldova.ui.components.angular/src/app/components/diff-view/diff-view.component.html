@@ -46,7 +46,7 @@ LICENSE file in the root directory of this source tree.
         @if (isHeld(file)) {
           <div class="nol-diff-held">
             <p class="nol-diff-note">{{ partResources.diffHeldText }}</p>
-            <button #load type="button" nol-button class="nol-diff-load" data-nol-resizes-row [variant]="secondary" (click)="reveal(file, load)">{{ partResources.diffLoadLabel }}</button>
+            <button type="button" nol-button class="nol-diff-load" data-nol-resizes-row [variant]="secondary" (click)="reveal(file, $event)">{{ partResources.diffLoadLabel }}</button>
           </div>
         } @else {
           @for (hunk of file.content.hunks; track hunk.id; let hunkIndex = $index, isLast = $last) {
