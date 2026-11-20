@@ -13,10 +13,12 @@ export class MessageText extends MessageBlock {
   public readonly kind: MessageBlockKind.Text = MessageBlockKind.Text;
   public readonly text: string;
   public readonly interim: boolean;
+  public readonly key: string | null;
 
-  public constructor(text: string, interim: boolean = false) {
+  public constructor(text: string, interim: boolean = false, key: string | null = null) {
     super();
     this.text = text;
     this.interim = interim;
+    this.key = key;
   }
 }

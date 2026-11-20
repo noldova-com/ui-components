@@ -8719,10 +8719,19 @@ export declare class MessageText extends MessageBlock {
   public readonly interim: boolean;
 
   /**
+   * What the text stays known by across changes to its message's blocks, or
+   * null to be known by its place: a text that keeps its key keeps its element
+   * when blocks before it go, so a host can hold the reader's place across them.
+   * Keys are unique within a message.
+   */
+  public readonly key: string | null;
+
+  /**
    * Creates the block.
    *
    * @param text The Markdown.
    * @param interim Whether the text is interim; false when not given.
+   * @param key What the text stays known by; null, its place, when not given.
    * @example
    * ```ts
    * import { MessageText } from "@noldova/ui.components.angular";
@@ -8730,7 +8739,7 @@ export declare class MessageText extends MessageBlock {
    * export const answer: MessageText = new MessageText("The build **passed**. See [the log](https://example.com/log).");
    * ```
    */
-  public constructor(text: string, interim?: boolean);
+  public constructor(text: string, interim?: boolean, key?: string | null);
 }
 
 /**

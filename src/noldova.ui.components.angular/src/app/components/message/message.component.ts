@@ -8,7 +8,7 @@
 
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, DestroyRef, ElementRef, ErrorHandler, LOCALE_ID, type OutputRef, type Signal, type TemplateRef, ViewEncapsulation,
-  type WritableSignal, afterEveryRender, afterNextRender, afterRenderEffect, computed, contentChild, contentChildren, effect, inject, input, output, signal, untracked, viewChild } from "@angular/core";
+  type WritableSignal, afterEveryRender, afterNextRender, afterRenderEffect, computed, contentChild, contentChildren, effect, inject, input, linkedSignal, output, signal, untracked, viewChild } from "@angular/core";
 import { outputFromObservable } from "@angular/core/rxjs-interop";
 
 import "@noldova/context.core";
@@ -130,7 +130,9 @@ export class MessageComponent {
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
   protected readonly avatarSizes: typeof AvatarSize = AvatarSize;
   protected readonly isStreaming: Signal<boolean> = computed(() => this.status() === MessageStatus.Streaming);
-  protected readonly parts: Signal<readonly MessagePart[]> = computed(() => MessagePart.partsOf(this.blocks()));
+  protected readonly parts: Signal<readonly MessagePart[]> = linkedSignal<readonly MessageBlock[], readonly MessagePart[]>({
+    source: () => this.blocks(), computation: (blocks, previous) => MessagePart.partsOf(blocks, previous?.value ?? [])
+  });
   protected readonly entering: Signal<ReadonlySet<MessageBlock>> = computed(() => new Set(this.blocks().filter(t => t instanceof MessageText).slice(this.firstTextCount)));
   protected readonly isEmpty: Signal<boolean> = computed(() => this.blocks().every(t => t.kind === MessageBlockKind.Text && String.isNullOrWhitespace(t.text)));
   protected readonly isBubble: Signal<boolean> = computed(() => this.layout() === MessageLayout.Bubble || (this.isColumn() && this.author().kind === MessageAuthorKind.Person));
