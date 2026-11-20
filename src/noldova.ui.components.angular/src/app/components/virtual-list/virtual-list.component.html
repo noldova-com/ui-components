@@ -37,7 +37,7 @@ LICENSE file in the root directory of this source tree.
 @if (gap()?.isFailed) {
   <div class="nol-virtual-list-failure" [class.nol-virtual-list-edge-end]="gap()?.isAtStart === false">
     <nol-field-message>{{ partResources.virtualListFailed }}</nol-field-message>
-    <button type="button" nol-button [variant]="variants.Secondary" (click)="retry()">{{ partResources.virtualListRetry }}</button>
+    <button #retryButton type="button" nol-button [variant]="variants.Secondary" (click)="retry($event)">{{ partResources.virtualListRetry }}</button>
   </div>
 }
 @if (isFeed()) {
