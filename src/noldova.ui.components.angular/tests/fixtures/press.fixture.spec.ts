@@ -42,6 +42,49 @@ describe("PressFixture", () => {
     }
   });
 
+  it("finds nothing in the way of a shown, enabled, uncovered and still button", () => {
+    expect(PressFixture.blockers(button)).toEqual([]);
+  });
+
+  it("finds a button moving while it or what holds it moves, and still while only its own content turns or it fades", () => {
+    const content = button.firstElementChild?.animate([{ rotate: "0turn" }, { rotate: "1turn" }], 10_000);
+    const turning = PressFixture.blockers(button);
+    content?.cancel();
+    const fade = button.animate([{ opacity: 1 }, { opacity: 0.5 }], 10_000);
+    const fading = PressFixture.blockers(button);
+    fade.cancel();
+    const holder = document.body.animate([{ translate: "0" }, { translate: "1rem" }], 10_000);
+    const held = PressFixture.blockers(button);
+    holder.cancel();
+
+    expect([turning, fading, held]).toEqual([[], [], ["moving"]]);
+  });
+
+  it("names each check a forced click would skip that the button fails: hidden, disabled, covered and moving", () => {
+    const shown = PressFixture.blockers(button);
+    button.style.visibility = "hidden";
+    const hidden = PressFixture.blockers(button);
+    button.style.visibility = String.empty;
+    button.disabled = true;
+    const disabled = PressFixture.blockers(button);
+    button.disabled = false;
+    button.setAttribute("aria-disabled", "true");
+    const marked = PressFixture.blockers(button);
+    button.removeAttribute("aria-disabled");
+    const moving = button.animate([{ width: "4rem" }, { width: "6rem" }], 10_000);
+    const animated = PressFixture.blockers(button);
+    moving.cancel();
+    const cover = document.body.appendChild(document.createElement("div"));
+    cover.style.cssText = "position: fixed; inset: 0; z-index: 1;";
+    try {
+      expect([shown, hidden, disabled, marked, animated, PressFixture.blockers(button)])
+        .toEqual([[], ["hidden", "covered"], ["disabled"], ["disabled"], ["moving"], ["covered"]]);
+    }
+    finally {
+      cover.remove();
+    }
+  });
+
   it("fails without clicking when another element covers the button's centre", () => {
     const cover = document.body.appendChild(document.createElement("div"));
     cover.style.cssText = "position: fixed; inset: 0; z-index: 1;";

@@ -12,7 +12,7 @@ import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { renderAsync, changeAsync, controlTokens, body, framesAsync, settledAsync, ranges, tokenSpans, wordTokens, pixelsAsync, rangeLefts, spanPlaces, inksOf, inkDifferencesOf, outsideOf, backgroundOf,
+  const { renderAsync, changeAsync, controlTokens, body, settledAsync, ranges, tokenSpans, wordTokens, pixelsAsync, rangeLefts, spanPlaces, inksOf, inkDifferencesOf, outsideOf, backgroundOf,
     wholeCodeWidth } = harness;
 
   beforeEach(harness.configure);
@@ -73,10 +73,8 @@ describe("CodeBlockComponent", () => {
       const [first, second, plain] = [boxOf(start, start + 3), boxOf(start, start + 5), boxOf(node.data.indexOf("="), node.data.indexOf("=") + 1)];
       const whole = await pixelsAsync(body());
       node.data = harness.growingLine.slice(0, start + 3);
-      await framesAsync();
       const cut = await pixelsAsync(body());
       node.appendData(harness.growingLine.slice(start + 3, start + 5));
-      await framesAsync();
       const moved = await pixelsAsync(body());
 
       expect(inksOf(whole, [first]), "the token's ink is not the plain text's").not.toEqual(inksOf(whole, [plain]));

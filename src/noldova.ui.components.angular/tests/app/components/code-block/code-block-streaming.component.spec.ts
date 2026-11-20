@@ -13,7 +13,7 @@ import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 
 describe("CodeBlockComponent", () => {
   const harness = new CodeBlockHarness();
-  const { body, linesOf, fromEnd, followAsync, streamAsync } = harness;
+  const { body, linesOf, fromEnd, changeAsync, streamAsync } = harness;
   const followedAsync = (): Promise<void> => DomChangeFixture.untilAsync(() => expect(fromEnd()).toBeLessThanOrEqual(1));
 
   beforeEach(harness.configure);
@@ -26,7 +26,7 @@ describe("CodeBlockComponent", () => {
       const short = [body().scrollHeight > body().clientHeight, body().scrollTop];
       const ends: number[] = [];
       for (const lines of [20, 40, 41]) {
-        await followAsync(() => harness.host.code.set(linesOf(lines)));
+        await changeAsync(() => harness.host.code.set(linesOf(lines)));
         await followedAsync();
         ends.push(fromEnd());
       }
