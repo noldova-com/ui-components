@@ -4,6 +4,13 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.18
+
+- `@noldova/ui.components.angular`: a code block and a diff view no longer throw in a browser without the CSS Highlight API, such as Safari before 17.2 or Firefox before 140, where their code didn't show. There a code block's growing line shows plain until it ends and turns into spans of its colors, and a diff view's code is plain and its changed characters take no color or forced-colors underline of their own, while its lines keep their added and removed backgrounds and signs. A browser with the API draws both as before.
+- `@noldova/ui.components.angular`: a dialog whose opener has left the page by the time it closes, such as a menu's row, a button in a popover that closed, or a control in a dialog that closed first, returns the focus to a fallback instead of the page: the menu's or popover's trigger, the dialog underneath, or a target its owner passes to `DialogService.open` as a new optional third argument, `returnFocus`. It skips a fallback that has left the page, is inert or can't take the focus, such as a disabled one, and leaves the focus where it is when none takes it.
+- `@noldova/ui.components.angular`: the terminal output and the mention field follow every theme change: a switch through `data-nol-theme-mode` or the system's light or dark setting, and a subtree painted by `ThemePainter.paint(element)`. Before, the terminal's runs kept the old theme's colors after a mode switch or the system's switch, and the mention field's typed text kept the old color after the system's switch or a painted subtree.
+- `@noldova/ui.components.angular/testing`: `AppearanceFixture.parkPointerAsync` moves the pointer off the page, just outside the window's top left corner, so nothing in the page is hovered, and still shows its small element in that corner for a later move away; it fails when something in the page is still hovered after the move.
+
 ## 0.0.17
 
 - `@noldova/ui.components.angular`: a new look token, `--nol-section-header-space-above`, sets the space above every section header but the first in its container. It is `var(--nol-space-3)`, 0.75rem, by default, so every header looks as before; a view whose rows sit closer, such as a chat list at 0.25rem, sets it on its own element for the headers inside it, and a theme can set it like its other look keys.
