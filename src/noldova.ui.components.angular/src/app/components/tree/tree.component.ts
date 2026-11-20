@@ -247,8 +247,8 @@ export class TreeComponent {
   }
 
   private pass(stop: CdkTreeNode<TreeNode, string> | undefined): void {
-    if (this.isFocusOnPage())
-      stop?.focus();
+    if (!Object.isUndefined(stop) && this.isFocusOnPage())
+      stop.focus();
     else
       this.hasFocus = false;
   }

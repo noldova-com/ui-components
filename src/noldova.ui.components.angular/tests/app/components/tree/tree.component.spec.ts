@@ -240,6 +240,20 @@ describe("TreeComponent", () => {
     expect([taken, document.activeElement]).toEqual([true, document.body]);
   });
 
+  it("forgets its focus when the focused row leaves with no row left, so rows added later, without it, leave the focus on the page", async () => {
+    await renderAsync();
+    const nodes = fixture.componentInstance.nodes();
+    row("Notes").focus();
+
+    fixture.componentInstance.nodes.set([]);
+    await fixture.whenStable();
+    const emptied = document.activeElement;
+    fixture.componentInstance.nodes.set(nodes.filter(t => t.id !== "notes"));
+    await fixture.whenStable();
+
+    expect([emptied, document.activeElement, labels()]).toEqual([document.body, document.body, ["Project", "Trash"]]);
+  });
+
   it("leaves the focus on the control the person moved it to before the focused row left the tree", async () => {
     await renderAsync();
     const other = document.createElement("button");
