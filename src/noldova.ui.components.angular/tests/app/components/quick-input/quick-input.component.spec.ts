@@ -354,6 +354,17 @@ describe("QuickInputComponent", () => {
     expect(host.query()).toBe("clo");
   });
 
+  it("leaves Enter, the arrows and Escape to the field while the person composes text, and a key the browser gives as Process", async () => {
+    await pressAsync("ArrowDown");
+    const composed = ["Enter", "ArrowDown", "ArrowUp", "End", "PageDown", "Escape"].map(key => press(field(), key, { isComposing: true }));
+    const processed = press(field(), "Process");
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect([...composed, processed].map(t => t.defaultPrevented)).toEqual([false, false, false, false, false, false, false]);
+    expect([activeIndex(), host.chosen, host.dismissals]).toEqual([1, [], 0]);
+  });
+
   async function filteringAsync(): Promise<ComponentFixture<FilteringHostComponent>> {
     const filtering = create(FilteringHostComponent);
     filtering.detectChanges();

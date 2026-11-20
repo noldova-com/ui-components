@@ -108,6 +108,8 @@ export class QuickInputComponent {
   }
 
   protected onKey(event: KeyboardEvent): void {
+    if (event.isComposing || event.key === Resources.processKey)
+      return;
     const next = QuickInputComponent.isModified(event) ? null : this.indexFor(event.key);
     if (!Object.isNull(next)) {
       event.preventDefault();
