@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 import { FocusKeyManager } from "@angular/cdk/a11y";
-import { DestroyRef, Directive, Injector, type Signal, type WritableSignal, computed, contentChildren, effect, inject, input, signal } from "@angular/core";
+import { DestroyRef, Directive, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, effect, inject, input, signal, untracked } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -22,14 +22,18 @@ import { ToolbarResources } from "./toolbar.resources.js";
     "[attr.aria-orientation]": "ariaOrientation()",
     "[attr.aria-label]": "label()",
     "(focusin)": "follow($event)",
+    "(focusout)": "leave($event)",
     "(keydown)": "move($event)"
   }
 })
 export class ToolbarDirective {
   private readonly ownItems: Signal<readonly ToolbarItemDirective[]> = contentChildren(ToolbarItemDirective, { descendants: true });
   private readonly items: Signal<readonly ToolbarItemDirective[]> = computed(() => [...this.addedItems(), ...this.ownItems()]);
-  private readonly keys: FocusKeyManager<ToolbarItemDirective> = new FocusKeyManager(this.items, inject(Injector)).skipPredicate(() => false).withHomeAndEnd();
+  private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly injector: Injector = inject(Injector);
+  private readonly keys: FocusKeyManager<ToolbarItemDirective> = new FocusKeyManager(this.items, this.injector).skipPredicate(() => false).withHomeAndEnd();
   private readonly current: WritableSignal<ToolbarItemDirective | null> = signal(null);
+  private hasFocus: boolean = false;
 
   protected readonly ariaOrientation: Signal<string> = computed(() =>
     this.orientation() === ToolbarOrientation.Vertical ? Resources.verticalOrientation : Resources.horizontalOrientation);
@@ -53,13 +57,17 @@ export class ToolbarDirective {
     effect(() => {
       const items = this.items();
       const current = this.current();
-      const stop = !Object.isNull(current) && items.includes(current) ? current : items[this.start()] ?? items[0] ?? null;
+      const isGone = !Object.isNull(current) && !items.includes(current);
+      const stop = !Object.isNull(current) && !isGone ? current : items[this.start()] ?? items[0] ?? null;
       for (const item of items)
         item.setTabStop(item === stop);
+      if (isGone && !Object.isNull(stop) && this.hasFocus)
+        untracked(() => this.refocus(stop));
     });
   }
 
   protected follow(event: FocusEvent): void {
+    this.hasFocus = true;
     const item = this.items().find(t => t.element === event.target);
     if (Object.isUndefined(item))
       return;
@@ -67,9 +75,36 @@ export class ToolbarDirective {
     this.current.set(item);
   }
 
+  protected leave(event: FocusEvent): void {
+    const { relatedTarget, target } = event;
+    if (relatedTarget instanceof Node && this.host.contains(relatedTarget))
+      return;
+    if (relatedTarget instanceof Node && relatedTarget.isConnected) {
+      this.hasFocus = false;
+      return;
+    }
+    queueMicrotask(() => {
+      this.hasFocus = this.host.contains(this.host.ownerDocument.activeElement) || (target instanceof Node && !target.isConnected && this.isFocusOnPage());
+    });
+  }
+
   protected move(event: KeyboardEvent): void {
     if (!ToolbarResources.toolbarMoveKeys[this.orientation()].includes(event.key) || !this.items().some(t => t.element === event.target))
       return;
     this.keys.onKeydown(event);
+  }
+
+  private refocus(stop: ToolbarItemDirective): void {
+    afterNextRender(() => {
+      if (this.items().includes(stop) && this.isFocusOnPage())
+        this.keys.setActiveItem(stop);
+      else
+        this.hasFocus = false;
+    }, { injector: this.injector });
+  }
+
+  private isFocusOnPage(): boolean {
+    const active = this.host.ownerDocument.activeElement;
+    return Object.isNull(active) || active === this.host.ownerDocument.body;
   }
 }

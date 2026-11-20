@@ -14,4 +14,4 @@ Accessible name Jump to latest; a down-arrow glyph, or an up-arrow glyph for a f
 
 ## Surface and behavior
 
-Raised fill and a 1px border in the border color on the circle, without a shadow, and the hover fill in its place under the pointer; shows while a feed that follows its latest end has stopped following, in the Tab order after the feed, and hides once it follows again; choosing it scrolls to that end and follows again; it fades in and out in 150ms, without the fade when reduced motion is preferred.
+Raised fill and a 1px border in the border color on the circle, without a shadow, and the hover fill in its place under the pointer; shows while a feed that follows its latest end has stopped following, in the Tab order after the feed, and hides once it follows again, passing its focus, if it had it, to the feed without scrolling; choosing it scrolls to that end and follows again; it fades in and out in 150ms, without the fade when reduced motion is preferred.

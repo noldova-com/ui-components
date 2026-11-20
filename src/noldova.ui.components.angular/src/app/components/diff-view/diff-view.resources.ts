@@ -36,6 +36,7 @@ export class DiffViewResources {
   public static readonly diffCellSelector: string = ".nol-diff-cell";
   public static readonly diffChangedCellSelector: string = ".nol-diff-cell-changed";
   public static readonly diffFileToggleSelector: string = ".nol-diff-file-toggle";
+  public static readonly diffLineStopSelector: string = ".nol-diff-hunk-lines .nol-diff-cell[tabindex=\"0\"]";
   public static readonly tabIndexAttribute: string = "tabindex";
   public static readonly diffLineSeparator: string = "\n";
   public static readonly diffShortcuts: readonly DiffShortcut[] = [
