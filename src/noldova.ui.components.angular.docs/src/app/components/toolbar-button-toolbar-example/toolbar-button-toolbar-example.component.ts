@@ -21,7 +21,6 @@ export class ToolbarButtonToolbarExampleComponent {
   protected readonly shared: WritableSignal<number> = signal(0);
 
   protected share(): void {
-    if (this.count() > 0)
-      this.shared.update(t => t + 1);
+    this.shared.update(t => t + 1);
   }
 }
