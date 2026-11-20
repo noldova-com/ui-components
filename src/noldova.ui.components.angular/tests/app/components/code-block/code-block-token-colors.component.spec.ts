@@ -29,6 +29,21 @@ describe("CodeBlockComponent", () => {
 
   afterEach(harness.resetAsync);
 
+  function styleRulesOf(rules: CSSRuleList, media: string): (readonly [string, string])[] {
+    return [...rules].flatMap(t => t instanceof CSSMediaRule ? styleRulesOf(t.cssRules, t.conditionText) : t instanceof CSSStyleRule ? [[media, t.selectorText] as const] : []);
+  }
+
+  it("keeps each kind's span rule apart from the highlight rules, in and out of forced colors, so a browser without ::highlight() still colors the spans", async () => {
+    await renderAsync();
+    const rules = [...document.styleSheets].flatMap(t => styleRulesOf(t.cssRules, String.empty));
+
+    const spans = Object.values(CodeTokenKind).map(kind => [...new Set(rules
+      .filter(([, selector]) => selector.split(",").map(t => t.trim()).includes(`.nol-code-line > .nol-code-${kind.toLowerCase()}`))
+      .map(([media, selector]) => `${media} ${selector.includes("::highlight") ? "with" : "without"} a highlight`))].sort());
+
+    expect(spans).toEqual(Object.values(CodeTokenKind).map(() => [" without a highlight", "(forced-colors: active) without a highlight"]));
+  });
+
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
       it(`paints each kind of token in its own color from the ${theme.id} theme in ${mode} mode, as a highlight and as a span`, async () => {
