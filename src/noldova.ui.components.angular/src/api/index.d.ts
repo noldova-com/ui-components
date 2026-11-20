@@ -13076,7 +13076,9 @@ export declare class TooltipDirective {
  * places, unless reduced motion is preferred, with the moved node keeping
  * focus. A move replaces the announcement of an earlier move in the same
  * tree that assistive technology has not yet spoken, so a held key is heard
- * as its last move.
+ * as its last move. When the owner removes the focused node, the next row
+ * takes the focus, or the row before it when it was the last, unless another
+ * element took the focus first.
  */
 export declare class TreeComponent {
   /**

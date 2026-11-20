@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal, viewChild } from "@angular/core";
+import { Component, Injector, afterNextRender, inject, signal, viewChild } from "@angular/core";
 
 import { TreeComponent } from "../../src/app/components/tree/tree.component";
 import { TreeNode } from "../../src/app/models/tree.node";
@@ -33,4 +33,13 @@ export class TreeHostComponent {
   public readonly current = signal<string | null>("notes");
   public readonly pages: readonly TreeNode[] = [new TreeNode("appearance", "Appearance"), new TreeNode("shortcuts", "Keyboard shortcuts")];
   public readonly activations: string[] = [];
+
+  private readonly injector: Injector = inject(Injector);
+
+  // Sets the nodes and, once they render, focuses the target in the render's write phase, before the tree's own pass of the focus, as an owner
+  // moving the focus after a removal does.
+  public setNodesFocusing(nodes: readonly TreeNode[], target: HTMLElement): void {
+    this.nodes.set(nodes);
+    afterNextRender({ write: () => target.focus() }, { injector: this.injector });
+  }
 }
