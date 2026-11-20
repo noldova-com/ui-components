@@ -9,8 +9,8 @@
 import { CdkListbox, CdkOption, type ListboxValueChangeEvent } from "@angular/cdk/listbox";
 import { TemplatePortal } from "@angular/cdk/portal";
 import {
-  Component, DestroyRef, type ElementRef, Injector, type Signal, type TemplateRef, ViewContainerRef, type WritableSignal, afterEveryRender, computed, inject, input, output,
-  signal, viewChild, viewChildren
+  Component, DestroyRef, type ElementRef, Injector, type Signal, type TemplateRef, ViewContainerRef, type WritableSignal, afterEveryRender, computed, effect, inject, input, output,
+  signal, untracked, viewChild, viewChildren
 } from "@angular/core";
 
 import "@noldova/context.core";
@@ -76,6 +76,10 @@ export class SelectComponent {
 
   public constructor() {
     afterEveryRender(() => this.followActive());
+    effect(() => {
+      if (this.disabled())
+        untracked(() => this.close());
+    });
     inject(DestroyRef).onDestroy(() => this.close());
   }
 

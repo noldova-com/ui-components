@@ -342,6 +342,32 @@ describe("SelectComponent", () => {
     expect([button().textContent?.includes("Sepia"), list(), getComputedStyle(button()).opacity]).toEqual([true, null, "0.5"]);
   });
 
+  it("closes its open list when its owner disables it", async () => {
+    render();
+    await openAsync();
+    const select = fixture.debugElement.query(By.directive(SelectComponent)).componentInstance as SelectComponent;
+
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+
+    expect([list(), button().getAttribute("aria-expanded"), select.isExpanded()]).toEqual([null, "false", false]);
+  });
+
+  it("chooses nothing from the keyboard once its owner disables it with the list open", async () => {
+    render();
+    await openFromKeyboardAsync();
+    await userEvent.keyboard("{ArrowUp}");
+    fixture.detectChanges();
+    const moved = active();
+
+    fixture.componentInstance.disabled.set(true);
+    fixture.detectChanges();
+    await userEvent.keyboard("{Enter}");
+    fixture.detectChanges();
+
+    expect([moved, fixture.componentInstance.changes, button().textContent?.includes("System")]).toEqual(["Dark", [], true]);
+  });
+
   it("ends a value too long for its width with an ellipsis", () => {
     render();
     DomFixture.one(DomFixture.host(fixture), ".scroller").style.width = "8rem";
