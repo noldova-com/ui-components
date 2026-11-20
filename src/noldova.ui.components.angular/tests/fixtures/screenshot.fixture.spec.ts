@@ -8,6 +8,7 @@
 
 import { page } from "vitest/browser";
 
+import { DomFixture } from "./dom.fixture";
 import { ScreenshotFixture } from "./screenshot.fixture";
 
 describe("ScreenshotFixture", () => {
@@ -105,5 +106,22 @@ describe("ScreenshotFixture", () => {
       results.push(sameAs(await ScreenshotFixture.pixelsAsync(element), await playwrightPixelsAsync(element)).replace(/^\S+ /u, ""));
 
     expect(results).toEqual(["true", "true"]);
+  });
+
+  it("reads several elements at fractional places in one capture, each the same pixels, byte for byte, as its own read", async () => {
+    const first = placed("left: 3.5px; top: 4.25px", "absolute");
+    const others = [placed("left: 61.75px; top: 52.5px", "absolute"), placed("left: 20.5px; top: 90.75px", "absolute")];
+    const together = await ScreenshotFixture.piecesAsync([first, ...others]);
+    const results: string[] = [];
+    for (const [index, element] of [first, ...others].entries())
+      results.push(sameAs(DomFixture.at(together, index), await ScreenshotFixture.pixelsAsync(element)).replace(/^\S+ /u, ""));
+
+    expect(results).toEqual(["true", "true", "true"]);
+  });
+
+  it("fails, naming the viewport, for elements read in one capture that no scroll brings into the frame's viewport together", async () => {
+    const [first, below] = [placed("left: 3px; top: 4px", "absolute"), placed(`left: 3px; top: ${innerHeight * 2}px`, "absolute")];
+
+    await expect(ScreenshotFixture.piecesAsync([first, below])).rejects.toThrow("must all lie in the frame's viewport");
   });
 });

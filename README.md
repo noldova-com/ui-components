@@ -259,7 +259,7 @@ Measured on a macOS test machine in the code-size specs: the waits for the layou
 Measured on a Linux test machine for [#174](https://github.com/noldova-com/ui-components/issues/174), what stays:
 
 - A pixel read, in the `settled-pixels`, `forced-highlights`, `forced-spans` and `lines` specs, goes through `ScreenshotFixture.pixelsAsync`, which asks Chromium's DevTools protocol for the page's pixels clipped to the element, rounded out to whole pixels; it gives the same bytes as Playwright's screenshot of the element in a median 33 ms on macOS, 39 ms on Linux and 42 ms on Windows, against Playwright's 67, 168 and 215 ms.
-  A read costs the same whatever its size, so reading less doesn't help; each read covers every pixel its check compares, and these specs' tests take two or three reads each.
+  A read costs the same whatever its size, so reading less doesn't help; each read covers every pixel its check compares, and the forced-colors tests take one read, of the block and of a plain twin below it in the same host at a whole pixel's offset, through `ScreenshotFixture.piecesAsync`, and the others two or three reads each.
 - The streaming specs follow each scroll and each change of the code with one rendered frame, an animation frame and the task after it, through `RenderedFrameFixture.nextAsync()`: the block follows its end in a `ResizeObserver` callback, which runs after that frame's layout, so a check that nothing moved has seen the frame a move would come in, though no event signals it.
   A check that the block followed its end waits two frames, checking after each, and fails if the block hasn't reached its end by the second or leaves it once there, through `CodeBlockHarness.followedAsync`.
   Where a check waits for the follow itself, as the streaming spec's newest-line test does after each new line, it waits on the page's changes for the block to reach its end, with no frame before.
@@ -276,19 +276,19 @@ The code highlighter's specs and `code-block-highlighting-start.component.spec.t
 The language specs check each language's colors, not a first load, and skip it only by that name; the web and compiled ones highlight no TypeScript, so the warm would only load a grammar they never use.
 The language specs, `code-highlighter-languages-web.spec.ts` and `code-highlighter-languages-compiled.spec.ts`, load all their languages' grammars together in a `beforeAll`, into the page's one shared Shiki primitive, `CodeHighlightingFixture.sharedShiki`, so that load falls before their tests rather than in each language's test; each test still gets its own `CodeHighlighter`, which finds its grammar loaded, highlights its sample and checks each token's place.
 
-The code block's rows are from one run of `npm run test:timing` on each system naming these nine files together, as [#174](https://github.com/noldova-com/ui-components/issues/174) measures them, so they share one browser; their time is bound by the waits their checks need, a frame for each layout the code block follows or each scroll event that must land before the next growth, and a forced-colors switch and two screenshots for each forced-colors drawing.
+The code block's rows are from one run of `npm run test:timing` on each system naming these nine files together, as [#174](https://github.com/noldova-com/ui-components/issues/174) measures them, so they share one browser; their time is bound by the waits their checks need, a frame for each layout the code block follows or each scroll event that must land before the next growth, and a forced-colors switch and a screenshot for each forced-colors drawing.
 
 | File | Linux | Windows | macOS |
 |---|---|---|---|
-| `code-block-forced-highlights.component.spec.ts` | 341 ms | within | 282 ms |
-| `code-block-forced-spans.component.spec.ts` | 389 ms | 131 ms | 331 ms |
-| `code-block-run-keys.component.spec.ts` | 124 ms | within | within |
-| `code-block-run-state.component.spec.ts` | 241 ms | within | 140 ms |
-| `code-block-settled-layout.component.spec.ts` | 205 ms | within | 139 ms |
-| `code-block-settled-pixels.component.spec.ts` | 192 ms | 132 ms | 170 ms |
-| `code-block-streaming-return.component.spec.ts` | 128 ms | within | 238 ms |
-| `code-block-streaming.component.spec.ts` | within | within | 133 ms |
-| `code-block-streaming-scroll.component.spec.ts` | 198 ms | 212 ms | 350 ms |
+| `code-block-forced-highlights.component.spec.ts` | 156 ms | within | 270 ms |
+| `code-block-forced-spans.component.spec.ts` | 323 ms | within | 314 ms |
+| `code-block-run-keys.component.spec.ts` | 150 ms | within | within |
+| `code-block-run-state.component.spec.ts` | 191 ms | within | within |
+| `code-block-settled-layout.component.spec.ts` | 183 ms | within | 134 ms |
+| `code-block-settled-pixels.component.spec.ts` | 160 ms | 133 ms | 202 ms |
+| `code-block-streaming-return.component.spec.ts` | within | within | 150 ms |
+| `code-block-streaming.component.spec.ts` | within | within | 166 ms |
+| `code-block-streaming-scroll.component.spec.ts` | 120 ms | within | 272 ms |
 
 The virtual list's specs step rendered frames, checking each frame of a scroll, a drag or a key press, so their time is bound by the frames their checks need and by the machine that runs them.
 [#178](https://github.com/noldova-com/ui-components/issues/178) cut the focus ring's, kit rows' and spinner's settles to a pass of one rendered frame, and the spinner's file was within the budget on every system at 9bb5b36.
