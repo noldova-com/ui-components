@@ -217,6 +217,17 @@ describe("ToolbarDirective", () => {
     expect([taken, document.activeElement]).toEqual([true, document.body]);
   });
 
+  it("forgets the focus when the focused item leaves with no item left, so items added later leave the focus on the page", async () => {
+    item("Italic").focus();
+    await fixture.whenStable();
+
+    await updateAsync(() => host.items.set([]));
+    const emptied = document.activeElement;
+    await updateAsync(() => host.items.set(["Bold", "|", "Locked"]));
+
+    expect([emptied, document.activeElement, tabStops()]).toEqual([document.body, document.body, ["Bold"]]);
+  });
+
   it("leaves the focus where it went when an item that had it before is removed: on another control or on the page", async () => {
     item("Italic").focus();
     DomFixture.one(DomFixture.host(fixture), ".after").focus();

@@ -61,7 +61,7 @@ export class ToolbarDirective {
       const stop = !Object.isNull(current) && !isGone ? current : items[this.start()] ?? items[0] ?? null;
       for (const item of items)
         item.setTabStop(item === stop);
-      if (isGone && !Object.isNull(stop) && this.hasFocus)
+      if (isGone && this.hasFocus)
         untracked(() => this.refocus(stop));
     });
   }
@@ -84,7 +84,8 @@ export class ToolbarDirective {
       return;
     }
     queueMicrotask(() => {
-      this.hasFocus = this.host.contains(this.host.ownerDocument.activeElement) || (target instanceof Node && !target.isConnected && this.isFocusOnPage());
+      if (target instanceof Node && target.isConnected && !this.host.contains(this.host.ownerDocument.activeElement))
+        this.hasFocus = false;
     });
   }
 
@@ -94,9 +95,9 @@ export class ToolbarDirective {
     this.keys.onKeydown(event);
   }
 
-  private refocus(stop: ToolbarItemDirective): void {
+  private refocus(stop: ToolbarItemDirective | null): void {
     afterNextRender(() => {
-      if (this.items().includes(stop) && this.isFocusOnPage())
+      if (!Object.isNull(stop) && this.items().includes(stop) && this.isFocusOnPage())
         this.keys.setActiveItem(stop);
       else
         this.hasFocus = false;
