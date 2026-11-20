@@ -8,6 +8,7 @@
 
 import { OverlaySide } from "../../models/overlay-side.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
+import { Resources } from "../../../resources.js";
 
 export class TabResources {
   public static readonly tabTooltip: TooltipDefaults = new TooltipDefaults(OverlaySide.below, true);
@@ -16,6 +17,7 @@ export class TabResources {
   public static readonly tabWaitingDescription: string = "waiting for your answer";
   public static readonly tabTitleFieldLabel: string = "Tab title";
   public static readonly tabImageGlyph: string = "public";
+  public static readonly menuPaneSelector: string = `.${Resources.menuPaneClass}`;
   public static formatBadged(label: string, badge: string): string {
     return `${label}, ${badge}`;
   }
