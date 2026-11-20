@@ -9,6 +9,8 @@
 import { KitStylesheetFixture } from "../../../src/testing/services/kit-stylesheet-fixture";
 
 describe("KitStylesheetFixture", () => {
+  // The browser's default size of its buffer of resource timing entries.
+  const TIMING_BUFFER_SIZE = 250;
   let page: HTMLLinkElement[];
   let added: HTMLLinkElement[];
   let sheets: HTMLStyleElement[];
@@ -31,6 +33,7 @@ describe("KitStylesheetFixture", () => {
     sheets.forEach(t => t.remove());
     scripted.forEach(t => document.fonts.delete(t));
     page.forEach(t => t.media = "");
+    performance.setResourceTimingBufferSize(TIMING_BUFFER_SIZE);
   });
 
   function link(rel: string | null): HTMLLinkElement {
@@ -76,7 +79,8 @@ describe("KitStylesheetFixture", () => {
   }
 
   function reported(failure: AggregateError): string[] {
-    return failure.message.split("\n").map(t => t.replace(/ answered HTTP (\d+).*/u, " answered HTTP $1").replace(/ failed with TypeError: .*/u, " failed with TypeError"));
+    return failure.message.split("\n").map(t => t.replace(/, and the page's own load of it .*/u, "").replace(/ answered HTTP (\d+).*/u, " answered HTTP $1")
+      .replace(/ failed with TypeError: .*/u, " failed with TypeError"));
   }
 
   it("waits for the page's own stylesheet that is still loading, adding no copy", async () => {
@@ -170,6 +174,27 @@ describe("KitStylesheetFixture", () => {
     expect(failure.errors).toHaveLength(5);
   });
 
+  it("says what the page's own load of each source got before asking again: its status, whole body and time, or that it left no timing", async () => {
+    page.forEach(t => t.media = "");
+    // A full buffer of timing entries, as after many spec files in one page, takes no more; the report still has the loads' timing.
+    performance.setResourceTimingBufferSize(performance.getEntriesByType("resource").length);
+    const notFont = addressOf(`styles.css?face=${crypto.randomUUID()}`);
+    sheet([
+      `@font-face { font-family: "Not A Font"; src: url("${notFont}"); }`,
+      `@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`,
+      `@font-face { font-family: "Missing Plain"; src: url("unsupported-scheme:missing-plain"); }`
+    ].join("\n"));
+    const bytes = (await (await fetch(notFont)).arrayBuffer()).byteLength;
+
+    const failure = await failureAsync();
+    const lines = failure.message.split("\n").slice(1).toSorted();
+
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toMatch(/^Missing Face 400 normal: \S+ answered HTTP 404 .*, and the page's own load of it got HTTP 404 and \d+ bytes in \d+ ms$/u);
+    expect(lines[1]).toMatch(/^Missing Plain normal normal: fetching unsupported-scheme:missing-plain failed with TypeError: .*, and the page's own load of it left no timing$/u);
+    expect(lines[2]).toMatch(new RegExp(`^Not A Font normal normal: \\S+ answered HTTP 200 OK with Content-Length ${bytes}, and the page's own load of it got HTTP 200 and ${bytes} bytes in \\d+ ms$`, "u"));
+  });
+
   it("says a source's server did not answer once it has waited its limit, and still fails", async () => {
     page.forEach(t => t.media = "");
     sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
@@ -187,6 +212,18 @@ describe("KitStylesheetFixture", () => {
     const failure = await failing;
 
     expect(reported(failure).slice(1)).toEqual([`Missing Face 400 normal: ${addressOf("missing-face.woff2")} did not answer within 5000 ms`]);
+  });
+
+  it("says a source's server gave no Content-Length when its answer has none", async () => {
+    page.forEach(t => t.media = "");
+    sheet(`@font-face { font-family: "Missing Face"; font-weight: 400; font-style: normal; src: url("missing-face.woff2"); }`);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("A short body.", { status: 200, statusText: "OK" }));
+
+    const failure = await failureAsync();
+
+    const lines = failure.message.split("\n").slice(1);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^Missing Face 400 normal: \S+ answered HTTP 200 OK with no Content-Length, and the page's own load of it /u);
   });
 
   it("rethrows an error other than a network failure or its own deadline that asking a source's server raises", async () => {
