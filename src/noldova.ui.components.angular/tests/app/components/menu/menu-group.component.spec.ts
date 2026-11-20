@@ -516,7 +516,7 @@ describe("MenuGroupComponent opened from its trigger", () => {
       await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(row(10)));
     });
 
-  it("goes on from the row its owner marks with the arrows, Home and End", async () => {
+  it("goes on from the row its owner marks with the arrows, Home and End, which reach the group action, written after its rows, before them", async () => {
     opened.componentInstance.opensOn.set(6);
     await opened.whenStable();
     trigger().focus();
@@ -532,7 +532,10 @@ describe("MenuGroupComponent opened from its trigger", () => {
     const end = document.activeElement;
     await userEvent.keyboard("{Home}");
 
-    expect([marked === row(6), down === row(7), up === row(5), end === document.querySelector(".cdk-overlay-container .refresh")]).toEqual([true, true, true, true]);
+    const home = document.activeElement;
+    await userEvent.keyboard("{ArrowDown}");
+
+    expect([marked === row(6), down === row(7), up === row(5), end === row(10), home === document.querySelector(".cdk-overlay-container .refresh")]).toEqual([true, true, true, true, true]);
     expect(document.activeElement).toBe(row(0));
   });
 
