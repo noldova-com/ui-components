@@ -13,6 +13,7 @@ import "@noldova/context.core";
 
 import { AnnouncementPoliteness } from "../../enums/announcement-politeness.js";
 import { OverlayAlignment } from "../../enums/overlay-alignment.js";
+import { ComposingKey } from "../../models/composing-key.js";
 import { MentionBackdrop } from "../../models/mention-backdrop.js";
 import type { MentionCandidate } from "../../models/mention-candidate.js";
 import { MentionChip } from "../../models/mention-chip.js";
@@ -171,7 +172,7 @@ export class MentionFieldDirective {
       this.close();
       return;
     }
-    const isModified = event.isComposing || event.ctrlKey || event.altKey || event.metaKey;
+    const isModified = ComposingKey.isComposing(event) || event.ctrlKey || event.altKey || event.metaKey;
     const isWordKey = event.key === MentionFieldResources.backspaceKey || event.key === MentionFieldResources.deleteKey;
     if (!isModified && isWordKey && this.removeWord(event.key === MentionFieldResources.backspaceKey)) {
       event.preventDefault();

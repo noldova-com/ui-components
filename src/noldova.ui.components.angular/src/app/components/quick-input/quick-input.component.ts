@@ -13,6 +13,7 @@ import {
 
 import "@noldova/context.core";
 
+import { ComposingKey } from "../../models/composing-key.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { QuickInputGroup } from "../../models/quick-input-group.js";
 import type { QuickInputItem } from "../../models/quick-input-item.js";
@@ -120,6 +121,8 @@ export class QuickInputComponent {
   }
 
   protected onKey(event: KeyboardEvent): void {
+    if (ComposingKey.isComposing(event))
+      return;
     const next = QuickInputComponent.isModified(event) ? null : this.indexFor(event.key);
     if (!Object.isNull(next)) {
       event.preventDefault();
