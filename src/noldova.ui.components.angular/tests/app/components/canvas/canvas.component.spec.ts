@@ -282,8 +282,11 @@ describe("CanvasComponent", () => {
     await measuredAsync(24);
     await wheelAsync({ deltaX: 17, deltaY: 23 });
 
-    expect([getComputedStyle(canvas()).backgroundPosition, getComputedStyle(plane()).paddingTop, getComputedStyle(plane()).paddingLeft])
-      .toEqual([`${view().x}px ${view().y}px`, `${rootSize()}px`, `${rootSize()}px`]);
+    const [x, y] = getComputedStyle(canvas()).backgroundPosition.split(" ").map(t => Number.parseFloat(t));
+
+    AppearanceFixture.expectPixels(x ?? Number.NaN, view().x);
+    AppearanceFixture.expectPixels(y ?? Number.NaN, view().y);
+    expect([getComputedStyle(plane()).paddingTop, getComputedStyle(plane()).paddingLeft]).toEqual([`${rootSize()}px`, `${rootSize()}px`]);
   });
 
   const endings: readonly (readonly [string, (pointerId: number, x: number, y: number) => void])[] = [
