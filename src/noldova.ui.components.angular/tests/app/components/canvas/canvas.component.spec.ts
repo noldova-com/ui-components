@@ -139,7 +139,7 @@ describe("CanvasComponent", () => {
             AppearanceFixture.readColor(theme, mode, "accent"), AppearanceFixture.readColor(theme, mode, "badge")]);
         AppearanceFixture.expectPixels(toolbar.left - frame.left, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
         AppearanceFixture.expectPixels(frame.right - overview.right, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
-        AppearanceFixture.expectPixels(map().clientHeight, AppearanceFixture.toPixels(7));
+        AppearanceFixture.expectPixels(Math.max(map().clientHeight / 7, map().clientWidth / 14), AppearanceFixture.toPixels(1));
         AppearanceFixture.expectPixels(tip.left - toolbar.right, AppearanceFixture.measureLook("space-1"));
         expect([tip.top, getComputedStyle(hint()).backgroundColor, getComputedStyle(hint()).color, icon.width > 0, icon.right <= button("fit").getBoundingClientRect().right])
           .toEqual([toolbar.top, AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "text-muted"), true, true]);
@@ -344,7 +344,8 @@ describe("CanvasComponent", () => {
   });
 
   it("wraps its hint below the toolbar on a narrow canvas, and fits its items below both", async () => {
-    await measuredAsync(24);
+    host.cards.set([1, 2, 3]);
+    await measuredAsync(3);
     canvas().style.width = "20rem";
     await DomChangeFixture.untilAsync(() => expect(hint().getBoundingClientRect().top).toBeGreaterThanOrEqual(tools().getBoundingClientRect().bottom));
     await DomChangeFixture.untilAsync(() => expect(Number(mapView().getAttribute("width")) * instance().view().zoom).toBeCloseTo(canvas().clientWidth, 3));
