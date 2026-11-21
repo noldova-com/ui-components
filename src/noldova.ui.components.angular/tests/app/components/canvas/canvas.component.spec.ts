@@ -12,6 +12,7 @@ import { By } from "@angular/platform-browser";
 
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
 import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
+import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
@@ -22,7 +23,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   imports: [CanvasComponent, CanvasItemDirective],
   template: `
     <div [hidden]="hidden()">
-      <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [(mapShown)]="mapShown">
+      <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [(mapShown)]="mapShown" [fitAlignment]="alignment()">
         @if (cards().length > 0) {
           <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(' + columns() + ', 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
             @for (card of cards(); track card) {
@@ -39,6 +40,7 @@ class CanvasHostComponent {
   public readonly columns = computed(() => Math.min(this.cards().length, 6));
   public readonly mapShown = signal(true);
   public readonly hidden = signal(false);
+  public readonly alignment = signal(CanvasFitAlignment.Centre);
 }
 
 describe("CanvasComponent", () => {
@@ -163,6 +165,20 @@ describe("CanvasComponent", () => {
     await fixture.whenStable();
 
     expect([zoomText(), instance().view().zoom]).toEqual(["100%", 1]);
+  });
+
+  it("fits its items at the top of the free area below its toolbar's band when its alignment says so, centred across either way", async () => {
+    host.cards.set([1, 2]);
+    await measuredAsync(2);
+    instance().fit();
+    await fixture.whenStable();
+    const centred = view();
+    host.alignment.set(CanvasFitAlignment.Top);
+    await fixture.whenStable();
+    instance().fit();
+    const top = view();
+
+    expect([top.x, top.y, centred.y > top.y]).toEqual([centred.x, band().offsetTop * 2 + band().offsetHeight, true]);
   });
 
   it("fits its items over the whole area once its map is hidden, and says whether the map shows", async () => {

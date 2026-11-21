@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, type Signal
 import "@noldova/context.core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
+import { CanvasFitAlignment } from "../../enums/canvas-fit-alignment.js";
 import { CanvasBox } from "../../models/canvas-box.js";
 import { CanvasPoint } from "../../models/canvas-point.js";
 import { CanvasView } from "../../models/canvas-view.js";
@@ -72,6 +73,7 @@ export class CanvasComponent {
 
   public readonly label = input.required<string>();
   public readonly mapShown = model<boolean>(true);
+  public readonly fitAlignment = input<CanvasFitAlignment>(CanvasFitAlignment.Centre);
   public readonly view: Signal<CanvasView> = this.shown.asReadonly();
 
   public constructor() {
@@ -97,7 +99,7 @@ export class CanvasComponent {
     const top = inset + tools.offsetHeight + inset;
     const map = this.map()?.nativeElement;
     const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
-    this.shown.set(CanvasView.fit(this.contentBox(), new CanvasBox(inset, top, size.width - inset * 2, bottom - top)));
+    this.shown.set(CanvasView.fit(this.contentBox(), new CanvasBox(inset, top, size.width - inset * 2, bottom - top), this.fitAlignment()));
   }
 
   public actualSize(): void {

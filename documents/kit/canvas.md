@@ -29,9 +29,9 @@ A wheel that counts lines moves 16px a line, and one that counts pages the canva
 Dragging the background pans once the pointer has moved 4px, with the pointer captured; a press on a button, a link, a field, a label, editable text, the toolbar, the map or an element marked `data-nol-canvas-no-pan` never starts one, nor does any button but the primary.
 Two pointers zoom around their middle by the change in their distance.
 With the focus on the canvas itself, not on a control inside it, the arrow keys pan by 3rem, plus and minus zoom by 1.2 times around the middle, and 0 fits.
-The toolbar's zoom buttons zoom by 1.2 times around the middle, 100% returns to actual size around the middle, and Fit shows the whole content, centred, never above 100%; content too large even at 25% starts at the area's top-left.
+The toolbar's zoom buttons zoom by 1.2 times around the middle, 100% returns to actual size around the middle, and Fit shows the whole content, centred across and, by `fitAlignment`, centred down or at the top of the free area, never above 100%; content too large even at 25% starts at the area's top-left.
 The canvas fits its content once the content first has a size, and keeps its view through later resizes.
-A press on the map outside its rectangle centres that spot; dragging on the map then moves the view with the pointer; the view's rectangle stops at the map's edge. Enter or Space on the map fits.
+A press on the map outside its rectangle centres that spot, on the press rather than on a click, since a drag on the map starts with that same press; dragging on the map then moves the view with the pointer; the view's rectangle stops at the map's edge. Enter or Space on the map fits.
 The map's toggle shows or hides the map, pressed while it shows.
 
 The canvas is a focusable region named by its owner's label, described as a canvas, with its keys as its keyboard shortcuts and a focus ring inside its border.

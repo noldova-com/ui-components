@@ -204,6 +204,22 @@ export declare enum ButtonVariant {
 }
 
 /**
+ * Where a {@link CanvasComponent}'s Fit puts the content down the free area;
+ * across, it is always centred.
+ */
+export declare enum CanvasFitAlignment {
+  /**
+   * Centred down the free area; the default.
+   */
+  Centre = "Centre",
+
+  /**
+   * At the top of the free area, below the toolbar's band.
+   */
+  Top = "Top"
+}
+
+/**
  * What a {@link ChipComponent} shows and how it is colored. Content projected
  * into the chip replaces the text its kind makes from its count.
  */
@@ -2757,6 +2773,12 @@ export declare class CanvasComponent {
    * True when not bound.
    */
   public readonly mapShown: ModelSignal<boolean>;
+
+  /**
+   * Where Fit puts the content down the free area: centred, the default, or
+   * at its top, as an organization chart that grows downward wants.
+   */
+  public readonly fitAlignment: InputSignal<CanvasFitAlignment>;
 
   /**
    * Where the content shows: its offset on the canvas in CSS pixels and its
@@ -5782,16 +5804,19 @@ export declare class CanvasView {
   public static clampZoom(zoom: number): number;
 
   /**
-   * The view that shows the whole content in an area of the screen: centred,
-   * at the largest zoom that fits, never above {@link CanvasView.fitZoom}.
-   * Content that doesn't fit even at the smallest zoom starts at the area's
-   * start; empty content, or an empty area, shows at 100% at its start.
+   * The view that shows the whole content in an area of the screen: centred
+   * across, centred down or at the area's top as the alignment says, at the
+   * largest zoom that fits, never above {@link CanvasView.fitZoom}. Content
+   * that doesn't fit even at the smallest zoom starts at the area's start;
+   * empty content, or an empty area, shows at 100% at its start.
    *
    * @param content The content's box at 100%.
    * @param area The area of the screen to fit it in.
+   * @param alignment Where the content stands down the area; centred when
+   * not given.
    * @returns The view.
    */
-  public static fit(content: CanvasBox, area: CanvasBox): CanvasView;
+  public static fit(content: CanvasBox, area: CanvasBox, alignment?: CanvasFitAlignment): CanvasView;
 
   /**
    * A wheel event's distance in CSS pixels.

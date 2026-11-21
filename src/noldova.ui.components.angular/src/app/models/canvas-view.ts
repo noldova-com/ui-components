@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { CanvasFitAlignment } from "../enums/canvas-fit-alignment.js";
 import { CanvasBox } from "./canvas-box.js";
 
 export class CanvasView {
@@ -31,12 +32,12 @@ export class CanvasView {
     return Math.min(CanvasView.maximumZoom, Math.max(CanvasView.minimumZoom, zoom));
   }
 
-  public static fit(content: CanvasBox, area: CanvasBox): CanvasView {
+  public static fit(content: CanvasBox, area: CanvasBox, alignment: CanvasFitAlignment = CanvasFitAlignment.Centre): CanvasView {
     if (content.width <= 0 || content.height <= 0 || area.width <= 0 || area.height <= 0)
       return new CanvasView(area.left - content.left, area.top - content.top, CanvasView.fitZoom);
     const zoom = CanvasView.clampZoom(Math.min(CanvasView.fitZoom, area.width / content.width, area.height / content.height));
     const x = area.left + Math.max(0, (area.width - content.width * zoom) / 2) - content.left * zoom;
-    const y = area.top + Math.max(0, (area.height - content.height * zoom) / 2) - content.top * zoom;
+    const y = area.top + (alignment === CanvasFitAlignment.Top ? 0 : Math.max(0, (area.height - content.height * zoom) / 2)) - content.top * zoom;
     return new CanvasView(x, y, zoom);
   }
 

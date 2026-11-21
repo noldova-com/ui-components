@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { CanvasFitAlignment } from "../../../src/app/enums/canvas-fit-alignment";
 import { CanvasBox } from "../../../src/app/models/canvas-box";
 import { CanvasView } from "../../../src/app/models/canvas-view";
 
@@ -37,6 +38,13 @@ describe("CanvasView", () => {
     const large = CanvasView.fit(new CanvasBox(0, 0, 2000, 400), new CanvasBox(16, 40, 1000, 400));
 
     expect([view(small), view(large)]).toEqual([[400, 190, 1], [16, 140, 0.5]]);
+  });
+
+  it("fits content at the area's top when asked, still centred across", () => {
+    const small = CanvasView.fit(new CanvasBox(0, 0, 200, 100), new CanvasBox(0, 40, 1000, 400), CanvasFitAlignment.Top);
+    const centred = CanvasView.fit(new CanvasBox(0, 0, 200, 100), new CanvasBox(0, 40, 1000, 400), CanvasFitAlignment.Centre);
+
+    expect([view(small), view(centred)]).toEqual([[400, 40, 1], [400, 190, 1]]);
   });
 
   it("fits content that starts away from the origin by its own box", () => {
