@@ -13,10 +13,10 @@
   align-items: center;
   gap: var(--nol-meter-gap);
   box-sizing: border-box;
-  min-width: 0;
+  min-width: calc(var(--nol-meter-grow, 0) * 100%);
   max-width: 100%;
   color: var(--nol-text-muted);
-  font-size: var(--nol-text-panel);
+  font-size: var(--nol-meter-text-size, var(--nol-text-panel));
   white-space: nowrap;
 }
 
@@ -28,12 +28,12 @@
 
 .nol-meter-track {
   display: block;
-  flex: none;
+  flex: var(--nol-meter-grow, 0) 0 auto;
   width: var(--nol-meter);
   height: var(--nol-meter-height);
   overflow: hidden;
   border-radius: calc(var(--nol-meter-height) / 2);
-  background: color-mix(in srgb, var(--nol-meter-color) 25%, transparent);
+  background: var(--nol-meter-track, color-mix(in srgb, var(--nol-meter-color) 25%, transparent));
 
   @media (forced-colors: active) {
     outline: var(--nol-border-width) solid CanvasText;

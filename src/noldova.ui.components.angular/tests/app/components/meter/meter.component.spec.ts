@@ -20,6 +20,9 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   template: `
     <div class="frame" [attr.dir]="direction()"><nol-meter class="subject" label="Weekly usage" [value]="value()" [warning]="warning()">{{ caption() }}</nol-meter></div>
     <div><nol-meter class="bare" label="Session usage" [value]="0.5" /></div>
+    <div class="row" style="width: 20rem"><nol-meter class="grown" label="Weekly usage" [value]="0.42"
+      style="--nol-meter-grow: 1; --nol-meter-track: var(--nol-selected); --nol-meter-text-size: var(--nol-text-small)">42%</nol-meter></div>
+    <div class="tight" style="width: 8rem"><nol-meter class="grown-long" label="Weekly usage" [value]="0.92" style="--nol-meter-grow: 1">92% of this week's limit used</nol-meter></div>
     <div class="narrow" style="width: 8rem"><nol-meter class="long" label="Weekly usage" [value]="0.92">92% of this week's limit used, which resets on Nov 2</nol-meter></div>
   `
 })
@@ -145,6 +148,45 @@ describe("MeterComponent", () => {
 
     AppearanceFixture.expectPixels(fill().getBoundingClientRect().right, bar.right);
     AppearanceFixture.expectPixels(bar.left - text().getBoundingClientRect().right, AppearanceFixture.measureLook("meter-gap"));
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws its track in --nol-meter-track and its text at --nol-meter-text-size when they are set, from the ${theme.id} theme in ${mode} mode`, async () => {
+        AppearanceFixture.apply(theme, mode);
+        await fixture.whenStable();
+        const probe = document.body.appendChild(document.createElement("div"));
+        probe.style.fontSize = "var(--nol-text-small)";
+        const small = Number.parseFloat(getComputedStyle(probe).fontSize);
+        probe.remove();
+
+        expect([getComputedStyle(fill("grown")).backgroundColor, getComputedStyle(track("grown")).backgroundColor])
+          .toEqual([AppearanceFixture.readColor(theme, mode, "progress"), AppearanceFixture.readColor(theme, mode, "selected")]);
+        AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(text("grown")).fontSize), small);
+      });
+
+  it("fills its container with --nol-meter-grow set to 1, its bar growing from its start to the gap before its text, filled to its fraction", () => {
+    const box = meter("grown").getBoundingClientRect();
+    const row = DomFixture.one(DomFixture.host(fixture), ".row").getBoundingClientRect();
+    const bar = track("grown").getBoundingClientRect();
+    const words = text("grown").getBoundingClientRect();
+
+    AppearanceFixture.expectPixels(box.left, row.left);
+    AppearanceFixture.expectPixels(box.width, row.width);
+    AppearanceFixture.expectPixels(bar.left, row.left);
+    AppearanceFixture.expectPixels(words.left - bar.right, AppearanceFixture.measureLook("meter-gap"));
+    AppearanceFixture.expectPixels(words.right, row.right);
+    AppearanceFixture.expectPixels(words.width, text("grown").scrollWidth);
+    AppearanceFixture.expectPixels(fill("grown").getBoundingClientRect().width, bar.width * 0.42);
+  });
+
+  it("keeps a grown bar at least its theme width and cuts text too long for the rest of the row with an ellipsis", () => {
+    const box = meter("grown-long").getBoundingClientRect();
+    const container = DomFixture.one(DomFixture.host(fixture), ".tight").getBoundingClientRect();
+
+    AppearanceFixture.expectPixels(track("grown-long").getBoundingClientRect().width, AppearanceFixture.measureLook("meter"));
+    AppearanceFixture.expectPixels(box.right, container.right);
+    expect([text("grown-long").scrollWidth > text("grown-long").clientWidth, getComputedStyle(text("grown-long")).textOverflow]).toEqual([true, "ellipsis"]);
   });
 
   it("is its bar alone without text", () => {
