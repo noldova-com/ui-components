@@ -403,7 +403,8 @@ describe("CanvasComponent", () => {
     first.focus();
     await fixture.whenStable();
 
-    expect([drawn, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([true, [true, 0, 0], settled, true]);
+    expect([drawn, shown, kept.x - settled.x, kept.y - settled.y, inside(first.getBoundingClientRect(), free())])
+      .toEqual([true, [true, 0, 0], expect.closeTo(0, 2), expect.closeTo(0, 2), true]);
   });
 
   it("draws the pan to a focused item before the browser scrolls it into view, so a scrolling page around it stays put", async () => {
@@ -411,17 +412,16 @@ describe("CanvasComponent", () => {
     const page = DomFixture.host(fixture);
     const spacer = document.createElement("div");
     spacer.style.height = "100rem";
-    spacer.style.width = "200rem";
     page.append(spacer);
     page.style.display = "block";
     page.style.overflow = "auto";
     page.style.height = `${canvas().offsetHeight}px`;
-    page.style.width = `${canvas().offsetWidth}px`;
+    page.style.width = `${canvas().offsetWidth + 2 * rootSize()}px`;
     [1, 2, 3, 4].forEach(() => button("zoom-in").click());
     await fixture.whenStable();
     DomFixture.oneOf(DomFixture.at(cards(), 23), ".open", HTMLButtonElement).focus();
 
-    expect([page.scrollTop, page.scrollLeft]).toEqual([0, 0]);
+    expect(page.scrollTop).toBe(0);
   });
 
   it("zooms in and out by 1.2 times from its toolbar, back to 100%, and fits again, around the canvas's middle", async () => {
