@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.23
+
+- `@noldova/ui.components.angular`: a new color, `card`, with `--nol-card`, for a card raised on the window's color: white, `#FFFFFF`, in the default theme's light mode and `#2B2B2B` in dark; a theme without it falls back to `raised`. `--nol-raised` and every component keep their colors.
+
 ## 0.0.22
 
 - `@noldova/ui.components.angular`: a popover trigger can open its popover on hover and keyboard focus instead of a click, with `nolPopoverOpenOn` set to `PopoverOpening.Hover`, for details shown as an item is pointed at or reached by the keyboard. It opens once the pointer has rested on the control for the tooltip's delay, or at once when the keyboard moves the focus to the control, leaving the focus there; Enter or Space then moves the focus into it, and on a link only Space does, so Enter still follows the link. The pointer can cross between the control and the popover without closing it, which closes after the tooltip's hide delay once the pointer, or the focus that opened it, has left both. Touch opens and closes it with a tap.
