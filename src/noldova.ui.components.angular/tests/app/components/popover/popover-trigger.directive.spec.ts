@@ -374,12 +374,14 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     await settleAsync();
     const afterInto = surface() !== null;
     pane(popover).dispatchEvent(pointer("mouse", card()));
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(60_000);
     await settleAsync();
-    const afterBack = surface() !== null;
+    const afterBack = [surface() === popover, source.timerCount];
     card().dispatchEvent(pointer("mouse", document.body));
     await settleAsync();
 
-    expect([afterInto, afterBack, surface(), card().getAttribute("aria-expanded")]).toEqual([true, true, null, "false"]);
+    expect([afterInto, afterBack, surface(), card().getAttribute("aria-expanded")]).toEqual([true, [true, 0], null, "false"]);
   });
 
   it("stays open while the pointer crosses the gap toward the popover, and closes when it strays from that path or leaves the popover", async () => {
