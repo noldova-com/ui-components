@@ -69,7 +69,7 @@ class LargeDialogHostComponent {
 @Component({
   imports: [DialogComponent, ButtonComponent],
   template: `
-    <nol-dialog title="Add a teammate" [size]="medium">
+    <nol-dialog title="Add a teammate" [size]="medium" (dismissed)="dismissals = dismissals + 1">
       <input class="nol-dialog-field" aria-label="Name" />
       <button nol-button nolDialogAction data-save>Save</button>
     </nol-dialog>
@@ -77,6 +77,8 @@ class LargeDialogHostComponent {
 })
 class MediumDialogHostComponent {
   protected readonly medium: DialogSize = DialogSize.Medium;
+
+  public dismissals: number = 0;
 }
 
 @Component({
@@ -279,6 +281,19 @@ describe("DialogComponent", () => {
     await userEvent.keyboard("{Escape}");
 
     expect([...heard, opened.componentInstance?.dismissals]).toEqual([0, 0, 1]);
+  });
+
+  it("keeps the dialog open on an Escape that ends a composition in its field, whether reported as composing or by the input method's key code", async () => {
+    const opened = await openMediumAsync();
+    const field = DomFixture.one(document, ".nol-dialog-field");
+    field.focus();
+
+    for (const composing of [{ isComposing: true }, { keyCode: 229 }])
+      field.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true, ...composing }));
+    const whileComposing = opened.componentInstance?.dismissals;
+    await userEvent.keyboard("{Escape}");
+
+    expect([whileComposing, opened.componentInstance?.dismissals]).toEqual([0, 1]);
   });
 
   it("tells only the topmost of two dialogs when Escape is pressed while its container has the focus", async () => {
