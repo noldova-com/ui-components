@@ -12728,8 +12728,10 @@ export declare class ToolbarButtonComponent {
 /**
  * Makes its element a toolbar, `nolToolbar`, whose {@link ToolbarItemDirective}
  * items form one tab stop. The arrow keys along its orientation, Home and
- * End move focus between the items, left to right in a horizontal toolbar;
- * the tab stop follows focus and starts at the item
+ * End move focus between the items. In a horizontal toolbar, Left and Right
+ * follow the toolbar's text direction as it is when the key is pressed, so
+ * in right-to-left text Left moves on to the next item. The tab stop follows
+ * focus and starts at the item
  * {@link ToolbarDirective.start} names. When the focused item is removed,
  * the new tab stop takes the focus, unless another element took it first;
  * when no item is left, items added later don't take the focus.

@@ -52,7 +52,7 @@ export class ToolbarDirective {
     });
     effect(() => {
       const isVertical = this.orientation() === ToolbarOrientation.Vertical;
-      this.keys.withVerticalOrientation(isVertical).withHorizontalOrientation(isVertical ? null : ToolbarResources.toolbarDirection).withWrap(this.isWrapping());
+      this.keys.withVerticalOrientation(isVertical).withWrap(this.isWrapping());
     });
     effect(() => {
       const items = this.items();
@@ -92,6 +92,8 @@ export class ToolbarDirective {
   protected move(event: KeyboardEvent): void {
     if (!ToolbarResources.toolbarMoveKeys[this.orientation()].includes(event.key) || !this.items().some(t => t.element === event.target))
       return;
+    const direction = this.host.matches(Resources.rightToLeftSelector) ? Resources.rightToLeftDirection : Resources.leftToRightDirection;
+    this.keys.withHorizontalOrientation(this.orientation() === ToolbarOrientation.Vertical ? null : direction);
     this.keys.onKeydown(event);
   }
 
