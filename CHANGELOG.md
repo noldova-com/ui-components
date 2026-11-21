@@ -4,6 +4,14 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.24
+
+- `@noldova/ui.components.angular`: a behaviour change: a checkbox shows only its bound value, `checked`, after the person toggles it, so an unbound `nol-checkbox` no longer ticks itself, and a box whose owner defers the change ticks when the bound value arrives; `checkedChange` emits the value the person asks for. No Noldova consumer is affected.
+- `@noldova/ui.components.angular`: three variables the code that uses a meter can set on its element, each unset keeping its look: `--nol-meter-track`, the track's color, which keeps its color in the warning tone; `--nol-meter-text-size`, the text's size; and `--nol-meter-grow`, which at `1` makes the meter as wide as its container, its bar growing to the gap before its text and never narrower than `--nol-meter`.
+- `@noldova/ui.components.angular`: four variables the code that uses a popover can set on its `nolPopover` element, each unset keeping the menu's look: `--nol-popover-preferred-width`, still clamped to the overlay bounds, and `--nol-popover-surface`, `--nol-popover-border` and `--nol-popover-text`; a hover card sets them to 18rem, `--nol-hover-widget`, `--nol-hover-widget-border` and `--nol-text`.
+- `@noldova/ui.components.angular`: choice pills honour a disabled option: its pill is dimmed and marked `aria-disabled`, a click on it chooses nothing, the arrow keys, Home and End pass over it, and the first enabled pill is the Tab stop when none is checked; under forced colors it shows in `GrayText`.
+- Internal, with no change to the packages: the kit's tests read a localhost port the event loop stalled past the connection probe's limit as refused, since the probe counts its limits in event loop turns (#342), and the tool-call spec ends a key's scroll only at a scroll end after its own move (#343).
+
 ## 0.0.23
 
 - `@noldova/ui.components.angular`: a new color, `card`, with `--nol-card`, for a card raised on the window's color: white, `#FFFFFF`, in the default theme's light mode and `#2B2B2B` in dark; a theme without it falls back to `raised`. `--nol-raised` and every component keep their colors.
