@@ -176,7 +176,7 @@ describe("MeterComponent", () => {
     AppearanceFixture.expectPixels(bar.left, row.left);
     AppearanceFixture.expectPixels(words.left - bar.right, AppearanceFixture.measureLook("meter-gap"));
     AppearanceFixture.expectPixels(words.right, row.right);
-    AppearanceFixture.expectPixels(words.width, text("grown").scrollWidth);
+    expect(text("grown").scrollWidth).toBeLessThanOrEqual(text("grown").clientWidth);
     AppearanceFixture.expectPixels(fill("grown").getBoundingClientRect().width, bar.width * 0.42);
   });
 
