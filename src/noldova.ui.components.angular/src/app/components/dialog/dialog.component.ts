@@ -11,6 +11,7 @@ import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, i
 
 import { Resources } from "../../../resources.js";
 import { DialogSize } from "../../enums/dialog-size.js";
+import { ComposingKey } from "../../models/composing-key.js";
 import { DialogTokens } from "../../models/dialog-tokens.js";
 import { OverlayBoundsService } from "../../services/overlay-bounds.service.js";
 import { PointerDrag } from "../../services/pointer-drag.js";
@@ -28,7 +29,7 @@ import { TooltipDirective } from "../tooltip/tooltip.directive.js";
     "[class.nol-dialog-large]": "isLarge()",
     "[class.nol-dialog-maximized]": "isShownMaximized()",
     "[style.translate]": "translation()",
-    "(keydown.escape)": "dismiss($event)"
+    "(keydown)": "escape($event)"
   }
 })
 export class DialogComponent {
@@ -55,10 +56,7 @@ export class DialogComponent {
 
   public constructor() {
     const resizes = new ResizeObserver(() => this.keepInside());
-    const keys = inject(DialogRef, { optional: true })?.keydownEvents.subscribe(event => {
-      if (event.key === Resources.escapeKey && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey)
-        this.dismiss(event);
-    });
+    const keys = inject(DialogRef, { optional: true })?.keydownEvents.subscribe(event => this.escape(event));
     inject(DestroyRef).onDestroy(() => {
       keys?.unsubscribe();
       resizes.disconnect();
@@ -88,8 +86,8 @@ export class DialogComponent {
     this.drag.start();
   }
 
-  protected dismiss(event: Event): void {
-    if (event.defaultPrevented)
+  protected escape(event: KeyboardEvent): void {
+    if (event.key !== Resources.escapeKey || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.defaultPrevented || ComposingKey.isComposing(event))
       return;
     event.preventDefault();
     this.dismissed.emit();

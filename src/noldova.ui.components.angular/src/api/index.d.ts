@@ -4284,7 +4284,8 @@ export declare class DialogComponent {
    * Emits when the person asks to dismiss the dialog, by Escape without
    * Shift, Ctrl, Alt or Meta while it is the topmost dialog, wherever the
    * focus is: inside it, on the dialog itself or on the page; or by its Close
-   * button. The owner closes the dialog, or keeps it open.
+   * button. An Escape that ends an input method's composition never emits.
+   * The owner closes the dialog, or keeps it open.
    */
   public readonly dismissed: OutputEmitterRef<void>;
 }
