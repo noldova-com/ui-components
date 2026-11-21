@@ -136,6 +136,23 @@ describe("PopoverTriggerDirective", () => {
     expect([isOpenAfterTab, surface(), document.activeElement]).toEqual([true, null, trigger()]);
   });
 
+  it("stays open on an Escape that ends an input method's composition", async () => {
+    await renderAsync();
+    const popover = await openAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, isComposing: true }));
+    await fixture.whenStable();
+    const isOpenAfterComposing = surface() !== null;
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", keyCode: 229, bubbles: true }));
+    await fixture.whenStable();
+    const isOpenAfterProcessKey = surface() !== null;
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await fixture.whenStable();
+
+    expect([isOpenAfterComposing, isOpenAfterProcessKey, surface(), document.activeElement]).toEqual([true, true, null, trigger()]);
+  });
+
   it("keeps an Escape that something inside it already handled, and returns focus to the trigger when it is closed from inside", async () => {
     await renderAsync();
     const popover = await openAsync();
