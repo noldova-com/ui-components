@@ -30,6 +30,7 @@ The default theme's grays for surfaces, borders, hover, selection and the focuse
 | `--nol-window` | `window` | #F8F8F8 | #181818 | Shell and dock surfaces |
 | `--nol-panel` | `panel` | #FFFFFF | #1F1F1F | Document surface |
 | `--nol-raised` | `raised` | #F8F8F8 | #2B2B2B | Raised cards |
+| `--nol-card` | `card`, fallback `raised` | #FFFFFF | #2B2B2B | A card raised on the window's color, such as a chart's card on a canvas: white in light, where `--nol-raised` is the window's own gray |
 | `--nol-code` | `code`, fallback `window` | #F8F8F8 | #181818 | Code body |
 | `--nol-code-header` | `code-header`, fallback `raised` | #F2F2F2 | #2B2B2B | Code header |
 | `--nol-code-header-raised` | `code-header-raised`, fallback `code-header` | #F2F2F2 | #343434 | A code header on a raised or selected row, one step apart from the row in dark; muted text keeps 4.5:1 on it |

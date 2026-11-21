@@ -29,6 +29,7 @@ describe("DefaultTheme", () => {
       ["terminal-dark-background", "#1F1F1F", "#1F1F1F"],
       ["terminal-dark-foreground", "#CCCCCC", "#CCCCCC"],
       ["raised", "#F8F8F8", "#2B2B2B"],
+      ["card", "#FFFFFF", "#2B2B2B"],
       ["attachment", "#F2F2F2", "#2B2B2B"],
       ["code-header-raised", "#F2F2F2", "#343434"],
       ["avatar-default", "#DBEAFE", "#1E3A5F"],
@@ -152,7 +153,7 @@ describe("DefaultTheme contrast", () => {
   const modes: readonly ThemeMode[] = [ThemeMode.Light, ThemeMode.Dark];
   const textRatio = 4.5;
   const partRatio = 3;
-  const surfaces: readonly string[] = ["window", "panel", "raised", "dialog", "hover-widget", "quick-input", "notification", "code", "code-header", "code-header-raised", "attachment"];
+  const surfaces: readonly string[] = ["window", "panel", "raised", "card", "dialog", "hover-widget", "quick-input", "notification", "code", "code-header", "code-header-raised", "attachment"];
   const on = (foreground: string, grounds: readonly (readonly string[])[], ratio: number): (readonly [string, readonly string[], number])[] =>
     grounds.map(t => [foreground, t, ratio] as const);
   const ansi: readonly string[] = ["", "bright-"].flatMap(t => ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"].map(u => `terminal-ansi-${t}${u}`));
