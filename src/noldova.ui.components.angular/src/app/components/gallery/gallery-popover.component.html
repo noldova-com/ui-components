@@ -18,6 +18,9 @@ LICENSE file in the root directory of this source tree.
   <nol-gallery-cell [caption]="text.triggerCaption">
     <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="popover">{{ text.popoverTrigger }}</button>
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hoverTriggerCaption">
+    <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="popover" [nolPopoverOpenOn]="openings.Hover">{{ text.popoverHoverTrigger }}</button>
+  </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
     <div nolPopover class="nol-gallery-popover" nolGalleryFocus="button" [label]="text.popoverLabel">
       <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>

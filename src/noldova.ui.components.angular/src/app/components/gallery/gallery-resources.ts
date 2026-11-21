@@ -615,6 +615,8 @@ export class GalleryResources {
     edit: "Edit",
     popover: "Popover",
     popoverTrigger: "Open a popover",
+    popoverHoverTrigger: "Point here for details",
+    hoverTriggerCaption: "Hover trigger",
     popoverLabel: "Details",
     popoverTitle: "Details",
     popoverBody: "A popover holds a short list or a few actions beside the control that opened it.",
