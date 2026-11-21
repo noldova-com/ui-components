@@ -153,6 +153,19 @@ describe("ChoicePillsComponent", () => {
     expect(host.changes).toEqual(["custom", "light", "custom", "light", "custom", "light"]);
   });
 
+  it("keeps the first pill as the Tab stop, and the choice and the focus where they are on an arrow key, when every option is disabled", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light", null, true)]);
+    host.value.set("none");
+    fixture.detectChanges();
+    const tabStops = pills().map(t => t.tabIndex);
+    pills()[0]?.focus();
+
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([tabStops, host.changes, document.activeElement === pills()[0]]).toEqual([[0, -1], [], true]);
+  });
+
   it("takes the first enabled pill as the Tab stop when nothing is checked", () => {
     render();
     host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);

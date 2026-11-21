@@ -43,19 +43,17 @@ export class ChoicePillsComponent {
       return;
     const pills = [...group.querySelectorAll<HTMLButtonElement>(ChoicePillsResources.choicePillSelector)];
     const to = ChoicePillsResources.choicePillTargets.get(event.key);
-    const onward = ChoicePillsResources.choicePillOnward.get(event.key);
-    if (Object.isUndefined(to) || Object.isUndefined(onward))
+    const direction = ChoicePillsResources.choicePillDirections.get(event.key);
+    if (Object.isUndefined(to) || Object.isUndefined(direction))
       return;
     event.preventDefault();
-    const options = this.options();
-    const last = pills.length - 1;
-    let target = to(pills.indexOf(event.target), last);
-    for (let tried = 0; tried < last && options[target]?.isDisabled === true; tried++)
-      target = onward(target, last);
-    const option = options[target];
-    if (Object.isUndefined(option) || option.isDisabled)
+    const entries = this.options().map((option, index) => ({ option, index }));
+    const start = to(pills.indexOf(event.target), entries.length - 1);
+    const ring = direction > 0 ? [...entries.slice(start), ...entries.slice(0, start)] : [...entries.slice(0, start + 1).reverse(), ...entries.slice(start + 1).reverse()];
+    const next = ring.find(t => !t.option.isDisabled);
+    if (Object.isUndefined(next))
       return;
-    this.choose(option);
-    pills[target]?.focus();
+    this.choose(next.option);
+    pills[next.index]?.focus();
   }
 }
