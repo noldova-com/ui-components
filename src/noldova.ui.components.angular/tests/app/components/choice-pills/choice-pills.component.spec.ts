@@ -153,6 +153,31 @@ describe("ChoicePillsComponent", () => {
     expect(host.changes).toEqual(["custom", "light", "custom", "light", "custom", "light"]);
   });
 
+  it("chooses nothing on a click of the focused pill once it is disabled, and moves on to the next enabled pill with an arrow key", async () => {
+    render();
+    pills()[2]?.focus();
+    host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true)]);
+    fixture.detectChanges();
+    const focusedBefore = document.activeElement === pills()[2];
+
+    await page.getByRole("radio", { name: "Dark" }).click({ force: true });
+    const changesAfterClick = [...host.changes];
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([focusedBefore, changesAfterClick, host.changes, document.activeElement === pills()[0]]).toEqual([true, [], ["system"], true]);
+  });
+
+  it("moves from a checked disabled pill to the next enabled one with an arrow key", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light", null, true), new SelectOption("dark", "Dark")]);
+    fixture.detectChanges();
+    pills()[1]?.focus();
+
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([host.changes, selected(), document.activeElement === pills()[2]]).toEqual([["dark"], ["Dark"], true]);
+  });
+
   it("keeps the first pill as the Tab stop, and the choice and the focus where they are on an arrow key, when every option is disabled", async () => {
     render();
     host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light", null, true)]);
@@ -247,6 +272,35 @@ describe("ChoicePillsComponent", () => {
     });
 
   for (const mode of AppearanceFixture.modes)
+    it(`fills a checked disabled pill in GrayText with Canvas text under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light", null, true), new SelectOption("dark", "Dark")]);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const style = getComputedStyle(pills()[1] ?? document.body);
+
+        expect([style.color, style.backgroundColor, style.opacity]).toEqual([ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("GrayText"), "1"]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps a hovered checked pill's Highlight fill under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const checked = pills()[1] ?? document.body;
+        await userEvent.hover(checked);
+
+        expect(getComputedStyle(checked).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
       it(`takes its height, padding, gaps, weight and radius from the ${theme.id} theme in ${mode} mode`, () => {
         render(theme, mode);
@@ -305,6 +359,17 @@ describe("ChoicePillsComponent", () => {
         expect(before).toBe("rgba(0, 0, 0, 0)");
         expect(channels(after)).toEqual(channels(AppearanceFixture.readColor(theme, mode, "toolbar-hover")));
         expect(channels(after)).not.toEqual(channels(AppearanceFixture.readColor(theme, mode, "hover")));
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`keeps the ${theme.id} theme's selection color on a hovered checked pill in ${mode} mode`, async () => {
+        render(theme, mode);
+        const checked = pills()[1] ?? document.body;
+
+        await userEvent.hover(checked);
+
+        expect(getComputedStyle(checked).backgroundColor).toBe(AppearanceFixture.readColor(theme, mode, "selected"));
       });
 
   for (const mode of AppearanceFixture.modes)

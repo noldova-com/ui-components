@@ -14,6 +14,9 @@ LICENSE file in the root directory of this source tree.
     <nol-choice-pills [nolGalleryHover]="hoveredPill" [options]="pillOptions" [value]="text.choicePillInitial" [label]="text.hover" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus"><nol-choice-pills [nolGalleryFocus]="focusedPill" [options]="pillOptions" [value]="text.choicePillInitial" [label]="text.focus" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled">
+    <nol-choice-pills [options]="disabledPillOptions" [value]="text.choicePillInitial" [label]="text.disabled" />
+  </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
     <nol-choice-pills class="nol-gallery-narrow" [options]="longPillOptions" value="long" [label]="text.choicePillsLong" />
   </nol-gallery-cell>
