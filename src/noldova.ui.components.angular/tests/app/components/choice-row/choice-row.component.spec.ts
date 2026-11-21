@@ -28,7 +28,7 @@ import { OpacityFixture } from "../../../fixtures/opacity.fixture";
       <nol-choice-row class="hotfix" value="hotfix" label="hotfix" [disabled]="sending()" />
     </nol-radio-group>
     <nol-choice-row class="check" style="width: 20rem" [type]="types.Checkbox" label="The full test suite" description="Every target"
-      [checked]="checked()" [disabled]="disabled()" (checkedChange)="changes.push($event)" />
+      [checked]="checked()" [disabled]="disabled()" (checkedChange)="take($event)" />
     <nol-choice-row class="wrapped" style="width: 9rem" [type]="types.Checkbox" label="A label that is far too long to fit the width its row gives it"
       description="A description that is far too long to fit the row" />
   `
@@ -40,6 +40,11 @@ class ChoiceRowHostComponent {
   public readonly disabled = signal(false);
   public readonly sending = signal(false);
   public readonly changes: boolean[] = [];
+
+  public take(checked: boolean): void {
+    this.changes.push(checked);
+    this.checked.set(checked);
+  }
 }
 
 describe("ChoiceRowComponent", () => {

@@ -20,6 +20,7 @@ export class Resources {
     new ColorToken("--nol-window", "window"),
     new ColorToken("--nol-panel", "panel"),
     new ColorToken("--nol-raised", "raised"),
+    new ColorToken("--nol-card", "card", "raised"),
     new ColorToken("--nol-code", "code", "window"),
     new ColorToken("--nol-code-header", "code-header", "raised"),
     new ColorToken("--nol-code-header-raised", "code-header-raised", "code-header"),

@@ -27,12 +27,14 @@ import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
     <nol-checkbox class="labelled" [checked]="checked()" [disabled]="disabled()" (checkedChange)="changes.push($event)">Do not disturb</nol-checkbox>
     <nol-checkbox class="bare" [checked]="true" />
     <nol-checkbox class="wrapped" style="width: 9rem">A label that is far too long to fit the width its checkbox gives it</nol-checkbox>
+    <nol-checkbox class="owned" [checked]="owned()" (checkedChange)="owned.set($event)">Owned</nol-checkbox>
     <button type="button" class="after">After</button>
   `
 })
 class CheckboxHostComponent {
   public readonly checked = signal(false);
   public readonly disabled = signal(false);
+  public readonly owned = signal(false);
   public readonly changes: boolean[] = [];
 }
 
@@ -160,6 +162,26 @@ describe("CheckboxComponent", () => {
         expect([enabled, drawn()]).toEqual([[1, 1, color, place], [0.5, 0.5, color, place]]);
         expect(color).toBe(AppearanceFixture.readColor(theme, mode, "text"));
       });
+
+  it("asks its owner for each change by a click or by Space and shows only the value its owner binds, so a refused change never shows", async () => {
+    render();
+    const shown = (name: string): readonly unknown[] => [box(name).checked, getComputedStyle(mark(name)).visibility,
+      page.getByRole("checkbox", { name: name === "owned" ? "Owned" : "Do not disturb", checked: true }).elements().length];
+
+    await page.getByRole("checkbox", { name: "Do not disturb" }).click();
+    fixture.detectChanges();
+    const refusedClick = shown("labelled");
+    box("labelled").focus();
+    await userEvent.keyboard(" ");
+    fixture.detectChanges();
+    const refusedSpace = shown("labelled");
+    await page.getByRole("checkbox", { name: "Owned" }).click();
+    fixture.detectChanges();
+    const accepted = shown("owned");
+
+    expect(fixture.componentInstance.changes).toEqual([true, true]);
+    expect([refusedClick, refusedSpace, accepted]).toEqual([[false, "hidden", 0], [false, "hidden", 0], [true, "visible", 1]]);
+  });
 
   it("reports a change only when it comes from its own box", () => {
     render();
