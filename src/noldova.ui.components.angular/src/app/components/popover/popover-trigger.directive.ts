@@ -19,6 +19,7 @@ import { OverlayAlignment } from "../../enums/overlay-alignment.js";
 import { PopoverOpening } from "../../enums/popover-opening.js";
 import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
+import { ComposingKey } from "../../models/composing-key.js";
 import { OverlayAnchoring } from "../../models/overlay-anchoring.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { PointerGraceArea } from "../../models/pointer-grace-area.js";
@@ -185,7 +186,7 @@ export class PopoverTriggerDirective {
   }
 
   private closeFromKeyboard(event: KeyboardEvent, pane: HTMLElement): void {
-    if (event.defaultPrevented || (event.key !== Resources.escapeKey && !(event.key === Resources.tabKey && PopoverTriggerDirective.isLeaving(event, pane))))
+    if (event.defaultPrevented || ComposingKey.isComposing(event) || (event.key !== Resources.escapeKey && !(event.key === Resources.tabKey && PopoverTriggerDirective.isLeaving(event, pane))))
       return;
     event.preventDefault();
     this.close();

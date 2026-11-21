@@ -136,6 +136,23 @@ describe("PopoverTriggerDirective", () => {
     expect([isOpenAfterTab, surface(), document.activeElement]).toEqual([true, null, trigger()]);
   });
 
+  it("stays open on an Escape that ends an input method's composition", async () => {
+    await renderAsync();
+    const popover = await openAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, isComposing: true }));
+    await fixture.whenStable();
+    const isOpenAfterComposing = surface() !== null;
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", keyCode: 229, bubbles: true }));
+    await fixture.whenStable();
+    const isOpenAfterProcessKey = surface() !== null;
+    popover.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await fixture.whenStable();
+
+    expect([isOpenAfterComposing, isOpenAfterProcessKey, surface(), document.activeElement]).toEqual([true, true, null, trigger()]);
+  });
+
   it("keeps an Escape that something inside it already handled, and returns focus to the trigger when it is closed from inside", async () => {
     await renderAsync();
     const popover = await openAsync();
@@ -162,6 +179,26 @@ describe("PopoverTriggerDirective", () => {
     await fixture.whenStable();
 
     expect([first, surface(), document.activeElement]).toEqual([[true, true], null, trigger()]);
+  });
+
+  it("stays open on a Tab past its last control that ends an input method's composition, and closes on a plain Tab", async () => {
+    await renderAsync();
+    const popover = await openAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+    await userEvent.keyboard("{Tab}");
+    const last = DomFixture.one(popover, ".inside");
+    const isOnLast = document.activeElement === last;
+
+    last.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true, isComposing: true }));
+    await fixture.whenStable();
+    const isOpenAfterComposing = surface() !== null;
+    last.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", keyCode: 229, bubbles: true, cancelable: true }));
+    await fixture.whenStable();
+    const isOpenAfterProcessKey = surface() !== null;
+    await userEvent.keyboard("{Tab}");
+    await fixture.whenStable();
+
+    expect([isOnLast, isOpenAfterComposing, isOpenAfterProcessKey, surface(), document.activeElement]).toEqual([true, true, true, null, trigger()]);
   });
 
   for (const from of ["the popover", "its first control"])
