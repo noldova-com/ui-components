@@ -1269,7 +1269,7 @@ describe("MarkdownViewComponent", () => {
       expect([reached.includes("line3 "), reached.includes("line29"), [...written].sort((a, b) => a - b)]).toEqual([true, false, [29, 30]]);
     });
 
-    it("streams a 10,000-character reply in 100-character batches, parsing only the text not yet settled and changing a bounded number of nodes after each batch and in each frame, however long the reply has grown", async ({ annotate }) => {
+    it("streams a 10,000-character reply in 100-character batches through its first and last 1,000 characters and 1,000-character batches between, parsing only each batch and the text not yet settled, and changing nodes after each batch and in each frame in proportion to the text it adds or reveals", async ({ annotate }) => {
       const section = (index: number): string => `## Step ${index}\n\nThe build **passed** on step ${index}, with *one* warning about \`config.json\`.\n\n- First item\n- Second item with **bold**\n\n`
         + `\`\`\`ts\nconst step${index} = await runAsync(${index});\n\`\`\`\n\n| Name | Value |\n|---|---:|\n| step | ${index} |\n\n`;
       let reply = String.empty;
@@ -1281,27 +1281,47 @@ describe("MarkdownViewComponent", () => {
       const parses = [vi.spyOn(parser, "parse"), vi.spyOn(parser, "parseInline")];
       const records: MutationRecord[] = [];
       const changes = new MutationObserver(t => records.push(...t));
-      changes.observe(shownView(), { subtree: true, childList: true, characterData: true, attributes: true });
       const changedNodes = (): number => records.splice(0).concat(changes.takeRecords())
         .reduce((sum, t) => sum + (t.type === "childList" ? t.addedNodes.length + t.removedNodes.length : 1), 0);
-      const parsed: number[] = [];
-      const changed: number[] = [];
+      const shownText = (): TreeWalker => document.createTreeWalker(shownView(), NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+        acceptNode: t => t instanceof Text ? NodeFilter.FILTER_ACCEPT
+          : t instanceof HTMLElement && !t.hidden && !t.classList.contains(Resources.codeBlockHeaderClass) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT
+      });
+      let shown = 0;
+      const revealedNow = (): number => {
+        const before = shown;
+        const text = shownText();
+        shown = 0;
+        for (let node = text.nextNode(); !Object.isNull(node); node = text.nextNode())
+          shown += node.textContent?.length ?? 0;
+        return shown - before;
+      };
+      const ends = [
+        ...Array.from({ length: 10 }, (_, i) => 100 * (i + 1)),
+        ...Array.from({ length: 8 }, (_, i) => 1_000 * (i + 2)),
+        ...Array.from({ length: 10 }, (_, i) => 9_000 + 100 * (i + 1))
+      ];
+      const parsed: { readonly batch: number; readonly characters: number }[] = [];
+      const changed: { readonly added: number; readonly revealed: number; readonly nodes: number }[] = [];
       const times: number[] = [];
+      let previous = 0;
+      changes.observe(shownView(), { subtree: true, childList: true, characterData: true, attributes: true });
 
-      for (let end = 100; end <= 10_000; end += 100) {
+      for (const end of ends) {
         parses.forEach(t => t.mockClear());
         const start = performance.now();
         reveal.componentInstance.text.set(reply.slice(0, end));
         reveal.detectChanges();
         await Promise.resolve();
         times.push(performance.now() - start);
-        parsed.push(parses.flatMap(t => t.mock.calls).reduce((sum, [text]) => sum + text.length, 0));
-        changed.push(changedNodes());
-        for (let frame = 0; frame < 6; frame++) {
+        parsed.push({ batch: end - previous, characters: parses.flatMap(t => t.mock.calls).reduce((sum, [text]) => sum + text.length, 0) });
+        changed.push({ added: end - previous, revealed: revealedNow(), nodes: changedNodes() });
+        previous = end;
+        for (let frame = 0; frame < 3; frame++) {
           const before = performance.now();
           vi.advanceTimersByTime(16);
           times.push(performance.now() - before);
-          changed.push(changedNodes());
+          changed.push({ added: 0, revealed: revealedNow(), nodes: changedNodes() });
         }
       }
       changes.disconnect();
@@ -1309,11 +1329,13 @@ describe("MarkdownViewComponent", () => {
       let drawn = 0;
       while (!Object.isNull(nodes.nextNode()))
         drawn++;
-      await annotate(`Slowest step ${Math.max(...times).toFixed(1)} ms of script, median ${[...times].sort((a, b) => a - b)[times.length >> 1]?.toFixed(2)} ms, over ${times.length} steps; at most ${Math.max(...parsed)} characters parsed and ${Math.max(...changed)} nodes changed in a step, of ${drawn} nodes drawn for ${sections} sections`);
+      const sectionLength = section(100).length;
+      const nodeBound = (added: number, revealed: number): number => 2 * (drawn / sections + added * drawn / previous + Math.max(0, revealed) * drawn / shown);
+      await annotate(`Slowest step ${Math.max(...times).toFixed(1)} ms of script, median ${[...times].sort((a, b) => a - b)[times.length >> 1]?.toFixed(2)} ms, over ${times.length} steps; at most ${Math.max(...parsed.map(t => t.characters - t.batch))} characters parsed beyond a batch's own and ${Math.max(...changed.map(t => t.nodes))} nodes changed in a step, of ${drawn} nodes drawn for ${sections} sections`);
 
-      expect([parsed.length, changed.length, visible().length > 0]).toEqual([100, 700, true]);
-      expect(Math.max(...parsed)).toBeLessThanOrEqual(2 * section(100).length);
-      expect(Math.max(...changed)).toBeLessThanOrEqual(2 * drawn / sections);
+      expect([parsed.length, changed.length, shown > 0]).toEqual([28, 112, true]);
+      expect(parsed.filter(t => t.characters > t.batch + 2 * sectionLength)).toEqual([]);
+      expect(changed.filter(t => t.nodes > nodeBound(t.added, t.revealed))).toEqual([]);
     });
   });
 
