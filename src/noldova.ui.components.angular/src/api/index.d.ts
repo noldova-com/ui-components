@@ -5755,7 +5755,7 @@ export declare class CanvasView {
   public static readonly lineHeight: number;
 
   /**
-   * How fast the wheel zooms: the zoom doubles every 500 CSS pixels, 0.002.
+   * How fast the wheel zooms: the zoom changes by e^(-rate × pixels), 0.01, which doubles it about every 70 CSS pixels.
    */
   public static readonly wheelZoomRate: number;
 

@@ -14,7 +14,7 @@ export class CanvasView {
   public static readonly maximumZoom: number = 2;
   public static readonly fitZoom: number = 1;
   public static readonly lineHeight: number = 16;
-  public static readonly wheelZoomRate: number = 0.002;
+  public static readonly wheelZoomRate: number = 0.01;
   public static readonly wheelZoomStep: number = 2;
   public static readonly initial: CanvasView = new CanvasView(0, 0, 1);
 
@@ -50,7 +50,7 @@ export class CanvasView {
   }
 
   public static wheelZoomFactor(deltaPixels: number): number {
-    const factor = 2 ** (-deltaPixels * CanvasView.wheelZoomRate);
+    const factor = Math.exp(-deltaPixels * CanvasView.wheelZoomRate);
     return Math.min(CanvasView.wheelZoomStep, Math.max(1 / CanvasView.wheelZoomStep, factor));
   }
 

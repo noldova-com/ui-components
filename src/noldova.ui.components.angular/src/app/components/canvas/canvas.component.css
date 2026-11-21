@@ -11,7 +11,7 @@
   display: block;
   box-sizing: border-box;
   min-height: 12rem;
-  overflow: hidden;
+  overflow: clip;
   border: var(--nol-border-width) solid var(--nol-card-border);
   border-radius: var(--nol-radius-large);
   background-color: var(--nol-window);
@@ -40,7 +40,9 @@
   position: absolute;
   top: 0;
   left: 0;
+  box-sizing: border-box;
   width: max-content;
+  padding: var(--nol-space-4);
   transform-origin: 0 0;
 }
 

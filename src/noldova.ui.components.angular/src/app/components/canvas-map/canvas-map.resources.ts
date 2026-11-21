@@ -14,4 +14,6 @@ export class CanvasMapResources {
   public static readonly canvasMapPreserveAspectRatio: string = "none";
   public static readonly canvasMapHeightRem: number = 7;
   public static readonly canvasMapWidestRem: number = 14;
+  public static readonly canvasMapBoxRadiusRem: number = 0.0625;
+  public static readonly canvasMapViewRadiusRem: number = 0.125;
 }

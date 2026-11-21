@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 <svg class="nol-canvas-map-drawing" [attr.viewBox]="viewBox()" [attr.preserveAspectRatio]="partResources.canvasMapPreserveAspectRatio" aria-hidden="true" focusable="false">
   @for (box of boxes(); track $index) {
-    <rect class="nol-canvas-map-box" [attr.x]="box.left" [attr.y]="box.top" [attr.width]="box.width" [attr.height]="box.height" />
+    <rect class="nol-canvas-map-box" [attr.x]="box.left" [attr.y]="box.top" [attr.width]="box.width" [attr.height]="box.height" [attr.rx]="boxRadius()" />
   }
-  <rect class="nol-canvas-map-view" [attr.x]="visible().left" [attr.y]="visible().top" [attr.width]="visible().width" [attr.height]="visible().height" />
+  <rect class="nol-canvas-map-view" [attr.x]="visible().left" [attr.y]="visible().top" [attr.width]="visible().width" [attr.height]="visible().height" [attr.rx]="viewRadius()" />
 </svg>

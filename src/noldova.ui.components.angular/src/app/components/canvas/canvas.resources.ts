@@ -31,4 +31,5 @@ export class CanvasResources {
   public static readonly canvasZoomStep: number = 1.2;
   public static readonly canvasKeyStepRem: number = 3;
   public static readonly canvasPercent: number = 100;
+  public static readonly canvasPrimaryButtons: number = 1;
 }

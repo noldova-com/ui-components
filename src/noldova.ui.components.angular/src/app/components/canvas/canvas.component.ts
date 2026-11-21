@@ -38,10 +38,13 @@ import { CanvasResources } from "./canvas.resources.js";
     "[attr.aria-roledescription]": "partResources.canvasRoleDescription",
     "[attr.aria-keyshortcuts]": "partResources.canvasKeyShortcuts",
     "[class.nol-canvas-dragging]": "isDragging()",
+    "[style.background-position]": "gridPosition()",
     "(pointerdown)": "onPointerDown($event)",
     "(pointermove)": "onPointerMove($event)",
     "(pointerup)": "onPointerEnd($event)",
     "(pointercancel)": "onPointerEnd($event)",
+    "(lostpointercapture)": "onPointerEnd($event)",
+    "(focusin)": "onFocusIn($event)",
     "(keydown)": "onKeyDown($event)"
   }
 })
@@ -66,6 +69,7 @@ export class CanvasComponent {
     const view = this.shown();
     return `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
   });
+  protected readonly gridPosition: Signal<string> = computed(() => `${this.shown().x}px ${this.shown().y}px`);
   protected readonly zoomText: Signal<string> = computed(() => `${Math.round(this.shown().zoom * CanvasResources.canvasPercent)}%`);
   protected readonly visibleBox: Signal<CanvasBox> = computed(() => this.shown().visible(this.size().width, this.size().height));
   protected readonly mapLabel: Signal<string> = computed(() => this.mapShown() ? CanvasResources.canvasHideMapLabel : CanvasResources.canvasShowMapLabel);
@@ -77,11 +81,14 @@ export class CanvasComponent {
 
   public constructor() {
     const onWheel = (event: WheelEvent): void => this.onWheel(event);
+    const onBlur = (): void => this.endPointers();
     this.host.addEventListener(CanvasResources.canvasWheelEvent, onWheel, { passive: false });
+    window.addEventListener(Resources.blurEvent, onBlur);
     const observer = new ResizeObserver(() => this.measure());
     inject(DestroyRef).onDestroy(() => {
       observer.disconnect();
       this.host.removeEventListener(CanvasResources.canvasWheelEvent, onWheel);
+      window.removeEventListener(Resources.blurEvent, onBlur);
     });
     afterRenderEffect(() => {
       const items = this.items();
@@ -92,13 +99,7 @@ export class CanvasComponent {
   }
 
   public fit(): void {
-    const size = this.size();
-    const tools = this.tools().nativeElement;
-    const inset = tools.offsetTop;
-    const top = inset + tools.offsetHeight + inset;
-    const map = this.map()?.nativeElement;
-    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
-    this.shown.set(CanvasView.fit(this.contentBox(), new CanvasBox(inset, top, size.width - inset * 2, bottom - top), this.fitAlignment()));
+    this.shown.set(CanvasView.fit(this.contentBox(), this.freeArea(), this.fitAlignment()));
   }
 
   public actualSize(): void {
@@ -141,6 +142,10 @@ export class CanvasComponent {
     const last = this.pointers.get(event.pointerId);
     if (Object.isUndefined(last))
       return;
+    if ((event.buttons & CanvasResources.canvasPrimaryButtons) === 0) {
+      this.onPointerEnd(event);
+      return;
+    }
     const next = new CanvasPoint(event.clientX, event.clientY);
     if (this.pointers.size > 1) {
       this.pinch(event.pointerId, last, next);
@@ -159,8 +164,24 @@ export class CanvasComponent {
       this.isDragging.set(false);
   }
 
+  protected onFocusIn(event: FocusEvent): void {
+    const target = event.target;
+    if (!(target instanceof Element) || !this.plane().nativeElement.contains(target))
+      return;
+    const host = this.host.getBoundingClientRect();
+    const area = this.freeArea();
+    const box = target.getBoundingClientRect();
+    const [left, top] = [box.left - host.left - this.host.clientLeft, box.top - host.top - this.host.clientTop];
+    const shift = (start: number, length: number, areaStart: number, areaLength: number): number =>
+      start < areaStart || length > areaLength ? areaStart - start : Math.min(0, areaStart + areaLength - start - length);
+    const dx = shift(left, box.width, area.left, area.width);
+    const dy = shift(top, box.height, area.top, area.height);
+    if (dx !== 0 || dy !== 0)
+      this.shown.update(t => t.panBy(dx, dy));
+  }
+
   protected onKeyDown(event: KeyboardEvent): void {
-    if (event.target !== this.host)
+    if (event.target !== this.host || event.ctrlKey || event.altKey || event.metaKey)
       return;
     const step = CanvasResources.canvasKeyStepRem * this.rootSize();
     const pans: Readonly<Record<string, readonly [number, number]>> = {
@@ -205,6 +226,21 @@ export class CanvasComponent {
       const after = Math.hypot(next.x - other.x, next.y - other.y);
       this.shown.update(t => t.zoomAt(t.zoom * after / Math.max(before, 1), (next.x + other.x) / 2 - rect.left, (next.y + other.y) / 2 - rect.top));
     }
+  }
+
+  private endPointers(): void {
+    this.pointers.clear();
+    this.isDragging.set(false);
+  }
+
+  private freeArea(): CanvasBox {
+    const size = this.size();
+    const tools = this.tools().nativeElement;
+    const inset = tools.offsetTop;
+    const top = inset + tools.offsetHeight + inset;
+    const map = this.map()?.nativeElement;
+    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
+    return new CanvasBox(inset, top, size.width - inset * 2, bottom - top);
   }
 
   private zoomAround(zoom: number): void {

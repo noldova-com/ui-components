@@ -78,8 +78,8 @@ describe("CanvasView", () => {
   });
 
   it("zooms by a wheel's distance, in, out, and at most twice or half per event", () => {
-    expect([0, -500, 250, -5000, 5000].map(t => Math.round(CanvasView.wheelZoomFactor(t) * 1000) / 1000))
-      .toEqual([1, 2, 0.707, 2, 0.5]);
+    expect([0, -50, 30, -500, 500].map(t => Math.round(CanvasView.wheelZoomFactor(t) * 1000) / 1000))
+      .toEqual([1, 1.649, 0.741, 2, 0.5]);
   });
 });
 

@@ -36,6 +36,7 @@ export class CanvasMapComponent {
   private lastPoint: CanvasPoint = new CanvasPoint(0, 0);
   private dragFrame: CanvasBox = new CanvasBox(0, 0, 0, 0);
   private readonly ratio: Signal<number> = computed(() => Math.max(this.content().width, 1) / Math.max(this.content().height, 1));
+  private readonly unitsPerRem: Signal<number> = computed(() => Math.max(this.content().width, 1) / this.widthRem());
 
   protected readonly partResources: typeof CanvasMapResources = CanvasMapResources;
   protected readonly viewBox: Signal<string> = computed(() => {
@@ -44,6 +45,8 @@ export class CanvasMapComponent {
   });
   protected readonly widthRem: Signal<number> = computed(() => Math.min(CanvasMapResources.canvasMapWidestRem, CanvasMapResources.canvasMapHeightRem * this.ratio()));
   protected readonly heightRem: Signal<number> = computed(() => this.widthRem() / this.ratio());
+  protected readonly boxRadius: Signal<number> = computed(() => this.unitsPerRem() * CanvasMapResources.canvasMapBoxRadiusRem);
+  protected readonly viewRadius: Signal<number> = computed(() => this.unitsPerRem() * CanvasMapResources.canvasMapViewRadiusRem);
 
   public readonly content = input.required<CanvasBox>();
   public readonly boxes = input.required<readonly CanvasBox[]>();

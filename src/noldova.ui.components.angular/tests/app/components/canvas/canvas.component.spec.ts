@@ -147,16 +147,23 @@ describe("CanvasComponent", () => {
         expect(getComputedStyle(canvas()).backgroundImage).toContain(AppearanceFixture.readColor(theme, mode, "menu-border"));
       });
 
-  it("fits its items clear of its toolbar and its map under forced colors, drawing them in system colors", async () => {
+  it("fits every item inside it, clear of its toolbar, its hint and its map under forced colors, drawing them in system colors", async () => {
     await ForcedColorsFixture.activateAsync();
     instance().fit();
     await measuredAsync(24);
+    const frame = canvas().getBoundingClientRect();
     const toolbar = tools().getBoundingClientRect();
+    const tip = hint().getBoundingClientRect();
     const overview = map().getBoundingClientRect();
 
-    expect(cards().map(t => t.getBoundingClientRect()).filter(t => overlaps(t, toolbar) || overlaps(t, overview))).toEqual([]);
-    expect([getComputedStyle(map()).backgroundColor, getComputedStyle(mapView()).stroke, getComputedStyle(tools()).borderTopColor])
-      .toEqual([ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("CanvasText")]);
+    expect(cards().map(t => t.getBoundingClientRect())
+      .filter(t => t.left < frame.left || t.top < frame.top || t.right > frame.right || t.bottom > frame.bottom || overlaps(t, toolbar) || overlaps(t, tip) || overlaps(t, overview)))
+      .toEqual([]);
+    expect([getComputedStyle(map()).backgroundColor, getComputedStyle(mapView()).stroke, getComputedStyle(tools()).borderTopColor, getComputedStyle(canvas()).borderTopColor,
+      getComputedStyle(hint()).borderTopColor, getComputedStyle(hint()).backgroundColor])
+      .toEqual([ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("CanvasText"),
+        ForcedColorsFixture.resolve("CanvasText"), ForcedColorsFixture.resolve("CanvasText"), ForcedColorsFixture.resolve("Canvas")]);
+    AppearanceFixture.expectPixels(tip.left - toolbar.right, AppearanceFixture.measureLook("space-1"));
   });
 
   it("fits a few items at 100%, never larger", async () => {
@@ -199,20 +206,20 @@ describe("CanvasComponent", () => {
   it("zooms around the pointer with Ctrl and the wheel, keeping the item under it in place", async () => {
     await measuredAsync(24);
     const before = at(7);
-    await wheelAsync({ deltaY: -100, ctrlKey: true }, before);
+    await wheelAsync({ deltaY: -50, ctrlKey: true }, before);
     const after = at(7);
 
     expect(Math.abs(after.left + after.width / 2 - (before.left + before.width / 2))).toBeLessThan(1);
     expect(Math.abs(after.top + after.height / 2 - (before.top + before.height / 2))).toBeLessThan(1);
-    expect(after.width / before.width).toBeCloseTo(2 ** 0.2, 5);
+    expect(after.width / before.width).toBeCloseTo(Math.exp(0.5), 5);
   });
 
   it("zooms with Cmd and the wheel too, out as well as in", async () => {
     await measuredAsync(24);
     const zoom = instance().view().zoom;
-    await wheelAsync({ deltaY: 100, metaKey: true });
+    await wheelAsync({ deltaY: 50, metaKey: true });
 
-    expect(instance().view().zoom).toBeCloseTo(zoom * 2 ** -0.2, 5);
+    expect(instance().view().zoom).toBeCloseTo(zoom * Math.exp(-0.5), 5);
   });
 
   it("pans with the wheel, sideways with Shift where the system leaves it, and reads lines as 16px each", async () => {
@@ -271,6 +278,42 @@ describe("CanvasComponent", () => {
     expect(view()).toEqual(start);
   });
 
+  it("moves its dot grid with a pan, and lays its content out 1rem inside its plane", async () => {
+    await measuredAsync(24);
+    await wheelAsync({ deltaX: 17, deltaY: 23 });
+
+    expect([getComputedStyle(canvas()).backgroundPosition, getComputedStyle(plane()).paddingTop, getComputedStyle(plane()).paddingLeft])
+      .toEqual([`${view().x}px ${view().y}px`, `${rootSize()}px`, `${rootSize()}px`]);
+  });
+
+  const endings: readonly (readonly [string, (pointerId: number, x: number, y: number) => void])[] = [
+    ["a move with no button down", (pointerId, x, y) => {
+      canvas().dispatchEvent(new PointerEvent("pointermove", { pointerId, buttons: 0, clientX: x, clientY: y, bubbles: true }));
+    }],
+    ["the loss of its pointer's capture", pointerId => {
+      canvas().dispatchEvent(new PointerEvent("lostpointercapture", { pointerId, bubbles: true }));
+    }],
+    ["the window's loss of the focus", () => {
+      window.dispatchEvent(new Event("blur"));
+    }]
+  ];
+  for (const [ending, end] of endings)
+    it(`stops a drag at ${ending}`, async () => {
+      await measuredAsync(24);
+      holdCapture(canvas());
+      const frame = canvas().getBoundingClientRect();
+      pointer(canvas(), "pointerdown", 21, frame.right - 40, frame.top + 80);
+      pointer(canvas(), "pointermove", 21, frame.right - 60, frame.top + 100);
+      await fixture.whenStable();
+      const dragged = view();
+      end(21, frame.right - 70, frame.top + 110);
+      await fixture.whenStable();
+      const ended = canvas().classList.contains("nol-canvas-dragging");
+      pointer(canvas(), "pointermove", 21, frame.right - 90, frame.top + 130);
+
+      expect([view(), ended]).toEqual([dragged, false]);
+    });
+
   it("zooms with two pointers apart around their middle", async () => {
     await measuredAsync(24);
     holdCapture(canvas());
@@ -314,6 +357,50 @@ describe("CanvasComponent", () => {
 
     expect([moved, larger, back, fitted, other.defaultPrevented, fromChild.defaultPrevented, view()])
       .toEqual([[[true, step, 0], [true, 0, step], [true, -step, 0], [true, 0, -step]], 1.2, 1, start, false, false, start]);
+  });
+
+  it("leaves its keys to the page with Ctrl, Alt or Cmd held", async () => {
+    await measuredAsync(24);
+    canvas().focus();
+    const start = view();
+    const events = [["0", { ctrlKey: true }], ["=", { ctrlKey: true }], ["-", { metaKey: true }], ["ArrowLeft", { altKey: true }]].map(([name, held]) => {
+      const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...held });
+      canvas().dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+
+    expect([events, view()]).toEqual([[false, false, false, false], start]);
+  });
+
+  it("pans an item that takes the focus into its free area, and leaves the view alone for one already there or for its toolbar", async () => {
+    await measuredAsync(24);
+    [1, 2, 3, 4].forEach(() => button("zoom-in").click());
+    await fixture.whenStable();
+    instance().centreOn(new CanvasPoint(0, 0));
+    await fixture.whenStable();
+    const free = (): DOMRect => {
+      const inset = band().offsetTop;
+      const top = band().getBoundingClientRect().bottom + inset;
+      const bottom = map().getBoundingClientRect().bottom - 7 * rootSize() - inset;
+      return new DOMRect(canvas().getBoundingClientRect().left + canvas().clientLeft + inset, top, canvas().clientWidth - inset * 2, bottom - top);
+    };
+    const inside = (box: DOMRect, area: DOMRect): boolean =>
+      box.left >= area.left - 2 && box.top >= area.top - 2 && box.right <= area.right + 2 && box.bottom <= area.bottom + 2;
+    const last = DomFixture.oneOf(DomFixture.at(cards(), 23), ".open", HTMLButtonElement);
+    const first = DomFixture.oneOf(DomFixture.at(cards(), 0), ".open", HTMLButtonElement);
+    const away = inside(last.getBoundingClientRect(), free());
+    last.focus();
+    await fixture.whenStable();
+    const shown = [inside(last.getBoundingClientRect(), free()), canvas().scrollLeft, canvas().scrollTop];
+    const settled = view();
+    button("fit").focus();
+    last.focus();
+    await fixture.whenStable();
+    const kept = view();
+    first.focus();
+    await fixture.whenStable();
+
+    expect([away, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([false, [true, 0, 0], settled, true]);
   });
 
   it("zooms in and out by 1.2 times from its toolbar, back to 100%, and fits again, around the canvas's middle", async () => {
@@ -384,6 +471,16 @@ describe("CanvasComponent", () => {
     const frame = canvas();
 
     expect([shown.x + 100 * shown.zoom, shown.y + 50 * shown.zoom]).toEqual([frame.clientWidth / 2, frame.clientHeight / 2]);
+  });
+
+  it("rounds its map's boxes by 1px and its view rectangle by 0.125rem on screen", async () => {
+    await measuredAsync(24);
+    const svg = DomFixture.oneOf(map(), "svg", SVGSVGElement);
+    const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+    const radius = (element: SVGRectElement): number => Number(element.getAttribute("rx")) * scale;
+
+    AppearanceFixture.expectPixels(radius(DomFixture.oneOf(map(), ".nol-canvas-map-box", SVGRectElement)), rootSize() / 16);
+    AppearanceFixture.expectPixels(radius(mapView()), rootSize() / 8);
   });
 
   it("draws its map's view rectangle in the canvas's proportions", async () => {
