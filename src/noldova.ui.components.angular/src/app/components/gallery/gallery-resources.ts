@@ -619,6 +619,7 @@ export class GalleryResources {
     popoverTrigger: "Open a popover",
     popoverHoverTrigger: "Point here for details",
     hoverTriggerCaption: "Hover trigger",
+    hoverCardCaption: "Hover card, with its variables set",
     popoverLabel: "Details",
     popoverTitle: "Details",
     popoverBody: "A popover holds a short list or a few actions beside the control that opened it.",
