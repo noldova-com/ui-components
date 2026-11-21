@@ -11006,6 +11006,42 @@ export declare class ScrollEndFollower {
 }
 
 /**
+ * Marks an action of a {@link SectionHeaderComponent}, `nolSectionHeaderAction`,
+ * such as an icon button that adds a row to the group: the header shows its
+ * actions after the heading, at its end, the last 0.25rem from the end, in
+ * a row 0.25rem apart, centered on the label's first line and outside the
+ * heading and its button, each its own Tab stop, named by its own label.
+ * They show while the pointer is over the header or the focus is inside it,
+ * and keep their place, hidden, otherwise, so the label and the caret never
+ * move; under forced colors, and where the pointer can't hover, they always
+ * show. The header's height, insets, label and caret are a header's without
+ * actions.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { IconButtonComponent, SectionHeaderActionDirective, SectionHeaderComponent } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-organization-list",
+ *   imports: [IconButtonComponent, SectionHeaderActionDirective, SectionHeaderComponent],
+ *   template: `
+ *     <nol-section-header label="Organizations" [uppercase]="true" [collapsible]="true">
+ *       <button type="button" nol-icon-button nolSectionHeaderAction icon="add" label="New organization" (click)="create()"></button>
+ *     </nol-section-header>
+ *   `
+ * })
+ * export class OrganizationListComponent {
+ *   protected create(): void {
+ *     // Add an organization.
+ *   }
+ * }
+ * ```
+ */
+export declare class SectionHeaderActionDirective {
+}
+
+/**
  * A section header, `nol-section-header`: the label of a group of rows in a
  * list or tree, in the label size at the emphasis weight, with no fill or line.
  * Groups are separated by space: every header that is not the first
@@ -11015,7 +11051,11 @@ export declare class ScrollEndFollower {
  * headers inside it. It has the heading role. A collapsible header holds one button, the whole
  * header, whose caret after the label points down while the group is open
  * and turns to the end while it is closed; the owner holds the open state
- * and shows or removes the rows.
+ * and shows or removes the rows. Elements the owner marks
+ * {@link SectionHeaderActionDirective}, such as icon buttons, follow the
+ * heading at the header's end; the heading role then moves from the header
+ * to an element holding the icon, the label and the caret, so the actions are
+ * outside it.
  *
  * @example
  * ```ts

@@ -10,6 +10,8 @@ import { Component, DebugElement, type Type, isSignal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
+import "@noldova/context.core";
+
 import { userEvent } from "vitest/browser";
 
 import { GalleryCellComponent, GalleryComponent, GallerySpecimenComponent } from "../../../../src/api/gallery";
@@ -63,34 +65,42 @@ class OverlaySectionComponent {
 class SecondSectionComponent {
 }
 
-const kitSectionControls: readonly { readonly section: Type<unknown>; readonly controls: readonly string[] }[] = [
-  {
-    section: GalleryFormsComponent,
-    controls: ["ButtonComponent", "CheckboxComponent", "ChipComponent", "ChoicePillsComponent", "ChoiceRowComponent", "ConfigurationTableActionDirective",
-      "ConfigurationTableComponent", "ConfigurationTableDirective", "ConfigurationTableFillDirective", "ConfigurationTableRowActionsDirective",
-      "ConfigurationTableShareDirective", "FieldMessageComponent", "IconButtonComponent", "MenuTriggerDirective", "MeterComponent", "ProgressComponent",
-      "RadioComponent", "RadioGroupComponent", "RevealDelayDirective", "SelectComponent", "SpinnerComponent", "SplitButtonComponent", "SwitchComponent", "TextFieldBoxComponent", "TextFieldComponent",
-      "TextFieldEndDirective", "TooltipDirective"]
-  },
-  {
-    section: GalleryNavigationComponent,
-    controls: ["AvatarComponent", "CanvasComponent", "CanvasItemDirective", "CanvasMapComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "MessageActionDirective",
-      "MessageComponent", "MessageFooterEndDirective", "MessageImageDirective", "MessageSlotDirective", "PanelCardComponent", "SashComponent",
-      "SectionHeaderComponent", "TabComponent", "ToolbarButtonComponent", "ToolbarDirective", "ToolbarItemDirective", "TreeComponent", "ViewBadgeComponent",
-      "VirtualListComponent", "VirtualRowDirective"]
-  },
-  {
-    section: GalleryOverlaysComponent,
-    controls: ["CompletionListComponent", "ContextMenuTriggerDirective", "DialogComponent", "DialogDescriptionDirective", "DockingGuideComponent", "DockingPlateComponent",
-      "KeptOpenMenuItemDirective", "MentionFieldDirective", "MenuBarComponent", "MenuBarItemComponent", "MenuComponent", "MenuGroupActionDirective",
-      "MenuGroupComponent", "MenuItemComponent", "MenuOpensOnDirective", "MenuSeparatorComponent", "PopoverDirective", "PopoverTriggerDirective",
-      "QuickInputComponent", "TooltipComponent"]
-  },
-  {
-    section: GalleryContentComponent,
-    controls: ["CardComponent", "DiffViewComponent", "PermissionCardComponent", "PlanComponent", "ShellRunOutputDirective", "TerminalOutputComponent", "ToolCallComponent", "ToolCallOutputDirective"]
+class KitSectionControls {
+  public readonly section: Type<unknown>;
+  public readonly controls: readonly string[];
+
+  public constructor(section: Type<unknown>, controls: readonly string[]) {
+    this.section = section;
+    this.controls = controls;
   }
+}
+
+const kitSectionControls: readonly KitSectionControls[] = [
+  new KitSectionControls(GalleryFormsComponent, ["ButtonComponent", "CheckboxComponent", "ChipComponent", "ChoicePillsComponent", "ChoiceRowComponent", "ConfigurationTableActionDirective",
+    "ConfigurationTableComponent", "ConfigurationTableDirective", "ConfigurationTableFillDirective", "ConfigurationTableRowActionsDirective",
+    "ConfigurationTableShareDirective", "FieldMessageComponent", "IconButtonComponent", "MenuTriggerDirective", "MeterComponent", "ProgressComponent",
+    "RadioComponent", "RadioGroupComponent", "RevealDelayDirective", "SelectComponent", "SpinnerComponent", "SplitButtonComponent", "SwitchComponent", "TextFieldBoxComponent", "TextFieldComponent",
+    "TextFieldEndDirective", "TooltipDirective"]),
+  new KitSectionControls(GalleryNavigationComponent, ["AvatarComponent", "CanvasComponent", "CanvasItemDirective", "CanvasMapComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "MessageActionDirective",
+    "MessageComponent", "MessageFooterEndDirective", "MessageImageDirective", "MessageSlotDirective", "PanelCardComponent", "SashComponent",
+    "SectionHeaderActionDirective", "SectionHeaderComponent", "TabComponent", "ToolbarButtonComponent", "ToolbarDirective", "ToolbarItemDirective", "TreeComponent", "ViewBadgeComponent",
+    "VirtualListComponent", "VirtualRowDirective"]),
+  new KitSectionControls(GalleryOverlaysComponent, ["CompletionListComponent", "ContextMenuTriggerDirective", "DialogComponent", "DialogDescriptionDirective", "DockingGuideComponent", "DockingPlateComponent",
+    "KeptOpenMenuItemDirective", "MentionFieldDirective", "MenuBarComponent", "MenuBarItemComponent", "MenuComponent", "MenuGroupActionDirective",
+    "MenuGroupComponent", "MenuItemComponent", "MenuOpensOnDirective", "MenuSeparatorComponent", "PopoverDirective", "PopoverTriggerDirective",
+    "QuickInputComponent", "TooltipComponent"]),
+  new KitSectionControls(GalleryContentComponent, ["CardComponent", "DiffViewComponent", "PermissionCardComponent", "PlanComponent", "ShellRunOutputDirective", "TerminalOutputComponent", "ToolCallComponent", "ToolCallOutputDirective"])
 ];
+
+class ModeScope {
+  public readonly modes: readonly ThemeMode[];
+  public readonly labels: readonly string[];
+
+  public constructor(modes: readonly ThemeMode[], labels: readonly string[]) {
+    this.modes = modes;
+    this.labels = labels;
+  }
+}
 
 describe("GalleryComponent", () => {
   let fixture: ComponentFixture<GalleryComponent>;
@@ -125,7 +135,7 @@ describe("GalleryComponent", () => {
     expect(GalleryFixture.frames(fixture).map(t => [t.dataset["theme"], t.dataset["mode"]])).toEqual([
       ["noldova.default", "Light"], ["noldova.default", "Dark"], ["fixture.contrast", "Light"], ["fixture.contrast", "Dark"]
     ]);
-    expect(GalleryFixture.frames(fixture).every(t => t.querySelector("nol-gallery-forms") !== null && t.querySelector("nol-gallery-navigation") !== null && t.querySelector("nol-gallery-overlays") !== null && t.querySelector("nol-gallery-content") !== null)).toBe(true);
+    expect(GalleryFixture.frames(fixture).every(t => ["nol-gallery-forms", "nol-gallery-navigation", "nol-gallery-overlays", "nol-gallery-content"].every(u => !Object.isNull(t.querySelector(u))))).toBe(true);
   });
 
   it("draws each scope's title and its sections' names in the scope's strong text color, and its other text in its text color", async () => {
@@ -133,7 +143,8 @@ describe("GalleryComponent", () => {
 
     const colors = (frame: HTMLElement): string[] => [frame, ...frame.querySelectorAll(".nol-gallery-scope-title, .nol-gallery-specimen-name")].map(t => getComputedStyle(t).color);
     expect(GalleryFixture.frames(fixture).map(colors)).toEqual(GalleryFixture.frames(fixture).map(frame => {
-      const [theme, mode] = [AppearanceFixture.themes.find(t => t.id === frame.dataset["theme"]) as kit.Theme, frame.dataset["mode"] as ThemeMode];
+      const theme = DomFixture.present(AppearanceFixture.themes.find(t => t.id === frame.dataset["theme"]));
+      const mode = DomFixture.present(Object.values(ThemeMode).find(t => t === frame.dataset["mode"]));
       return colors(frame).map((_, index) => AppearanceFixture.readColor(theme, mode, index === 0 ? "text" : "text-strong"));
     }));
     expect(GalleryFixture.frames(fixture).map(frame => frame.querySelectorAll(".nol-gallery-scope-title").length === 1 && frame.querySelectorAll(".nol-gallery-specimen-name").length === 1))
@@ -141,27 +152,28 @@ describe("GalleryComponent", () => {
   });
 
   it("draws every specimen's name in a kit section, the navigation's, in its scope's strong text color", async () => {
-    const theme = AppearanceFixture.themes[0] as kit.Theme;
+    const theme = DomFixture.at(AppearanceFixture.themes, 0);
     GalleryFixture.standInForTheKitSections(GalleryNavigationComponent);
     fixture = await GalleryFixture.showAsync([theme], [ThemeMode.Dark]);
-    const frame = GalleryFixture.frames(fixture)[0] as HTMLElement;
+    const frame = DomFixture.at(GalleryFixture.frames(fixture), 0);
     const names = [...frame.querySelectorAll("nol-gallery-navigation .nol-gallery-specimen-name")].map(t => getComputedStyle(t).color);
-    const [strong, text] = [AppearanceFixture.readColor(theme, ThemeMode.Dark, "text-strong"), AppearanceFixture.readColor(theme, ThemeMode.Dark, "text")];
+    const strong = AppearanceFixture.readColor(theme, ThemeMode.Dark, "text-strong");
+    const text = AppearanceFixture.readColor(theme, ThemeMode.Dark, "text");
 
     expect([names.length > 1, [...new Set(names)], strong === text]).toEqual([true, [strong], false]);
   });
 
-  const modeScopes: readonly (readonly [readonly ThemeMode[], readonly string[]])[] = [
-    [[ThemeMode.Dark], ["Default, dark mode", "Fixture, dark mode"]],
-    [[ThemeMode.Dark, ThemeMode.Light], ["Default, dark mode", "Default, light mode", "Fixture, dark mode", "Fixture, light mode"]]
+  const modeScopes: readonly ModeScope[] = [
+    new ModeScope([ThemeMode.Dark], ["Default, dark mode", "Fixture, dark mode"]),
+    new ModeScope([ThemeMode.Dark, ThemeMode.Light], ["Default, dark mode", "Default, light mode", "Fixture, dark mode", "Fixture, light mode"])
   ];
 
-  for (const [modes, labels] of modeScopes)
-    it(`shows each theme only in the modes it is given, ${modes.join(" then ")}, in that order`, async () => {
+  for (const scope of modeScopes)
+    it(`shows each theme only in the modes it is given, ${scope.modes.join(" then ")}, in that order`, async () => {
       GalleryFixture.standInForTheKitSections();
-      fixture = await GalleryFixture.showAsync(AppearanceFixture.themes, modes);
+      fixture = await GalleryFixture.showAsync(AppearanceFixture.themes, scope.modes);
 
-      expect(GalleryFixture.frames(fixture).map(t => t.getAttribute("aria-label"))).toEqual(labels);
+      expect(GalleryFixture.frames(fixture).map(t => t.getAttribute("aria-label"))).toEqual(scope.labels);
     });
 
   const showSectionsAsync = async (themes: readonly kit.Theme[] = AppearanceFixture.themes): Promise<ComponentFixture<GalleryComponent>> => {
@@ -186,7 +198,7 @@ describe("GalleryComponent", () => {
     const frames = GalleryFixture.frames(fixture);
     const probes = frames.map(t => DomFixture.one(t, ".test-probe"));
 
-    expect(probes.map(t => getComputedStyle(t).color)).toEqual(frames.map((t, index) => GalleryFixture.colorOf(t, "color", ["#3B3B3B", "#BDBDBD", "#A00610", "#2006A0"][index] as string)));
+    expect(probes.map(t => getComputedStyle(t).color)).toEqual(frames.map((t, index) => GalleryFixture.colorOf(t, "color", DomFixture.at(["#3B3B3B", "#BDBDBD", "#A00610", "#2006A0"], index))));
     expect(probes.map(t => getComputedStyle(t).colorScheme)).toEqual(["light", "dark", "light", "dark"]);
   });
 
@@ -199,7 +211,7 @@ describe("GalleryComponent", () => {
       const option = DomFixture.maybe(frame, ".cdk-overlay-container .nol-select-option");
 
       expect(option?.textContent?.trim()).toBe("One");
-      expect(getComputedStyle(option as HTMLElement).getPropertyValue("--nol-text")).toBe(getComputedStyle(frame).getPropertyValue("--nol-text"));
+      expect(getComputedStyle(DomFixture.present(option)).getPropertyValue("--nol-text")).toBe(getComputedStyle(frame).getPropertyValue("--nol-text"));
       await userEvent.keyboard("{Escape}");
       await fixture.whenStable();
     }
@@ -240,7 +252,7 @@ describe("GalleryComponent", () => {
   });
 
   it("lists every component and directive the kit exports once, under one of the kit's sections in a scope's order, so a new control fails until a section shows it", () => {
-    const controls = Object.entries(kit).filter(([, value]) => typeof value === "function" && ("ɵcmp" in value || "ɵdir" in value)).map(([name]) => name);
+    const controls = Object.entries(kit).filter(([, value]) => Object.isFunction(value) && ("ɵcmp" in value || "ɵdir" in value)).map(([name]) => name);
     const listed = kitSectionControls.flatMap(t => t.controls);
 
     expect(controls.length).toBeGreaterThan(20);
@@ -254,11 +266,12 @@ describe("GalleryComponent", () => {
     fixture = await GalleryFixture.showScopeAsync();
     const nodes = fixture.debugElement.queryAllNodes(By.all());
     const placed = new Set<unknown>(nodes.flatMap(t => t.providerTokens));
-    const owners = new Set<object>(nodes.filter(t => t instanceof DebugElement).flatMap(t => (t.componentInstance as object | null) ?? []));
+    const owners = new Set<object>(nodes.filter(t => t instanceof DebugElement).flatMap(t => Object.isObject(t.componentInstance) ? [t.componentInstance] : []));
     const held = [...owners].flatMap(t => Object.values(t)).filter(isSignal).map(t => t());
-    const isShown = (type: Type<unknown>): boolean => placed.has(type) || held.some(t => t instanceof type);
+    const exported = new Map<string, unknown>(Object.entries(kit));
+    const isShown = (type: unknown): boolean => placed.has(type) || (Object.isFunction(type) && held.some(t => t instanceof type));
 
-    const missing = controls.filter(t => !isShown((kit as Record<string, unknown>)[t] as Type<unknown>));
+    const missing = controls.filter(t => !isShown(exported.get(t)));
 
     expect(controls.length).toBeGreaterThan(0);
     expect(missing).toEqual([]);
@@ -269,7 +282,7 @@ describe("GalleryComponent", () => {
     const root: HTMLElement = DomFixture.host(await GalleryFixture.showSectionAsync<unknown>(kitSection));
     const sections = [...root.querySelectorAll("nol-gallery-specimen")];
     const label = (section: Element): string => section.querySelector(".nol-gallery-specimen")?.getAttribute("aria-label") ?? "";
-    const hasLongText = (section: Element): boolean => section.querySelector(".nol-gallery-specimen-long nol-gallery-cell[aria-label=\"Long text\"]") !== null;
+    const hasLongText = (section: Element): boolean => !Object.isNull(section.querySelector(".nol-gallery-specimen-long nol-gallery-cell[aria-label=\"Long text\"]"));
 
     expect(sections.length).toBeGreaterThan(0);
     expect(sections.map(t => `${label(t)}: ${hasLongText(t)}`)).toEqual(sections.map(t => `${label(t)}: ${!t.hasAttribute(GalleryResources.noLongTextAttribute)}`));

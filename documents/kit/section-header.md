@@ -1,6 +1,6 @@
 # Section header
 
-**Scope:** The kit's section header: its default geometry, the text role it uses, its surface and behavior, its optional icon, and its collapsible form.
+**Scope:** The kit's section header: its default geometry, the text role it uses, its surface and behavior, its optional icon, its collapsible form, and its actions.
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
@@ -50,3 +50,14 @@ A header the owner makes collapsible lets the person fold its group from the tit
 - No fill and no line at rest; the tree row's hover fill on the whole header while the pointer is over it, with the small radius, and under forced colors the tree row's dashed Highlight outline inside its edge.
 - The button exposes whether the group is open and, when the owner names it, the region it controls; a click, Enter or Space flips it.
 - The owner holds the open state, keeps it if it should last, and shows or removes the rows.
+
+## Actions
+
+Actions the owner marks `nolSectionHeaderAction`, such as an icon button that adds a row to the group.
+
+- They follow the heading at the header's end, 0.25rem apart, the last 0.25rem from the end, centered on the label's first line.
+- They are outside the heading and its button: the heading role, its level and a collapsible header's button move to an element holding the icon, the label and the caret, so the heading is named by its label alone, and each action is its own Tab stop, named by its own label.
+- They show while the pointer is over the header or the focus is inside it, and keep their place, hidden, otherwise, so the label and the caret never move; under forced colors, and where the pointer can't hover, they always show.
+- A press on an action doesn't fold the group.
+- The header's height, insets, label, icon and caret are a header's without actions, and a long label wraps before them.
+- Without actions, the header is as above, its elements and roles included.

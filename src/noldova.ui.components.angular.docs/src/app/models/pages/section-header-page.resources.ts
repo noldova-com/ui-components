@@ -13,6 +13,7 @@ export class SectionHeaderPageResources {
   public static readonly componentName: string = "SectionHeaderComponent";
   public static readonly sectionHeaderGroupsTitle: string = "Headers over groups that always show";
   public static readonly sectionHeaderCollapsibleTitle: string = "A header that folds its group";
+  public static readonly sectionHeaderActionsTitle: string = "A header with an action";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Enter", "On a collapsible header, folds its group, or opens it again."),
     new DocsKey("Space", "On a collapsible header, folds its group, or opens it again.")
@@ -21,6 +22,7 @@ export class SectionHeaderPageResources {
     "It has the heading role, at level 3 unless its owner gives another level.",
     "Its icon is hidden from assistive technology, so the label alone names the heading; an uppercase header only looks so, and is read as its owner writes it.",
     "A collapsible header holds one button, exposing whether its group is open and, when its owner names it, the region it controls; its caret is hidden from assistive technology.",
-    "A header that isn't collapsible takes no focus. The owner holds the open state and shows or removes the rows."
+    "A header that isn't collapsible takes no focus. The owner holds the open state and shows or removes the rows.",
+    "A header's actions follow its heading, outside it, each its own Tab stop named by its own label; they show while the pointer is over the header or the focus is inside it."
   ];
 }

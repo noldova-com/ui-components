@@ -8,6 +8,8 @@
 
 import { ApplicationRef } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+
+import "@noldova/context.core";
 import { provideMarkdown } from "@noldova/ui.components.angular/markdown";
 import { userEvent } from "vitest/browser";
 
@@ -455,18 +457,18 @@ describe("ComponentPageComponent", () => {
     }
   };
 
-  const pages: readonly DocsComponentPage[] = DocsCatalog.writtenPages.flatMap(t => t.content === null ? [] : [t.content]);
+  const pages: readonly DocsComponentPage[] = DocsCatalog.writtenPages.flatMap(t => Object.isNull(t.content) ? [] : [t.content]);
 
   const expectation = (name: string): (typeof expectations)[string] => {
     const expected = expectations[name];
-    if (expected === undefined)
+    if (Object.isUndefined(expected))
       throw new TypeError(`The spec expects nothing of ${name}.`);
     return expected;
   };
 
   const expectPage = (name: string): DocsComponentPage => {
     const page = pages.find(t => t.componentName === name);
-    if (page === undefined)
+    if (Object.isUndefined(page))
       throw new TypeError(`The catalog writes no page for ${name}.`);
     return page;
   };
@@ -505,7 +507,7 @@ describe("ComponentPageComponent", () => {
   const brokenWords = (cell: HTMLElement): readonly string[] => {
     const broken: string[] = [];
     const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node !== null; node = walker.nextNode())
+    for (let node = walker.nextNode(); !Object.isNull(node); node = walker.nextNode())
       for (const word of (node.textContent ?? "").matchAll(/[\p{L}\p{N}_]+/gu)) {
         const range = document.createRange();
         range.setStart(node, word.index);
@@ -615,8 +617,8 @@ describe("ComponentPageComponent", () => {
       expect(DocsFixture.all(accessibility, "table").length).toBe(expected.keys.length > 0 ? 1 : 0);
       expect(DocsFixture.all(accessibility, "p").some(t => t.textContent?.trim() === "It takes no keys of its own.")).toBe(expected.keys.length === 0);
       expect(DocsFixture.all(accessibility, "p").length).toBeGreaterThan(0);
-      expect(expected.roles.filter(t => !shown.some(u => u.querySelector(t) !== null))).toEqual([]);
-      expect(references.filter(t => document.getElementById(t) === null)).toEqual([]);
+      expect(expected.roles.filter(t => !shown.some(u => !Object.isNull(u.querySelector(t))))).toEqual([]);
+      expect(references.filter(t => Object.isNull(document.getElementById(t)))).toEqual([]);
     });
 
     it("shows its specification from the kit's documents, without the document's title", async () => {
@@ -721,7 +723,7 @@ describe("ComponentPageComponent", () => {
         await fittedAsync(host);
         const tables = DocsFixture.all(host, ".nol-docs-table, .nol-markdown-table table");
 
-        expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
+        expect(tables.filter(t => Object.isNull(t.closest(".nol-docs-section"))).length).toBe(0);
         expect(tables.flatMap(t => {
           const box = t.getBoundingClientRect();
           const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
@@ -1270,6 +1272,16 @@ describe("ComponentPageComponent", () => {
       await DomChangeFixture.untilAsync(() => expect(preview.textContent).toContain("Shared: 1"));
     });
 
+    it("adds a list from the section header's action and opens a folded group to show it", async () => {
+      const host = await renderAsync(expectPage("SectionHeaderComponent"));
+      const preview = DocsFixture.one(section(host, "Examples"), "nol-docs-section-header-actions-example");
+      await userEvent.click(DocsFixture.one(preview, "button.nol-section-header-toggle"));
+      await DomChangeFixture.untilAsync(() => expect(preview.querySelector("li")).toBeNull());
+
+      await userEvent.click(DocsFixture.one(preview, "button[aria-label=\"New list\"]"));
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.all(preview, "li").map(t => t.textContent?.trim())).toEqual(["Groceries", "Packing list", "List 3"]));
+    });
+
     it("fills Sort and the icon-only More with the toolbar hover while their menus are open, More square with no chevron, and idles both once the menu closes", async () => {
       const host = await renderAsync(expectPage("ToolbarButtonComponent"));
       const preview = DocsFixture.one(section(host, "Examples"), "nol-docs-toolbar-button-open-example");
@@ -1284,7 +1296,7 @@ describe("ComponentPageComponent", () => {
         await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).not.toBeNull());
         const openBox = button.getBoundingClientRect();
         const open = [button.getAttribute("aria-expanded"), getComputedStyle(button).backgroundColor === hover, button.getAttribute("aria-pressed"),
-          button.querySelector(".nol-toolbar-button-chevron") !== null, Math.abs(openBox.width - closedBox.width) < 0.5, Math.abs(openBox.height - closedBox.height) < 0.5];
+          !Object.isNull(button.querySelector(".nol-toolbar-button-chevron")), Math.abs(openBox.width - closedBox.width) < 0.5, Math.abs(openBox.height - closedBox.height) < 0.5];
         await userEvent.keyboard("{Escape}");
         await DomChangeFixture.untilAsync(() => expect(document.querySelector(".cdk-overlay-container nol-menu")).toBeNull());
         looks.push([name, idle === hover, ...open, getComputedStyle(button).backgroundColor === idle, Math.abs(closedBox.width - closedBox.height) < 0.5]);
@@ -1308,7 +1320,7 @@ describe("ComponentPageComponent", () => {
     const spoken = (element: HTMLElement): string => (element.textContent ?? "").replace(/\s+/gu, " ");
     const described = (host: HTMLElement, table: string, name: string): string => {
       const row = DocsFixture.all(section(host, "API"), `table[aria-label="${table}"] tbody tr`).find(t => t.querySelector("th")?.textContent?.trim() === name);
-      return row === undefined ? "" : spoken(row);
+      return Object.isUndefined(row) ? "" : spoken(row);
     };
 
     it("quotes the Virtual List's failed read and its Jump to latest as the kit shows them, in its accessibility text and its position and jumped API texts", async () => {

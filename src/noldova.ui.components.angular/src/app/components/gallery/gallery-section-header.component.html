@@ -50,6 +50,16 @@ LICENSE file in the root directory of this source tree.
       <nol-section-header [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" [uppercase]="true" [collapsible]="true" />
     </div>
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sectionAction">
+    <div class="nol-gallery-sections">
+      <nol-section-header [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" [uppercase]="true" [collapsible]="true">
+        <button type="button" nol-icon-button nolSectionHeaderAction [icon]="text.glyphAdd" [label]="text.sectionAdd"></button>
+      </nol-section-header>
+      <nol-section-header nolGalleryHover [label]="text.sectionChats" [icon]="text.glyphChat" [level]="4" [uppercase]="true" [collapsible]="true">
+        <button type="button" nol-icon-button nolSectionHeaderAction [icon]="text.glyphAdd" [label]="text.sectionAdd"></button>
+      </nol-section-header>
+    </div>
+  </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hover">
     <div class="nol-gallery-sections"><nol-section-header nolGalleryHover [label]="text.sectionRecent" [level]="4" [collapsible]="true" /></div>
   </nol-gallery-cell>

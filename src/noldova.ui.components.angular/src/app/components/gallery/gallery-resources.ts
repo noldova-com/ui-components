@@ -525,6 +525,8 @@ export class GalleryResources {
     sectionUppercase: "Uppercase",
     sectionPinned: "Pinned",
     sectionProjects: "Projects",
+    sectionAction: "With an action",
+    sectionAdd: "New chat",
     glyphPin: "keep",
     glyphChat: "chat",
     groupHeader: "Group header",

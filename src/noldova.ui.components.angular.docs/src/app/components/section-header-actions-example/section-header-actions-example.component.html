@@ -1,0 +1,20 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-section-header label="Lists" icon="checklist" controls="nol-docs-section-header-lists" [uppercase]="true" [collapsible]="true" [(expanded)]="isOpen">
+  <button type="button" nol-icon-button nolSectionHeaderAction icon="add" label="New list" (click)="add()"></button>
+</nol-section-header>
+<div id="nol-docs-section-header-lists">
+  @if (isOpen()) {
+    <ul>
+      @for (list of lists(); track list) {
+        <li>{{ list }}</li>
+      }
+    </ul>
+  }
+</div>

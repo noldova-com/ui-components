@@ -10,6 +10,8 @@ import { Component, type WritableSignal, signal } from "@angular/core";
 
 import { GallerySize } from "../../enums/gallery-size.js";
 import { TreeNode } from "../../models/tree.node.js";
+import { IconButtonComponent } from "../icon-button/icon-button.component.js";
+import { SectionHeaderActionDirective } from "../section-header/section-header-action.directive.js";
 import { SectionHeaderComponent } from "../section-header/section-header.component.js";
 import { TreeComponent } from "../tree/tree.component.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
@@ -19,7 +21,7 @@ import { GalleryStateDirective } from "./gallery-state.directive.js";
 
 @Component({
   selector: "nol-gallery-section-header",
-  imports: [GalleryCellComponent, GallerySpecimenComponent, GalleryStateDirective, SectionHeaderComponent, TreeComponent],
+  imports: [GalleryCellComponent, GallerySpecimenComponent, GalleryStateDirective, IconButtonComponent, SectionHeaderActionDirective, SectionHeaderComponent, TreeComponent],
   templateUrl: "./gallery-section-header.component.html",
   styleUrl: "./gallery-navigation.component.css"
 })

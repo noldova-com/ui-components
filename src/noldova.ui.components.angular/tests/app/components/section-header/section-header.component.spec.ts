@@ -10,6 +10,8 @@ import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
+import { IconButtonComponent } from "../../../../src/app/components/icon-button/icon-button.component";
+import { SectionHeaderActionDirective } from "../../../../src/app/components/section-header/section-header-action.directive";
 import { SectionHeaderComponent } from "../../../../src/app/components/section-header/section-header.component";
 import { TreeComponent } from "../../../../src/app/components/tree/tree.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
@@ -556,5 +558,189 @@ describe("SectionHeaderComponent in uppercase", () => {
     finally {
       await ForcedColorsFixture.resetAsync();
     }
+  });
+});
+
+@Component({
+  imports: [IconButtonComponent, SectionHeaderActionDirective, SectionHeaderComponent, TreeComponent],
+  template: `
+    <div class="list" [attr.dir]="direction()" [style.width.rem]="width()">
+      <nol-section-header class="acting" [label]="label()" icon="chat" [uppercase]="true" [collapsible]="collapsible()" [level]="4" controls="acting-rows"
+        [(expanded)]="isOpen">
+        <button type="button" nol-icon-button nolSectionHeaderAction icon="add" label="New chat" (click)="add()"></button>
+      </nol-section-header>
+      <div id="acting-rows"><nol-tree label="Chats" [nodes]="rows" /></div>
+      <nol-section-header class="bare" [label]="label()" icon="chat" [uppercase]="true" [collapsible]="collapsible()" />
+    </div>
+  `
+})
+class ActionSectionHeaderHostComponent {
+  public readonly label = signal("Chats");
+  public readonly direction = signal("ltr");
+  public readonly width = signal(16);
+  public readonly collapsible = signal(true);
+  public readonly isOpen = signal(true);
+  public readonly added = signal(0);
+  public readonly rows: readonly TreeNode[] = [new TreeNode("notes", "Meeting notes", "description")];
+
+  public add(): void {
+    this.added.update(t => t + 1);
+  }
+}
+
+describe("SectionHeaderComponent with actions", () => {
+  let fixture: ComponentFixture<ActionSectionHeaderHostComponent>;
+  let host: ActionSectionHeaderHostComponent;
+
+  async function renderAsync(theme?: Theme, mode?: ThemeMode): Promise<void> {
+    AppearanceFixture.apply(theme, mode);
+    fixture = TestBed.createComponent(ActionSectionHeaderHostComponent);
+    host = fixture.componentInstance;
+    await fixture.whenStable();
+  }
+
+  async function changeAsync(change: () => void): Promise<void> {
+    change();
+    await fixture.whenStable();
+  }
+
+  const acting = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), ".acting");
+  const bare = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), ".bare");
+  const heading = (): HTMLElement => DomFixture.one(acting(), ".nol-section-header-heading");
+  const action = (): HTMLButtonElement => DomFixture.oneOf(acting(), "[nolSectionHeaderAction]", HTMLButtonElement);
+  const actions = (): HTMLElement => DomFixture.one(acting(), ".nol-section-header-actions");
+  const part = (element: HTMLElement, name: string): DOMRect => DomFixture.oneOf(element, name, Element).getBoundingClientRect();
+  const lineHeight = (): number => Number.parseFloat(getComputedStyle(DomFixture.one(acting(), ".nol-section-header-label")).lineHeight);
+  const shown = (): string => getComputedStyle(actions()).opacity;
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  it("moves the heading role and level to an element holding the label and the button, with each action outside it, named by its own label", async () => {
+    await renderAsync();
+
+    expect([acting().getAttribute("role"), acting().getAttribute("aria-level"), heading().getAttribute("role"), heading().getAttribute("aria-level"),
+      heading().querySelectorAll("button").length, heading().contains(action()), action().getAttribute("aria-label"), heading().textContent?.includes("Chats")])
+      .toEqual([null, null, "heading", "4", 1, false, "New chat", true]);
+    expect([bare().getAttribute("role"), bare().getAttribute("aria-level"), bare().querySelector(".nol-section-header-heading"), bare().querySelector(".nol-section-header-actions")])
+      .toEqual(["heading", "3", null, null]);
+  });
+
+  it("runs its action without folding the group, and folds it from its button as a header without actions does", async () => {
+    await renderAsync();
+
+    action().click();
+    await fixture.whenStable();
+    const afterAction = [host.added(), host.isOpen()];
+    DomFixture.oneOf(heading(), ".nol-section-header-toggle", HTMLButtonElement).click();
+    await fixture.whenStable();
+
+    expect([...afterAction, host.isOpen()]).toEqual([1, true, false]);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`keeps a header's height, label, icon and caret, and puts its action 0.25rem from its end on the label's first line, from the ${theme.id} theme in ${mode} mode`,
+        async () => {
+          await renderAsync(theme, mode);
+          const box = acting().getBoundingClientRect();
+          const plain = bare().getBoundingClientRect();
+          const button = action().getBoundingClientRect();
+          const text = part(acting(), ".nol-section-header-label");
+
+          AppearanceFixture.expectLook(`${box.height}px`, theme, "section-header-height", "height");
+          AppearanceFixture.expectPixels(box.height, plain.height);
+          for (const name of [".nol-section-header-icon", ".nol-section-header-label", ".nol-section-header-caret"]) {
+            AppearanceFixture.expectPixels(part(acting(), name).left - box.left, part(bare(), name).left - plain.left);
+            AppearanceFixture.expectPixels(part(acting(), name).top - box.top, part(bare(), name).top - plain.top);
+          }
+          AppearanceFixture.expectPixels(box.right - button.right, AppearanceFixture.measureLook("space-1"));
+          AppearanceFixture.expectPixels(button.top + button.height / 2, text.top + lineHeight() / 2);
+        });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`hides its actions in their place until the pointer is over the header or the focus is inside it, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        const idle = shown();
+        const place = action().getBoundingClientRect();
+        const label = part(acting(), ".nol-section-header-label");
+        await userEvent.hover(DomFixture.oneOf(acting(), ".nol-section-header-label", Element));
+        const hovered = shown();
+        const hoveredPlace = action().getBoundingClientRect();
+        const hoveredLabel = part(acting(), ".nol-section-header-label");
+        await userEvent.unhover(acting());
+        const left = shown();
+        action().focus();
+        const focused = shown();
+
+        expect([idle, hovered, left, focused]).toEqual(["0", "1", "0", "1"]);
+        expect([hoveredPlace.left, hoveredPlace.top, hoveredLabel.left, hoveredLabel.top].map(Math.round)).toEqual([place.left, place.top, label.left, label.top].map(Math.round));
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`always shows its actions under forced colors, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        await ForcedColorsFixture.activateAsync();
+        try {
+          expect(shown()).toBe("1");
+        }
+        finally {
+          await ForcedColorsFixture.resetAsync();
+        }
+      });
+
+  it("always shows its actions where the pointer can't hover, by a rule of its own stylesheet", async () => {
+    await renderAsync();
+    const rules = [...document.styleSheets].flatMap(t => [...t.cssRules]).filter((t): t is CSSMediaRule => t instanceof CSSMediaRule && t.conditionText.includes("hover: none"))
+      .flatMap(t => [...t.cssRules]).filter((t): t is CSSStyleRule => t instanceof CSSStyleRule && t.selectorText.includes(".nol-section-header-actions"));
+
+    expect([shown(), rules.map(t => t.style.opacity)]).toEqual(["0", ["1"]]);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`puts its action 0.25rem from its start in a right-to-left layout, before the label, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        await changeAsync(() => host.direction.set("rtl"));
+        const box = acting().getBoundingClientRect();
+        const button = action().getBoundingClientRect();
+
+        AppearanceFixture.expectPixels(button.left - box.left, AppearanceFixture.measureLook("space-1"));
+        expect(part(acting(), ".nol-section-header-label").left).toBeGreaterThan(button.right);
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`wraps a long label before its whole action in a narrow header, keeping the action on the label's first line, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        await changeAsync(() => {
+          host.width.set(8);
+          host.label.set("Chats from the last week");
+        });
+        const box = acting().getBoundingClientRect();
+        const button = action().getBoundingClientRect();
+        const text = part(acting(), ".nol-section-header-label");
+
+        expect(Math.round(text.height / lineHeight())).toBeGreaterThan(1);
+        expect(text.right).toBeLessThanOrEqual(button.left);
+        AppearanceFixture.expectPixels(box.right - button.right, AppearanceFixture.measureLook("space-1"));
+        AppearanceFixture.expectPixels(button.width, AppearanceFixture.measureLook("icon-button-target"));
+        AppearanceFixture.expectPixels(button.top + button.height / 2, text.top + lineHeight() / 2);
+      });
+
+  it("keeps a header that isn't collapsible at its inset and height, with its action at its end", async () => {
+    await renderAsync();
+    await changeAsync(() => host.collapsible.set(false));
+    const box = acting().getBoundingClientRect();
+    const plain = bare().getBoundingClientRect();
+
+    expect([heading().querySelector("button"), acting().getAttribute("role"), heading().getAttribute("role")]).toEqual([null, null, "heading"]);
+    AppearanceFixture.expectPixels(box.height, plain.height);
+    AppearanceFixture.expectPixels(part(acting(), ".nol-section-header-label").left - box.left, part(bare(), ".nol-section-header-label").left - plain.left);
+    AppearanceFixture.expectPixels(box.right - action().getBoundingClientRect().right, AppearanceFixture.measureLook("space-1"));
   });
 });

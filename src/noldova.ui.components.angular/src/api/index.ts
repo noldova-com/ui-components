@@ -65,6 +65,7 @@ export { RadioComponent } from "../app/components/radio/radio.component.js";
 export { RadioGroupComponent } from "../app/components/radio/radio-group.component.js";
 export { RevealDelayDirective } from "../app/components/progress/reveal-delay.directive.js";
 export { SashComponent } from "../app/components/sash/sash.component.js";
+export { SectionHeaderActionDirective } from "../app/components/section-header/section-header-action.directive.js";
 export { SectionHeaderComponent } from "../app/components/section-header/section-header.component.js";
 export { SelectComponent } from "../app/components/select/select.component.js";
 export { SpinnerComponent } from "../app/components/spinner/spinner.component.js";

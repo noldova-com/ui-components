@@ -101,3 +101,51 @@
 :host(.nol-section-header-collapsed) .nol-section-header-caret:dir(rtl) {
   rotate: 90deg;
 }
+
+:host(.nol-section-header-with-actions) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding-block: 0;
+  padding-inline: 0 var(--nol-space-1);
+}
+
+.nol-section-header-heading {
+  flex: auto;
+  min-width: 0;
+  padding-block: calc((var(--nol-section-header-height) - var(--nol-line-label)) / 2);
+  padding-inline: var(--nol-space-2) var(--nol-space-1);
+}
+
+:host(.nol-section-header-with-icon) .nol-section-header-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+}
+
+:host(.nol-section-header-collapsible) .nol-section-header-heading {
+  display: flex;
+  padding: 0;
+}
+
+.nol-section-header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-space-1);
+  margin-block-start: calc((var(--nol-section-header-height) - var(--nol-icon-button-target)) / 2);
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  opacity: 0;
+}
+
+:host(:is(:hover, :focus-within, [data-nol-state="Hover"])) .nol-section-header-actions {
+  opacity: 1;
+}
+
+@media (hover: none), (forced-colors: active) {
+  .nol-section-header-actions {
+    opacity: 1;
+  }
+}
