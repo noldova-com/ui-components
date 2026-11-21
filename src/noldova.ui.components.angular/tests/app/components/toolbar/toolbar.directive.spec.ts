@@ -118,6 +118,21 @@ describe("ToolbarDirective", () => {
     expect(tabStops()).toEqual(["Link"]);
   });
 
+  it("moves along a horizontal strip in its text direction when the key is pressed, Left onward and Right back in right-to-left text", async () => {
+    toolbar().dir = "rtl";
+    item("Bold").focus();
+    const visited: (string | null)[] = [];
+    for (const key of ["ArrowLeft", "ArrowLeft", "ArrowRight"]) {
+      await pressAsync(`{${key}}`);
+      visited.push(focused());
+    }
+    toolbar().dir = "ltr";
+    await pressAsync("{ArrowRight}");
+    visited.push(focused());
+
+    expect(visited).toEqual(["Italic", "Locked", "Italic", "Locked"]);
+  });
+
   it("leaves the other axis, activation keys and modified keys to the item", async () => {
     item("Italic").focus();
 
