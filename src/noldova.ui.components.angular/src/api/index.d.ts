@@ -10129,9 +10129,10 @@ export declare class PopoverDirective {
  * {@link PopoverDirective}; on a click the trigger focuses that root once it
  * shows. The
  * popover closes on a press outside both it and the host, on Escape that
- * nothing inside handled, when the host is hidden or scrolled away, and when
- * the trigger is destroyed. Its export name is `nolPopoverTrigger`, and it
- * gives its host `aria-haspopup="dialog"` and `aria-expanded`.
+ * nothing inside handled and that ends no composition, when the host is
+ * hidden or scrolled away, and when the trigger is destroyed. Its export
+ * name is `nolPopoverTrigger`, and it gives its host
+ * `aria-haspopup="dialog"` and `aria-expanded`.
  */
 export declare class PopoverTriggerDirective {
   /**
