@@ -2824,13 +2824,21 @@ export declare class CanvasComponent {
 
 /**
  * Marks an element in a {@link CanvasComponent}'s content as an item, which
- * the overview map shows as a box.
+ * the overview map shows as a box. The element can sit at any depth, inside
+ * the templates of components the content renders too; it shows from when it
+ * renders until it is destroyed. A mark outside any canvas does nothing.
  */
 export declare class CanvasItemDirective {
   /**
    * The marked element.
    */
   public readonly element: HTMLElement;
+
+  /**
+   * Adds the element to the nearest canvas around it until the directive is
+   * destroyed. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**

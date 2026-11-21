@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, computed, signal } from "@angular/core";
+import { Component, computed, input, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
@@ -593,5 +593,77 @@ describe("CanvasComponent", () => {
     element.dispatchEvent(event);
 
     expect(event.defaultPrevented).toBe(false);
+  });
+});
+
+@Component({
+  selector: "nol-canvas-spec-team",
+  imports: [CanvasItemDirective],
+  template: `
+    @for (name of names(); track name) {
+      <div nolCanvasItem class="member" [style.width.rem]="8" [style.height.rem]="3">{{ name }}</div>
+    }
+  `
+})
+class TeamComponent {
+  public readonly names = input.required<readonly string[]>();
+}
+
+@Component({
+  imports: [CanvasComponent, CanvasItemDirective, TeamComponent],
+  template: `
+    <nol-canvas label="Team" [style.width.px]="800" [style.height.px]="500">
+      <div [style.display]="'flex'" [style.gap.rem]="1">
+        <nol-canvas-spec-team [names]="names()" />
+        @if (lead()) {
+          <div nolCanvasItem class="lead" [style.width.rem]="10" [style.height.rem]="3">Lead</div>
+        }
+      </div>
+    </nol-canvas>
+    <div nolCanvasItem class="outside">Outside</div>
+  `
+})
+class NestedCanvasHostComponent {
+  public readonly names = signal<readonly string[]>(["Alice", "Bob"]);
+  public readonly lead = signal(false);
+}
+
+describe("CanvasComponent with items inside its content's components", () => {
+  let fixture: ComponentFixture<NestedCanvasHostComponent>;
+
+  const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
+  const boxes = (): SVGRectElement[] => DomFixture.allOf(DomFixture.one(canvas(), "nol-canvas-map"), ".nol-canvas-map-box", SVGRectElement);
+  const sizes = (): string[] => boxes().map(t => `${t.getAttribute("width")}x${t.getAttribute("height")}`).sort();
+  const shownAsync = async (expected: readonly string[]): Promise<void> => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(sizes()).toEqual(expected));
+  };
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(NestedCanvasHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  it("shows on its map the items marked inside a component of its content, and each added or removed later, but none outside it", async () => {
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const member = `${8 * rem}x${3 * rem}`;
+    const lead = `${10 * rem}x${3 * rem}`;
+
+    await shownAsync([member, member]);
+    fixture.componentInstance.lead.set(true);
+    await shownAsync([lead, member, member].sort());
+    fixture.componentInstance.names.set(["Alice"]);
+    await shownAsync([lead, member].sort());
+    fixture.componentInstance.lead.set(false);
+    fixture.componentInstance.names.set(["Alice", "Bob", "Carol"]);
+    await shownAsync([member, member, member]);
   });
 });

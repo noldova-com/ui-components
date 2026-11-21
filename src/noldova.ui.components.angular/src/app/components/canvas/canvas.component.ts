@@ -6,13 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, contentChildren, inject, input, model, signal, viewChild } from "@angular/core";
+import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, inject, input, model, signal, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
 import { CanvasFitAlignment } from "../../enums/canvas-fit-alignment.js";
 import { CanvasBox } from "../../models/canvas-box.js";
+import { CanvasItems } from "../../models/canvas-items.js";
 import { CanvasPoint } from "../../models/canvas-point.js";
 import { CanvasView } from "../../models/canvas-view.js";
 import { DragGesture } from "../../models/drag-gesture.js";
@@ -23,7 +24,6 @@ import { CanvasMapResources } from "../canvas-map/canvas-map.resources.js";
 import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { ToolbarItemDirective } from "../toolbar/toolbar-item.directive.js";
 import { ToolbarDirective } from "../toolbar/toolbar.directive.js";
-import { CanvasItemDirective } from "./canvas-item.directive.js";
 import { CanvasResources } from "./canvas.resources.js";
 
 @Component({
@@ -31,6 +31,7 @@ import { CanvasResources } from "./canvas.resources.js";
   imports: [ButtonComponent, CanvasMapComponent, IconButtonComponent, ToolbarDirective, ToolbarItemDirective],
   templateUrl: "./canvas.component.html",
   styleUrl: "./canvas.component.css",
+  providers: [CanvasItems],
   host: {
     "role": "region",
     "tabindex": "0",
@@ -50,7 +51,7 @@ import { CanvasResources } from "./canvas.resources.js";
 })
 export class CanvasComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private readonly items: Signal<readonly CanvasItemDirective[]> = contentChildren(CanvasItemDirective, { descendants: true });
+  private readonly items: Signal<readonly HTMLElement[]> = inject(CanvasItems, { self: true }).elements;
   private readonly plane: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("plane");
   private readonly tools: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("tools");
   private readonly map: Signal<ElementRef<HTMLElement> | undefined> = viewChild(CanvasMapComponent, { read: ElementRef });
@@ -93,7 +94,7 @@ export class CanvasComponent {
     afterRenderEffect(() => {
       const items = this.items();
       observer.disconnect();
-      for (const element of [this.host, this.plane().nativeElement, ...items.map(t => t.element)])
+      for (const element of [this.host, this.plane().nativeElement, ...items])
         observer.observe(element);
     });
   }
@@ -264,7 +265,7 @@ export class CanvasComponent {
     this.size.set(new CanvasBox(0, 0, this.host.clientWidth, this.host.clientHeight));
     this.contentBox.set(new CanvasBox(0, 0, plane.offsetWidth, plane.offsetHeight));
     this.itemBoxes.set(this.items().map(t => {
-      const box = t.element.getBoundingClientRect();
+      const box = t.getBoundingClientRect();
       return new CanvasBox((box.left - base.left) / zoom, (box.top - base.top) / zoom, box.width / zoom, box.height / zoom);
     }));
     if (this.hasFitted || plane.offsetWidth === 0)
