@@ -88,6 +88,17 @@ describe("failed module request setup", () => {
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
+  it("reads a refused connect on every localhost address as refused when Node's event loop stalls past the probe's limit before the refusal is read", async () => {
+    const connects = await commands.stalledProbe("connect");
+
+    expect(connects.length).toBeGreaterThan(0);
+    expect(connects.filter(t => t !== "ECONNREFUSED")).toEqual([]);
+  });
+
+  it("reads a socket listing that ended while Node's event loop stalled past the probe's limit, rather than stopping it as run out", async () => {
+    expect(await commands.stalledProbe("listing")).toEqual([expect.stringMatching(/^listening tcp LISTEN 127\.0\.0\.1:\d+; other sockets on the port none$/u)]);
+  });
+
   it("prints a request of any type still open past the stall limit once, with its start and the 20 oldest other open requests, counting the rest, and leaves out a request that finished", async () => {
     const printed = await commands.scriptedStall("crowd");
     const stalls = printed.filter(line => line.startsWith("Stalled request at "));
