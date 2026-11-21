@@ -16,6 +16,7 @@ import { ClosedPort } from "./tests/network/closed-port.ts";
 import { FailedModuleRequests } from "./tests/network/failed-module-requests.ts";
 import { ScriptedRefusal } from "./tests/network/scripted-refusal.ts";
 import { ScriptedStall } from "./tests/network/scripted-stall.ts";
+import { StalledProbe } from "./tests/network/stalled-probe.ts";
 import { ShortScreenshotNames } from "./tests/screenshots/short-screenshot-names.ts";
 
 const project = pathToFileURL(`${process.cwd()}/`);
@@ -51,7 +52,7 @@ export default defineConfig({
     api: { port: 24315, host: "127.0.0.1" },
     // __vitest_screenshot replaces Vitest's own screenshot command, so a failure screenshot whose name is too long for a file still saves.
     browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, closedPort: new ClosedPort().find, scriptedRefusal: new ScriptedRefusal().print,
-      scriptedStall: new ScriptedStall().print, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
+      scriptedStall: new ScriptedStall().print, stalledProbe: new StalledProbe().read, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
     expect: { poll: { timeout: pollLimit } },
     hookTimeout: hangLimit,
