@@ -56,7 +56,7 @@ export class CanvasComponent {
   private readonly tools: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("tools");
   private readonly map: Signal<ElementRef<HTMLElement> | undefined> = viewChild(CanvasMapComponent, { read: ElementRef });
   private readonly shown: WritableSignal<CanvasView> = signal(CanvasView.initial);
-  private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0));
+  private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   private readonly pointers: Map<number, CanvasPoint> = new Map<number, CanvasPoint>();
   private pressStart: CanvasPoint = new CanvasPoint(0, 0);
   private hasFitted: boolean = false;
@@ -64,8 +64,8 @@ export class CanvasComponent {
   protected readonly partResources: typeof CanvasResources = CanvasResources;
   protected readonly textVariant: ButtonVariant = ButtonVariant.Text;
   protected readonly isDragging: WritableSignal<boolean> = signal(false);
-  protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0));
-  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([]);
+  protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
+  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([], { equal: CanvasBox.sameAll });
   protected readonly transform: Signal<string> = computed(() => {
     const view = this.shown();
     return `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
@@ -85,9 +85,18 @@ export class CanvasComponent {
     const onBlur = (): void => this.endPointers();
     this.host.addEventListener(CanvasResources.canvasWheelEvent, onWheel, { passive: false });
     window.addEventListener(Resources.blurEvent, onBlur);
-    const observer = new ResizeObserver(() => this.measure());
-    const moves = new MutationObserver(() => this.measure());
+    let frame: number | null = null;
+    const measureOnce = (): void => {
+      frame ??= requestAnimationFrame(() => {
+        frame = null;
+        this.measure();
+      });
+    };
+    const observer = new ResizeObserver(measureOnce);
+    const moves = new MutationObserver(measureOnce);
     inject(DestroyRef).onDestroy(() => {
+      if (!Object.isNull(frame))
+        cancelAnimationFrame(frame);
       observer.disconnect();
       moves.disconnect();
       this.host.removeEventListener(CanvasResources.canvasWheelEvent, onWheel);

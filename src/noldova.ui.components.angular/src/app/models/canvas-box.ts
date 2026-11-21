@@ -19,12 +19,20 @@ export class CanvasBox {
     this.height = height;
   }
 
+  public static sameAll(a: readonly CanvasBox[], b: readonly CanvasBox[]): boolean {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
   public get right(): number {
     return this.left + this.width;
   }
 
   public get bottom(): number {
     return this.top + this.height;
+  }
+
+  public equals(box: CanvasBox): boolean {
+    return box.left === this.left && box.top === this.top && box.width === this.width && box.height === this.height;
   }
 
   public contains(box: CanvasBox): boolean {

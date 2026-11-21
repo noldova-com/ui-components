@@ -10,6 +10,7 @@ import { Component, computed, input, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
+import { CanvasMapComponent } from "../../../../src/app/components/canvas-map/canvas-map.component";
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
 import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
@@ -18,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 @Component({
   imports: [CanvasComponent, CanvasItemDirective],
@@ -693,6 +695,40 @@ describe("CanvasComponent with items inside its content's components", () => {
     await changedAsync(() => expect(sizes("inner")).toEqual([size(4, 2)]));
 
     expect(sizes()).toEqual([size(8), size(8)]);
+  });
+
+  it("measures its items once a frame for a burst of changes, and keeps its map's boxes when none of them moved", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const plane = DomFixture.one(canvas(), ".nol-canvas-plane");
+    const content = DomFixture.one(plane, ":scope > div");
+    const map = fixture.debugElement.query(By.directive(CanvasMapComponent)).injector.get(CanvasMapComponent);
+    const before = map.boxes();
+    const measures = vi.spyOn(plane, "getBoundingClientRect");
+    for (let changes = 0; changes < 20; changes++) {
+      const hidden = document.createElement("span");
+      hidden.hidden = true;
+      content.append(hidden);
+      await Promise.resolve();
+    }
+    await RenderedFrameFixture.nextAsync();
+    await RenderedFrameFixture.nextAsync();
+
+    expect(measures).toHaveBeenCalledTimes(1);
+    expect(map.boxes()).toBe(before);
+  });
+
+  it("measures nothing once it is destroyed with a measure still waiting for its frame", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const plane = DomFixture.one(canvas(), ".nol-canvas-plane");
+    const measures = vi.spyOn(plane, "getBoundingClientRect");
+    DomFixture.one(plane, ":scope > div").append(document.createElement("span"));
+    await Promise.resolve();
+    fixture.destroy();
+    await RenderedFrameFixture.nextAsync();
+
+    expect(measures).not.toHaveBeenCalled();
   });
 
   it("leaves off its map an item declared inside it once the item is rendered outside its plane", async () => {
