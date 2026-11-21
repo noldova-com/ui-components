@@ -1,0 +1,111 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-height: 12rem;
+  overflow: clip;
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-window);
+  background-image: radial-gradient(var(--nol-menu-border) 1px, transparent 1px);
+  background-size: 1.5rem 1.5rem;
+  cursor: grab;
+  outline: none;
+  touch-action: none;
+  user-select: none;
+}
+
+:host(.nol-canvas-dragging) {
+  cursor: grabbing;
+}
+
+:host(:is(:focus-visible, [data-nol-state="Focus"])) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-canvas-plane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: max-content;
+  padding: var(--nol-space-4);
+  transform-origin: 0 0;
+}
+
+.nol-canvas-tools {
+  position: absolute;
+  z-index: 1;
+  top: var(--nol-space-2);
+  right: var(--nol-space-2);
+  left: var(--nol-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-1);
+  pointer-events: none;
+}
+
+.nol-canvas-bar,
+.nol-canvas-hint {
+  border: var(--nol-border-width) solid var(--nol-card-border);
+  border-radius: var(--nol-radius-large);
+  background: var(--nol-panel);
+  cursor: default;
+  pointer-events: auto;
+}
+
+.nol-canvas-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-1);
+  padding: var(--nol-space-1);
+}
+
+.nol-canvas-hint {
+  padding: var(--nol-space-1) var(--nol-space-2);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  line-height: var(--nol-line-label);
+}
+
+.nol-canvas-zoom {
+  min-width: 3rem;
+  color: var(--nol-text);
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-text-code);
+  text-align: center;
+}
+
+.nol-canvas-map {
+  position: absolute;
+  z-index: 1;
+  right: var(--nol-space-2);
+  bottom: var(--nol-space-2);
+}
+
+@media (forced-colors: active) {
+  :host {
+    border-color: CanvasText;
+    background-image: none;
+  }
+
+  .nol-canvas-bar,
+  .nol-canvas-hint {
+    border-color: CanvasText;
+    background: Canvas;
+  }
+}

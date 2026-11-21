@@ -17,6 +17,7 @@ import { DocsMenuGroup } from "./docs-menu-group.js";
 import { DocsPage } from "./docs-page.js";
 import { AvatarPage } from "./pages/avatar-page.js";
 import { ButtonPage } from "./pages/button-page.js";
+import { CanvasPage } from "./pages/canvas-page.js";
 import { CardPage } from "./pages/card-page.js";
 import { CheckboxPage } from "./pages/checkbox-page.js";
 import { ChipPage } from "./pages/chip-page.js";
@@ -103,6 +104,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(ProgressPage.content, "progress", DocsGroup.Status),
     DocsCatalog.componentPage(SpinnerPage.content, "spinner", DocsGroup.Status),
     DocsCatalog.componentPage(SashPage.content, "sash", DocsGroup.Layout),
+    DocsCatalog.componentPage(CanvasPage.content, "canvas", DocsGroup.Layout),
     DocsCatalog.componentPage(TabPage.content, "tab", DocsGroup.Layout),
     DocsCatalog.componentPage(TreePage.content, "tree", DocsGroup.Layout),
     DocsCatalog.componentPage(VirtualListPage.content, "virtual-list", DocsGroup.Layout),
@@ -112,6 +114,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(MarkdownViewPage.content, "markdown-view", DocsGroup.Content)
   ];
   public static readonly excludedComponents: ReadonlySet<string> = new Set([
+    "CanvasMapComponent",
     "DiffViewComponent",
     "DockingGuideComponent",
     "DockingPlateComponent",
