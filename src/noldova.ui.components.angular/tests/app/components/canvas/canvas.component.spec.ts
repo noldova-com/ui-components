@@ -403,8 +403,7 @@ describe("CanvasComponent", () => {
     first.focus();
     await fixture.whenStable();
 
-    expect([drawn, shown, kept.x - settled.x, kept.y - settled.y, inside(first.getBoundingClientRect(), free())])
-      .toEqual([true, [true, 0, 0], expect.closeTo(0, 2), expect.closeTo(0, 2), true]);
+    expect([drawn, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([true, [true, 0, 0], settled, true]);
   });
 
   it("draws the pan to a focused item before the browser scrolls it into view, so a scrolling page around it stays put", async () => {

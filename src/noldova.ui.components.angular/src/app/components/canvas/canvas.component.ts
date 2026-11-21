@@ -180,7 +180,7 @@ export class CanvasComponent {
       start < areaStart || length > areaLength ? areaStart - start : Math.min(0, areaStart + areaLength - start - length);
     const dx = shift(left, box.width * scale, area.left, area.width);
     const dy = shift(top, box.height * scale, area.top, area.height);
-    if (dx !== 0 || dy !== 0)
+    if (Math.abs(dx) >= CanvasResources.canvasFocusSlackPixels || Math.abs(dy) >= CanvasResources.canvasFocusSlackPixels)
       this.shown.set(view.panBy(dx, dy));
     plane.style.transform = this.transform();
   }
