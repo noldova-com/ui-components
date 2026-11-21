@@ -17,6 +17,8 @@ declare module "vitest/browser" {
     scriptedRefusal: (probe: string) => Promise<readonly string[]>;
     // The lines a recorder of its own prints for requests that stall in the scenario named, "crowd" or "alone", once its run closed.
     scriptedStall: (scenario: string, waitLimit?: number) => Promise<readonly string[]>;
+    // What the probe read of a refused port after Node's event loop stalled past its limit: "connect", each localhost address's connect, or "listing", the listing.
+    stalledProbe: (part: string) => Promise<readonly string[]>;
   }
 }
 

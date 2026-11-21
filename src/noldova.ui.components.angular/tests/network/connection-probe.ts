@@ -11,13 +11,15 @@ import dns from "node:dns/promises";
 import net from "node:net";
 
 import type { IConnectionProbe } from "./interfaces/i-connection-probe.ts";
+import { LoopLimit } from "./loop-limit.ts";
 
 // Says what a port holds the moment the browser's connection to it failed: whether Node connects to it on each address localhost resolves to,
 // in the order Node resolves them, the sockets listening on it, and how many other sockets it has, by state. A browser connection refused while
 // Node connects on the server's address points at the browser's side; one refused while nothing listens points at the server's.
 export class ConnectionProbe implements IConnectionProbe {
   private static readonly LOCALHOST: string = "localhost";
-  // Long enough for Windows, which retries a refused connection's SYN before it reports the refusal.
+  // Long enough for Windows, which retries a refused connection's SYN before it reports the refusal; counted in turns of the event loop, so a loop
+  // stalled past it on a loaded runner doesn't end a connect or a listing that finished meanwhile.
   private static readonly CONNECT_LIMIT: number = 5_000;
   // A busy Windows machine lists tens of thousands of sockets, far past execFile's 1 MiB default.
   private static readonly LISTING_BUFFER: number = 64 * 1024 * 1024;
@@ -31,17 +33,20 @@ export class ConnectionProbe implements IConnectionProbe {
   private static readonly LINES: RegExp = /\r?\n/u;
 
   private readonly listing: readonly [string, readonly string[]];
+  private readonly limit: number;
 
-  // The socket listing is the platform's unless given, as tests/network/scripted-refusal.ts gives one that fails.
-  public constructor(listing: readonly [string, readonly string[]] = ConnectionProbe.listCommand()) {
+  // The socket listing is the platform's unless given, as tests/network/scripted-refusal.ts gives one that fails; the limit is the connect's unless
+  // given, as tests/network/stalled-probe.ts gives a shorter one.
+  public constructor(listing: readonly [string, readonly string[]] = ConnectionProbe.listCommand(), limit: number = ConnectionProbe.CONNECT_LIMIT) {
     this.listing = listing;
+    this.limit = limit;
   }
 
   public async probeAsync(port: number): Promise<string> {
     const addresses = await ConnectionProbe.localhostAsync();
     const [connects, sockets] = await Promise.all([
-      Promise.all(addresses.map(async address => `${address} ${await ConnectionProbe.connectAsync(address, port)}`)),
-      this.socketsAsync(port)
+      Promise.all(addresses.map(async address => `${address} ${await ConnectionProbe.connectAsync(address, port, this.limit)}`)),
+      this.listAsync(port)
     ]);
     return `Node connects ${connects.join(", ")}; ${sockets}`;
   }
@@ -52,15 +57,15 @@ export class ConnectionProbe implements IConnectionProbe {
   }
 
   // "connected", "timed out", or the connection's error code, such as ECONNREFUSED.
-  public static connectAsync(host: string, port: number): Promise<string> {
+  public static connectAsync(host: string, port: number, limit: number = ConnectionProbe.CONNECT_LIMIT): Promise<string> {
     return new Promise(resolve => {
       const socket = net.connect({ host, port });
       const end = (result: string): void => {
-        clearTimeout(timer);
+        timer.stop();
         socket.destroy();
         resolve(result);
       };
-      const timer = setTimeout(() => end(ConnectionProbe.TIMED_OUT), ConnectionProbe.CONNECT_LIMIT);
+      const timer = new LoopLimit(limit, () => end(ConnectionProbe.TIMED_OUT));
       socket.once("connect", () => end(ConnectionProbe.CONNECTED));
       socket.once("error", (error: NodeJS.ErrnoException) => end(error.code ?? error.message));
     });
@@ -68,12 +73,15 @@ export class ConnectionProbe implements IConnectionProbe {
 
   // Windows' and macOS's netstat and Linux's ss each list every TCP socket with its local and remote address; a socket is on the port when either
   // address ends with it, after a colon, or after a dot as macOS writes it.
-  // The listing is stopped at the connect's time limit, so a listing that hangs ends with the probe; the stop is an abort signal, as a timeout key
+  // The listing is stopped at the connect's limit, so a listing that hangs ends with the probe; the stop is an abort signal, as a timeout key
   // under tests reads to the Poll and test limits check as a test's own limit.
-  private socketsAsync(port: number): Promise<string> {
+  public listAsync(port: number): Promise<string> {
     const [command, args] = this.listing;
+    const stop = new AbortController();
+    const timer = new LoopLimit(this.limit, () => stop.abort());
     return new Promise(resolve => {
-      execFile(command, args, { windowsHide: true, signal: AbortSignal.timeout(ConnectionProbe.CONNECT_LIMIT), maxBuffer: ConnectionProbe.LISTING_BUFFER }, (error, stdout) => {
+      execFile(command, args, { windowsHide: true, signal: stop.signal, maxBuffer: ConnectionProbe.LISTING_BUFFER }, (error, stdout) => {
+        timer.stop();
         if (error !== null) {
           resolve(`the sockets couldn't be listed: ${error.message}`);
           return;
