@@ -31,7 +31,9 @@ export class CheckboxComponent {
   }
 
   protected toggle(event: Event): void {
-    if (event.target instanceof HTMLInputElement)
-      this.checkedChange.emit(event.target.checked);
+    if (!(event.target instanceof HTMLInputElement))
+      return;
+    this.checkedChange.emit(event.target.checked);
+    event.target.checked = this.checked();
   }
 }
