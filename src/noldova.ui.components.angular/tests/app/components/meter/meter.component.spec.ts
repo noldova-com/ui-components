@@ -20,7 +20,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   template: `
     <div class="frame" [attr.dir]="direction()"><nol-meter class="subject" label="Weekly usage" [value]="value()" [warning]="warning()">{{ caption() }}</nol-meter></div>
     <div><nol-meter class="bare" label="Session usage" [value]="0.5" /></div>
-    <div class="row" style="width: 20rem"><nol-meter class="grown" label="Weekly usage" [value]="0.42"
+    <div class="row" style="width: 20rem"><nol-meter class="grown" label="Weekly usage" [value]="0.42" [warning]="warning()"
       style="--nol-meter-grow: 1; --nol-meter-track: var(--nol-selected); --nol-meter-text-size: var(--nol-text-small)">42%</nol-meter></div>
     <div class="tight" style="width: 8rem"><nol-meter class="grown-long" label="Weekly usage" [value]="0.92" style="--nol-meter-grow: 1">92% of this week's limit used</nol-meter></div>
     <div class="narrow" style="width: 8rem"><nol-meter class="long" label="Weekly usage" [value]="0.92">92% of this week's limit used, which resets on Nov 2</nol-meter></div>
@@ -152,7 +152,7 @@ describe("MeterComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`draws its track in --nol-meter-track and its text at --nol-meter-text-size when they are set, from the ${theme.id} theme in ${mode} mode`, async () => {
+      it(`draws its track in --nol-meter-track in either tone and its text at --nol-meter-text-size when they are set, from the ${theme.id} theme in ${mode} mode`, async () => {
         AppearanceFixture.apply(theme, mode);
         await fixture.whenStable();
         const probe = document.body.appendChild(document.createElement("div"));
@@ -163,6 +163,11 @@ describe("MeterComponent", () => {
         expect([getComputedStyle(fill("grown")).backgroundColor, getComputedStyle(track("grown")).backgroundColor])
           .toEqual([AppearanceFixture.readColor(theme, mode, "progress"), AppearanceFixture.readColor(theme, mode, "selected")]);
         AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(text("grown")).fontSize), small);
+
+        await updateAsync(t => t.warning.set(true));
+
+        expect([getComputedStyle(fill("grown")).backgroundColor, getComputedStyle(track("grown")).backgroundColor])
+          .toEqual([AppearanceFixture.readColor(theme, mode, "warning"), AppearanceFixture.readColor(theme, mode, "selected")]);
       });
 
   it("fills its container with --nol-meter-grow set to 1, its bar growing from its start to the gap before its text, filled to its fraction", () => {
