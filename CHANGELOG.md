@@ -4,8 +4,18 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.25
+
+- `@noldova/ui.components.angular`: a section header takes actions at its end: a button marked `nolSectionHeaderAction` (`SectionHeaderActionDirective`) inside `nol-section-header`, such as an icon button that adds to the group, sits 0.25rem from the header's end on the label's first line, before the label in right-to-left text, and a long label wraps before it. The actions keep their place hidden until the pointer is over the header or the focus is inside it, and always show under forced colors and where the pointer can't hover. A click on an action doesn't fold the group.
+- `@noldova/ui.components.angular`: a toolbar's Left and Right follow its text direction, as a tree's do, so in right-to-left text Left moves on to the next item; the direction is read at each key, so one set after the toolbar rendered is followed.
+- `@noldova/ui.components.angular`: a popover no longer closes on an Escape or a Tab that belongs to an input method's composition, as the dialog, tabs, quick input and the mention field already do.
+- Internal, with no change to the packages: the spec run names the modules that failed to load again once it closes (#360), and the workflows' pins on `.github` move to v2.41.4 (#363, #365).
+
 ## 0.0.24
 
+0.0.24 was released at #354's merge, so it also holds that pull request's change, the dialog's below.
+
+- `@noldova/ui.components.angular`: a dialog no longer asks to dismiss on an Escape that ends an input method's composition, such as cancelling a conversion in a field, as tabs, quick input and the mention field already do.
 - `@noldova/ui.components.angular`: a behaviour change: a checkbox shows only its bound value, `checked`, after the person toggles it, so an unbound `nol-checkbox` no longer ticks itself, and a box whose owner defers the change ticks when the bound value arrives; `checkedChange` emits the value the person asks for. No Noldova consumer is affected.
 - `@noldova/ui.components.angular`: three variables the code that uses a meter can set on its element, each unset keeping its look: `--nol-meter-track`, the track's color, which keeps its color in the warning tone; `--nol-meter-text-size`, the text's size; and `--nol-meter-grow`, which at `1` makes the meter as wide as its container, its bar growing to the gap before its text and never narrower than `--nol-meter`.
 - `@noldova/ui.components.angular`: four variables the code that uses a popover can set on its `nolPopover` element, each unset keeping the menu's look: `--nol-popover-preferred-width`, still clamped to the overlay bounds, and `--nol-popover-surface`, `--nol-popover-border` and `--nol-popover-text`; a hover card sets them to 18rem, `--nol-hover-widget`, `--nol-hover-widget-border` and `--nol-text`.
