@@ -138,11 +138,13 @@ describe("ToolCallComponent", () => {
       seen.push(area.scrollTop);
     };
     const end = (): void => {
+      if (Math.abs(area.scrollTop - before) < 1)
+        return;
       hasEnded = true;
       ended.fire();
     };
     area.addEventListener("scroll", see);
-    area.addEventListener("scrollend", end, { once: true });
+    area.addEventListener("scrollend", end);
     try {
       await userEvent.keyboard(key);
       await ended.untilAsync(() => expect(hasEnded).toBe(true));
@@ -839,6 +841,39 @@ describe("ToolCallComponent", () => {
 
     expect(moves.map(Math.sign)).toEqual([1, 1, -1, -1]);
     expect(host.heard).toEqual(["ArrowLeft", "ArrowRight", "Escape", "Home", "Escape"]);
+  });
+
+  it("ends a key's scroll at the end of its own move, not at the scroll end of an earlier scroll still on its way", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+    output().focus();
+    output().scrollTo({ top: 1, behavior: "instant" });
+    output().scrollTo({ top: 0, behavior: "instant" });
+
+    const down = await scrollWithAsync("{ArrowDown}", 0);
+
+    expect([Math.sign(down), output().scrollTop]).toEqual([1, down]);
+  });
+
+  it("keeps waiting on a key that doesn't move the output when an earlier scroll's end reaches it, and ends at the first scroll end after the key that finds it moved", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+    const area = output();
+    area.focus();
+    const leftover = new Promise(resolve => area.addEventListener("scrollend", resolve, { once: true }));
+    const released = new Promise(resolve => area.addEventListener("keyup", resolve, { once: true }));
+    area.scrollTo({ top: 1, behavior: "instant" });
+    area.scrollTo({ top: 0, behavior: "instant" });
+    let isSettled = false;
+    const up = scrollWithAsync("{ArrowUp}", 0).finally(() => {
+      isSettled = true;
+    });
+
+    await Promise.all([leftover, released]);
+    const pending = [isSettled, area.scrollTop];
+    area.scrollTo({ top: 40, behavior: "instant" });
+
+    expect([pending, await up]).toEqual([[false, 0], 40]);
   });
 
   it("scrolls the output with Up after Down and Page Up have brought it back to its top, since Up starts from its own position", async () => {
