@@ -103,4 +103,11 @@ describe("CanvasBox", () => {
     expect([new CanvasBox(90, 90, 20, 20), new CanvasBox(100, 0, 10, 10), new CanvasBox(-10, 0, 10, 10), new CanvasBox(0, 100, 10, 10), new CanvasBox(0, -10, 10, 10)].map(t => box.overlaps(t)))
       .toEqual([true, false, false, false, false]);
   });
+
+  it("equals a box with the same edges and size, and no box that differs in any of them", () => {
+    const box = new CanvasBox(1, 2, 3, 4);
+
+    expect([new CanvasBox(1, 2, 3, 4), new CanvasBox(0, 2, 3, 4), new CanvasBox(1, 0, 3, 4), new CanvasBox(1, 2, 0, 4), new CanvasBox(1, 2, 3, 0)].map(t => box.equals(t)))
+      .toEqual([true, false, false, false, false]);
+  });
 });
