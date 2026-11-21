@@ -698,7 +698,7 @@ describe("CanvasComponent with items inside its content's components", () => {
   it("leaves off its map an item declared inside it once the item is rendered outside its plane", async () => {
     host().lead.set(true);
     await changedAsync(() => expect(sizes()).toHaveLength(3));
-    document.body.append(DomFixture.one(canvas(), ".lead"));
+    DomFixture.host(fixture).append(DomFixture.one(canvas(), ".lead"));
 
     await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
   });
