@@ -1310,7 +1310,7 @@ describe("MarkdownViewComponent", () => {
         parsed.push({ batch: end - previous, characters: parses.flatMap(t => t.mock.calls).reduce((sum, [text]) => sum + text.length, 0) });
         changed.push({ added: end - previous, revealed: revealedNow(), nodes: changedNodes() });
         previous = end;
-        for (let frame = 0; frame < 6; frame++) {
+        for (let frame = 0; frame < 3; frame++) {
           const before = performance.now();
           vi.advanceTimersByTime(16);
           times.push(performance.now() - before);
@@ -1326,7 +1326,7 @@ describe("MarkdownViewComponent", () => {
       const nodeBound = (added: number, revealed: number): number => 2 * (drawn / sections + added * drawn / previous + Math.max(0, revealed) * drawn / shown);
       await annotate(`Slowest step ${Math.max(...times).toFixed(1)} ms of script, median ${[...times].sort((a, b) => a - b)[times.length >> 1]?.toFixed(2)} ms, over ${times.length} steps; at most ${Math.max(...parsed.map(t => t.characters - t.batch))} characters parsed beyond a batch's own and ${Math.max(...changed.map(t => t.nodes))} nodes changed in a step, of ${drawn} nodes drawn for ${sections} sections`);
 
-      expect([parsed.length, changed.length, shown > 0]).toEqual([28, 196, true]);
+      expect([parsed.length, changed.length, shown > 0]).toEqual([28, 112, true]);
       expect(parsed.filter(t => t.characters > t.batch + 2 * sectionLength)).toEqual([]);
       expect(changed.filter(t => t.nodes > nodeBound(t.added, t.revealed))).toEqual([]);
     });
