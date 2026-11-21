@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.21
+
+- `@noldova/ui.components.angular`: a pan-and-zoom canvas, `nol-canvas` (`CanvasComponent`), for content larger than its area, such as a chart. It moves and scales one plane of the owner's content between 25% and 200%. The wheel and a trackpad pan; Ctrl or Cmd with the wheel, a trackpad's pinch and two pointers zoom; a drag on the background pans; and the arrow keys, plus, minus and 0 pan, zoom and fit while the canvas has the focus. Its toolbar holds the zoom buttons, the zoom as a percentage, Fit, 100% and the map's toggle. `fitAlignment` (`CanvasFitAlignment`) puts the fitted content in the middle or at the top of the free area, and `view` and `centreOn` let the owner read and move the view. An element marked `nolCanvasItem` (`CanvasItemDirective`) shows as a box on the overview map, `nol-canvas-map` (`CanvasMapComponent`), where a press centres that spot and a drag moves the view. A focused element outside the free area is panned into view. `CanvasView`, `CanvasBox` and `CanvasPoint` hold the view's arithmetic for an owner that draws its own canvas.
+
 ## 0.0.20
 
 - `@noldova/ui.components.angular`: a tab's rename field no longer reports its text when the focus moves into a kit menu opened on it, such as its context menu: the field has the focus back when that menu closes and the rename goes on, and the text is reported once the focus goes from the menu anywhere else.
