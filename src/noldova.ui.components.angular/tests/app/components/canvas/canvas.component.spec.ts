@@ -48,7 +48,9 @@ describe("CanvasComponent", () => {
   const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
   const instance = (): CanvasComponent => fixture.debugElement.query(By.directive(CanvasComponent)).componentInstance as CanvasComponent;
   const plane = (): HTMLElement => DomFixture.one(canvas(), ".nol-canvas-plane");
-  const tools = (): HTMLElement => DomFixture.one(canvas(), ".nol-canvas-tools");
+  const tools = (): HTMLElement => DomFixture.one(canvas(), ".nol-canvas-bar");
+  const band = (): HTMLElement => DomFixture.one(canvas(), ".nol-canvas-tools");
+  const hint = (): HTMLElement => DomFixture.one(canvas(), ".nol-canvas-hint");
   const map = (): HTMLElement => DomFixture.one(canvas(), "nol-canvas-map");
   const mapView = (): SVGRectElement => DomFixture.oneOf(canvas(), ".nol-canvas-map-view", SVGRectElement);
   const cards = (): HTMLElement[] => DomFixture.all(canvas(), ".card");
@@ -121,10 +123,12 @@ describe("CanvasComponent", () => {
         await fixture.whenStable();
         const frame = canvas().getBoundingClientRect();
         const toolbar = tools().getBoundingClientRect();
+        const tip = hint().getBoundingClientRect();
+        const icon = DomFixture.one(button("fit"), "[nolButtonIcon]").getBoundingClientRect();
         const overview = map().getBoundingClientRect();
         const placed = cards().map(t => t.getBoundingClientRect());
 
-        expect(placed.filter(t => t.left < frame.left || t.top < frame.top || t.right > frame.right || t.bottom > frame.bottom || overlaps(t, toolbar) || overlaps(t, overview)))
+        expect(placed.filter(t => t.left < frame.left || t.top < frame.top || t.right > frame.right || t.bottom > frame.bottom || overlaps(t, toolbar) || overlaps(t, tip) || overlaps(t, overview)))
           .toEqual([]);
         expect([`${Math.round(instance().view().zoom * 100)}%`, instance().view().zoom < 1]).toEqual([zoomText(), true]);
         expect([getComputedStyle(canvas()).backgroundColor, getComputedStyle(tools()).backgroundColor, getComputedStyle(map()).backgroundColor,
@@ -134,6 +138,10 @@ describe("CanvasComponent", () => {
         AppearanceFixture.expectPixels(toolbar.left - frame.left, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
         AppearanceFixture.expectPixels(frame.right - overview.right, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
         AppearanceFixture.expectPixels(map().clientHeight, AppearanceFixture.toPixels(7));
+        AppearanceFixture.expectPixels(tip.left - toolbar.right, AppearanceFixture.measureLook("space-1"));
+        expect([tip.top, getComputedStyle(hint()).backgroundColor, getComputedStyle(hint()).color, icon.width > 0, icon.right <= button("fit").getBoundingClientRect().right])
+          .toEqual([toolbar.top, AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "text-muted"), true, true]);
+        expect(getComputedStyle(canvas()).backgroundImage).toContain(AppearanceFixture.readColor(theme, mode, "menu-border"));
       });
 
   it("fits its items clear of its toolbar and its map under forced colors, drawing them in system colors", async () => {
@@ -168,7 +176,7 @@ describe("CanvasComponent", () => {
 
     expect([host.mapShown(), button("map-toggle").getAttribute("aria-label"), button("map-toggle").getAttribute("aria-pressed"), instance().view().zoom >= shown])
       .toEqual([false, "Show the overview map", "false", true]);
-    expect(cards().map(t => t.getBoundingClientRect()).filter(t => t.bottom > frame.bottom || t.top < tools().getBoundingClientRect().bottom)).toEqual([]);
+    expect(cards().map(t => t.getBoundingClientRect()).filter(t => t.bottom > frame.bottom || t.top < band().getBoundingClientRect().bottom)).toEqual([]);
   });
 
   it("zooms around the pointer with Ctrl and the wheel, keeping the item under it in place", async () => {
@@ -288,10 +296,10 @@ describe("CanvasComponent", () => {
     const fromChild = key(button("fit"), "ArrowLeft");
 
     expect([moved, larger, back, fitted, other.defaultPrevented, fromChild.defaultPrevented, view()])
-      .toEqual([[[true, step, 0], [true, 0, step], [true, -step, 0], [true, 0, -step]], 1.25, 1, start, false, false, start]);
+      .toEqual([[[true, step, 0], [true, 0, step], [true, -step, 0], [true, 0, -step]], 1.2, 1, start, false, false, start]);
   });
 
-  it("zooms in and out by 25% from its toolbar, back to 100%, and fits again, around the canvas's middle", async () => {
+  it("zooms in and out by 1.2 times from its toolbar, back to 100%, and fits again, around the canvas's middle", async () => {
     await measuredAsync(24);
     const fitted = view();
     const zoom = instance().view().zoom;
@@ -307,7 +315,7 @@ describe("CanvasComponent", () => {
     const label = zoomText();
     button("fit").click();
 
-    expect([larger, smaller, actual, label, view()]).toEqual([1.25, 0.8, 1, "100%", fitted]);
+    expect([larger, smaller, actual, label, view()]).toEqual([1.2, 0.833333, 1, "100%", fitted]);
     expect([button("zoom-in"), button("zoom-out")].map(t => t.getAttribute("aria-label"))).toEqual(["Zoom in", "Zoom out"]);
   });
 
@@ -316,6 +324,39 @@ describe("CanvasComponent", () => {
 
     expect([tools().getAttribute("role"), tools().getAttribute("aria-label"), button("map-toggle").getAttribute("aria-label"), button("map-toggle").getAttribute("aria-pressed")])
       .toEqual(["toolbar", "Canvas view", "Hide the overview map", "true"]);
+    expect([map().getAttribute("role"), map().getAttribute("aria-label"), map().tabIndex]).toEqual(["button", "Overview map: click a spot to move there", 0]);
+  });
+
+  it("wraps its hint below the toolbar on a narrow canvas, and fits its items below both", async () => {
+    await measuredAsync(24);
+    canvas().style.width = "20rem";
+    await DomChangeFixture.untilAsync(() => expect(hint().getBoundingClientRect().top).toBeGreaterThanOrEqual(tools().getBoundingClientRect().bottom));
+    await DomChangeFixture.untilAsync(() => expect(Number(mapView().getAttribute("width")) * instance().view().zoom).toBeCloseTo(canvas().clientWidth, 3));
+    instance().fit();
+    await fixture.whenStable();
+    const frame = canvas().getBoundingClientRect();
+    const toolbar = tools().getBoundingClientRect();
+    const tip = hint().getBoundingClientRect();
+
+    expect(cards().map(t => t.getBoundingClientRect()).filter(t => t.top < tip.bottom || t.left < frame.left || t.right > frame.right)).toEqual([]);
+    AppearanceFixture.expectPixels(tip.top - toolbar.bottom, AppearanceFixture.measureLook("space-1"));
+    AppearanceFixture.expectPixels(tip.left - frame.left, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
+  });
+
+  it("fits with Enter or Space on its map, and leaves other keys there alone", async () => {
+    await measuredAsync(24);
+    const fitted = view();
+    [1, 2].forEach(() => button("zoom-in").click());
+    const enter = key(map(), "Enter");
+    const afterEnter = view();
+    button("zoom-in").click();
+    const space = key(map(), " ");
+    const afterSpace = view();
+    button("zoom-in").click();
+    const zoomed = view();
+    const other = key(map(), "a");
+
+    expect([enter.defaultPrevented, afterEnter, space.defaultPrevented, afterSpace, other.defaultPrevented, view()]).toEqual([true, fitted, true, fitted, false, zoomed]);
   });
 
   it("centres a point the caller names", async () => {
@@ -333,8 +374,11 @@ describe("CanvasComponent", () => {
     button("zoom-in").click();
     await fixture.whenStable();
     const drawn = mapView().getBoundingClientRect();
+    const frame = DomFixture.oneOf(map(), "svg", SVGSVGElement).getAttribute("viewBox");
+    await wheelAsync({ deltaX: 200, deltaY: 200 });
 
     expect(drawn.width / drawn.height).toBeCloseTo(canvas().clientWidth / canvas().clientHeight, 1);
+    expect([DomFixture.oneOf(map(), "svg", SVGSVGElement).getAttribute("viewBox"), frame]).toEqual([`0 0 ${plane().offsetWidth} ${plane().offsetHeight}`, `0 0 ${plane().offsetWidth} ${plane().offsetHeight}`]);
   });
 
   it("centres the spot clicked on its map, and pans as the map's rectangle is dragged", async () => {

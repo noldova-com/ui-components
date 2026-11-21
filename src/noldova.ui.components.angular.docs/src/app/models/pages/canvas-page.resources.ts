@@ -18,13 +18,13 @@ export class CanvasPageResources {
     new DocsKey("Arrow Right", "Moves the content 3rem to the left."),
     new DocsKey("Arrow Up", "Moves the content 3rem down."),
     new DocsKey("Arrow Down", "Moves the content 3rem up."),
-    new DocsKey("+", "Zooms in by 25% around the canvas's middle, up to 200%."),
-    new DocsKey("-", "Zooms out by 25%, down to 25%."),
+    new DocsKey("+", "Zooms in by 1.2 times around the canvas's middle, up to 200%."),
+    new DocsKey("-", "Zooms out by 1.2 times, down to 25%."),
     new DocsKey("0", "Fits the whole content, never above 100%.")
   ];
   public static readonly roles: readonly string[] = [
     "The canvas is a focusable region named by its label, described as a canvas, with its keys as its keyboard shortcuts.",
     "Its toolbar is a toolbar named Canvas view, whose zoom percentage is a polite live region; the map's toggle is a pressed button while the map shows.",
-    "The overview map is an image named Overview map; its drawing is hidden from assistive technology, since the keys move the view."
+    "The overview map is a button named \"Overview map: click a spot to move there\"; Enter or Space on it fits, and its drawing is hidden from assistive technology."
   ];
 }

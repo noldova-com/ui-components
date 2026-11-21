@@ -22,11 +22,13 @@ import { CanvasMapResources } from "./canvas-map.resources.js";
   styleUrl: "./canvas-map.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    "role": "img",
+    "role": "button",
+    "tabindex": "0",
     "[attr.aria-label]": "partResources.canvasMapLabel",
     "[style.width.rem]": "widthRem()",
     "[style.height.rem]": "heightRem()",
-    "(pointerdown)": "onPointerDown($event)"
+    "(pointerdown)": "onPointerDown($event)",
+    "(keydown)": "onKeyDown($event)"
   }
 })
 export class CanvasMapComponent {
@@ -34,31 +36,22 @@ export class CanvasMapComponent {
   private drag: PointerDrag | null = null;
   private lastPoint: CanvasPoint = new CanvasPoint(0, 0);
   private dragFrame: CanvasBox = new CanvasBox(0, 0, 0, 0);
+  private readonly ratio: Signal<number> = computed(() => Math.max(this.content().width, 1) / Math.max(this.content().height, 1));
 
   protected readonly partResources: typeof CanvasMapResources = CanvasMapResources;
-  protected readonly frame: Signal<CanvasBox> = computed(() => {
-    const content = this.content();
-    const visible = this.visible();
-    const left = Math.min(content.left, visible.left);
-    const top = Math.min(content.top, visible.top);
-    return new CanvasBox(left, top, Math.max(content.right, visible.right) - left, Math.max(content.bottom, visible.bottom) - top);
-  });
   protected readonly viewBox: Signal<string> = computed(() => {
-    const frame = this.frame();
-    return `${frame.left} ${frame.top} ${Math.max(frame.width, 1)} ${Math.max(frame.height, 1)}`;
+    const content = this.content();
+    return `${content.left} ${content.top} ${Math.max(content.width, 1)} ${Math.max(content.height, 1)}`;
   });
   protected readonly widthRem: Signal<number> = computed(() => Math.min(CanvasMapResources.canvasMapWidestRem, CanvasMapResources.canvasMapHeightRem * this.ratio()));
   protected readonly heightRem: Signal<number> = computed(() => this.widthRem() / this.ratio());
-  private readonly ratio: Signal<number> = computed(() => {
-    const frame = this.frame();
-    return Math.max(frame.width, 1) / Math.max(frame.height, 1);
-  });
 
   public readonly content = input.required<CanvasBox>();
   public readonly boxes = input.required<readonly CanvasBox[]>();
   public readonly visible = input.required<CanvasBox>();
   public readonly centre = output<CanvasPoint>();
   public readonly move = output<CanvasPoint>();
+  public readonly fit = output();
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => this.endDrag());
@@ -69,7 +62,7 @@ export class CanvasMapComponent {
       return;
     event.preventDefault();
     this.endDrag();
-    this.dragFrame = this.frame();
+    this.dragFrame = this.content();
     const point = this.toContent(event);
     const visible = this.visible();
     if (point.x < visible.left || point.x > visible.right || point.y < visible.top || point.y > visible.bottom)
@@ -77,6 +70,13 @@ export class CanvasMapComponent {
     this.lastPoint = point;
     this.drag = new PointerDrag(this.host, event, t => this.follow(t), () => this.endDrag(), () => this.endDrag());
     this.drag.start();
+  }
+
+  protected onKeyDown(event: KeyboardEvent): void {
+    if (!CanvasMapResources.canvasMapFitKeys.includes(event.key))
+      return;
+    event.preventDefault();
+    this.fit.emit();
   }
 
   private follow(event: PointerEvent): void {

@@ -2812,12 +2812,13 @@ export declare class CanvasItemDirective {
 }
 
 /**
- * A canvas's overview map, `nol-canvas-map`: the content's items as boxes and
- * the visible area as a rectangle in the accent color, on the panel surface,
- * its drawing at most 7rem high and 14rem wide, in the proportions of the
- * content and the visible area together. A press outside the rectangle reports the spot to
- * centre; dragging then reports each move. {@link CanvasComponent} shows one;
- * an owner that draws its own canvas can use it alone.
+ * A canvas's overview map, `nol-canvas-map`: a button showing the content's
+ * items as boxes and the visible area as a rectangle in the accent color, on
+ * the panel surface, its drawing at most 7rem high and 14rem wide, in the
+ * content's proportions. A press outside the rectangle reports the spot to
+ * centre; dragging then reports each move; Enter or Space asks for a fit.
+ * {@link CanvasComponent} shows one; an owner that draws its own canvas can
+ * use it alone.
  */
 export declare class CanvasMapComponent {
   /**
@@ -2846,6 +2847,11 @@ export declare class CanvasMapComponent {
    * 100%: the visible area follows it.
    */
   public readonly move: OutputEmitterRef<CanvasPoint>;
+
+  /**
+   * Asks for the whole content to show, after Enter or Space on the map.
+   */
+  public readonly fit: OutputEmitterRef<void>;
 
   /**
    * Creates the map, which ends a drag on it when it is destroyed. Angular

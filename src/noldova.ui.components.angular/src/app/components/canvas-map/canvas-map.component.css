@@ -17,6 +17,11 @@
   touch-action: none;
 }
 
+:host(:focus-visible) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+}
+
 .nol-canvas-map-drawing {
   display: block;
   width: 100%;
@@ -38,6 +43,10 @@
   :host {
     border-color: CanvasText;
     background: Canvas;
+  }
+
+  :host(:focus-visible) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
   }
 
   .nol-canvas-map-box {

@@ -14,6 +14,7 @@ export class CanvasResources {
   public static readonly canvasZoomOutLabel: string = "Zoom out";
   public static readonly canvasFitLabel: string = "Fit";
   public static readonly canvasActualSizeLabel: string = "100%";
+  public static readonly canvasHint: string = "Drag to move · scroll to pan · pinch or Ctrl+scroll to zoom";
   public static readonly canvasShowMapLabel: string = "Show the overview map";
   public static readonly canvasHideMapLabel: string = "Hide the overview map";
   public static readonly canvasZoomInGlyph: string = "zoom_in";
@@ -26,8 +27,8 @@ export class CanvasResources {
   public static readonly canvasZoomOutKeys: readonly string[] = ["-", "_"];
   public static readonly canvasFitKey: string = "0";
   public static readonly canvasWheelEvent: "wheel" = "wheel";
-  public static readonly canvasNoPanSelector: string = "button, a, input, select, textarea, label, [contenteditable], [data-nol-canvas-no-pan], .nol-canvas-tools, nol-canvas-map";
-  public static readonly canvasZoomStep: number = 1.25;
+  public static readonly canvasNoPanSelector: string = "button, a, input, select, textarea, label, [contenteditable], [data-nol-canvas-no-pan], .nol-canvas-bar, .nol-canvas-hint, nol-canvas-map";
+  public static readonly canvasZoomStep: number = 1.2;
   public static readonly canvasKeyStepRem: number = 3;
   public static readonly canvasPercent: number = 100;
 }

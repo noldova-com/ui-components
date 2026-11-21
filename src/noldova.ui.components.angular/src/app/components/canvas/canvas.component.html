@@ -9,14 +9,17 @@ LICENSE file in the root directory of this source tree.
 <div #plane class="nol-canvas-plane" [style.transform]="transform()">
   <ng-content />
 </div>
-<div #tools class="nol-canvas-tools" nolToolbar [nolToolbarLabel]="partResources.canvasToolsLabel">
-  <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-zoom-out" [icon]="partResources.canvasZoomOutGlyph" [label]="partResources.canvasZoomOutLabel" (click)="zoomOut()"></button>
-  <span class="nol-canvas-zoom" aria-live="polite">{{ zoomText() }}</span>
-  <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-zoom-in" [icon]="partResources.canvasZoomInGlyph" [label]="partResources.canvasZoomInLabel" (click)="zoomIn()"></button>
-  <button type="button" nol-button nolToolbarItem class="nol-canvas-fit" [variant]="textVariant" (click)="fit()">{{ partResources.canvasFitLabel }}</button>
-  <button type="button" nol-button nolToolbarItem class="nol-canvas-actual" [variant]="textVariant" (click)="actualSize()">{{ partResources.canvasActualSizeLabel }}</button>
-  <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-map-toggle" [icon]="partResources.canvasMapGlyph" [label]="mapLabel()" [pressed]="mapShown()" (click)="toggleMap()"></button>
+<div #tools class="nol-canvas-tools">
+  <div class="nol-canvas-bar" nolToolbar [nolToolbarLabel]="partResources.canvasToolsLabel">
+    <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-zoom-out" [icon]="partResources.canvasZoomOutGlyph" [label]="partResources.canvasZoomOutLabel" (click)="zoomOut()"></button>
+    <span class="nol-canvas-zoom" aria-live="polite">{{ zoomText() }}</span>
+    <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-zoom-in" [icon]="partResources.canvasZoomInGlyph" [label]="partResources.canvasZoomInLabel" (click)="zoomIn()"></button>
+    <button type="button" nol-button nolToolbarItem class="nol-canvas-fit" [variant]="textVariant" (click)="fit()"><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ partResources.canvasFitGlyph }}</span>{{ partResources.canvasFitLabel }}</button>
+    <button type="button" nol-button nolToolbarItem class="nol-canvas-actual" [variant]="textVariant" (click)="actualSize()">{{ partResources.canvasActualSizeLabel }}</button>
+    <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-map-toggle" [icon]="partResources.canvasMapGlyph" [label]="mapLabel()" [pressed]="mapShown()" (click)="toggleMap()"></button>
+  </div>
+  <span class="nol-canvas-hint">{{ partResources.canvasHint }}</span>
 </div>
 @if (mapShown()) {
-  <nol-canvas-map class="nol-canvas-map" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" />
+  <nol-canvas-map class="nol-canvas-map" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" (fit)="fit()" />
 }
