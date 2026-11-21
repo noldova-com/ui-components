@@ -69,22 +69,28 @@ describe("failed module request setup", () => {
   it("prints, when the port's probe throws, that the port couldn't be probed and why, in place of what it held, and the run's close waits for it", async () => {
     const printed = await commands.scriptedRefusal("rejecting");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[0]).toMatch(/^Failed module request at \S+: net::ERR_CONNECTION_REFUSED http:\/\/localhost:\d+\/scripted-/u);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: the port couldn't be probed: localhost couldn't be resolved\. http:\/\/localhost:\d+\/scripted-/u);
+  });
+
+  it("prints once the run closes, after what the ports held, every module request that failed, with its error and when, as each later import of it in the shared page fails too", async () => {
+    const printed = await commands.scriptedRefusal("rejecting");
+
+    expect(printed.at(-1)).toMatch(/^Module requests that failed in this run: http:\/\/localhost:\d+\/scripted-\S+ \(net::ERR_CONNECTION_REFUSED at \S+Z\)\. The spec files share one page, which keeps a failed module, so each later spec file that imports one of these failed to import too, with no request of its own\.$/u);
   });
 
   it("prints, when the port's sockets can't be listed, what Node's connections found and why the listing failed", async () => {
     const printed = await commands.scriptedRefusal("failing listing");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: .*no-such-listing-.*ENOENT.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
   it("prints, when the port's socket listing never ends, that it couldn't be listed once the listing's limit stopped it, and the run's close waits for that", async () => {
     const printed = await commands.scriptedRefusal("hanging listing");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
@@ -113,11 +119,12 @@ describe("failed module request setup", () => {
     const printed = await commands.scriptedStall("crowd");
     const ends = printed.filter(line => !line.startsWith("Stalled request at "));
 
-    expect(ends).toHaveLength(4);
+    expect(ends).toHaveLength(5);
     expect(ends[0]).toMatch(/^Stalled request ended at \S+Z: finished after \d+\.\d s, stylesheet http:\/\/localhost:24316\/styles\.css$/u);
     expect(ends[1]).toMatch(/^Stalled request ended at \S+Z: failed, net::ERR_ABORTED after \d+\.\d s, script http:\/\/localhost:24316\/chunk-0\.js$/u);
     expect(ends[2]).toMatch(/^Failed module request at \S+Z: net::ERR_ABORTED http:\/\/localhost:24316\/chunk-0\.js$/u);
     expect(ends[3]).toBe("Stalled requests not printed, past the first 20: 2");
+    expect(ends[4]).toMatch(/^Module requests that failed in this run: http:\/\/localhost:24316\/chunk-0\.js \(net::ERR_ABORTED at \S+Z\)\. /u);
   });
 
   it("prints a run's first 20 stalls and their ends alone, and once the run closes how many more it didn't print", async () => {

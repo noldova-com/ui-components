@@ -21,7 +21,9 @@ import { ConnectionProbe } from "./connection-probe.ts";
 // so the listeners add no work of their own beyond these checks. A request of any type still open 10 s after it started is printed too, with the
 // other open requests it may wait behind, and again once it ends, so a stylesheet or module that never arrives names itself before its file's
 // import fails. A font request the browser fails prints with its network error, and the browser's warning for a font it couldn't decode prints
-// too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was.
+// too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was. Every spec file runs in one shared page, whose
+// module map keeps a failed module, so each later file that imports it fails to import too with no request of its own: once the run closes, the
+// failed modules are printed again together, beside the failed files they took with them.
 export class FailedModuleRequests {
   private static readonly MODULE: string = "script";
   private static readonly FONT: string = "font";
@@ -59,6 +61,7 @@ export class FailedModuleRequests {
   private readonly openRequests: Map<IBrowserRequest, number> = new Map();
   private readonly printedStalls: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly countedStalls: WeakSet<IBrowserRequest> = new WeakSet();
+  private readonly failedModules: string[] = [];
   private stallsPrinted: number = 0;
   private unprintedStalls: number = 0;
   private readonly stallLimit: number;
@@ -83,7 +86,7 @@ export class FailedModuleRequests {
         clearInterval(check);
         if (this.unprintedStalls > 0)
           this.log(`Stalled requests not printed, past the first ${FailedModuleRequests.PRINTED_STALLS}: ${this.unprintedStalls}`, run);
-        return this.probedAsync();
+        return this.probedAsync().then(() => this.printFailedModules(run));
       });
     }
     if (!this.pages.has(page)) {
@@ -106,7 +109,9 @@ export class FailedModuleRequests {
     if (request.resourceType() !== FailedModuleRequests.MODULE || this.printedResponses.has(request))
       return;
     const error = request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR;
-    this.print(`Failed module request at ${new Date().toISOString()}: ${error} ${request.url()}`, run);
+    const at = new Date().toISOString();
+    this.failedModules.push(`${request.url()} (${error} at ${at})`);
+    this.print(`Failed module request at ${at}: ${error} ${request.url()}`, run);
     const port = new URL(request.url()).port;
     if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "") {
       const printing = this.printServerAsync(Number(port), request.url(), run);
@@ -144,7 +149,15 @@ export class FailedModuleRequests {
     if (status < FailedModuleRequests.FIRST_ERROR_STATUS && (status >= FailedModuleRequests.FIRST_REDIRECT_STATUS || isJavaScript))
       return;
     this.printedResponses.add(response.request());
-    this.print(`Failed module response at ${new Date().toISOString()}: ${status} ${type} ${response.url()}`, run);
+    const at = new Date().toISOString();
+    this.failedModules.push(`${response.url()} (${status} ${type} at ${at})`);
+    this.print(`Failed module response at ${at}: ${status} ${type} ${response.url()}`, run);
+  }
+
+  private printFailedModules(run: IVitestRun): void {
+    if (this.failedModules.length > 0)
+      this.log(`Module requests that failed in this run: ${this.failedModules.join(", ")}. The spec files share one page, which keeps a failed module, so ` +
+        "each later spec file that imports one of these failed to import too, with no request of its own.", run);
   }
 
   // A request of any type, a stylesheet or a fetch too, still open past the limit is printed once, with the other open requests, oldest first.
