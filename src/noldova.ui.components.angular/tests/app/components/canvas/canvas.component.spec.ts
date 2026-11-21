@@ -599,24 +599,31 @@ describe("CanvasComponent", () => {
 @Component({
   selector: "nol-canvas-spec-team",
   imports: [CanvasItemDirective],
+  host: { "[style.display]": "'flex'", "[style.gap.rem]": "1" },
   template: `
     @for (name of names(); track name) {
-      <div nolCanvasItem class="member" [style.width.rem]="8" [style.height.rem]="3">{{ name }}</div>
+      <div nolCanvasItem class="member" [style.width.rem]="name === wide() ? 12 : 8" [style.height.rem]="3">{{ name }}</div>
     }
   `
 })
 class TeamComponent {
   public readonly names = input.required<readonly string[]>();
+  public readonly wide = input<string>("");
 }
 
 @Component({
   imports: [CanvasComponent, CanvasItemDirective, TeamComponent],
   template: `
-    <nol-canvas label="Team" [style.width.px]="800" [style.height.px]="500">
-      <div [style.display]="'flex'" [style.gap.rem]="1">
-        <nol-canvas-spec-team [names]="names()" />
+    <nol-canvas class="outer" label="Team" [style.width.px]="800" [style.height.px]="500">
+      <div [style.display]="'flex'" [style.gap.rem]="1" [style.align-items]="'flex-start'">
+        <nol-canvas-spec-team [names]="names()" [wide]="wide()" />
         @if (lead()) {
           <div nolCanvasItem class="lead" [style.width.rem]="10" [style.height.rem]="3">Lead</div>
+        }
+        @if (inner()) {
+          <nol-canvas class="inner" label="Inner" [style.width.px]="300" [style.height.px]="200">
+            <div nolCanvasItem class="inside" [style.width.rem]="4" [style.height.rem]="2">In</div>
+          </nol-canvas>
         }
       </div>
     </nol-canvas>
@@ -625,23 +632,31 @@ class TeamComponent {
 })
 class NestedCanvasHostComponent {
   public readonly names = signal<readonly string[]>(["Alice", "Bob"]);
+  public readonly wide = signal("");
   public readonly lead = signal(false);
+  public readonly inner = signal(false);
 }
 
 describe("CanvasComponent with items inside its content's components", () => {
   let fixture: ComponentFixture<NestedCanvasHostComponent>;
+  let rem: number;
 
-  const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
-  const boxes = (): SVGRectElement[] => DomFixture.allOf(DomFixture.one(canvas(), "nol-canvas-map"), ".nol-canvas-map-box", SVGRectElement);
-  const sizes = (): string[] => boxes().map(t => `${t.getAttribute("width")}x${t.getAttribute("height")}`).sort();
-  const shownAsync = async (expected: readonly string[]): Promise<void> => {
+  const host = (): NestedCanvasHostComponent => fixture.componentInstance;
+  const canvas = (name: string = "outer"): HTMLElement => DomFixture.one(DomFixture.host(fixture), `nol-canvas.${name}`);
+  const boxes = (name: string = "outer"): SVGRectElement[] => DomFixture.allOf(DomFixture.one(canvas(name), ":scope > nol-canvas-map"), ".nol-canvas-map-box", SVGRectElement);
+  const size = (width: number, height: number = 3): string => `${width * rem}x${height * rem}`;
+  const sizes = (name: string = "outer"): string[] => boxes(name).map(t => `${t.getAttribute("width")}x${t.getAttribute("height")}`).sort();
+  const widthsAcross = (): number[] => boxes().map(t => ({ x: Number(t.getAttribute("x")), width: Number(t.getAttribute("width")) / rem }))
+    .sort((a, b) => a.x - b.x).map(t => t.width);
+  const changedAsync = async (check: () => void): Promise<void> => {
     fixture.detectChanges();
     await fixture.whenStable();
-    await DomChangeFixture.untilAsync(() => expect(sizes()).toEqual(expected));
+    await DomChangeFixture.untilAsync(check);
   };
 
   beforeEach(async () => {
     AppearanceFixture.apply();
+    rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
     fixture = TestBed.createComponent(NestedCanvasHostComponent);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -653,17 +668,38 @@ describe("CanvasComponent with items inside its content's components", () => {
   });
 
   it("shows on its map the items marked inside a component of its content, and each added or removed later, but none outside it", async () => {
-    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const member = `${8 * rem}x${3 * rem}`;
-    const lead = `${10 * rem}x${3 * rem}`;
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    host().lead.set(true);
+    await changedAsync(() => expect(sizes()).toEqual([size(10), size(8), size(8)].sort()));
+    host().names.set(["Alice"]);
+    await changedAsync(() => expect(sizes()).toEqual([size(10), size(8)].sort()));
+    host().lead.set(false);
+    host().names.set(["Alice", "Bob", "Carol"]);
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8), size(8)]));
+  });
 
-    await shownAsync([member, member]);
-    fixture.componentInstance.lead.set(true);
-    await shownAsync([lead, member, member].sort());
-    fixture.componentInstance.names.set(["Alice"]);
-    await shownAsync([lead, member].sort());
-    fixture.componentInstance.lead.set(false);
-    fixture.componentInstance.names.set(["Alice", "Bob", "Carol"]);
-    await shownAsync([member, member, member]);
+  it("moves an item's box when the content reorders its items, and resizes it when the item resizes", async () => {
+    host().wide.set("Alice");
+    await changedAsync(() => expect(widthsAcross()).toEqual([12, 8]));
+    host().names.set(["Bob", "Alice"]);
+    await changedAsync(() => expect(widthsAcross()).toEqual([8, 12]));
+    host().wide.set("Bob");
+
+    await changedAsync(() => expect(widthsAcross()).toEqual([12, 8]));
+  });
+
+  it("leaves the items of a canvas inside it to that canvas's own map", async () => {
+    host().inner.set(true);
+    await changedAsync(() => expect(sizes("inner")).toEqual([size(4, 2)]));
+
+    expect(sizes()).toEqual([size(8), size(8)]);
+  });
+
+  it("leaves off its map an item declared inside it once the item is rendered outside its plane", async () => {
+    host().lead.set(true);
+    await changedAsync(() => expect(sizes()).toHaveLength(3));
+    document.body.append(DomFixture.one(canvas(), ".lead"));
+
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
   });
 });

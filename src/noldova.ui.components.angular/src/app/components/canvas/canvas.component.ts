@@ -86,8 +86,10 @@ export class CanvasComponent {
     this.host.addEventListener(CanvasResources.canvasWheelEvent, onWheel, { passive: false });
     window.addEventListener(Resources.blurEvent, onBlur);
     const observer = new ResizeObserver(() => this.measure());
+    const moves = new MutationObserver(() => this.measure());
     inject(DestroyRef).onDestroy(() => {
       observer.disconnect();
+      moves.disconnect();
       this.host.removeEventListener(CanvasResources.canvasWheelEvent, onWheel);
       window.removeEventListener(Resources.blurEvent, onBlur);
     });
@@ -96,6 +98,7 @@ export class CanvasComponent {
       observer.disconnect();
       for (const element of [this.host, this.plane().nativeElement, ...items])
         observer.observe(element);
+      moves.observe(this.plane().nativeElement, CanvasResources.canvasContentMoves);
     });
   }
 
@@ -264,7 +267,7 @@ export class CanvasComponent {
     const base = plane.getBoundingClientRect();
     this.size.set(new CanvasBox(0, 0, this.host.clientWidth, this.host.clientHeight));
     this.contentBox.set(new CanvasBox(0, 0, plane.offsetWidth, plane.offsetHeight));
-    this.itemBoxes.set(this.items().map(t => {
+    this.itemBoxes.set(this.items().filter(t => plane.contains(t)).map(t => {
       const box = t.getBoundingClientRect();
       return new CanvasBox((box.left - base.left) / zoom, (box.top - base.top) / zoom, box.width / zoom, box.height / zoom);
     }));
