@@ -381,6 +381,7 @@ export class Resources {
   public static readonly resizeEvent: string = "resize";
   public static readonly pointerLeaveEvent: "pointerleave" = "pointerleave";
   public static readonly scrollEvent: string = "scroll";
+  public static readonly contentMovedEvent: string = "nol-content-moved";
   public static readonly focusInEvent: string = "focusin";
   public static readonly keyboardFocusOrigin: FocusOrigin = "keyboard";
   public static readonly mouseFocusOrigin: FocusOrigin = "mouse";

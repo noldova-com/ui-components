@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, inject, input, model, signal, viewChild } from "@angular/core";
+import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, inject, input, model, signal, untracked, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -16,6 +16,7 @@ import { CanvasBox } from "../../models/canvas-box.js";
 import { CanvasItems } from "../../models/canvas-items.js";
 import { CanvasPoint } from "../../models/canvas-point.js";
 import { CanvasView } from "../../models/canvas-view.js";
+import { ContentMovedEvent } from "../../models/content-moved-event.js";
 import { DragGesture } from "../../models/drag-gesture.js";
 import { Resources } from "../../../resources.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -109,6 +110,14 @@ export class CanvasComponent {
         observer.observe(element);
       moves.observe(this.plane().nativeElement, CanvasResources.canvasContentMoves);
     });
+    afterRenderEffect({
+      read: () => {
+        this.shown();
+        this.size();
+        const area = this.freeAreaOnScreen();
+        untracked(() => this.host.dispatchEvent(new ContentMovedEvent(area, this.host)));
+      }
+    });
   }
 
   public fit(): void {
@@ -188,7 +197,8 @@ export class CanvasComponent {
     const area = this.freeArea();
     const box = target.getBoundingClientRect();
     const scale = view.zoom / drawnZoom;
-    const [left, top] = [view.x + (box.left - drawn.left) * scale, view.y + (box.top - drawn.top) * scale];
+    const left = view.x + (box.left - drawn.left) * scale;
+    const top = view.y + (box.top - drawn.top) * scale;
     const shift = (start: number, length: number, areaStart: number, areaLength: number): number =>
       start < areaStart || length > areaLength ? areaStart - start : Math.min(0, areaStart + areaLength - start - length);
     const dx = shift(left, box.width * scale, area.left, area.width);
@@ -202,15 +212,15 @@ export class CanvasComponent {
     if (event.target !== this.host || event.ctrlKey || event.altKey || event.metaKey)
       return;
     const step = CanvasResources.canvasKeyStepRem * this.rootSize();
-    const pans: Readonly<Record<string, readonly [number, number]>> = {
-      [CanvasResources.canvasLeftKey]: [step, 0],
-      [CanvasResources.canvasRightKey]: [-step, 0],
-      [Resources.arrowUpKey]: [0, step],
-      [Resources.arrowDownKey]: [0, -step]
+    const pans: Readonly<Record<string, CanvasPoint>> = {
+      [CanvasResources.canvasLeftKey]: new CanvasPoint(step, 0),
+      [CanvasResources.canvasRightKey]: new CanvasPoint(-step, 0),
+      [Resources.arrowUpKey]: new CanvasPoint(0, step),
+      [Resources.arrowDownKey]: new CanvasPoint(0, -step)
     };
     const pan = pans[event.key];
     if (!Object.isUndefined(pan))
-      this.shown.update(t => t.panBy(pan[0], pan[1]));
+      this.shown.update(t => t.panBy(pan.x, pan.y));
     else if (CanvasResources.canvasZoomInKeys.includes(event.key))
       this.zoomIn();
     else if (CanvasResources.canvasZoomOutKeys.includes(event.key))
@@ -259,6 +269,12 @@ export class CanvasComponent {
     const map = this.map()?.nativeElement;
     const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
     return new CanvasBox(inset, top, size.width - inset * 2, bottom - top);
+  }
+
+  private freeAreaOnScreen(): DOMRectReadOnly {
+    const area = this.freeArea();
+    const at = this.host.getBoundingClientRect();
+    return new DOMRectReadOnly(at.left + this.host.clientLeft + area.left, at.top + this.host.clientTop + area.top, area.width, area.height);
   }
 
   private zoomAround(zoom: number): void {

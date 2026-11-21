@@ -15,6 +15,7 @@ import "@noldova/context.core";
 
 import type { ITimeSource } from "../interfaces/i-time-source.js";
 import { ClockTokens } from "../models/clock-tokens.js";
+import { ContentMovedEvent } from "../models/content-moved-event.js";
 import type { OverlayAnchoring } from "../models/overlay-anchoring.js";
 import type { OverlayPlacement } from "../models/overlay-placement.js";
 import { Resources } from "../../resources.js";
@@ -36,7 +37,8 @@ export class AnchoredOverlay {
   private area: (() => DOMRect) | null = null;
   private anchoring: OverlayAnchoring | null = null;
   private placementValue: OverlayPlacement | null = null;
-  private placedSize: readonly [number, number] | null = null;
+  private placedWidth: number | null = null;
+  private placedHeight: number = 0;
   private placedBoxesValue: readonly [DOMRectReadOnly, DOMRectReadOnly] | null = null;
   private readonly changes: MutationObserver = new MutationObserver(() => {
     this.isChanged = true;
@@ -116,6 +118,17 @@ export class AnchoredOverlay {
       if (event.target instanceof Node && !this.element.contains(event.target) && event.target.contains(origin) && this.hasOriginMoved(origin))
         this.originLostValue.next();
     };
+    const moved = (event: Event): void => {
+      if (!(event instanceof ContentMovedEvent) || !event.isAround(origin))
+        return;
+      if (event.shows(origin.getBoundingClientRect())) {
+        this.reposition();
+        return;
+      }
+      if (this.element.contains(document.activeElement))
+        event.holder.focus({ preventScroll: true });
+      this.originLostValue.next();
+    };
     let cancelFrame: (() => void) | null = null;
     const resize = new ResizeObserver(entries => {
       if (entries.some(t => this.hasResizedTo(t.borderBoxSize[0])))
@@ -144,6 +157,7 @@ export class AnchoredOverlay {
     }, { injector: this.injector }));
     window.addEventListener(Resources.resizeEvent, reposition);
     document.addEventListener(Resources.scrollEvent, scrolled, { capture: true, passive: true });
+    document.addEventListener(Resources.contentMovedEvent, moved, { capture: true });
     this.cleanups.push(
       () => resize.disconnect(),
       () => this.changes.disconnect(),
@@ -151,7 +165,8 @@ export class AnchoredOverlay {
       () => hidden.disconnect(),
       () => cancelFrame?.(),
       () => window.removeEventListener(Resources.resizeEvent, reposition),
-      () => document.removeEventListener(Resources.scrollEvent, scrolled, { capture: true }));
+      () => document.removeEventListener(Resources.scrollEvent, scrolled, { capture: true }),
+      () => document.removeEventListener(Resources.contentMovedEvent, moved, { capture: true }));
     this.reposition();
   }
 
@@ -177,7 +192,8 @@ export class AnchoredOverlay {
     this.overlay.updatePosition();
     this.placementValue = placement;
     const height = Object.isNull(placement.maxHeight) ? size.height : Math.min(size.height, placement.maxHeight);
-    this.placedSize = [size.width, height];
+    this.placedWidth = size.width;
+    this.placedHeight = height;
     this.placedBoxesValue = [DOMRectReadOnly.fromRect(originAt), new DOMRectReadOnly(size.left + placement.left, size.top + placement.top, size.width, height)];
     this.isReset = false;
     this.changes.takeRecords();
@@ -211,17 +227,22 @@ export class AnchoredOverlay {
     this.area = null;
     this.anchoring = null;
     this.placementValue = null;
-    this.placedSize = null;
+    this.placedWidth = null;
+    this.placedHeight = 0;
     this.placedBoxesValue = null;
   }
 
   private hasResizedTo(box: ResizeObserverSize | undefined): boolean {
-    return Object.isNull(this.placedSize) || Object.isUndefined(box) || Math.abs(box.inlineSize - this.placedSize[0]) >= 1 || Math.abs(box.blockSize - this.placedSize[1]) >= 1;
+    return Object.isUndefined(box) || this.differsFrom(box.inlineSize, box.blockSize);
   }
 
   private hasResized(): boolean {
     const box = this.element.getBoundingClientRect();
-    return Object.isNull(this.placedSize) || Math.abs(box.width - this.placedSize[0]) >= 1 || Math.abs(box.height - this.placedSize[1]) >= 1;
+    return this.differsFrom(box.width, box.height);
+  }
+
+  private differsFrom(width: number, height: number): boolean {
+    return Object.isNull(this.placedWidth) || Math.abs(width - this.placedWidth) >= 1 || Math.abs(height - this.placedHeight) >= 1;
   }
 
   private hasOriginMoved(origin: Element): boolean {

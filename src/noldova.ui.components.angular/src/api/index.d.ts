@@ -2077,9 +2077,12 @@ export declare class AnchoredOverlay {
   /**
    * Places the pane against an origin and keeps it there, after it stops
    * following the previous one: it places the pane again when the window
-   * resizes or, in the next animation frame, when the pane's size changes,
-   * and emits {@link AnchoredOverlay.originLost} when the origin hides or a
-   * scroll moves it. It follows until the content closes. Opening calls it;
+   * resizes, when the pan or zoom of a canvas around the origin moves it,
+   * or, in the next animation frame, when the pane's size changes, and emits
+   * {@link AnchoredOverlay.originLost} when the origin hides, a scroll moves
+   * it, or a canvas's pan or zoom takes it out of the canvas's free area, the
+   * canvas then taking the focus the pane held. It follows until the content
+   * closes. Opening calls it;
    * call it after attaching through {@link AnchoredOverlay.overlayRef}, or to
    * move open content to another origin or anchoring.
    *

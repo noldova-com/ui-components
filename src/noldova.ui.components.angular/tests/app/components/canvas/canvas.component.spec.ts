@@ -6,7 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, computed, input, signal } from "@angular/core";
+import { ComponentPortal } from "@angular/cdk/portal";
+import { Component, Injector, computed, input, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
@@ -14,12 +15,22 @@ import { CanvasMapComponent } from "../../../../src/app/components/canvas-map/ca
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
 import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
+import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
+import { OverlayAnchoring } from "../../../../src/app/models/overlay-anchoring";
+import { OverlaySide } from "../../../../src/app/models/overlay-side";
+import { AnchoredOverlay } from "../../../../src/app/services/anchored-overlay";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
+
+@Component({
+  template: `<div style="width: 80px; height: 30px;"></div>`
+})
+class OverlayContentComponent {
+}
 
 @Component({
   imports: [CanvasComponent, CanvasItemDirective],
@@ -406,6 +417,44 @@ describe("CanvasComponent", () => {
     await fixture.whenStable();
 
     expect([drawn, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([true, [true, 0, 0], settled, true]);
+  });
+
+  it("keeps an overlay anchored to an item against it through a focus reveal, a keyboard pan and a zoom, and loses it once a pan takes the item out of its free area", async () => {
+    await measuredAsync(24);
+    [1, 2, 3, 4].forEach(() => button("zoom-in").click());
+    await fixture.whenStable();
+    instance().centreOn(new CanvasPoint(0, 0));
+    await fixture.whenStable();
+    const item = DomFixture.at(cards(), 23);
+    const overlay = new AnchoredOverlay(fixture.debugElement.injector.get(Injector), "nol-test-pane");
+    let losses = 0;
+    overlay.originLost.subscribe(() => losses++);
+    overlay.openComponent(new ComponentPortal(OverlayContentComponent), item, new OverlayAnchoring(OverlaySide.below, OverlayAlignment.Start, 8));
+    const placed = (): number[] => {
+      const anchor = item.getBoundingClientRect();
+      const pane = overlay.element.getBoundingClientRect();
+      return [Math.round(pane.left - anchor.left) + 0, Math.round(pane.top >= anchor.bottom ? pane.top - anchor.bottom : anchor.top - pane.bottom)];
+    };
+    try {
+      DomFixture.oneOf(item, ".open", HTMLButtonElement).focus();
+      await fixture.whenStable();
+      const revealed = placed();
+      canvas().focus();
+      key(canvas(), "ArrowRight");
+      await fixture.whenStable();
+      const panned = placed();
+      key(canvas(), "+");
+      await fixture.whenStable();
+      const zoomed = placed();
+      const lossesBefore = losses;
+      instance().centreOn(new CanvasPoint(-5000, -5000));
+      await fixture.whenStable();
+
+      expect([revealed, panned, zoomed, lossesBefore, losses]).toEqual([[0, 8], [0, 8], [0, 8], 0, 1]);
+    }
+    finally {
+      overlay.dispose();
+    }
   });
 
   it("draws the pan to a focused item before the browser scrolls it into view, so a scrolling page around it stays put", async () => {

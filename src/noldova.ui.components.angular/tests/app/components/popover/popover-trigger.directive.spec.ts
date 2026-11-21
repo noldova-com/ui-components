@@ -8,13 +8,17 @@
 
 import { Component, type Signal, viewChild } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
+import { By } from "@angular/platform-browser";
 import { userEvent } from "vitest/browser";
 
+import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
+import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
 import { PopoverDirective } from "../../../../src/app/components/popover/popover.directive";
 import { PopoverTriggerDirective } from "../../../../src/app/components/popover/popover-trigger.directive";
 import { TooltipDirective } from "../../../../src/app/components/tooltip/tooltip.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { PopoverOpening } from "../../../../src/app/enums/popover-opening";
+import { CanvasPoint } from "../../../../src/app/models/canvas-point";
 import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -683,5 +687,124 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     });
     AppearanceFixture.expectPixels(popover.getBoundingClientRect().right, card().getBoundingClientRect().right);
     AppearanceFixture.expectPixels(popover.getBoundingClientRect().width, rem * 27.5);
+  });
+});
+
+@Component({
+  imports: [CanvasComponent, CanvasItemDirective, PopoverDirective, PopoverTriggerDirective],
+  template: `
+    <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500">
+      <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(6, 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
+        @for (card of cards; track card) {
+          <div nolCanvasItem class="card" tabindex="0" [style.height.rem]="5" [nolPopoverTrigger]="details" [nolPopoverOpenOn]="openOn">{{ card }}</div>
+        }
+      </div>
+    </nol-canvas>
+    <ng-template #details>
+      <div nolPopover label="Details"><p>Developer</p></div>
+    </ng-template>
+  `
+})
+class CanvasPopoverHostComponent {
+  public readonly cards: readonly number[] = Array.from({ length: 24 }, (_, t) => t + 1);
+  public readonly openOn: PopoverOpening = PopoverOpening.Hover;
+}
+
+describe("PopoverTriggerDirective inside a canvas", () => {
+  let fixture: ComponentFixture<CanvasPopoverHostComponent>;
+  let source: TestTimeSource;
+
+  const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
+  const instance = (): CanvasComponent => fixture.debugElement.query(By.directive(CanvasComponent)).injector.get(CanvasComponent);
+  const card = (index: number): HTMLElement => DomFixture.at(DomFixture.all(canvas(), ".card"), index);
+  const surface = (): HTMLElement | null => document.querySelector(".cdk-overlay-container .nol-popover");
+  const rem = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const apart = (target: HTMLElement): number => {
+    const anchor = target.getBoundingClientRect();
+    const pane = DomFixture.present(surface()).getBoundingClientRect();
+    return pane.top >= anchor.bottom ? pane.top - anchor.bottom : anchor.top - pane.bottom;
+  };
+  const key = (name: string): void => {
+    canvas().dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true }));
+  };
+
+  async function settleAsync(): Promise<void> {
+    source.runFrames();
+    await fixture.whenStable();
+  }
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    source = new TestTimeSource();
+    TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: source }] });
+    fixture = TestBed.createComponent(CanvasPopoverHostComponent);
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.allOf(canvas(), ".nol-canvas-map-box", SVGRectElement)).toHaveLength(24));
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  it.each([false, true])("keeps a popover a gap from its card and on its end edge when the Tab focuses the card outside the free area and the canvas pans it into view on both axes, opened by hover first: %s", async hovered => {
+    [1, 2, 3, 4].forEach(() => instance().zoomIn());
+    instance().centreOn(new CanvasPoint(0, 0));
+    await settleAsync();
+    if (hovered) {
+      card(23).dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+      source.advance(500);
+      await DomChangeFixture.untilAsync(() => expect(surface()).not.toBeNull());
+      await settleAsync();
+    }
+    const before = card(23).getBoundingClientRect();
+    DomFixture.one(canvas(), ".nol-canvas-zoom-out").focus();
+    await userEvent.tab({ shift: true });
+    await DomChangeFixture.untilAsync(() => expect(surface()).not.toBeNull());
+    await settleAsync();
+    const after = card(23).getBoundingClientRect();
+
+    expect(document.activeElement).toBe(card(23));
+    expect(after.left).not.toBeCloseTo(before.left, 0);
+    expect(after.top).not.toBeCloseTo(before.top, 0);
+    expect(apart(card(23))).toBeCloseTo(rem() * 0.5, 1);
+    AppearanceFixture.expectPixels(DomFixture.present(surface()).getBoundingClientRect().right, after.right);
+  });
+
+  it("hands the focus to the canvas and leaves the view where a wheel pan took it when that pan takes away the card of a popover holding the focus", async () => {
+    card(0).focus();
+    await userEvent.keyboard("{Enter}");
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.present(surface()).contains(document.activeElement)).toBe(true));
+    await settleAsync();
+    const at = canvas().getBoundingClientRect();
+    canvas().dispatchEvent(new WheelEvent("wheel", { deltaX: 2000, deltaY: 2000, clientX: at.left + at.width / 2, clientY: at.top + at.height / 2, bubbles: true,
+      cancelable: true }));
+    await settleAsync();
+    const panned = instance().view();
+    await settleAsync();
+
+    expect(surface()).toBeNull();
+    expect(document.activeElement).toBe(canvas());
+    expect(instance().view()).toBe(panned);
+    expect(card(0).getBoundingClientRect().bottom).toBeLessThan(at.top);
+  });
+
+  it("follows its card through a keyboard pan and a zoom, and closes once a pan takes the card out of the canvas's free area", async () => {
+    card(0).dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(500);
+    await DomChangeFixture.untilAsync(() => expect(surface()).not.toBeNull());
+    canvas().focus();
+    key("ArrowUp");
+    await settleAsync();
+    const panned = apart(card(0));
+    key("+");
+    await settleAsync();
+    const zoomed = apart(card(0));
+    Array.from({ length: 30 }).forEach(() => key("ArrowRight"));
+    await settleAsync();
+
+    expect(panned).toBeCloseTo(rem() * 0.5, 1);
+    expect(zoomed).toBeCloseTo(rem() * 0.5, 1);
+    expect(surface()).toBeNull();
   });
 });

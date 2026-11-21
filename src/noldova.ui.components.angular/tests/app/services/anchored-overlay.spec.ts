@@ -12,6 +12,7 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { OverlayAlignment } from "../../../src/app/enums/overlay-alignment";
 import { ClockTokens } from "../../../src/app/models/clock-tokens";
+import { ContentMovedEvent } from "../../../src/app/models/content-moved-event";
 import { OverlayAnchoring } from "../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../src/app/models/overlay-side";
 import { AnchoredOverlay } from "../../../src/app/services/anchored-overlay";
@@ -26,6 +27,24 @@ import { TestTimeSource } from "../../fixtures/test-time-source";
 })
 class ContentComponent {
   public readonly height = signal(40);
+}
+
+class SideCase {
+  public constructor(public readonly name: string, public readonly side: OverlaySide) {
+  }
+}
+
+class EdgeCase {
+  public constructor(public readonly name: string, public readonly move: (anchor: HTMLElement) => void) {
+  }
+}
+
+class ResizeEntry {
+  public readonly borderBoxSize: readonly ResizeObserverSize[];
+
+  public constructor(inlineSize: number, blockSize: number) {
+    this.borderBoxSize = [{ inlineSize, blockSize }];
+  }
 }
 
 @Component({
@@ -202,16 +221,16 @@ describe("AnchoredOverlay", () => {
     expect([changed, measures.mock.calls.length - changed, reposition.mock.calls.length]).toEqual([1, 0, 0]);
   });
 
-  const sides: [string, OverlaySide][] = [["above", OverlaySide.above], ["below", OverlaySide.below], ["start", OverlaySide.start], ["end", OverlaySide.end]];
-  const edges: [string, (anchor: HTMLElement) => void][] = [
-    ["left", t => Object.assign(t.style, { left: "4px", top: "300px" })],
-    ["right", t => Object.assign(t.style, { left: `${window.innerWidth - 64}px`, top: "300px" })],
-    ["top", t => Object.assign(t.style, { left: "400px", top: "4px" })],
-    ["bottom", t => Object.assign(t.style, { left: "400px", top: `${window.innerHeight - 28}px` })]
+  const sides = [new SideCase("above", OverlaySide.above), new SideCase("below", OverlaySide.below), new SideCase("start", OverlaySide.start), new SideCase("end", OverlaySide.end)];
+  const edges = [
+    new EdgeCase("left", t => Object.assign(t.style, { left: "4px", top: "300px" })),
+    new EdgeCase("right", t => Object.assign(t.style, { left: `${window.innerWidth - 64}px`, top: "300px" })),
+    new EdgeCase("top", t => Object.assign(t.style, { left: "400px", top: "4px" })),
+    new EdgeCase("bottom", t => Object.assign(t.style, { left: "400px", top: `${window.innerHeight - 28}px` }))
   ];
 
-  describe.each(sides)("on its %s side", (_, side) => {
-    it.each(edges)("paints at the size and place it settles at near the %s edge of the window", async (_, move) => {
+  describe.each(sides)("on its $name side", ({ side }) => {
+    it.each(edges)("paints at the size and place it settles at near the $name edge of the window", async ({ move }) => {
       const host = DomFixture.one(DomFixture.host(fixture), ".scroller");
       Object.assign(host.style, { width: "100vw", height: "100vh" });
       const target = anchor();
@@ -254,9 +273,9 @@ describe("AnchoredOverlay", () => {
   });
 
   it("drops a reposition its content asked for when it closes before the next frame", () => {
-    const notify: ((entries: readonly { readonly borderBoxSize: readonly ResizeObserverSize[] }[]) => void)[] = [];
+    const notify: ((entries: readonly ResizeEntry[]) => void)[] = [];
     vi.stubGlobal("ResizeObserver", class {
-      public constructor(callback: (entries: readonly { readonly borderBoxSize: readonly ResizeObserverSize[] }[]) => void) {
+      public constructor(callback: (entries: readonly ResizeEntry[]) => void) {
         notify.push(callback);
       }
 
@@ -272,7 +291,7 @@ describe("AnchoredOverlay", () => {
       timed.openComponent(new ComponentPortal(ContentComponent), anchor(), below());
       const reposition = vi.spyOn(timed, "reposition");
 
-      const grown = [{ borderBoxSize: [{ inlineSize: 1000, blockSize: 1000 }] }];
+      const grown = [new ResizeEntry(1000, 1000)];
       notify.forEach(t => t(grown));
       notify.forEach(t => t(grown));
       const pending = source.frameCount;
@@ -319,6 +338,49 @@ describe("AnchoredOverlay", () => {
 
     expect(before).toEqual([1, 0]);
     expect(overlay.isOpen).toBe(true);
+  });
+
+  it("follows its anchor when content around it moves it within the area it shows, and reports it lost once it moves out, but not for a move elsewhere or an event that carries no area", () => {
+    let losses = 0;
+    overlay.originLost.subscribe(() => losses++);
+    const content = overlay.openComponent(new ComponentPortal(ContentComponent), anchor(), below());
+    content.changeDetectorRef.detectChanges();
+    overlay.reposition();
+    const scroller = DomFixture.one(DomFixture.host(fixture), ".scroller");
+    const shown = new DOMRectReadOnly(0, 0, 600, 400);
+    const reposition = vi.spyOn(overlay, "reposition");
+    const elsewhere = document.body.appendChild(document.createElement("div"));
+    anchor().style.top = "250px";
+    elsewhere.dispatchEvent(new ContentMovedEvent(shown, elsewhere));
+    elsewhere.remove();
+    scroller.dispatchEvent(new Event("nol-content-moved"));
+    const afterElsewhere = [reposition.mock.calls.length, losses];
+    scroller.dispatchEvent(new ContentMovedEvent(shown, scroller));
+    const box = overlay.element.getBoundingClientRect();
+    const target = anchor().getBoundingClientRect();
+    const afterMove = losses;
+    anchor().style.top = "390px";
+    scroller.dispatchEvent(new ContentMovedEvent(new DOMRectReadOnly(0, 0, 600, 300), scroller));
+
+    expect(afterElsewhere).toEqual([0, 0]);
+    expect([box.left, box.top, afterMove]).toEqual([target.left, target.bottom + 8, 0]);
+    expect([losses, reposition.mock.calls.length]).toEqual([1, 1]);
+  });
+
+  it("hands the focus it holds to the element that moved its anchor out of the shown area, and leaves the focus elsewhere alone", () => {
+    const scroller = DomFixture.one(DomFixture.host(fixture), ".scroller");
+    scroller.tabIndex = -1;
+    overlay.openComponent(new ComponentPortal(ContentComponent), anchor(), below());
+    overlay.element.tabIndex = -1;
+    overlay.element.focus();
+    anchor().style.top = "390px";
+    scroller.dispatchEvent(new ContentMovedEvent(new DOMRectReadOnly(0, 0, 600, 300), scroller));
+    const handed = document.activeElement;
+    anchor().focus();
+    scroller.dispatchEvent(new ContentMovedEvent(new DOMRectReadOnly(0, 0, 600, 300), scroller));
+
+    expect(handed).toBe(scroller);
+    expect(document.activeElement).toBe(anchor());
   });
 
   it("reports an anchor that stops rendering, but not one that only resizes", async () => {
