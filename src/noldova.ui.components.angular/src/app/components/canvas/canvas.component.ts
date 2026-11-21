@@ -65,7 +65,7 @@ export class CanvasComponent {
   protected readonly textVariant: ButtonVariant = ButtonVariant.Text;
   protected readonly isDragging: WritableSignal<boolean> = signal(false);
   protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
-  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([], { equal: CanvasBox.sameAll });
+  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([], { equal: (a, b) => CanvasComponent.sameBoxes(a, b) });
   protected readonly transform: Signal<string> = computed(() => {
     const view = this.shown();
     return `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
@@ -270,10 +270,14 @@ export class CanvasComponent {
     return Number.parseFloat(getComputedStyle(this.host.ownerDocument.documentElement).fontSize);
   }
 
+  private static sameBoxes(a: readonly CanvasBox[], b: readonly CanvasBox[]): boolean {
+    return a.length === b.length && a.every((t, i) => b.slice(i, i + 1).every(u => u.equals(t)));
+  }
+
   private measure(): void {
     const plane = this.plane().nativeElement;
-    const zoom = this.shown().zoom;
     const base = plane.getBoundingClientRect();
+    const zoom = new DOMMatrixReadOnly(getComputedStyle(plane).transform).a;
     this.size.set(new CanvasBox(0, 0, this.host.clientWidth, this.host.clientHeight));
     this.contentBox.set(new CanvasBox(0, 0, plane.offsetWidth, plane.offsetHeight));
     this.itemBoxes.set(this.items().filter(t => plane.contains(t)).map(t => {

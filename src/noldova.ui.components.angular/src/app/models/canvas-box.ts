@@ -19,10 +19,6 @@ export class CanvasBox {
     this.height = height;
   }
 
-  public static sameAll(a: readonly CanvasBox[], b: readonly CanvasBox[]): boolean {
-    return JSON.stringify(a) === JSON.stringify(b);
-  }
-
   public get right(): number {
     return this.left + this.width;
   }

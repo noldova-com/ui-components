@@ -718,6 +718,25 @@ describe("CanvasComponent with items inside its content's components", () => {
     expect(map.boxes()).toBe(before);
   });
 
+  it("measures its items at the zoom it draws, even when the view zooms in the frame before its measure", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const zoom = (): number => fixture.debugElement.query(By.directive(CanvasComponent)).injector.get(CanvasComponent).view().zoom;
+    const before = zoom();
+    const zoomed = new Promise<void>(resolve => requestAnimationFrame(() => {
+      DomFixture.oneOf(canvas(), ".nol-canvas-zoom-in", HTMLButtonElement).click();
+      resolve();
+    }));
+    const hidden = document.createElement("span");
+    hidden.hidden = true;
+    DomFixture.one(canvas(), ".nol-canvas-plane > div").append(hidden);
+    await zoomed;
+    await RenderedFrameFixture.nextAsync();
+    await RenderedFrameFixture.nextAsync();
+
+    expect([Math.round(zoom() / before * 1000) / 1000, widthsAcross().map(t => Math.round(t * 1000) / 1000)]).toEqual([1.2, [8, 8]]);
+  });
+
   it("measures nothing once it is destroyed with a measure still waiting for its frame", async () => {
     await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
     await RenderedFrameFixture.nextAsync();

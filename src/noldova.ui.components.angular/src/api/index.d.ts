@@ -5689,15 +5689,6 @@ export declare class CanvasBox {
   public constructor(left: number, top: number, width: number, height: number);
 
   /**
-   * Tells whether two lists hold the same boxes in the same order.
-   *
-   * @param a One list.
-   * @param b The other list.
-   * @returns True when they do.
-   */
-  public static sameAll(a: readonly CanvasBox[], b: readonly CanvasBox[]): boolean;
-
-  /**
    * The right edge, the left edge plus the width.
    */
   public get right(): number;

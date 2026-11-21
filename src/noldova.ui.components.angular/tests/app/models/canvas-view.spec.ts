@@ -110,11 +110,4 @@ describe("CanvasBox", () => {
     expect([new CanvasBox(1, 2, 3, 4), new CanvasBox(0, 2, 3, 4), new CanvasBox(1, 0, 3, 4), new CanvasBox(1, 2, 0, 4), new CanvasBox(1, 2, 3, 0)].map(t => box.equals(t)))
       .toEqual([true, false, false, false, false]);
   });
-
-  it("finds two lists the same only when they hold equal boxes in the same order", () => {
-    const [a, b] = [new CanvasBox(0, 0, 1, 1), new CanvasBox(2, 2, 1, 1)];
-
-    expect([CanvasBox.sameAll([a, b], [new CanvasBox(0, 0, 1, 1), new CanvasBox(2, 2, 1, 1)]), CanvasBox.sameAll([a, b], [b, a]), CanvasBox.sameAll([a], [a, b]),
-      CanvasBox.sameAll([], [])]).toEqual([true, false, false, true]);
-  });
 });
