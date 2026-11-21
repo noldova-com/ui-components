@@ -855,14 +855,24 @@ describe("ToolCallComponent", () => {
     expect([Math.sign(down), output().scrollTop]).toEqual([1, down]);
   });
 
-  it("fails a key that doesn't move the output, though an earlier scroll's end reaches it after the key", async () => {
+  it("keeps waiting on a key that doesn't move the output when an earlier scroll's end reaches it, and ends at the first scroll end that finds it moved", async () => {
     AppearanceFixture.apply();
     await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
-    output().focus();
-    output().scrollTo({ top: 1, behavior: "instant" });
-    output().scrollTo({ top: 0, behavior: "instant" });
+    const area = output();
+    area.focus();
+    const leftover = new Promise(resolve => area.addEventListener("scrollend", resolve, { once: true }));
+    area.scrollTo({ top: 1, behavior: "instant" });
+    area.scrollTo({ top: 0, behavior: "instant" });
+    let isSettled = false;
+    const up = scrollWithAsync("{ArrowUp}", 0).finally(() => {
+      isSettled = true;
+    });
 
-    await expect(scrollWithAsync("{ArrowUp}", 0)).rejects.toThrow(/^\{ArrowUp\} didn't scroll the output from 0 to a scroll end: it is at 0 and read /);
+    await leftover;
+    const pending = [isSettled, area.scrollTop];
+    area.scrollTo({ top: 40, behavior: "instant" });
+
+    expect([pending, await up]).toEqual([[false, 0], 40]);
   });
 
   it("scrolls the output with Up after Down and Page Up have brought it back to its top, since Up starts from its own position", async () => {
