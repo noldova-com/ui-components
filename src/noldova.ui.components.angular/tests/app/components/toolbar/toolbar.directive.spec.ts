@@ -118,19 +118,36 @@ describe("ToolbarDirective", () => {
     expect(tabStops()).toEqual(["Link"]);
   });
 
-  it("moves along a horizontal strip in its text direction when the key is pressed, Left onward and Right back in right-to-left text", async () => {
+  it("moves along a horizontal strip in its text direction when the key is pressed, Left onward and Right back in right-to-left text, toward the side the key names", async () => {
     toolbar().dir = "rtl";
     item("Bold").focus();
     const visited: (string | null)[] = [];
-    for (const key of ["ArrowLeft", "ArrowLeft", "ArrowRight"]) {
+    const towardKey: boolean[] = [];
+    const steps: readonly [string, () => void][] = [
+      ["ArrowLeft", () => undefined],
+      ["ArrowLeft", () => {
+        toolbar().removeAttribute("dir");
+        toolbar().parentElement?.setAttribute("dir", "rtl");
+      }],
+      ["ArrowRight", () => undefined],
+      ["ArrowRight", () => {
+        toolbar().dir = "ltr";
+      }]
+    ];
+    for (const [key, setDirection] of steps) {
+      setDirection();
+      const before = document.activeElement;
       await pressAsync(`{${key}}`);
+      const after = document.activeElement;
       visited.push(focused());
+      if (before instanceof HTMLElement && after instanceof HTMLElement) {
+        const moved = after.getBoundingClientRect().left - before.getBoundingClientRect().left;
+        towardKey.push(key === "ArrowLeft" ? moved < 0 : moved > 0);
+      }
     }
-    toolbar().dir = "ltr";
-    await pressAsync("{ArrowRight}");
-    visited.push(focused());
 
     expect(visited).toEqual(["Italic", "Locked", "Italic", "Locked"]);
+    expect(towardKey).toEqual([true, true, true, true]);
   });
 
   it("leaves the other axis, activation keys and modified keys to the item", async () => {
