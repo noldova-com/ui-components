@@ -19,7 +19,7 @@ concurrency:
 jobs:
   docs:
     name: Docs
-    uses: noldova-com/.github/.github/workflows/docs-image.yml@d37506ebf29d58f98003123f5465443b469b3d94 # v2.41.2
+    uses: noldova-com/.github/.github/workflows/docs-image.yml@cb9977bb95001c8dc88b3cea5fda8862bb45d057 # v2.41.3
     permissions:
       contents: read
       packages: write
@@ -31,7 +31,7 @@ jobs:
   latest:
     name: Move the latest label
     needs: docs
-    uses: noldova-com/.github/.github/workflows/move-image-label.yml@d37506ebf29d58f98003123f5465443b469b3d94 # v2.41.2
+    uses: noldova-com/.github/.github/workflows/move-image-label.yml@cb9977bb95001c8dc88b3cea5fda8862bb45d057 # v2.41.3
     permissions:
       packages: write
     with:
