@@ -380,8 +380,6 @@ describe("CanvasComponent", () => {
     await measuredAsync(24);
     [1, 2, 3, 4].forEach(() => button("zoom-in").click());
     await fixture.whenStable();
-    instance().centreOn(new CanvasPoint(0, 0));
-    await fixture.whenStable();
     const free = (): DOMRect => {
       const inset = band().offsetTop;
       const top = band().getBoundingClientRect().bottom + inset;
@@ -392,8 +390,9 @@ describe("CanvasComponent", () => {
       box.left >= area.left - 2 && box.top >= area.top - 2 && box.right <= area.right + 2 && box.bottom <= area.bottom + 2;
     const last = DomFixture.oneOf(DomFixture.at(cards(), 23), ".open", HTMLButtonElement);
     const first = DomFixture.oneOf(DomFixture.at(cards(), 0), ".open", HTMLButtonElement);
-    const away = inside(last.getBoundingClientRect(), free());
+    instance().centreOn(new CanvasPoint(0, 0));
     last.focus();
+    const drawn = inside(last.getBoundingClientRect(), free());
     await fixture.whenStable();
     const shown = [inside(last.getBoundingClientRect(), free()), canvas().scrollLeft, canvas().scrollTop];
     const settled = view();
@@ -404,7 +403,25 @@ describe("CanvasComponent", () => {
     first.focus();
     await fixture.whenStable();
 
-    expect([away, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([false, [true, 0, 0], settled, true]);
+    expect([drawn, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([true, [true, 0, 0], settled, true]);
+  });
+
+  it("draws the pan to a focused item before the browser scrolls it into view, so a scrolling page around it stays put", async () => {
+    await measuredAsync(24);
+    const page = DomFixture.host(fixture);
+    const spacer = document.createElement("div");
+    spacer.style.height = "100rem";
+    spacer.style.width = "200rem";
+    page.append(spacer);
+    page.style.display = "block";
+    page.style.overflow = "auto";
+    page.style.height = `${canvas().offsetHeight}px`;
+    page.style.width = `${canvas().offsetWidth}px`;
+    [1, 2, 3, 4].forEach(() => button("zoom-in").click());
+    await fixture.whenStable();
+    DomFixture.oneOf(DomFixture.at(cards(), 23), ".open", HTMLButtonElement).focus();
+
+    expect([page.scrollTop, page.scrollLeft]).toEqual([0, 0]);
   });
 
   it("zooms in and out by 1.2 times from its toolbar, back to 100%, and fits again, around the canvas's middle", async () => {

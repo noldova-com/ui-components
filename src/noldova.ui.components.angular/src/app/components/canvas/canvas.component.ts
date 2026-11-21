@@ -168,16 +168,21 @@ export class CanvasComponent {
     const target = event.target;
     if (!(target instanceof Element) || !this.plane().nativeElement.contains(target))
       return;
-    const host = this.host.getBoundingClientRect();
+    const plane = this.plane().nativeElement;
+    const drawn = plane.getBoundingClientRect();
+    const drawnZoom = drawn.width / plane.offsetWidth;
+    const view = this.shown();
     const area = this.freeArea();
     const box = target.getBoundingClientRect();
-    const [left, top] = [box.left - host.left - this.host.clientLeft, box.top - host.top - this.host.clientTop];
+    const scale = view.zoom / drawnZoom;
+    const [left, top] = [view.x + (box.left - drawn.left) * scale, view.y + (box.top - drawn.top) * scale];
     const shift = (start: number, length: number, areaStart: number, areaLength: number): number =>
       start < areaStart || length > areaLength ? areaStart - start : Math.min(0, areaStart + areaLength - start - length);
-    const dx = shift(left, box.width, area.left, area.width);
-    const dy = shift(top, box.height, area.top, area.height);
+    const dx = shift(left, box.width * scale, area.left, area.width);
+    const dy = shift(top, box.height * scale, area.top, area.height);
     if (dx !== 0 || dy !== 0)
-      this.shown.update(t => t.panBy(dx, dy));
+      this.shown.set(view.panBy(dx, dy));
+    plane.style.transform = this.transform();
   }
 
   protected onKeyDown(event: KeyboardEvent): void {
