@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, computed, signal } from "@angular/core";
+import { Component, computed, input, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 
+import { CanvasMapComponent } from "../../../../src/app/components/canvas-map/canvas-map.component";
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
 import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
@@ -18,6 +19,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 @Component({
   imports: [CanvasComponent, CanvasItemDirective],
@@ -593,5 +595,166 @@ describe("CanvasComponent", () => {
     element.dispatchEvent(event);
 
     expect(event.defaultPrevented).toBe(false);
+  });
+});
+
+@Component({
+  selector: "nol-canvas-spec-team",
+  imports: [CanvasItemDirective],
+  host: { "[style.display]": "'flex'", "[style.gap.rem]": "1" },
+  template: `
+    @for (name of names(); track name) {
+      <div nolCanvasItem class="member" [style.width.rem]="name === wide() ? 12 : 8" [style.height.rem]="3">{{ name }}</div>
+    }
+  `
+})
+class TeamComponent {
+  public readonly names = input.required<readonly string[]>();
+  public readonly wide = input<string>("");
+}
+
+@Component({
+  imports: [CanvasComponent, CanvasItemDirective, TeamComponent],
+  template: `
+    <nol-canvas class="outer" label="Team" [style.width.px]="800" [style.height.px]="500">
+      <div [style.display]="'flex'" [style.gap.rem]="1" [style.align-items]="'flex-start'">
+        <nol-canvas-spec-team [names]="names()" [wide]="wide()" />
+        @if (lead()) {
+          <div nolCanvasItem class="lead" [style.width.rem]="10" [style.height.rem]="3">Lead</div>
+        }
+        @if (inner()) {
+          <nol-canvas class="inner" label="Inner" [style.width.px]="300" [style.height.px]="200">
+            <div nolCanvasItem class="inside" [style.width.rem]="4" [style.height.rem]="2">In</div>
+          </nol-canvas>
+        }
+      </div>
+    </nol-canvas>
+    <div nolCanvasItem class="outside">Outside</div>
+  `
+})
+class NestedCanvasHostComponent {
+  public readonly names = signal<readonly string[]>(["Alice", "Bob"]);
+  public readonly wide = signal("");
+  public readonly lead = signal(false);
+  public readonly inner = signal(false);
+}
+
+describe("CanvasComponent with items inside its content's components", () => {
+  let fixture: ComponentFixture<NestedCanvasHostComponent>;
+  let rem: number;
+
+  const host = (): NestedCanvasHostComponent => fixture.componentInstance;
+  const canvas = (name: string = "outer"): HTMLElement => DomFixture.one(DomFixture.host(fixture), `nol-canvas.${name}`);
+  const boxes = (name: string = "outer"): SVGRectElement[] => DomFixture.allOf(DomFixture.one(canvas(name), ":scope > nol-canvas-map"), ".nol-canvas-map-box", SVGRectElement);
+  const size = (width: number, height: number = 3): string => `${width * rem}x${height * rem}`;
+  const sizes = (name: string = "outer"): string[] => boxes(name).map(t => `${t.getAttribute("width")}x${t.getAttribute("height")}`).sort();
+  const widthsAcross = (): number[] => boxes().map(t => ({ x: Number(t.getAttribute("x")), width: Number(t.getAttribute("width")) / rem }))
+    .sort((a, b) => a.x - b.x).map(t => t.width);
+  const changedAsync = async (check: () => void): Promise<void> => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(check);
+  };
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    fixture = TestBed.createComponent(NestedCanvasHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  it("shows on its map the items marked inside a component of its content, and each added or removed later, but none outside it", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    host().lead.set(true);
+    await changedAsync(() => expect(sizes()).toEqual([size(10), size(8), size(8)].sort()));
+    host().names.set(["Alice"]);
+    await changedAsync(() => expect(sizes()).toEqual([size(10), size(8)].sort()));
+    host().lead.set(false);
+    host().names.set(["Alice", "Bob", "Carol"]);
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8), size(8)]));
+  });
+
+  it("moves an item's box when the content reorders its items, and resizes it when the item resizes", async () => {
+    host().wide.set("Alice");
+    await changedAsync(() => expect(widthsAcross()).toEqual([12, 8]));
+    host().names.set(["Bob", "Alice"]);
+    await changedAsync(() => expect(widthsAcross()).toEqual([8, 12]));
+    host().wide.set("Bob");
+
+    await changedAsync(() => expect(widthsAcross()).toEqual([12, 8]));
+  });
+
+  it("leaves the items of a canvas inside it to that canvas's own map", async () => {
+    host().inner.set(true);
+    await changedAsync(() => expect(sizes("inner")).toEqual([size(4, 2)]));
+
+    expect(sizes()).toEqual([size(8), size(8)]);
+  });
+
+  it("measures its items once a frame for a burst of changes, and keeps its map's boxes when none of them moved", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const plane = DomFixture.one(canvas(), ".nol-canvas-plane");
+    const content = DomFixture.one(plane, ":scope > div");
+    const map = fixture.debugElement.query(By.directive(CanvasMapComponent)).injector.get(CanvasMapComponent);
+    const before = map.boxes();
+    const measures = vi.spyOn(plane, "getBoundingClientRect");
+    for (let changes = 0; changes < 20; changes++) {
+      const hidden = document.createElement("span");
+      hidden.hidden = true;
+      content.append(hidden);
+      await Promise.resolve();
+    }
+    await RenderedFrameFixture.nextAsync();
+    await RenderedFrameFixture.nextAsync();
+
+    expect(measures).toHaveBeenCalledTimes(1);
+    expect(map.boxes()).toBe(before);
+  });
+
+  it("measures its items at the zoom it draws, even when the view zooms in the frame before its measure", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const zoom = (): number => fixture.debugElement.query(By.directive(CanvasComponent)).injector.get(CanvasComponent).view().zoom;
+    const before = zoom();
+    const zoomed = new Promise<void>(resolve => requestAnimationFrame(() => {
+      DomFixture.oneOf(canvas(), ".nol-canvas-zoom-in", HTMLButtonElement).click();
+      resolve();
+    }));
+    const hidden = document.createElement("span");
+    hidden.hidden = true;
+    DomFixture.one(canvas(), ".nol-canvas-plane > div").append(hidden);
+    await zoomed;
+    await RenderedFrameFixture.nextAsync();
+    await RenderedFrameFixture.nextAsync();
+
+    expect([Math.round(zoom() / before * 1000) / 1000, widthsAcross().map(t => Math.round(t * 1000) / 1000)]).toEqual([1.2, [8, 8]]);
+  });
+
+  it("measures nothing once it is destroyed with a measure still waiting for its frame", async () => {
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+    await RenderedFrameFixture.nextAsync();
+    const plane = DomFixture.one(canvas(), ".nol-canvas-plane");
+    const measures = vi.spyOn(plane, "getBoundingClientRect");
+    DomFixture.one(plane, ":scope > div").append(document.createElement("span"));
+    await Promise.resolve();
+    fixture.destroy();
+    await RenderedFrameFixture.nextAsync();
+
+    expect(measures).not.toHaveBeenCalled();
+  });
+
+  it("leaves off its map an item declared inside it once the item is rendered outside its plane", async () => {
+    host().lead.set(true);
+    await changedAsync(() => expect(sizes()).toHaveLength(3));
+    DomFixture.host(fixture).append(DomFixture.one(canvas(), ".lead"));
+
+    await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
   });
 });

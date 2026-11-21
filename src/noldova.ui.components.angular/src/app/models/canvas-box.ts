@@ -27,6 +27,10 @@ export class CanvasBox {
     return this.top + this.height;
   }
 
+  public equals(box: CanvasBox): boolean {
+    return box.left === this.left && box.top === this.top && box.width === this.width && box.height === this.height;
+  }
+
   public contains(box: CanvasBox): boolean {
     return box.left >= this.left && box.top >= this.top && box.right <= this.right && box.bottom <= this.bottom;
   }

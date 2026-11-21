@@ -6,13 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, contentChildren, inject, input, model, signal, viewChild } from "@angular/core";
+import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, inject, input, model, signal, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
 import { CanvasFitAlignment } from "../../enums/canvas-fit-alignment.js";
 import { CanvasBox } from "../../models/canvas-box.js";
+import { CanvasItems } from "../../models/canvas-items.js";
 import { CanvasPoint } from "../../models/canvas-point.js";
 import { CanvasView } from "../../models/canvas-view.js";
 import { DragGesture } from "../../models/drag-gesture.js";
@@ -23,7 +24,6 @@ import { CanvasMapResources } from "../canvas-map/canvas-map.resources.js";
 import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { ToolbarItemDirective } from "../toolbar/toolbar-item.directive.js";
 import { ToolbarDirective } from "../toolbar/toolbar.directive.js";
-import { CanvasItemDirective } from "./canvas-item.directive.js";
 import { CanvasResources } from "./canvas.resources.js";
 
 @Component({
@@ -31,6 +31,7 @@ import { CanvasResources } from "./canvas.resources.js";
   imports: [ButtonComponent, CanvasMapComponent, IconButtonComponent, ToolbarDirective, ToolbarItemDirective],
   templateUrl: "./canvas.component.html",
   styleUrl: "./canvas.component.css",
+  providers: [CanvasItems],
   host: {
     "role": "region",
     "tabindex": "0",
@@ -50,12 +51,12 @@ import { CanvasResources } from "./canvas.resources.js";
 })
 export class CanvasComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private readonly items: Signal<readonly CanvasItemDirective[]> = contentChildren(CanvasItemDirective, { descendants: true });
+  private readonly items: Signal<readonly HTMLElement[]> = inject(CanvasItems, { self: true }).elements;
   private readonly plane: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("plane");
   private readonly tools: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("tools");
   private readonly map: Signal<ElementRef<HTMLElement> | undefined> = viewChild(CanvasMapComponent, { read: ElementRef });
   private readonly shown: WritableSignal<CanvasView> = signal(CanvasView.initial);
-  private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0));
+  private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   private readonly pointers: Map<number, CanvasPoint> = new Map<number, CanvasPoint>();
   private pressStart: CanvasPoint = new CanvasPoint(0, 0);
   private hasFitted: boolean = false;
@@ -63,8 +64,8 @@ export class CanvasComponent {
   protected readonly partResources: typeof CanvasResources = CanvasResources;
   protected readonly textVariant: ButtonVariant = ButtonVariant.Text;
   protected readonly isDragging: WritableSignal<boolean> = signal(false);
-  protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0));
-  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([]);
+  protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
+  protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([], { equal: (a, b) => CanvasComponent.sameBoxes(a, b) });
   protected readonly transform: Signal<string> = computed(() => {
     const view = this.shown();
     return `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
@@ -84,17 +85,29 @@ export class CanvasComponent {
     const onBlur = (): void => this.endPointers();
     this.host.addEventListener(CanvasResources.canvasWheelEvent, onWheel, { passive: false });
     window.addEventListener(Resources.blurEvent, onBlur);
-    const observer = new ResizeObserver(() => this.measure());
+    let frame: number | null = null;
+    const measureOnce = (): void => {
+      frame ??= requestAnimationFrame(() => {
+        frame = null;
+        this.measure();
+      });
+    };
+    const observer = new ResizeObserver(measureOnce);
+    const moves = new MutationObserver(measureOnce);
     inject(DestroyRef).onDestroy(() => {
+      if (!Object.isNull(frame))
+        cancelAnimationFrame(frame);
       observer.disconnect();
+      moves.disconnect();
       this.host.removeEventListener(CanvasResources.canvasWheelEvent, onWheel);
       window.removeEventListener(Resources.blurEvent, onBlur);
     });
     afterRenderEffect(() => {
       const items = this.items();
       observer.disconnect();
-      for (const element of [this.host, this.plane().nativeElement, ...items.map(t => t.element)])
+      for (const element of [this.host, this.plane().nativeElement, ...items])
         observer.observe(element);
+      moves.observe(this.plane().nativeElement, CanvasResources.canvasContentMoves);
     });
   }
 
@@ -257,14 +270,18 @@ export class CanvasComponent {
     return Number.parseFloat(getComputedStyle(this.host.ownerDocument.documentElement).fontSize);
   }
 
+  private static sameBoxes(a: readonly CanvasBox[], b: readonly CanvasBox[]): boolean {
+    return a.length === b.length && a.every((t, i) => b.slice(i, i + 1).every(u => u.equals(t)));
+  }
+
   private measure(): void {
     const plane = this.plane().nativeElement;
-    const zoom = this.shown().zoom;
     const base = plane.getBoundingClientRect();
+    const zoom = new DOMMatrixReadOnly(getComputedStyle(plane).transform).a;
     this.size.set(new CanvasBox(0, 0, this.host.clientWidth, this.host.clientHeight));
     this.contentBox.set(new CanvasBox(0, 0, plane.offsetWidth, plane.offsetHeight));
-    this.itemBoxes.set(this.items().map(t => {
-      const box = t.element.getBoundingClientRect();
+    this.itemBoxes.set(this.items().filter(t => plane.contains(t)).map(t => {
+      const box = t.getBoundingClientRect();
       return new CanvasBox((box.left - base.left) / zoom, (box.top - base.top) / zoom, box.width / zoom, box.height / zoom);
     }));
     if (this.hasFitted || plane.offsetWidth === 0)

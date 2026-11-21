@@ -8,6 +8,7 @@
 
 export class CanvasResources {
   public static readonly canvasRoleDescription: string = "canvas";
+  public static readonly canvasContentMoves: MutationObserverInit = { childList: true, subtree: true };
   public static readonly canvasKeyShortcuts: string = "ArrowLeft ArrowRight ArrowUp ArrowDown + - 0";
   public static readonly canvasToolsLabel: string = "Canvas view";
   public static readonly canvasZoomInLabel: string = "Zoom in";

@@ -2849,13 +2849,24 @@ export declare class CanvasComponent {
 
 /**
  * Marks an element in a {@link CanvasComponent}'s content as an item, which
- * the overview map shows as a box.
+ * the overview map shows as a box. The mark must be declared inside the
+ * canvas's content, in its template or in a component the content renders,
+ * at any depth; a template declared outside and rendered inside doesn't
+ * count, and an item rendered outside the canvas's plane, such as in a
+ * popover, is left off the map. A mark outside any canvas does nothing. The
+ * map follows each item as it is added, removed, resized or moved.
  */
 export declare class CanvasItemDirective {
   /**
    * The marked element.
    */
   public readonly element: HTMLElement;
+
+  /**
+   * Adds the element to the nearest canvas around it until the directive is
+   * destroyed. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**
@@ -5711,6 +5722,14 @@ export declare class CanvasBox {
    * The bottom edge, the top edge plus the height.
    */
   public get bottom(): number;
+
+  /**
+   * Tells whether another box has the same edges and size as this one.
+   *
+   * @param box The other box.
+   * @returns True when it does.
+   */
+  public equals(box: CanvasBox): boolean;
 
   /**
    * Tells whether another box lies wholly inside this one, edges included.
