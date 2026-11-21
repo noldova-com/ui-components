@@ -138,11 +138,13 @@ describe("ToolCallComponent", () => {
       seen.push(area.scrollTop);
     };
     const end = (): void => {
+      if (Math.abs(area.scrollTop - before) < 1)
+        return;
       hasEnded = true;
       ended.fire();
     };
     area.addEventListener("scroll", see);
-    area.addEventListener("scrollend", end, { once: true });
+    area.addEventListener("scrollend", end);
     try {
       await userEvent.keyboard(key);
       await ended.untilAsync(() => expect(hasEnded).toBe(true));
@@ -839,6 +841,28 @@ describe("ToolCallComponent", () => {
 
     expect(moves.map(Math.sign)).toEqual([1, 1, -1, -1]);
     expect(host.heard).toEqual(["ArrowLeft", "ArrowRight", "Escape", "Home", "Escape"]);
+  });
+
+  it("ends a key's scroll at the end of its own move, not at the scroll end of an earlier scroll still on its way", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+    output().focus();
+    output().scrollTo({ top: 1, behavior: "instant" });
+    output().scrollTo({ top: 0, behavior: "instant" });
+
+    const down = await scrollWithAsync("{ArrowDown}", 0);
+
+    expect([Math.sign(down), output().scrollTop]).toEqual([1, down]);
+  });
+
+  it("fails a key that doesn't move the output, though an earlier scroll's end reaches it after the key", async () => {
+    AppearanceFixture.apply();
+    await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
+    output().focus();
+    output().scrollTo({ top: 1, behavior: "instant" });
+    output().scrollTo({ top: 0, behavior: "instant" });
+
+    await expect(scrollWithAsync("{ArrowUp}", 0)).rejects.toThrow(/^\{ArrowUp\} didn't scroll the output from 0 to a scroll end: it is at 0 and read /);
   });
 
   it("scrolls the output with Up after Down and Page Up have brought it back to its top, since Up starts from its own position", async () => {
