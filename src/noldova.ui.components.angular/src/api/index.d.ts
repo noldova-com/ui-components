@@ -3275,8 +3275,8 @@ export declare class ChipComponent {
 
 /**
  * A named group of choice pills, `nol-choice-pills`, for choosing one of a
- * few options: a radio group in which the chosen pill, or the first when
- * none is, is the one Tab stop, and the arrow keys, Home and End move the
+ * few options: a radio group in which the chosen pill, or the first enabled
+ * one when none is, is the one Tab stop, and the arrow keys, Home and End move the
  * choice and the focus together, wrapping at the ends. It does not keep its
  * own choice: it reports each new one through
  * {@link ChoicePillsComponent.valueChange}, and its owner binds it back to
@@ -3301,7 +3301,9 @@ export declare class ChipComponent {
 export declare class ChoicePillsComponent {
   /**
    * The options, one pill each in this order, showing its title; their
-   * values are distinct.
+   * values are distinct. A disabled option's pill is dimmed and marked
+   * `aria-disabled`, a click on it chooses nothing, and the arrow keys, Home
+   * and End pass over it.
    */
   public readonly options: InputSignal<readonly SelectOption[]>;
 

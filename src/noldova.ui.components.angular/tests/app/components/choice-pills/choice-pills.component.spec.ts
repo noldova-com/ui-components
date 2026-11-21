@@ -8,7 +8,7 @@
 
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import { ChoicePillsComponent } from "../../../../src/app/components/choice-pills/choice-pills.component";
 import { SelectOption } from "../../../../src/app/models/select-option";
@@ -131,6 +131,37 @@ describe("ChoicePillsComponent", () => {
     expect(selected()).toEqual(["Light"]);
   });
 
+  it("shows a disabled option dimmed and marked disabled, chooses nothing on its click, and passes over it with the arrow keys, Home and End", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true),
+      new SelectOption("custom", "Custom")]);
+    fixture.detectChanges();
+    const looks = (pill: HTMLButtonElement | undefined): unknown[] => pill === undefined ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
+    const focused = (): string => document.activeElement?.textContent?.trim() ?? "";
+
+    expect([looks(pills()[0]), looks(pills()[1])]).toEqual([["true", "0.5", "default"], [null, "1", "pointer"]]);
+    await page.getByRole("radio", { name: "Dark" }).click({ force: true });
+    expect([host.changes, selected()]).toEqual([[], ["Light"]]);
+    pills()[1]?.focus();
+    const moves: string[] = [];
+    for (const key of ["{ArrowRight}", "{ArrowRight}", "{ArrowLeft}", "{End}", "{Home}", "{ArrowUp}", "{ArrowDown}"]) {
+      await userEvent.keyboard(key);
+      moves.push(focused());
+    }
+
+    expect(moves).toEqual(["Custom", "Light", "Custom", "Custom", "Light", "Custom", "Light"]);
+    expect(host.changes).toEqual(["custom", "light", "custom", "light", "custom", "light"]);
+  });
+
+  it("takes the first enabled pill as the Tab stop when nothing is checked", () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);
+    host.value.set("none");
+    fixture.detectChanges();
+
+    expect(pills().map(t => t.tabIndex)).toEqual([-1, 0, -1]);
+  });
+
   it("leaves other keys alone and takes the group as a single stop of Tab", async () => {
     render();
     pills()[1]?.focus();
@@ -179,6 +210,24 @@ describe("ChoicePillsComponent", () => {
 
         expect([getComputedStyle(checked).backgroundColor, ring(checked), ring(other)])
           .toEqual([ForcedColorsFixture.resolve("Highlight"), ["solid", ForcedColorsFixture.resolve("Highlight"), width, width], ["solid", ForcedColorsFixture.resolve("Highlight"), width, width]]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a disabled pill's title in GrayText at full opacity, and an enabled one's in CanvasText, under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const look = (index: number): unknown[] => {
+          const style = getComputedStyle(pills()[index] ?? document.body);
+          return [style.color, style.opacity];
+        };
+
+        expect([look(0), look(2)]).toEqual([[ForcedColorsFixture.resolve("GrayText"), "1"], [ForcedColorsFixture.resolve("CanvasText"), "1"]]);
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
