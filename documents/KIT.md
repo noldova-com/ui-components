@@ -275,6 +275,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [Avatar](kit/avatar.md)
 - [Badge (counts, +1 −0), key and status chips](kit/badge.md)
 - [Button](kit/button.md)
+- [Canvas and overview map](kit/canvas.md)
 - [Card](kit/card.md)
 - [Checkbox](kit/checkbox.md)
 - [Choice pills (toggle group)](kit/choice-pills.md)

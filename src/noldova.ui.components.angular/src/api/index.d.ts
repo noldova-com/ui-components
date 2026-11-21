@@ -204,6 +204,22 @@ export declare enum ButtonVariant {
 }
 
 /**
+ * Where a {@link CanvasComponent}'s Fit puts the content down the free area;
+ * across, it is always centred.
+ */
+export declare enum CanvasFitAlignment {
+  /**
+   * Centred down the free area; the default.
+   */
+  Centre = "Centre",
+
+  /**
+   * At the top of the free area, below the toolbar's band.
+   */
+  Top = "Top"
+}
+
+/**
  * What a {@link ChipComponent} shows and how it is colored. Content projected
  * into the chip replaces the text its kind makes from its count.
  */
@@ -2701,6 +2717,169 @@ export declare class ButtonComponent {
  * ```
  */
 export declare class CardComponent {
+}
+
+/**
+ * A pan-and-zoom canvas, `nol-canvas`: its content sits on one plane that
+ * the person moves and scales, with a toolbar at its top start (zoom out, the
+ * zoom as a percentage, zoom in, Fit, 100% and the map's toggle) and an
+ * overview map, {@link CanvasMapComponent}, at its bottom end. The owner sizes
+ * it; its content lays itself out at 100%, and each element marked with
+ * {@link CanvasItemDirective} shows as a box on the map.
+ *
+ * The wheel and a trackpad's scroll pan it, Shift with the wheel pans
+ * sideways where the system doesn't already, and Ctrl or Cmd with the wheel,
+ * a trackpad's pinch or two pointers zoom around the pointer, from 25% to
+ * 200%; a wheel that counts lines moves 16px a line, and one that counts
+ * pages a canvas's height. Dragging its background pans once the pointer has
+ * moved {@link DragGesture.threshold} pixels; a press on a control in its
+ * content, such as a button, a link or a field, or on an element marked
+ * `data-nol-canvas-no-pan`, never starts a pan. With the focus on the canvas
+ * itself, the arrow keys pan by 3rem, plus and minus zoom by 25%, and 0 fits.
+ *
+ * Once its content first has a size, it fits it: the whole content shows,
+ * centred, never above 100%, below the toolbar and above the map. A resize
+ * keeps the view where it is.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { CanvasComponent, CanvasItemDirective } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-team-canvas",
+ *   imports: [CanvasComponent, CanvasItemDirective],
+ *   template: `
+ *     <nol-canvas label="Organization" style="height: 30rem">
+ *       <div class="teams">
+ *         <div nolCanvasItem class="team">Design</div>
+ *         <div nolCanvasItem class="team">Engineering</div>
+ *       </div>
+ *     </nol-canvas>
+ *   `
+ * })
+ * export class TeamCanvasComponent {
+ * }
+ * ```
+ */
+export declare class CanvasComponent {
+  /**
+   * The canvas's accessible name, such as what its content is.
+   */
+  public readonly label: InputSignal<string>;
+
+  /**
+   * Whether the overview map shows; the toolbar's map button toggles it.
+   * True when not bound.
+   */
+  public readonly mapShown: ModelSignal<boolean>;
+
+  /**
+   * Where Fit puts the content down the free area: centred, the default, or
+   * at its top, as an organization chart that grows downward wants.
+   */
+  public readonly fitAlignment: InputSignal<CanvasFitAlignment>;
+
+  /**
+   * Where the content shows: its offset on the canvas in CSS pixels and its
+   * zoom.
+   */
+  public readonly view: Signal<CanvasView>;
+
+  /**
+   * Creates the canvas, which listens to the wheel on its host until it is
+   * destroyed. Angular creates it from its selector.
+   */
+  public constructor();
+
+  /**
+   * Shows the whole content, centred, never above 100%, below the toolbar
+   * and, while the map shows, above it.
+   */
+  public fit(): void;
+
+  /**
+   * Zooms to 100% around the canvas's middle.
+   */
+  public actualSize(): void;
+
+  /**
+   * Zooms in by 25% around the canvas's middle, up to 200%.
+   */
+  public zoomIn(): void;
+
+  /**
+   * Zooms out by 25% around the canvas's middle, down to 25%.
+   */
+  public zoomOut(): void;
+
+  /**
+   * Moves the view so a point of the content stands at the canvas's middle,
+   * at the same zoom.
+   *
+   * @param point The point, in the content's CSS pixels at 100%.
+   */
+  public centreOn(point: CanvasPoint): void;
+}
+
+/**
+ * Marks an element in a {@link CanvasComponent}'s content as an item, which
+ * the overview map shows as a box.
+ */
+export declare class CanvasItemDirective {
+  /**
+   * The marked element.
+   */
+  public readonly element: HTMLElement;
+}
+
+/**
+ * A canvas's overview map, `nol-canvas-map`: a button showing the content's
+ * items as boxes and the visible area as a rectangle in the accent color, on
+ * the panel surface, its drawing at most 7rem high and 14rem wide, in the
+ * content's proportions. A press outside the rectangle reports the spot to
+ * centre; dragging then reports each move; Enter or Space asks for a fit.
+ * {@link CanvasComponent} shows one; an owner that draws its own canvas can
+ * use it alone.
+ */
+export declare class CanvasMapComponent {
+  /**
+   * The content's box, in its CSS pixels at 100%.
+   */
+  public readonly content: InputSignal<CanvasBox>;
+
+  /**
+   * The items' boxes, in the content's CSS pixels at 100%.
+   */
+  public readonly boxes: InputSignal<readonly CanvasBox[]>;
+
+  /**
+   * The visible area, in the content's CSS pixels at 100%.
+   */
+  public readonly visible: InputSignal<CanvasBox>;
+
+  /**
+   * Reports the spot of the content to centre, after a press outside the
+   * visible area's rectangle.
+   */
+  public readonly centre: OutputEmitterRef<CanvasPoint>;
+
+  /**
+   * Reports each move of a drag on the map, in the content's CSS pixels at
+   * 100%: the visible area follows it.
+   */
+  public readonly move: OutputEmitterRef<CanvasPoint>;
+
+  /**
+   * Asks for the whole content to show, after Enter or Space on the map.
+   */
+  public readonly fit: OutputEmitterRef<void>;
+
+  /**
+   * Creates the map, which ends a drag on it when it is destroyed. Angular
+   * creates it from its selector.
+   */
+  public constructor();
 }
 
 /**
@@ -5461,6 +5640,251 @@ export declare class DragGesture {
    * ```
    */
   public static hasStarted(startX: number, startY: number, x: number, y: number): boolean;
+}
+
+/**
+ * A box on a canvas: its left and top edges, width and height, in CSS
+ * pixels.
+ */
+export declare class CanvasBox {
+  /**
+   * The left edge.
+   */
+  public readonly left: number;
+
+  /**
+   * The top edge.
+   */
+  public readonly top: number;
+
+  /**
+   * The width.
+   */
+  public readonly width: number;
+
+  /**
+   * The height.
+   */
+  public readonly height: number;
+
+  /**
+   * Creates a box.
+   *
+   * @param left The left edge.
+   * @param top The top edge.
+   * @param width The width.
+   * @param height The height.
+   */
+  public constructor(left: number, top: number, width: number, height: number);
+
+  /**
+   * The right edge, the left edge plus the width.
+   */
+  public get right(): number;
+
+  /**
+   * The bottom edge, the top edge plus the height.
+   */
+  public get bottom(): number;
+
+  /**
+   * Tells whether another box lies wholly inside this one, edges included.
+   *
+   * @param box The other box.
+   * @returns True when it does.
+   */
+  public contains(box: CanvasBox): boolean;
+
+  /**
+   * Tells whether another box shares area with this one; boxes that only
+   * touch at an edge don't.
+   *
+   * @param box The other box.
+   * @returns True when they share area.
+   */
+  public overlaps(box: CanvasBox): boolean;
+}
+
+/**
+ * A point on a canvas, or a distance between two, in CSS pixels.
+ */
+export declare class CanvasPoint {
+  /**
+   * The horizontal coordinate.
+   */
+  public readonly x: number;
+
+  /**
+   * The vertical coordinate.
+   */
+  public readonly y: number;
+
+  /**
+   * Creates a point.
+   *
+   * @param x The horizontal coordinate.
+   * @param y The vertical coordinate.
+   */
+  public constructor(x: number, y: number);
+}
+
+/**
+ * Where a canvas's content shows: the screen position of the content's origin
+ * and the zoom, from 25% to 200%. It is immutable; each move gives a new
+ * view.
+ */
+export declare class CanvasView {
+  /**
+   * The smallest zoom, 0.25.
+   */
+  public static readonly minimumZoom: number;
+
+  /**
+   * The largest zoom, 2.
+   */
+  public static readonly maximumZoom: number;
+
+  /**
+   * The largest zoom {@link CanvasView.fit} gives, 1.
+   */
+  public static readonly fitZoom: number;
+
+  /**
+   * The CSS pixels a wheel line moves, 16.
+   */
+  public static readonly lineHeight: number;
+
+  /**
+   * How fast the wheel zooms: the zoom changes by e^(-rate × pixels), 0.01, which doubles it about every 70 CSS pixels.
+   */
+  public static readonly wheelZoomRate: number;
+
+  /**
+   * The most one wheel event zooms by, in or out: 2.
+   */
+  public static readonly wheelZoomStep: number;
+
+  /**
+   * The view at the origin at 100%.
+   */
+  public static readonly initial: CanvasView;
+
+  /**
+   * The screen position of the content's left edge, in CSS pixels.
+   */
+  public readonly x: number;
+
+  /**
+   * The screen position of the content's top edge, in CSS pixels.
+   */
+  public readonly y: number;
+
+  /**
+   * The zoom, 1 at 100%, kept from {@link CanvasView.minimumZoom} to
+   * {@link CanvasView.maximumZoom}.
+   */
+  public readonly zoom: number;
+
+  /**
+   * Creates a view.
+   *
+   * @param x The screen position of the content's left edge.
+   * @param y The screen position of the content's top edge.
+   * @param zoom The zoom, brought within its limits.
+   */
+  public constructor(x: number, y: number, zoom: number);
+
+  /**
+   * Brings a zoom within {@link CanvasView.minimumZoom} and
+   * {@link CanvasView.maximumZoom}.
+   *
+   * @param zoom The zoom.
+   * @returns The zoom within its limits.
+   */
+  public static clampZoom(zoom: number): number;
+
+  /**
+   * The view that shows the whole content in an area of the screen: centred
+   * across, centred down or at the area's top as the alignment says, at the
+   * largest zoom that fits, never above {@link CanvasView.fitZoom}. Content
+   * that doesn't fit even at the smallest zoom starts at the area's start;
+   * empty content, or an empty area, shows at 100% at its start.
+   *
+   * @param content The content's box at 100%.
+   * @param area The area of the screen to fit it in.
+   * @param alignment Where the content stands down the area; centred when
+   * not given.
+   * @returns The view.
+   */
+  public static fit(content: CanvasBox, area: CanvasBox, alignment?: CanvasFitAlignment): CanvasView;
+
+  /**
+   * A wheel event's distance in CSS pixels.
+   *
+   * @param delta The event's `deltaX` or `deltaY`.
+   * @param deltaMode The event's `deltaMode`: pixels, lines of
+   * {@link CanvasView.lineHeight}, or pages.
+   * @param pageSize The CSS pixels a page counts, such as the canvas's height.
+   * @returns The distance.
+   */
+  public static wheelPixels(delta: number, deltaMode: number, pageSize: number): number;
+
+  /**
+   * The zoom factor for a wheel's distance: in for a distance up, out for one
+   * down, at most {@link CanvasView.wheelZoomStep} either way.
+   *
+   * @param deltaPixels The distance, from {@link CanvasView.wheelPixels}.
+   * @returns The factor to multiply the zoom by.
+   */
+  public static wheelZoomFactor(deltaPixels: number): number;
+
+  /**
+   * Moves the view.
+   *
+   * @param dx The distance across, in screen CSS pixels.
+   * @param dy The distance down, in screen CSS pixels.
+   * @returns The moved view.
+   */
+  public panBy(dx: number, dy: number): CanvasView;
+
+  /**
+   * Zooms around a point of the screen, which keeps the content under it.
+   *
+   * @param zoom The new zoom, brought within its limits.
+   * @param pointX The point across, in screen CSS pixels.
+   * @param pointY The point down, in screen CSS pixels.
+   * @returns The zoomed view.
+   */
+  public zoomAt(zoom: number, pointX: number, pointY: number): CanvasView;
+
+  /**
+   * Moves the view so a point of the content stands at the middle of an
+   * area, at the same zoom.
+   *
+   * @param contentX The point across, in the content's CSS pixels at 100%.
+   * @param contentY The point down, in the content's CSS pixels at 100%.
+   * @param width The area's width, in screen CSS pixels.
+   * @param height The area's height, in screen CSS pixels.
+   * @returns The moved view.
+   */
+  public centreOn(contentX: number, contentY: number, width: number, height: number): CanvasView;
+
+  /**
+   * The content an area from the screen's origin shows.
+   *
+   * @param width The area's width, in screen CSS pixels.
+   * @param height The area's height, in screen CSS pixels.
+   * @returns The box, in the content's CSS pixels at 100%.
+   */
+  public visible(width: number, height: number): CanvasBox;
+
+  /**
+   * Where a box of the content shows on the screen.
+   *
+   * @param box The box, in the content's CSS pixels at 100%.
+   * @returns The box, in screen CSS pixels.
+   */
+  public toScreen(box: CanvasBox): CanvasBox;
 }
 
 /**

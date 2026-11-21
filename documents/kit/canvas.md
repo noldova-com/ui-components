@@ -1,0 +1,42 @@
+# Canvas
+
+**Scope:** The kit's pan-and-zoom canvas and its overview map: their default geometry, the text role they use, and their surface and behavior.
+
+The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
+
+## Default geometry
+
+The owner sizes the canvas; it is at least 12rem high, with a 1px `--nol-card-border` border and a large radius, and clips its content.
+Its content sits on one plane, laid out at 100% with 1rem padding, which the canvas moves and scales from its top-left corner.
+The toolbar stands `space-2`, 0.5rem, inside the canvas's top-left corner: a panel with a 1px card border, a large radius and `space-1` padding and gaps, holding zoom out, the zoom as a percentage at least 3rem wide, zoom in, Fit with its icon, 100% and the map's toggle.
+The hint, "Drag to move · scroll to pan · pinch or Ctrl+scroll to zoom", follows it `space-1` away on the same kind of panel, with `space-1` by `space-2` padding, and wraps below it on a canvas too narrow for both; neither takes the pointer between them.
+The overview map stands `space-2` inside the canvas's bottom-right corner: its drawing 7rem high, or 14rem wide and less high for wider content, never stretched, in the content's proportions, inside a 1px card border and a medium radius.
+Fit leaves the band of the toolbar and the hint at the top and, while the map shows, the band of the map at its full 7rem height clear, whatever height the map has at that moment, and `space-2` at each side, so no item stands under either.
+
+## Text role
+
+Code, in the mono font, for the zoom percentage; small, in the muted text color, for the hint; the buttons take their own.
+
+## Surface and behavior
+
+The canvas is the window surface with a dot grid in the menu border color every 1.5rem, which moves with a pan; the toolbar and the map are the panel surface.
+On the map, each item marked with `nolCanvasItem` is a box in the badge color with a 1px radius, and the visible area a 1px rectangle in the accent color with a 0.125rem radius.
+Under forced colors, the borders are `CanvasText`, the grid goes, the map's boxes are `GrayText` and its rectangle a 2px `Highlight` line on `Canvas`.
+
+The zoom runs from 25% to 200%.
+The wheel and a trackpad's scroll pan; Shift with the wheel pans sideways where the system hasn't turned it already; Ctrl or Cmd with the wheel, and a trackpad's pinch, which arrives as such a wheel, zoom around the pointer by e^(−0.01 × the wheel's pixels), doubling about every 70px of wheel, and by at most twice or half per event.
+Safari's trackpad pinch arrives as gesture events rather than a wheel, and the canvas doesn't handle them: in Safari, Ctrl or Cmd with the wheel zooms.
+A wheel that counts lines moves 16px a line, and one that counts pages the canvas's height.
+Dragging the background pans once the pointer has moved 4px, with the pointer captured; a press on a button, a link, a field, a label, editable text, the toolbar, the map or an element marked `data-nol-canvas-no-pan` never starts one, nor does any button but the primary.
+Two pointers zoom around their middle by the change in their distance.
+A drag or a pinch ends when its pointer is released, cancelled or loses its capture, when a move comes with no button down, and when the window loses the focus.
+With the focus on the canvas itself, not on a control inside it, the arrow keys pan by 3rem, plus and minus zoom by 1.2 times around the middle, and 0 fits; with Ctrl, Alt or Cmd these keys are left to the page.
+When the focus moves to an element on the plane outside the free area, the canvas pans just enough to show it there, ignoring less than half a pixel, or to its start when it is larger, from the view it is moving to rather than the one last drawn, and draws that pan at once, so the browser finds the element shown and scrolls nothing around it; the canvas itself never scrolls.
+The toolbar's zoom buttons zoom by 1.2 times around the middle, 100% returns to actual size around the middle, and Fit shows the whole content, centred across and, by `fitAlignment`, centred down or at the top of the free area, never above 100%; content too large even at 25% starts at the area's top-left.
+The canvas fits its content once the content first has a size, and keeps its view through later resizes.
+A press on the map outside its rectangle centres that spot, on the press rather than on a click, since a drag on the map starts with that same press; dragging on the map then moves the view with the pointer; the view's rectangle stops at the map's edge. Enter or Space on the map fits.
+The map's toggle shows or hides the map, pressed while it shows.
+
+The canvas is a focusable region named by its owner's label, described as a canvas, with its keys as its keyboard shortcuts and a focus ring inside its border.
+The toolbar is a toolbar named Canvas view, with one Tab stop and arrow keys between its controls, and the zoom percentage a polite live region.
+The map is a button named "Overview map: click a spot to move there", in the Tab order after the toolbar, its drawing hidden from assistive technology.
