@@ -1283,10 +1283,17 @@ describe("MarkdownViewComponent", () => {
       const changes = new MutationObserver(t => records.push(...t));
       const changedNodes = (): number => records.splice(0).concat(changes.takeRecords())
         .reduce((sum, t) => sum + (t.type === "childList" ? t.addedNodes.length + t.removedNodes.length : 1), 0);
+      const shownText = (): TreeWalker => document.createTreeWalker(shownView(), NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+        acceptNode: t => t instanceof Text ? NodeFilter.FILTER_ACCEPT
+          : t instanceof HTMLElement && !t.hidden && !t.classList.contains(Resources.codeBlockHeaderClass) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT
+      });
       let shown = 0;
       const revealedNow = (): number => {
         const before = shown;
-        shown = visible().length;
+        const text = shownText();
+        shown = 0;
+        for (let node = text.nextNode(); !Object.isNull(node); node = text.nextNode())
+          shown += node.textContent?.length ?? 0;
         return shown - before;
       };
       const ends = [
