@@ -141,8 +141,9 @@ describe("CanvasComponent", () => {
         AppearanceFixture.expectPixels(frame.right - overview.right, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width"));
         AppearanceFixture.expectPixels(Math.max(map().clientHeight / 7, map().clientWidth / 14), AppearanceFixture.toPixels(1));
         AppearanceFixture.expectPixels(tip.left - toolbar.right, AppearanceFixture.measureLook("space-1"));
-        expect([tip.top, getComputedStyle(hint()).backgroundColor, getComputedStyle(hint()).color, icon.width > 0, icon.right <= button("fit").getBoundingClientRect().right])
-          .toEqual([toolbar.top, AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "text-muted"), true, true]);
+        AppearanceFixture.expectPixels(tip.top + tip.height / 2, toolbar.top + toolbar.height / 2);
+        expect([getComputedStyle(hint()).backgroundColor, getComputedStyle(hint()).color, icon.width > 0, icon.right <= button("fit").getBoundingClientRect().right])
+          .toEqual([AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "text-muted"), true, true]);
         expect(getComputedStyle(canvas()).backgroundImage).toContain(AppearanceFixture.readColor(theme, mode, "menu-border"));
       });
 
