@@ -20,7 +20,7 @@ Code, in the mono font, for the zoom percentage; small, in the muted text color,
 ## Surface and behavior
 
 The canvas is the window surface with a dot grid in the menu border color every 1.5rem, which moves with a pan; the toolbar and the map are the panel surface.
-On the map, each item is a box in the badge color with a 1px radius, and the visible area a 1px rectangle in the accent color with a 0.125rem radius. An item is an element marked with `nolCanvasItem` and declared inside the canvas, in its content or in a component the content renders, at any depth, while it renders inside the canvas; its box follows it as it is added, removed, resized or moved.
+On the map, each item is a box in the badge color with a 1px radius, and the visible area a 1px rectangle in the accent color with a 0.125rem radius. An item is an element marked with `nolCanvasItem` and declared inside the canvas, in its content or in a component the content renders, at any depth, while it renders inside the canvas; its box follows it as it is added, removed, resized or moved, measured at most once a frame however many changes the frame brings, and the map redraws only when a box changed.
 Under forced colors, the borders are `CanvasText`, the grid goes, the map's boxes are `GrayText` and its rectangle a 2px `Highlight` line on `Canvas`.
 
 The zoom runs from 25% to 200%.
