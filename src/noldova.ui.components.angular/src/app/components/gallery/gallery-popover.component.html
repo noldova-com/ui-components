@@ -19,7 +19,13 @@ LICENSE file in the root directory of this source tree.
     <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="popover">{{ text.popoverTrigger }}</button>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hoverTriggerCaption">
-    <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="popover" [nolPopoverOpenOn]="openings.Hover">{{ text.popoverHoverTrigger }}</button>
+    <button type="button" nol-button [variant]="variants.Secondary" [nolPopoverTrigger]="hoverCard" [nolPopoverOpenOn]="openings.Hover">{{ text.popoverHoverTrigger }}</button>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hoverCardCaption">
+    <div nolPopover class="nol-gallery-popover nol-gallery-hover-card" [label]="text.popoverLabel">
+      <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
+      <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
+    </div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
     <div nolPopover class="nol-gallery-popover" nolGalleryFocus="button" [label]="text.popoverLabel">
@@ -35,6 +41,12 @@ LICENSE file in the root directory of this source tree.
   </nol-gallery-cell>
   <ng-template #popover>
     <div nolPopover [label]="text.popoverLabel">
+      <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
+      <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
+    </div>
+  </ng-template>
+  <ng-template #hoverCard>
+    <div nolPopover class="nol-gallery-hover-card" [label]="text.popoverLabel">
       <h2 class="nol-gallery-popover-title">{{ text.popoverTitle }}</h2>
       <p class="nol-gallery-popover-text">{{ text.popoverBody }}</p>
     </div>

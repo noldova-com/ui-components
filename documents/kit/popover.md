@@ -25,5 +25,5 @@ The code that uses a popover can set four variables on its `nolPopover` element;
 - `--nol-popover-preferred-width`: its preferred width, still clamped to the overlay bounds, such as `18rem` for a hover card; by default the theme's `--nol-popover-width`.
 - `--nol-popover-surface`, `--nol-popover-border` and `--nol-popover-text`: its surface, its border's color and its text's color; by default the menu's, `--nol-menu`, `--nol-menu-border` and `--nol-menu-text`.
 
-A popover that opens on hover with details about an item, as a hover card does, takes the hover surface the tooltip and the link reference card use: `--nol-hover-widget`, `--nol-hover-widget-border` and `--nol-text`.
+The kit gives every popover the menu's look; a hover card, a popover that opens on hover with details about an item, sets these variables to the hover surface the tooltip and the link reference card use: `--nol-hover-widget`, `--nol-hover-widget-border` and `--nol-text`.
 Under forced colors it takes the system's colors, as a popover on the menu's surface does.
