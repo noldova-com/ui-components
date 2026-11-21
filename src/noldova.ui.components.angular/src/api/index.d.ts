@@ -882,6 +882,28 @@ export declare enum PlanStepStatus {
 }
 
 /**
+ * What opens a {@link PopoverTriggerDirective}'s popover.
+ */
+export declare enum PopoverOpening {
+  /**
+   * A click on the host, or Enter or Space on it, opens the popover and moves
+   * the focus into it; the next click closes it.
+   */
+  Click = "Click",
+
+  /**
+   * The pointer resting on the host for the tooltip's delay, or the host
+   * taking the focus from the keyboard, opens the popover, leaving the focus
+   * where it is. The pointer can cross from the host into the popover, and
+   * back, without closing it; it closes once the pointer leaves both, or,
+   * when the focus opened it, once the focus leaves both. A tap opens and
+   * closes it as {@link PopoverOpening.Click} does, since touch has no
+   * hover, and a mouse click on the host does nothing.
+   */
+  Hover = "Hover"
+}
+
+/**
  * The direction of a {@link SashComponent}'s bar.
  */
 export declare enum SashOrientation {
@@ -10066,9 +10088,12 @@ export declare class PopoverDirective {
 
 /**
  * Opens a popover, a non-modal dialog anchored to its host, when the host is
- * clicked, and closes it on the next click. The template bound to
+ * clicked, and closes it on the next click, or, with `nolPopoverOpenOn` set
+ * to {@link PopoverOpening.Hover}, when the pointer rests on the host or the
+ * host takes the focus from the keyboard. The template bound to
  * `nolPopoverTrigger` holds the popover, whose root uses
- * {@link PopoverDirective}; the trigger focuses that root once it shows. The
+ * {@link PopoverDirective}; on a click the trigger focuses that root once it
+ * shows. The
  * popover closes on a press outside both it and the host, on Escape that
  * nothing inside handled, when the host is hidden or scrolled away, and when
  * the trigger is destroyed. Its export name is `nolPopoverTrigger`, and it
@@ -10095,6 +10120,13 @@ export declare class PopoverTriggerDirective {
    * popover opens.
    */
   public readonly alignment: InputSignal<OverlayAlignment>;
+
+  /**
+   * What opens the popover, `nolPopoverOpenOn`; a click when not bound. On
+   * {@link PopoverOpening.Hover}, Escape closes the popover and leaves the
+   * focus where it is, or returns it to the host when it was inside.
+   */
+  public readonly openOn: InputSignal<PopoverOpening>;
 
   /**
    * Emits, as `opened`, each time the popover opens.
