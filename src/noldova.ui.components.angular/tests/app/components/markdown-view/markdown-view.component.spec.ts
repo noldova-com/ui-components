@@ -1269,7 +1269,7 @@ describe("MarkdownViewComponent", () => {
       expect([reached.includes("line3 "), reached.includes("line29"), [...written].sort((a, b) => a - b)]).toEqual([true, false, [29, 30]]);
     });
 
-    it("streams a 10,000-character reply in 100-character batches through its first and last 1,000 characters and 1,000-character batches between, parsing only each batch and the text not yet settled, and changing nodes after each batch and in each frame in proportion to the text it reveals", async ({ annotate }) => {
+    it("streams a 10,000-character reply in 100-character batches through its first and last 1,000 characters and 1,000-character batches between, parsing only each batch and the text not yet settled, and changing nodes after each batch and in each frame in proportion to the text it adds or reveals", async ({ annotate }) => {
       const section = (index: number): string => `## Step ${index}\n\nThe build **passed** on step ${index}, with *one* warning about \`config.json\`.\n\n- First item\n- Second item with **bold**\n\n`
         + `\`\`\`ts\nconst step${index} = await runAsync(${index});\n\`\`\`\n\n| Name | Value |\n|---|---:|\n| step | ${index} |\n\n`;
       let reply = String.empty;
@@ -1289,7 +1289,7 @@ describe("MarkdownViewComponent", () => {
         ...Array.from({ length: 10 }, (_, i) => 9_000 + 100 * (i + 1))
       ];
       const parsed: { readonly batch: number; readonly characters: number }[] = [];
-      const changed: { readonly revealed: number; readonly nodes: number }[] = [];
+      const changed: { readonly added: number; readonly revealed: number; readonly nodes: number }[] = [];
       const times: number[] = [];
       let previous = 0;
       changes.observe(shownView(), { subtree: true, childList: true, characterData: true, attributes: true });
@@ -1303,14 +1303,14 @@ describe("MarkdownViewComponent", () => {
         await Promise.resolve();
         times.push(performance.now() - start);
         parsed.push({ batch: end - previous, characters: parses.flatMap(t => t.mock.calls).reduce((sum, [text]) => sum + text.length, 0) });
-        changed.push({ revealed: visible().length - shown, nodes: changedNodes() });
+        changed.push({ added: end - previous, revealed: visible().length - shown, nodes: changedNodes() });
         previous = end;
         for (let frame = 0; frame < 6; frame++) {
           shown = visible().length;
           const before = performance.now();
           vi.advanceTimersByTime(16);
           times.push(performance.now() - before);
-          changed.push({ revealed: visible().length - shown, nodes: changedNodes() });
+          changed.push({ added: 0, revealed: visible().length - shown, nodes: changedNodes() });
         }
       }
       changes.disconnect();
@@ -1319,13 +1319,12 @@ describe("MarkdownViewComponent", () => {
       while (!Object.isNull(nodes.nextNode()))
         drawn++;
       const sectionLength = section(100).length;
-      const nodesPerCharacter = drawn / visible().length;
-      const nodeBound = (revealed: number): number => 2 * (drawn / sections + Math.max(0, revealed) * nodesPerCharacter);
+      const nodeBound = (added: number, revealed: number): number => 2 * (drawn / sections + added * drawn / previous + Math.max(0, revealed) * drawn / visible().length);
       await annotate(`Slowest step ${Math.max(...times).toFixed(1)} ms of script, median ${[...times].sort((a, b) => a - b)[times.length >> 1]?.toFixed(2)} ms, over ${times.length} steps; at most ${Math.max(...parsed.map(t => t.characters - t.batch))} characters parsed beyond a batch's own and ${Math.max(...changed.map(t => t.nodes))} nodes changed in a step, of ${drawn} nodes drawn for ${sections} sections`);
 
       expect([parsed.length, changed.length, visible().length > 0]).toEqual([28, 196, true]);
       expect(parsed.filter(t => t.characters > t.batch + 2 * sectionLength)).toEqual([]);
-      expect(changed.filter(t => t.nodes > nodeBound(t.revealed))).toEqual([]);
+      expect(changed.filter(t => t.nodes > nodeBound(t.added, t.revealed))).toEqual([]);
     });
   });
 
