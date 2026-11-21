@@ -855,12 +855,13 @@ describe("ToolCallComponent", () => {
     expect([Math.sign(down), output().scrollTop]).toEqual([1, down]);
   });
 
-  it("keeps waiting on a key that doesn't move the output when an earlier scroll's end reaches it, and ends at the first scroll end that finds it moved", async () => {
+  it("keeps waiting on a key that doesn't move the output when an earlier scroll's end reaches it, and ends at the first scroll end after the key that finds it moved", async () => {
     AppearanceFixture.apply();
     await renderAsync(callOf({ output: linesOf(60) }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true).withAllLines(t.call())));
     const area = output();
     area.focus();
     const leftover = new Promise(resolve => area.addEventListener("scrollend", resolve, { once: true }));
+    const released = new Promise(resolve => area.addEventListener("keyup", resolve, { once: true }));
     area.scrollTo({ top: 1, behavior: "instant" });
     area.scrollTo({ top: 0, behavior: "instant" });
     let isSettled = false;
@@ -868,7 +869,7 @@ describe("ToolCallComponent", () => {
       isSettled = true;
     });
 
-    await leftover;
+    await Promise.all([leftover, released]);
     const pending = [isSettled, area.scrollTop];
     area.scrollTo({ top: 40, behavior: "instant" });
 
