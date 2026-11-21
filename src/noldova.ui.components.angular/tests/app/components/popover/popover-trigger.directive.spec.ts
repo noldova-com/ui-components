@@ -428,6 +428,26 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     expect(document.activeElement).toBe(button("after"));
   });
 
+  it("keeps a hovered popover open once the keyboard focuses its trigger, until the focus leaves, and closes on a pointer leaving for no element", async () => {
+    await renderAsync();
+
+    await hoverAsync();
+    button("before").focus();
+    await userEvent.tab();
+    await fixture.whenStable();
+    card().dispatchEvent(pointer("mouse", document.body));
+    await settleAsync();
+    const heldByFocus = surface() !== null;
+    await userEvent.tab();
+    await settleAsync();
+    const afterTab = surface();
+    await hoverAsync();
+    card().dispatchEvent(pointer("mouse", null));
+    await settleAsync();
+
+    expect([heldByFocus, afterTab, surface()]).toEqual([true, null, null]);
+  });
+
   it("closes on Escape, leaving the focus on the trigger, or bringing it back to the trigger from inside the popover, and when the focus leaves for nowhere", async () => {
     await renderAsync();
 
