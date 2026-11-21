@@ -259,6 +259,9 @@ Each but the display text pair is a look key, which a theme can change like the 
 | `--nol-list-max-height` | `list-max-height` | 18rem | A menu-like list's scroll height in a view; the mention list keeps `--nol-mention-list-height` |
 | `--nol-diff-view-max-height` | `diff-view-max-height` | 24rem | An inline diff's scroll height |
 | `--nol-diff-view-padding-block` | `diff-view-padding-block` | 0.375rem | An inline diff panel's block inset |
+| `--nol-dock-left-width` | `dock-left-width` | 26rem | The left dock's width before it is resized |
+| `--nol-dock-right-width` | `dock-right-width` | 25rem | The right dock's width before it is resized |
+| `--nol-dock-bottom-height` | `dock-bottom-height` | 12.5rem | The bottom dock's height before it is resized, low enough that a first-run view above it shows its actions |
 | `--nol-text-display` | none | 1.75rem | Display text, such as a code shown to type elsewhere |
 | `--nol-letter-spacing-display` | none | 0.12em | Between the letters of display text |
 

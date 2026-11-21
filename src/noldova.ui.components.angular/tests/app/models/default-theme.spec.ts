@@ -108,7 +108,7 @@ describe("DefaultTheme", () => {
       ["panel-card-margin", "0.25rem"],
       ["dock-left-width", "26rem"],
       ["dock-right-width", "25rem"],
-      ["dock-bottom-height", "16.25rem"],
+      ["dock-bottom-height", "12.5rem"],
       ["dock-min-size", "10rem"],
       ["dock-strip-size", "2.75rem"],
       ["document-min-size", "13.75rem"],
