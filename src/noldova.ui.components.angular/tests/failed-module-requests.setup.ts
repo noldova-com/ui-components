@@ -11,10 +11,13 @@ import { commands } from "vitest/browser";
 declare module "vitest/browser" {
   interface BrowserCommands {
     watchFailedModuleRequests: () => Promise<readonly string[]>;
+    // Marks a module URL a spec fails on purpose, so the run's closing line of failed modules leaves it out.
+    expectFailedModuleRequest: (url: string) => Promise<void>;
     // A localhost port nothing listens on, for the spec of a request whose connection is refused.
     closedPort: () => Promise<number>;
     // The lines a recorder of its own prints for a refused module request with the probe named, "rejecting", "failing listing" or "hanging listing", once its run closed.
-    scriptedRefusal: (probe: string) => Promise<readonly string[]>;
+    // With isExpected, the request is marked as failing on purpose first; with count, that many requests are refused.
+    scriptedRefusal: (probe: string, isExpected?: boolean, count?: number) => Promise<readonly string[]>;
     // The lines a recorder of its own prints for requests that stall in the scenario named, "crowd" or "alone", once its run closed.
     scriptedStall: (scenario: string, waitLimit?: number) => Promise<readonly string[]>;
     // What the probe read of a refused port after Node's event loop stalled past its limit: "connect", each localhost address's connect, or "listing", the listing.

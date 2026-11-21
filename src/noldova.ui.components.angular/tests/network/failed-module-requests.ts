@@ -21,7 +21,9 @@ import { ConnectionProbe } from "./connection-probe.ts";
 // so the listeners add no work of their own beyond these checks. A request of any type still open 10 s after it started is printed too, with the
 // other open requests it may wait behind, and again once it ends, so a stylesheet or module that never arrives names itself before its file's
 // import fails. A font request the browser fails prints with its network error, and the browser's warning for a font it couldn't decode prints
-// too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was.
+// too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was. Every spec file runs in one shared page, whose
+// module map keeps a failed module, so each later file that imports it fails to import too with no request of its own: once the run closes, the
+// failed modules are printed again together, beside the failed files they took with them, leaving out those a spec marked as failing on purpose.
 export class FailedModuleRequests {
   private static readonly MODULE: string = "script";
   private static readonly FONT: string = "font";
@@ -42,6 +44,8 @@ export class FailedModuleRequests {
   private static readonly LISTED_OTHERS: number = 20;
   // A run prints its first stalls only, and counts the rest, so a run that holds many requests doesn't flood its log.
   private static readonly PRINTED_STALLS: number = 20;
+  // The run's closing line lists its first failed modules only, and counts the rest.
+  private static readonly LISTED_FAILED_MODULES: number = 20;
   private static readonly FINISHED: string = "finished";
   // The JavaScript MIME type essences the WHATWG MIME Sniffing standard lists; the browser runs a module script only with one of them.
   private static readonly JAVASCRIPT: ReadonlySet<string> = new Set(["application/ecmascript", "application/javascript", "application/x-ecmascript",
@@ -59,6 +63,8 @@ export class FailedModuleRequests {
   private readonly openRequests: Map<IBrowserRequest, number> = new Map();
   private readonly printedStalls: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly countedStalls: WeakSet<IBrowserRequest> = new WeakSet();
+  private readonly failedModules: [url: string, failure: string][] = [];
+  private readonly expectedModules: Set<string> = new Set();
   private stallsPrinted: number = 0;
   private unprintedStalls: number = 0;
   private readonly stallLimit: number;
@@ -66,6 +72,11 @@ export class FailedModuleRequests {
 
   // The browser command: listens on the page that calls it, once per page, and gives every line printed so far.
   public readonly watch: (context: IBrowserCommandContext) => readonly string[] = context => this.watchPage(context.page, context.project.vitest);
+
+  // The browser command a spec calls before it fails a module request on purpose: the run's closing line leaves that module out.
+  public readonly expectFailure: (context: unknown, url: string) => void = (_context, url) => {
+    this.expectedModules.add(url);
+  };
 
   // The probe is ConnectionProbe unless given, as tests/network/scripted-refusal.ts gives one that fails.
   // The stall limit and check period are tests/network/scripted-stall.ts's to shorten.
@@ -83,7 +94,7 @@ export class FailedModuleRequests {
         clearInterval(check);
         if (this.unprintedStalls > 0)
           this.log(`Stalled requests not printed, past the first ${FailedModuleRequests.PRINTED_STALLS}: ${this.unprintedStalls}`, run);
-        return this.probedAsync();
+        return this.probedAsync().then(() => this.printFailedModules(run));
       });
     }
     if (!this.pages.has(page)) {
@@ -106,7 +117,9 @@ export class FailedModuleRequests {
     if (request.resourceType() !== FailedModuleRequests.MODULE || this.printedResponses.has(request))
       return;
     const error = request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR;
-    this.print(`Failed module request at ${new Date().toISOString()}: ${error} ${request.url()}`, run);
+    const at = new Date().toISOString();
+    this.failedModules.push([request.url(), `${error} at ${at}`]);
+    this.print(`Failed module request at ${at}: ${error} ${request.url()}`, run);
     const port = new URL(request.url()).port;
     if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "") {
       const printing = this.printServerAsync(Number(port), request.url(), run);
@@ -144,7 +157,19 @@ export class FailedModuleRequests {
     if (status < FailedModuleRequests.FIRST_ERROR_STATUS && (status >= FailedModuleRequests.FIRST_REDIRECT_STATUS || isJavaScript))
       return;
     this.printedResponses.add(response.request());
-    this.print(`Failed module response at ${new Date().toISOString()}: ${status} ${type} ${response.url()}`, run);
+    const at = new Date().toISOString();
+    this.failedModules.push([response.url(), `${status} ${type} at ${at}`]);
+    this.print(`Failed module response at ${at}: ${status} ${type} ${response.url()}`, run);
+  }
+
+  private printFailedModules(run: IVitestRun): void {
+    const failed = this.failedModules.filter(([url]) => !this.expectedModules.has(url));
+    if (failed.length === 0)
+      return;
+    const listed = failed.slice(0, FailedModuleRequests.LISTED_FAILED_MODULES).map(([url, failure]) => `${url} (${failure})`);
+    const unlisted = failed.length - listed.length;
+    this.log(`Module requests that failed in this run: ${listed.join(", ")}${unlisted === 0 ? "" : `, and ${unlisted} more`}. The spec files share one ` +
+      "page, which keeps a failed module, so each later spec file that imports one of these failed to import too, with no request of its own.", run);
   }
 
   // A request of any type, a stylesheet or a fetch too, still open past the limit is printed once, with the other open requests, oldest first.

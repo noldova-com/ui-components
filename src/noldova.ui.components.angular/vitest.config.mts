@@ -38,6 +38,8 @@ const cacheDir = fileURLToPath(new URL("../../node_modules/.vite", import.meta.u
 const hangLimit = 30_000;
 // Every poll's bound: half the hang limit, so a poll that never passes fails first, naming what it waited for, and stops before the test's limit.
 const pollLimit = hangLimit / 2;
+// One recorder gives both the command that watches the page and the one a spec marks a module it fails on purpose with.
+const failedModuleRequests = new FailedModuleRequests();
 
 // The Angular builder makes each test project from this file's test, resolve, optimizeDeps and plugins alone, so the project's Vite cache comes from a plugin;
 // "pre" sets it before Vitest adds its vitest/<project> folder under it.
@@ -51,7 +53,7 @@ export default defineConfig({
     // Node resolves it on Windows, and a browser request was at times refused there while Node still connected on ::1.
     api: { port: 24315, host: "127.0.0.1" },
     // __vitest_screenshot replaces Vitest's own screenshot command, so a failure screenshot whose name is too long for a file still saves.
-    browser: { commands: { watchFailedModuleRequests: new FailedModuleRequests().watch, closedPort: new ClosedPort().find, scriptedRefusal: new ScriptedRefusal().print,
+    browser: { commands: { watchFailedModuleRequests: failedModuleRequests.watch, expectFailedModuleRequest: failedModuleRequests.expectFailure, closedPort: new ClosedPort().find, scriptedRefusal: new ScriptedRefusal().print,
       scriptedStall: new ScriptedStall().print, stalledProbe: new StalledProbe().read, __vitest_screenshot: new ShortScreenshotNames().screenshot } },
     attachmentsDir: fileURLToPath(new URL("../../.vitest/attachments", import.meta.url)),
     expect: { poll: { timeout: pollLimit } },
