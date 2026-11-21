@@ -50,6 +50,7 @@ export class PopoverTriggerDirective {
   private readonly document: Document = inject(DOCUMENT);
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
   private readonly pace: TooltipPace = inject(TooltipPace);
+  private readonly focus: FocusMonitor = inject(FocusMonitor);
   private readonly open: WritableSignal<boolean> = signal(false);
   private overlay: AnchoredOverlay | null = null;
   private pointerType: string = String.empty;
@@ -66,14 +67,13 @@ export class PopoverTriggerDirective {
   public readonly isOpen: Signal<boolean> = this.open.asReadonly();
 
   public constructor() {
-    const focus = inject(FocusMonitor);
-    const subscription = focus.monitor(this.host).subscribe(origin => {
+    const subscription = this.focus.monitor(this.host).subscribe(origin => {
       if (origin === Resources.keyboardFocusOrigin && this.opensOnHover)
         this.show(false, true);
     });
     inject(DestroyRef).onDestroy(() => {
       subscription.unsubscribe();
-      focus.stopMonitoring(this.host);
+      this.focus.stopMonitoring(this.host);
       this.close();
     });
   }
@@ -95,7 +95,7 @@ export class PopoverTriggerDirective {
     this.overlay?.dispose();
     this.overlay = null;
     if (hadFocus)
-      this.host.focus();
+      this.focus.focusVia(this.host, PopoverTriggerResources.returnedFocusOrigin);
   }
 
   protected notePointer(event: PointerEvent): void {
