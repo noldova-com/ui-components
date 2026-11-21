@@ -12,12 +12,17 @@ describe("failed module request setup", () => {
   // Port 1 is one the browser refuses to connect to, so a request there fails in the browser at once, before any server answers.
   const refusedAt = (name: string): string => `http://localhost:1/${name}-${crypto.randomUUID()}.js`;
   // The recorder gives back failure lines only; the filter keeps these specs to the failure lines should that change.
+  // Each module a spec fails here is marked first, so the run's closing line, which lists the modules that failed, leaves it out.
+  const failImportAsync = async (url: string): Promise<void> => {
+    await commands.expectFailedModuleRequest(url);
+    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+  };
   const printedFor = async (url: string): Promise<readonly string[]> => (await commands.watchFailedModuleRequests()).filter(line => line.startsWith("Failed module ") && line.endsWith(` ${url}`));
 
   it("prints a module request the browser fails once, with when it failed, its network error and its URL", async () => {
     const url = refusedAt("module");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
 
     await expect.poll(() => printedFor(url)).toHaveLength(1);
     const printed = await printedFor(url);
@@ -28,9 +33,9 @@ describe("failed module request setup", () => {
     const url = new URL(`/tests/missing-module-${crypto.randomUUID()}.js`, location.origin).href;
     const later = refusedAt("later");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
     // The browser cancels the request after its error response; once a later failure is printed, that cancel would have been printed too.
-    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await failImportAsync(later);
     await expect.poll(() => printedFor(later)).toHaveLength(1);
 
     const printed = await printedFor(url);
@@ -44,9 +49,9 @@ describe("failed module request setup", () => {
     const url = page.href;
     const later = refusedAt("later");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
     // As after an error status, a cancel of the request would come before a later failure's line.
-    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await failImportAsync(later);
     await expect.poll(() => printedFor(later)).toHaveLength(1);
 
     const printed = await printedFor(url);
@@ -58,7 +63,7 @@ describe("failed module request setup", () => {
     const port = await commands.closedPort();
     const url = `http://localhost:${port}/refused-${crypto.randomUUID()}.js`;
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
 
     await expect.poll(() => printedFor(url)).toHaveLength(2);
     const printed = await printedFor(url);
@@ -69,22 +74,41 @@ describe("failed module request setup", () => {
   it("prints, when the port's probe throws, that the port couldn't be probed and why, in place of what it held, and the run's close waits for it", async () => {
     const printed = await commands.scriptedRefusal("rejecting");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[0]).toMatch(/^Failed module request at \S+: net::ERR_CONNECTION_REFUSED http:\/\/localhost:\d+\/scripted-/u);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: the port couldn't be probed: localhost couldn't be resolved\. http:\/\/localhost:\d+\/scripted-/u);
+  });
+
+  it("prints once the run closes, after what the ports held, every module request that failed, with its error and when, as each later import of it in the shared page fails too", async () => {
+    const printed = await commands.scriptedRefusal("rejecting");
+
+    expect(printed.at(-1)).toMatch(/^Module requests that failed in this run: http:\/\/localhost:\d+\/scripted-\S+ \(net::ERR_CONNECTION_REFUSED at \S+Z\)\. The spec files share one page, which keeps a failed module, so each later spec file that imports one of these failed to import too, with no request of its own\.$/u);
+  });
+
+  it("prints no closing line when every module request that failed was marked as failing on purpose", async () => {
+    const printed = await commands.scriptedRefusal("rejecting", true);
+
+    expect([printed.length, printed.some(line => line.startsWith("Module requests that failed in this run: "))]).toEqual([2, false]);
+  });
+
+  it("lists the first 20 failed modules in the closing line and counts the rest", async () => {
+    const printed = await commands.scriptedRefusal("rejecting", false, 22);
+    const closing = printed.at(-1) ?? "";
+
+    expect([closing.match(/http:\/\/localhost:\d+\/scripted-/gu)?.length, /\), and 2 more\. The spec files share one page/u.test(closing)]).toEqual([20, true]);
   });
 
   it("prints, when the port's sockets can't be listed, what Node's connections found and why the listing failed", async () => {
     const printed = await commands.scriptedRefusal("failing listing");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: .*no-such-listing-.*ENOENT.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
   it("prints, when the port's socket listing never ends, that it couldn't be listed once the listing's limit stopped it, and the run's close waits for that", async () => {
     const printed = await commands.scriptedRefusal("hanging listing");
 
-    expect(printed).toHaveLength(2);
+    expect(printed).toHaveLength(3);
     expect(printed[1]).toMatch(/^Failed module request's server at \S+Z, port \d+: Node connects \S+ ECONNREFUSED(, \S+ ECONNREFUSED)*; the sockets couldn't be listed: The operation was aborted\b.* http:\/\/localhost:\d+\/scripted-/u);
   });
 
@@ -113,11 +137,12 @@ describe("failed module request setup", () => {
     const printed = await commands.scriptedStall("crowd");
     const ends = printed.filter(line => !line.startsWith("Stalled request at "));
 
-    expect(ends).toHaveLength(4);
+    expect(ends).toHaveLength(5);
     expect(ends[0]).toMatch(/^Stalled request ended at \S+Z: finished after \d+\.\d s, stylesheet http:\/\/localhost:24316\/styles\.css$/u);
     expect(ends[1]).toMatch(/^Stalled request ended at \S+Z: failed, net::ERR_ABORTED after \d+\.\d s, script http:\/\/localhost:24316\/chunk-0\.js$/u);
     expect(ends[2]).toMatch(/^Failed module request at \S+Z: net::ERR_ABORTED http:\/\/localhost:24316\/chunk-0\.js$/u);
     expect(ends[3]).toBe("Stalled requests not printed, past the first 20: 2");
+    expect(ends[4]).toMatch(/^Module requests that failed in this run: http:\/\/localhost:24316\/chunk-0\.js \(net::ERR_ABORTED at \S+Z\)\. /u);
   });
 
   it("prints a run's first 20 stalls and their ends alone, and once the run closes how many more it didn't print", async () => {
@@ -181,7 +206,7 @@ describe("failed module request setup", () => {
 
     await expect(fetch(fetched)).rejects.toThrow(TypeError);
     // The browser reports requests' ends in order, so once the module's is printed, the fetch's would have been printed before it.
-    await expect(import(/* @vite-ignore */ module)).rejects.toThrow(TypeError);
+    await failImportAsync(module);
     await expect.poll(() => printedFor(module)).toHaveLength(1);
 
     expect(await printedFor(fetched)).toEqual([]);
