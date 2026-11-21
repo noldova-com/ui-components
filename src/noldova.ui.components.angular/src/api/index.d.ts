@@ -10087,6 +10087,13 @@ export declare class PlanStep {
  * opens, `nolPopover`: a non-modal dialog with the dialog role, which the
  * trigger focuses once it shows. It is usually a host directive of the
  * popover's component.
+ *
+ * Four variables set on its element change its look, and unset keep it:
+ * `--nol-popover-preferred-width`, by default the theme's
+ * `--nol-popover-width`, still clamped to the overlay bounds; and
+ * `--nol-popover-surface`, `--nol-popover-border` and `--nol-popover-text`,
+ * by default the menu's surface, border and text colors. A hover card sets
+ * them to `--nol-hover-widget`, `--nol-hover-widget-border` and `--nol-text`.
  */
 export declare class PopoverDirective {
   /**
