@@ -48,7 +48,7 @@ export class TooltipPace {
     this.closedAt = this.timeSource.elapsed();
   }
 
-  private delayFor(isOtherShown: boolean): number {
+  public delayFor(isOtherShown: boolean): number {
     if (isOtherShown || (!Object.isNull(this.closedAt) && this.timeSource.elapsed() - this.closedAt <= TooltipPaceResources.tooltipNextWindow))
       return 0;
     return this.restDelay;

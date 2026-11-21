@@ -10,6 +10,7 @@ import { Component } from "@angular/core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
 import { GallerySize } from "../../enums/gallery-size.js";
+import { PopoverOpening } from "../../enums/popover-opening.js";
 import { ButtonComponent } from "../button/button.component.js";
 import { PopoverDirective } from "../popover/popover.directive.js";
 import { PopoverTriggerDirective } from "../popover/popover-trigger.directive.js";
@@ -28,4 +29,5 @@ export class GalleryPopoverComponent {
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly variants: typeof ButtonVariant = ButtonVariant;
+  protected readonly openings: typeof PopoverOpening = PopoverOpening;
 }
