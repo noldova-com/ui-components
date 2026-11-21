@@ -20,6 +20,7 @@ import { OverlaySide } from "../../../../src/app/models/overlay-side";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
@@ -31,7 +32,7 @@ import { TestTimeSource } from "../../../fixtures/test-time-source";
       <button type="button" class="trigger" [nolPopoverTrigger]="popover" [nolPopoverSide]="side" [nolPopoverAlignment]="alignment" (opened)="opens = opens + 1">Open</button>
     </div>
     <ng-template #popover>
-      <div nolPopover label="Details">
+      <div nolPopover label="Details" [attr.style]="look">
         <h2 class="title">Details</h2>
         <button type="button" class="inside">Inside</button>
       </div>
@@ -43,6 +44,7 @@ class PopoverHostComponent {
   public side: OverlaySide = OverlaySide.above;
   public alignment: OverlayAlignment = OverlayAlignment.End;
   public opens: number = 0;
+  public look: string | null = null;
 }
 
 describe("PopoverTriggerDirective", () => {
@@ -267,6 +269,49 @@ describe("PopoverTriggerDirective", () => {
         AppearanceFixture.expectLook(style.rowGap, theme, "space-2", "row-gap");
         expect(getComputedStyle(DomFixture.oneOf(DomFixture.present(surface()), ".title", Element)).color).toBe(AppearanceFixture.readColor(theme, mode, "menu-text"));
       });
+
+  const hoverLook = "--nol-popover-preferred-width: 18rem; --nol-popover-surface: var(--nol-hover-widget); --nol-popover-border: var(--nol-hover-widget-border); "
+    + "--nol-popover-text: var(--nol-text)";
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`takes the preferred width, surface, border and text its variables set, here a hover card's, from the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync();
+        fixture.componentInstance.look = hoverLook;
+        AppearanceFixture.apply(theme, mode);
+        const style = getComputedStyle(await openAsync());
+        const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const probe = document.createElement("div");
+        probe.style.color = "var(--nol-hover-widget-border)";
+        document.body.append(probe);
+        const border = getComputedStyle(probe).color;
+        probe.remove();
+
+        expect([style.backgroundColor, style.borderTopColor]).toEqual([AppearanceFixture.readColor(theme, mode, "hover-widget"), border]);
+        AppearanceFixture.expectPixels(Number.parseFloat(style.width), 18 * rem);
+        expect(getComputedStyle(DomFixture.oneOf(DomFixture.present(surface()), ".title", Element)).color).toBe(AppearanceFixture.readColor(theme, mode, "text"));
+      });
+
+  it("draws a popover its variables set in the system's colors under forced colors, as it draws one on the menu's surface", async () => {
+    const read = (element: HTMLElement): string[] => {
+      const style = getComputedStyle(element);
+      return [style.backgroundColor, style.borderTopColor, getComputedStyle(DomFixture.oneOf(element, ".title", Element)).color];
+    };
+    await renderAsync();
+    await ForcedColorsFixture.activateAsync();
+    try {
+      const menu = read(await openAsync());
+      await userEvent.keyboard("{Escape}");
+      await DomChangeFixture.untilAsync(() => expect(surface()).toBeNull());
+      fixture.componentInstance.look = hoverLook;
+      const hover = read(await openAsync());
+
+      expect(hover).toEqual(menu);
+      expect(menu[0]).not.toBe(menu[2]);
+    } finally {
+      await ForcedColorsFixture.resetAsync();
+    }
+  });
 
   it("keeps a popover too large for the window within its overlay wrapper less the margins, not the viewport, as it must beside classic scrollbars", async () => {
     OverlayWrapperFixture.showScrollbars();

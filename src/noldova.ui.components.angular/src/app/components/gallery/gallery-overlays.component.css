@@ -53,6 +53,13 @@
   overflow-wrap: anywhere;
 }
 
+.nol-gallery-hover-card {
+  --nol-popover-preferred-width: 18rem;
+  --nol-popover-surface: var(--nol-hover-widget);
+  --nol-popover-border: var(--nol-hover-widget-border);
+  --nol-popover-text: var(--nol-text);
+}
+
 .nol-gallery-mention-box {
   position: relative;
   border-radius: var(--nol-radius-small);
