@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, contentChildren, inject, input, model, signal, viewChild } from "@angular/core";
+import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, afterRenderEffect, computed, contentChildren, inject, input, model, signal, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -31,7 +31,6 @@ import { CanvasResources } from "./canvas.resources.js";
   imports: [ButtonComponent, CanvasMapComponent, IconButtonComponent, ToolbarDirective, ToolbarItemDirective],
   templateUrl: "./canvas.component.html",
   styleUrl: "./canvas.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     "role": "region",
     "tabindex": "0",

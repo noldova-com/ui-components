@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, type Signal, computed, inject, input, output } from "@angular/core";
+import { Component, DestroyRef, ElementRef, type Signal, computed, inject, input, output } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -20,7 +20,6 @@ import { CanvasMapResources } from "./canvas-map.resources.js";
   selector: "nol-canvas-map",
   templateUrl: "./canvas-map.component.html",
   styleUrl: "./canvas-map.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     "role": "button",
     "tabindex": "0",

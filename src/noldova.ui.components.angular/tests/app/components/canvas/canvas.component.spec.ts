@@ -435,6 +435,21 @@ describe("CanvasComponent", () => {
     expect(view()).toEqual(before);
   });
 
+  it("stops following a drag on its map once the system cancels the pointer", async () => {
+    await measuredAsync(24);
+    holdCapture(map());
+    [1, 2, 3].forEach(() => button("zoom-in").click());
+    await fixture.whenStable();
+    const drawn = mapView().getBoundingClientRect();
+    const [x, y] = [drawn.left + drawn.width / 2, drawn.top + drawn.height / 2];
+    pointer(map(), "pointerdown", 24, x, y);
+    document.dispatchEvent(new PointerEvent("pointercancel", { pointerId: 24 }));
+    const before = view();
+    document.dispatchEvent(new PointerEvent("pointermove", { pointerId: 24, buttons: 1, clientX: x - 10, clientY: y }));
+
+    expect(view()).toEqual(before);
+  });
+
   it("fits once it is first shown with content, not while it is hidden or empty", async () => {
     fixture.destroy();
     fixture = TestBed.createComponent(CanvasHostComponent);
