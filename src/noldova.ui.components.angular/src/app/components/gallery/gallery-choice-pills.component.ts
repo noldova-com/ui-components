@@ -28,6 +28,8 @@ export class GalleryChoicePillsComponent {
   protected readonly hoveredPill: string = GalleryResources.hoveredPill;
   protected readonly focusedPill: string = GalleryResources.focusedPill;
   protected readonly pillOptions: readonly SelectOption[] = GalleryResources.text.choicePillOptions.map(t => new SelectOption(t.value, t.title));
+  protected readonly disabledPillOptions: readonly SelectOption[] = GalleryResources.text.choicePillOptions
+    .map(t => new SelectOption(t.value, t.title, null, t.value !== GalleryResources.text.choicePillEnabled));
   protected readonly longPillOptions: readonly SelectOption[] = GalleryResources.text.choicePillOptionsLong.map(t => new SelectOption(t.value, t.title));
   protected readonly pill: WritableSignal<string> = signal(GalleryResources.text.choicePillInitial);
 }

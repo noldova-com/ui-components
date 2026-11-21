@@ -8,7 +8,7 @@
 
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 
 import { ChoicePillsComponent } from "../../../../src/app/components/choice-pills/choice-pills.component";
 import { SelectOption } from "../../../../src/app/models/select-option";
@@ -131,6 +131,75 @@ describe("ChoicePillsComponent", () => {
     expect(selected()).toEqual(["Light"]);
   });
 
+  it("shows a disabled option dimmed and marked disabled, chooses nothing on its click, and passes over it with the arrow keys, Home and End", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true),
+      new SelectOption("custom", "Custom")]);
+    fixture.detectChanges();
+    const looks = (pill: HTMLButtonElement | undefined): unknown[] => pill === undefined ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
+    const focused = (): string => document.activeElement?.textContent?.trim() ?? "";
+
+    expect([looks(pills()[0]), looks(pills()[1])]).toEqual([["true", "0.5", "default"], [null, "1", "pointer"]]);
+    await page.getByRole("radio", { name: "Dark" }).click({ force: true });
+    expect([host.changes, selected()]).toEqual([[], ["Light"]]);
+    pills()[1]?.focus();
+    const moves: string[] = [];
+    for (const key of ["{ArrowRight}", "{ArrowRight}", "{ArrowLeft}", "{End}", "{Home}", "{ArrowUp}", "{ArrowDown}"]) {
+      await userEvent.keyboard(key);
+      moves.push(focused());
+    }
+
+    expect(moves).toEqual(["Custom", "Light", "Custom", "Custom", "Light", "Custom", "Light"]);
+    expect(host.changes).toEqual(["custom", "light", "custom", "light", "custom", "light"]);
+  });
+
+  it("chooses nothing on a click of the focused pill once it is disabled, and moves on to the next enabled pill with an arrow key", async () => {
+    render();
+    pills()[2]?.focus();
+    host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true)]);
+    fixture.detectChanges();
+    const focusedBefore = document.activeElement === pills()[2];
+
+    await page.getByRole("radio", { name: "Dark" }).click({ force: true });
+    const changesAfterClick = [...host.changes];
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([focusedBefore, changesAfterClick, host.changes, document.activeElement === pills()[0]]).toEqual([true, [], ["system"], true]);
+  });
+
+  it("moves from a checked disabled pill to the next enabled one with an arrow key", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light", null, true), new SelectOption("dark", "Dark")]);
+    fixture.detectChanges();
+    pills()[1]?.focus();
+
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([host.changes, selected(), document.activeElement === pills()[2]]).toEqual([["dark"], ["Dark"], true]);
+  });
+
+  it("keeps the first pill as the Tab stop, and the choice and the focus where they are on an arrow key, when every option is disabled", async () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light", null, true)]);
+    host.value.set("none");
+    fixture.detectChanges();
+    const tabStops = pills().map(t => t.tabIndex);
+    pills()[0]?.focus();
+
+    await userEvent.keyboard("{ArrowRight}");
+
+    expect([tabStops, host.changes, document.activeElement === pills()[0]]).toEqual([[0, -1], [], true]);
+  });
+
+  it("takes the first enabled pill as the Tab stop when nothing is checked", () => {
+    render();
+    host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);
+    host.value.set("none");
+    fixture.detectChanges();
+
+    expect(pills().map(t => t.tabIndex)).toEqual([-1, 0, -1]);
+  });
+
   it("leaves other keys alone and takes the group as a single stop of Tab", async () => {
     render();
     pills()[1]?.focus();
@@ -179,6 +248,53 @@ describe("ChoicePillsComponent", () => {
 
         expect([getComputedStyle(checked).backgroundColor, ring(checked), ring(other)])
           .toEqual([ForcedColorsFixture.resolve("Highlight"), ["solid", ForcedColorsFixture.resolve("Highlight"), width, width], ["solid", ForcedColorsFixture.resolve("Highlight"), width, width]]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws a disabled pill's title in GrayText at full opacity, and an enabled one's in CanvasText, under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const look = (index: number): unknown[] => {
+          const style = getComputedStyle(pills()[index] ?? document.body);
+          return [style.color, style.opacity];
+        };
+
+        expect([look(0), look(2)]).toEqual([[ForcedColorsFixture.resolve("GrayText"), "1"], [ForcedColorsFixture.resolve("CanvasText"), "1"]]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`fills a checked disabled pill in GrayText with Canvas text under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      host.options.set([new SelectOption("system", "System"), new SelectOption("light", "Light", null, true), new SelectOption("dark", "Dark")]);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const style = getComputedStyle(pills()[1] ?? document.body);
+
+        expect([style.color, style.backgroundColor, style.opacity]).toEqual([ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("GrayText"), "1"]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps a hovered checked pill's Highlight fill under forced colors in ${mode} mode`, async () => {
+      render(AppearanceFixture.themes[0], mode);
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const checked = pills()[1] ?? document.body;
+        await userEvent.hover(checked);
+
+        expect(getComputedStyle(checked).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
@@ -243,6 +359,17 @@ describe("ChoicePillsComponent", () => {
         expect(before).toBe("rgba(0, 0, 0, 0)");
         expect(channels(after)).toEqual(channels(AppearanceFixture.readColor(theme, mode, "toolbar-hover")));
         expect(channels(after)).not.toEqual(channels(AppearanceFixture.readColor(theme, mode, "hover")));
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`keeps the ${theme.id} theme's selection color on a hovered checked pill in ${mode} mode`, async () => {
+        render(theme, mode);
+        const checked = pills()[1] ?? document.body;
+
+        await userEvent.hover(checked);
+
+        expect(getComputedStyle(checked).backgroundColor).toBe(AppearanceFixture.readColor(theme, mode, "selected"));
       });
 
   for (const mode of AppearanceFixture.modes)

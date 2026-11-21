@@ -326,6 +326,7 @@ export class GalleryResources {
       { value: "long", title: "An option whose title is far too long to fit the width its group gives it" }
     ],
     choicePillInitial: "light",
+    choicePillEnabled: "system",
     configurationTable: "Configuration table",
     configurationAdd: "Add",
     configurationName: "Name",
