@@ -13,11 +13,14 @@ import { userEvent } from "vitest/browser";
 import { PopoverDirective } from "../../../../src/app/components/popover/popover.directive";
 import { PopoverTriggerDirective } from "../../../../src/app/components/popover/popover-trigger.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
+import { PopoverOpening } from "../../../../src/app/enums/popover-opening";
+import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { OverlayWrapperFixture } from "../../../fixtures/overlay-wrapper.fixture";
+import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 @Component({
   imports: [PopoverDirective, PopoverTriggerDirective],
@@ -274,5 +277,232 @@ describe("PopoverTriggerDirective", () => {
 
     await OverlayWrapperFixture.expectCappedAsync(popover, box);
     AppearanceFixture.expectPixels(popover.getBoundingClientRect().height, box.height - AppearanceFixture.measureLook("space-6") * 2);
+  });
+});
+
+@Component({
+  imports: [PopoverDirective, PopoverTriggerDirective],
+  template: `
+    <button type="button" class="before">Before</button>
+    <div class="card" tabindex="0" style="position: fixed; right: 4rem; top: 16rem; width: 15rem; height: 4rem" [nolPopoverTrigger]="details" [nolPopoverOpenOn]="openOn">
+      Alice
+    </div>
+    <button type="button" class="after">After</button>
+    <ng-template #details>
+      <div nolPopover label="Alice's details">
+        <p>Developer</p>
+        <button type="button" class="inside">Message</button>
+      </div>
+    </ng-template>
+  `
+})
+class HoverPopoverHostComponent {
+  public openOn: PopoverOpening = PopoverOpening.Hover;
+}
+
+describe("PopoverTriggerDirective on hover and focus", () => {
+  let fixture: ComponentFixture<HoverPopoverHostComponent>;
+  let source: TestTimeSource;
+
+  async function renderAsync(openOn: PopoverOpening = PopoverOpening.Hover): Promise<void> {
+    AppearanceFixture.apply();
+    source = new TestTimeSource();
+    TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: source }] });
+    fixture = TestBed.createComponent(HoverPopoverHostComponent);
+    fixture.componentInstance.openOn = openOn;
+    await fixture.whenStable();
+  }
+
+  const card = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), ".card");
+  const button = (name: string): HTMLButtonElement => DomFixture.oneOf(DomFixture.host(fixture), `.${name}`, HTMLButtonElement);
+  const surface = (): HTMLElement | null => document.querySelector(".cdk-overlay-container .nol-popover");
+  const pane = (popover: HTMLElement): HTMLElement => DomFixture.closest(popover, ".nol-popover-pane");
+  const pointer = (pointerType: string, relatedTarget: EventTarget | null = null, x: number = 1, y: number = 1): PointerEvent =>
+    new PointerEvent("pointerleave", { pointerType, relatedTarget, clientX: x, clientY: y });
+
+  async function settleAsync(): Promise<void> {
+    source.advance(0);
+    await fixture.whenStable();
+  }
+
+  async function shownAsync(): Promise<HTMLElement> {
+    await fixture.whenStable();
+    await DomChangeFixture.untilAsync(() => expect(surface()).not.toBeNull());
+    return DomFixture.present(surface());
+  }
+
+  async function hoverAsync(): Promise<HTMLElement> {
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(500);
+    return shownAsync();
+  }
+
+  async function focusByKeyboardAsync(): Promise<HTMLElement> {
+    button("before").focus();
+    await userEvent.tab();
+    return shownAsync();
+  }
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  it("opens once the pointer has rested the tooltip's delay on the trigger, leaving the focus where it is, and nothing for a pointer that leaves sooner", async () => {
+    await renderAsync();
+    button("before").focus();
+
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(499);
+    card().dispatchEvent(pointer("mouse", document.body));
+    source.advance(60_000);
+    await fixture.whenStable();
+    const early = surface();
+    const popover = await hoverAsync();
+    await fixture.whenStable();
+
+    expect([early, card().getAttribute("aria-haspopup"), card().getAttribute("aria-expanded"), popover.getAttribute("role"), popover.getAttribute("aria-label")])
+      .toEqual([null, "dialog", "true", "dialog", "Alice's details"]);
+    expect(document.activeElement).toBe(button("before"));
+  });
+
+  it("stays open while the pointer moves from the trigger into the popover and back, and closes once it leaves both", async () => {
+    await renderAsync();
+    const popover = await hoverAsync();
+
+    card().dispatchEvent(pointer("mouse", popover));
+    await settleAsync();
+    const afterInto = surface() !== null;
+    pane(popover).dispatchEvent(pointer("mouse", card()));
+    await settleAsync();
+    const afterBack = surface() !== null;
+    card().dispatchEvent(pointer("mouse", document.body));
+    await settleAsync();
+
+    expect([afterInto, afterBack, surface(), card().getAttribute("aria-expanded")]).toEqual([true, true, null, "false"]);
+  });
+
+  it("stays open while the pointer crosses the gap toward the popover, and closes when it strays from that path or leaves the popover", async () => {
+    await renderAsync();
+    const popover = await hoverAsync();
+    const from = card().getBoundingClientRect();
+    const box = pane(popover).getBoundingClientRect();
+    const across = from.right - 8;
+
+    card().dispatchEvent(pointer("mouse", document.body, across, from.top - 1));
+    document.body.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: across, clientY: (from.top + box.bottom) / 2 }));
+    await settleAsync();
+    const inGap = surface() !== null;
+    popover.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: across, clientY: box.bottom - 4 }));
+    await settleAsync();
+    const inside = surface() !== null;
+    pane(popover).dispatchEvent(pointer("mouse", document.body, box.left - 40, box.top - 40));
+    await settleAsync();
+    const leftPopover = surface() === null;
+    await hoverAsync();
+    card().dispatchEvent(pointer("mouse", document.body, across, from.top - 1));
+    document.body.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: 1, clientY: 1 }));
+    await settleAsync();
+
+    expect([inGap, inside, leftPopover, surface()]).toEqual([true, true, true, null]);
+  });
+
+  it("opens at once on keyboard focus and keeps the focus on the trigger, stays open as the pointer leaves or the focus moves into it and back, and closes when the focus leaves both", async () => {
+    await renderAsync();
+
+    const popover = await focusByKeyboardAsync();
+    const opened = [document.activeElement === card(), card().getAttribute("aria-expanded")];
+    card().dispatchEvent(pointer("mouse", document.body));
+    await settleAsync();
+    const afterPointer = surface() !== null;
+    DomFixture.oneOf(popover, ".inside", HTMLButtonElement).focus();
+    await settleAsync();
+    const afterInside = surface() !== null;
+    card().focus();
+    await settleAsync();
+    const afterBack = surface() !== null;
+    await userEvent.tab();
+    await settleAsync();
+
+    expect([opened, afterPointer, afterInside, afterBack, surface()]).toEqual([[true, "true"], true, true, true, null]);
+    expect(document.activeElement).toBe(button("after"));
+  });
+
+  it("closes on Escape, leaving the focus on the trigger, or bringing it back to the trigger from inside the popover, and when the focus leaves for nowhere", async () => {
+    await renderAsync();
+
+    await focusByKeyboardAsync();
+    await userEvent.keyboard("{Escape}");
+    await fixture.whenStable();
+    const fromTrigger = [surface(), document.activeElement === card()];
+    button("before").focus();
+    const popover = await hoverAsync();
+    DomFixture.oneOf(popover, ".inside", HTMLButtonElement).focus();
+    await userEvent.keyboard("{Escape}");
+    await fixture.whenStable();
+    const fromInside = [surface(), document.activeElement === card()];
+    await focusByKeyboardAsync();
+    card().blur();
+    await settleAsync();
+
+    expect([fromTrigger, fromInside, surface()]).toEqual([[null, true], [null, true], null]);
+  });
+
+  it("opens and closes on a tap, moving the focus in as a click does, and ignores a touch's hover and a mouse click", async () => {
+    await renderAsync();
+
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "touch" }));
+    source.advance(500);
+    await fixture.whenStable();
+    const afterTouchHover = surface();
+    card().dispatchEvent(new PointerEvent("pointerdown", { pointerType: "mouse", bubbles: true }));
+    card().click();
+    await fixture.whenStable();
+    const afterMouseClick = surface();
+    card().dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true }));
+    card().click();
+    const popover = await shownAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+    pane(popover).dispatchEvent(pointer("touch", document.body));
+    card().dispatchEvent(pointer("touch", document.body));
+    await settleAsync();
+    const afterTouchLeave = surface() !== null;
+    card().dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true }));
+    card().click();
+    await fixture.whenStable();
+
+    expect([afterTouchHover, afterMouseClick, afterTouchLeave, surface()]).toEqual([null, null, true, null]);
+    expect(document.activeElement).toBe(card());
+  });
+
+  it("opens only on a click when it opens on a click, whatever the pointer or the focus does", async () => {
+    await renderAsync(PopoverOpening.Click);
+
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(500);
+    button("before").focus();
+    await userEvent.tab();
+    await fixture.whenStable();
+    const shown = surface();
+    card().click();
+    const popover = await shownAsync();
+    pane(popover).dispatchEvent(pointer("mouse", document.body));
+    card().dispatchEvent(pointer("mouse", document.body));
+    await settleAsync();
+
+    expect([shown, surface() !== null]).toEqual([null, true]);
+  });
+
+  it("places a hovered popover above the trigger, a gap away, end-aligned and in its preferred width", async () => {
+    await renderAsync();
+    const popover = await hoverAsync();
+    const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    await DomChangeFixture.untilAsync(() => {
+      source.runFrames();
+      expect(card().getBoundingClientRect().top - popover.getBoundingClientRect().bottom).toBeCloseTo(rem * 0.5, 1);
+    });
+    AppearanceFixture.expectPixels(popover.getBoundingClientRect().right, card().getBoundingClientRect().right);
+    AppearanceFixture.expectPixels(popover.getBoundingClientRect().width, rem * 27.5);
   });
 });

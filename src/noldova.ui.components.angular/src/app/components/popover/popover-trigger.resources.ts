@@ -9,4 +9,6 @@
 export class PopoverTriggerResources {
   public static readonly popoverClass: string = "nol-popover";
   public static readonly popoverPaneClass: string = "nol-popover-pane";
+  public static readonly touchPointerType: string = "touch";
+  public static readonly focusOutEvent: "focusout" = "focusout";
 }

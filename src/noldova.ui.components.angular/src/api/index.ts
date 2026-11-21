@@ -120,6 +120,7 @@ export { PermissionRisk } from "../app/enums/permission-risk.js";
 export { PermissionScope } from "../app/enums/permission-scope.js";
 export { PermissionStatus } from "../app/enums/permission-status.js";
 export { PlanStepStatus } from "../app/enums/plan-step-status.js";
+export { PopoverOpening } from "../app/enums/popover-opening.js";
 export { SashOrientation } from "../app/enums/sash-orientation.js";
 export { ShellRunState } from "../app/enums/shell-run-state.js";
 export { TabTone } from "../app/enums/tab-tone.js";
