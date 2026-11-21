@@ -896,9 +896,11 @@ export declare enum PopoverOpening {
    * taking the focus from the keyboard, opens the popover, leaving the focus
    * where it is. The pointer can cross from the host into the popover, and
    * back, without closing it; it closes once the pointer leaves both, or,
-   * when the focus opened it, once the focus leaves both. A tap opens and
-   * closes it as {@link PopoverOpening.Click} does, since touch has no
-   * hover, and a mouse click on the host does nothing.
+   * when the focus opened it, once the focus leaves both. Enter or Space on
+   * the host opens it if needed and moves the focus into it, as
+   * {@link PopoverOpening.Click} does. A tap opens and closes it as a click
+   * does, since touch has no hover, and a mouse click on the host does
+   * nothing.
    */
   Hover = "Hover"
 }
@@ -10123,8 +10125,9 @@ export declare class PopoverTriggerDirective {
 
   /**
    * What opens the popover, `nolPopoverOpenOn`; a click when not bound. On
-   * {@link PopoverOpening.Hover}, Escape closes the popover and leaves the
-   * focus where it is, or returns it to the host when it was inside.
+   * {@link PopoverOpening.Hover}, Enter or Space on the host moves the focus
+   * into the popover, and Escape closes it and leaves the focus where it is,
+   * or returns it to the host when it was inside.
    */
   public readonly openOn: InputSignal<PopoverOpening>;
 

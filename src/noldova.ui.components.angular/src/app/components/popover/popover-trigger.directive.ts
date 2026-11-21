@@ -36,6 +36,8 @@ import { PopoverTriggerResources } from "./popover-trigger.resources.js";
     "aria-haspopup": "dialog",
     "[attr.aria-expanded]": "isOpen()",
     "(pointerdown)": "notePointer($event)",
+    "(pointercancel)": "forgetPointer()",
+    "(keydown)": "pressKey($event)",
     "(click)": "press()",
     "(pointerenter)": "enter($event)",
     "(pointerleave)": "leaveTrigger($event)",
@@ -102,6 +104,17 @@ export class PopoverTriggerDirective {
     this.pointerType = event.pointerType;
   }
 
+  protected forgetPointer(): void {
+    this.pointerType = String.empty;
+  }
+
+  protected pressKey(event: KeyboardEvent): void {
+    if (!this.opensOnHover || event.target !== this.host || (event.key !== Resources.enterKey && event.key !== Resources.spaceKey))
+      return;
+    event.preventDefault();
+    this.show(true, true);
+  }
+
   protected press(): void {
     const isTap = this.pointerType === PopoverTriggerResources.touchPointerType;
     this.pointerType = String.empty;
@@ -114,7 +127,7 @@ export class PopoverTriggerDirective {
       return;
     this.cancelPending();
     if (!this.open())
-      this.cancelShow = this.pace.schedule(() => this.show(false, false), false);
+      this.cancelShow = this.timeSource.after(() => this.show(false, false), this.pace.delayFor(false));
   }
 
   protected leaveTrigger(event: PointerEvent): void {
@@ -142,8 +155,15 @@ export class PopoverTriggerDirective {
   private show(movesFocus: boolean, byFocus: boolean): void {
     this.cancelPending();
     this.isHeldByFocus ||= byFocus;
-    if (this.open())
-      return;
+    const overlay = this.overlay ?? this.openOverlay();
+    if (movesFocus)
+      afterNextRender(() => {
+        if (overlay.isOpen)
+          overlay.element.querySelector<HTMLElement>(`.${PopoverTriggerResources.popoverClass}`)?.focus();
+      }, { injector: this.injector });
+  }
+
+  private openOverlay(): AnchoredOverlay {
     const overlay = new AnchoredOverlay(this.injector, PopoverTriggerResources.popoverPaneClass);
     overlay.outsidePointerEvents.subscribe(event => {
       if (!(event.target instanceof Node && this.host.contains(event.target)))
@@ -159,12 +179,8 @@ export class PopoverTriggerDirective {
     this.overlay = overlay;
     this.open.set(true);
     overlay.openTemplate(new TemplatePortal(this.template(), this.viewContainer), this.host, new OverlayAnchoring(this.side(), this.alignment(), this.bounds.gap));
-    if (movesFocus)
-      afterNextRender(() => {
-        if (overlay.isOpen)
-          overlay.element.querySelector<HTMLElement>(`.${PopoverTriggerResources.popoverClass}`)?.focus();
-      }, { injector: this.injector });
     this.opened.emit();
+    return overlay;
   }
 
   private closeFromKeyboard(event: KeyboardEvent, pane: HTMLElement): void {

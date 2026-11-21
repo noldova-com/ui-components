@@ -12,6 +12,7 @@ import { userEvent } from "vitest/browser";
 
 import { PopoverDirective } from "../../../../src/app/components/popover/popover.directive";
 import { PopoverTriggerDirective } from "../../../../src/app/components/popover/popover-trigger.directive";
+import { TooltipDirective } from "../../../../src/app/components/tooltip/tooltip.directive";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { PopoverOpening } from "../../../../src/app/enums/popover-opening";
 import { ClockTokens } from "../../../../src/app/models/clock-tokens";
@@ -281,11 +282,11 @@ describe("PopoverTriggerDirective", () => {
 });
 
 @Component({
-  imports: [PopoverDirective, PopoverTriggerDirective],
+  imports: [PopoverDirective, PopoverTriggerDirective, TooltipDirective],
   template: `
     <button type="button" class="before">Before</button>
     <div class="card" tabindex="0" style="position: fixed; right: 4rem; top: 16rem; width: 15rem; height: 4rem" [nolPopoverTrigger]="details" [nolPopoverOpenOn]="openOn">
-      Alice
+      <span class="hint" nolTooltip="Leads Design">Alice</span>
     </div>
     <button type="button" class="after">After</button>
     <ng-template #details>
@@ -497,6 +498,62 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     expect(document.activeElement).toBe(card());
   });
 
+  it("moves the focus into the popover on Enter or Space on the trigger, opening it if needed, so Tab then reaches its controls, and on no other key", async () => {
+    await renderAsync();
+
+    await userEvent.tab();
+    await userEvent.tab();
+    const popover = await shownAsync();
+    const focusedOnOpen = document.activeElement === card();
+    await userEvent.keyboard("{Enter}");
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+    await userEvent.tab();
+    const reached = document.activeElement?.textContent?.trim();
+    await userEvent.keyboard("{Escape}");
+    await fixture.whenStable();
+    const closed = [surface(), document.activeElement === card()];
+    DomFixture.one(card(), ".hint").dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await userEvent.keyboard("a");
+    await settleAsync();
+    const otherKeys = surface();
+    await userEvent.keyboard(" ");
+    const reopened = await shownAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(reopened));
+
+    expect([focusedOnOpen, reached, closed, otherKeys]).toEqual([true, "Message", [null, true], null]);
+  });
+
+  it("waits out its own delay while a tooltip inside the trigger takes the shared pace", async () => {
+    await renderAsync();
+
+    card().dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(200);
+    DomFixture.one(card(), ".hint").dispatchEvent(new PointerEvent("pointerenter", { pointerType: "mouse" }));
+    source.advance(299);
+    await fixture.whenStable();
+    const early = surface();
+    source.advance(1);
+
+    expect([early, await shownAsync()]).toEqual([null, expect.any(HTMLElement)]);
+  });
+
+  it("forgets a touch that turned into a scroll, so a later click isn't taken for a tap and Enter still moves the focus in", async () => {
+    await renderAsync();
+
+    card().dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true }));
+    card().dispatchEvent(new PointerEvent("pointercancel", { pointerType: "touch", bubbles: true }));
+    card().click();
+    await settleAsync();
+    const afterClick = surface();
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
+    const popover = await shownAsync();
+
+    expect(afterClick).toBeNull();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+  });
+
   it("opens only on a click when it opens on a click, whatever the pointer or the focus does", async () => {
     await renderAsync(PopoverOpening.Click);
 
@@ -504,6 +561,7 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     source.advance(500);
     button("before").focus();
     await userEvent.tab();
+    await userEvent.keyboard("{Enter}");
     await fixture.whenStable();
     const shown = surface();
     card().click();
