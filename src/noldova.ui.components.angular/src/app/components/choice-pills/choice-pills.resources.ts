@@ -16,4 +16,12 @@ export class ChoicePillsResources {
     ["Home", () => 0],
     ["End", (_current, last) => last]
   ]);
+  public static readonly choicePillDirections: ReadonlyMap<string, number> = new Map<string, number>([
+    ["ArrowRight", 1],
+    ["ArrowDown", 1],
+    ["ArrowLeft", -1],
+    ["ArrowUp", -1],
+    ["Home", 1],
+    ["End", -1]
+  ]);
 }
