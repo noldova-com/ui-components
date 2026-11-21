@@ -181,6 +181,26 @@ describe("PopoverTriggerDirective", () => {
     expect([first, surface(), document.activeElement]).toEqual([[true, true], null, trigger()]);
   });
 
+  it("stays open on a Tab past its last control that ends an input method's composition, and closes on a plain Tab", async () => {
+    await renderAsync();
+    const popover = await openAsync();
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
+    await userEvent.keyboard("{Tab}");
+    const last = DomFixture.one(popover, ".inside");
+    const isOnLast = document.activeElement === last;
+
+    last.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true, isComposing: true }));
+    await fixture.whenStable();
+    const isOpenAfterComposing = surface() !== null;
+    last.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", keyCode: 229, bubbles: true, cancelable: true }));
+    await fixture.whenStable();
+    const isOpenAfterProcessKey = surface() !== null;
+    await userEvent.keyboard("{Tab}");
+    await fixture.whenStable();
+
+    expect([isOnLast, isOpenAfterComposing, isOpenAfterProcessKey, surface(), document.activeElement]).toEqual([true, true, true, null, trigger()]);
+  });
+
   for (const from of ["the popover", "its first control"])
     it(`closes on a Shift+Tab from ${from}, before its first control, returning focus to the trigger`, async () => {
       await renderAsync();
