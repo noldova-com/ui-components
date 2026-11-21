@@ -109,7 +109,8 @@ export class PopoverTriggerDirective {
   }
 
   protected pressKey(event: KeyboardEvent): void {
-    if (!this.opensOnHover || event.target !== this.host || (event.key !== Resources.enterKey && event.key !== Resources.spaceKey))
+    const opens = event.key === Resources.spaceKey || (event.key === Resources.enterKey && !this.host.matches(PopoverTriggerResources.linkSelector));
+    if (!this.opensOnHover || event.target !== this.host || !opens)
       return;
     event.preventDefault();
     this.show(true, true);

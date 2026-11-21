@@ -898,7 +898,8 @@ export declare enum PopoverOpening {
    * back, without closing it; it closes once the pointer leaves both, or,
    * when the focus opened it, once the focus leaves both. Enter or Space on
    * the host opens it if needed and moves the focus into it, as
-   * {@link PopoverOpening.Click} does. A tap opens and closes it as a click
+   * {@link PopoverOpening.Click} does; on a link, Enter follows the link and
+   * only Space does so. A tap opens and closes it as a click
    * does, since touch has no hover, and a mouse click on the host does
    * nothing.
    */
@@ -10126,8 +10127,9 @@ export declare class PopoverTriggerDirective {
   /**
    * What opens the popover, `nolPopoverOpenOn`; a click when not bound. On
    * {@link PopoverOpening.Hover}, Enter or Space on the host moves the focus
-   * into the popover, and Escape closes it and leaves the focus where it is,
-   * or returns it to the host when it was inside.
+   * into the popover, only Space on a link, whose Enter follows it, and
+   * Escape closes it and leaves the focus where it is, or returns it to the
+   * host when it was inside.
    */
   public readonly openOn: InputSignal<PopoverOpening>;
 

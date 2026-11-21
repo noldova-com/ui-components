@@ -289,6 +289,7 @@ describe("PopoverTriggerDirective", () => {
       <span class="hint" nolTooltip="Leads Design">Alice</span>
     </div>
     <button type="button" class="after">After</button>
+    <a class="profile" href="#alice" [nolPopoverTrigger]="details" [nolPopoverOpenOn]="openOn">Alice's profile</a>
     <ng-template #details>
       <div nolPopover label="Alice's details">
         <p>Developer</p>
@@ -521,6 +522,22 @@ describe("PopoverTriggerDirective on hover and focus", () => {
     await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(reopened));
 
     expect([focusedOnOpen, reached, closed, otherKeys]).toEqual([true, "Message", [null, true], null]);
+  });
+
+  it("leaves Enter on a link trigger to the link, and opens the popover with the focus in on Space", async () => {
+    await renderAsync();
+    const link = DomFixture.oneOf(DomFixture.host(fixture), ".profile", HTMLAnchorElement);
+
+    link.focus();
+    const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    link.dispatchEvent(enter);
+    await settleAsync();
+    const afterEnter = [enter.defaultPrevented, surface()];
+    await userEvent.keyboard(" ");
+    const popover = await shownAsync();
+
+    expect(afterEnter).toEqual([false, null]);
+    await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(popover));
   });
 
   it("waits out its own delay while a tooltip inside the trigger takes the shared pace", async () => {

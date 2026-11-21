@@ -14,4 +14,5 @@ export class PopoverTriggerResources {
   public static readonly touchPointerType: string = "touch";
   public static readonly focusOutEvent: "focusout" = "focusout";
   public static readonly returnedFocusOrigin: FocusOrigin = "program";
+  public static readonly linkSelector: string = "a[href]";
 }
