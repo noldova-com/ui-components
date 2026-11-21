@@ -363,8 +363,9 @@ describe("CanvasComponent", () => {
     await measuredAsync(24);
     canvas().focus();
     const start = view();
-    const events = [["0", { ctrlKey: true }], ["=", { ctrlKey: true }], ["-", { metaKey: true }], ["ArrowLeft", { altKey: true }]].map(([name, held]) => {
-      const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...held });
+    const presses: readonly KeyboardEventInit[] = [{ key: "0", ctrlKey: true }, { key: "=", ctrlKey: true }, { key: "-", metaKey: true }, { key: "ArrowLeft", altKey: true }];
+    const events = presses.map(press => {
+      const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...press });
       canvas().dispatchEvent(event);
       return event.defaultPrevented;
     });
