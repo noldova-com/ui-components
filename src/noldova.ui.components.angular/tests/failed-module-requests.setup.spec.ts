@@ -12,12 +12,17 @@ describe("failed module request setup", () => {
   // Port 1 is one the browser refuses to connect to, so a request there fails in the browser at once, before any server answers.
   const refusedAt = (name: string): string => `http://localhost:1/${name}-${crypto.randomUUID()}.js`;
   // The recorder gives back failure lines only; the filter keeps these specs to the failure lines should that change.
+  // Each module a spec fails here is marked first, so the run's closing line, which lists the modules that failed, leaves it out.
+  const failImportAsync = async (url: string): Promise<void> => {
+    await commands.expectFailedModuleRequest(url);
+    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+  };
   const printedFor = async (url: string): Promise<readonly string[]> => (await commands.watchFailedModuleRequests()).filter(line => line.startsWith("Failed module ") && line.endsWith(` ${url}`));
 
   it("prints a module request the browser fails once, with when it failed, its network error and its URL", async () => {
     const url = refusedAt("module");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
 
     await expect.poll(() => printedFor(url)).toHaveLength(1);
     const printed = await printedFor(url);
@@ -28,9 +33,9 @@ describe("failed module request setup", () => {
     const url = new URL(`/tests/missing-module-${crypto.randomUUID()}.js`, location.origin).href;
     const later = refusedAt("later");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
     // The browser cancels the request after its error response; once a later failure is printed, that cancel would have been printed too.
-    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await failImportAsync(later);
     await expect.poll(() => printedFor(later)).toHaveLength(1);
 
     const printed = await printedFor(url);
@@ -44,9 +49,9 @@ describe("failed module request setup", () => {
     const url = page.href;
     const later = refusedAt("later");
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
     // As after an error status, a cancel of the request would come before a later failure's line.
-    await expect(import(/* @vite-ignore */ later)).rejects.toThrow(TypeError);
+    await failImportAsync(later);
     await expect.poll(() => printedFor(later)).toHaveLength(1);
 
     const printed = await printedFor(url);
@@ -58,7 +63,7 @@ describe("failed module request setup", () => {
     const port = await commands.closedPort();
     const url = `http://localhost:${port}/refused-${crypto.randomUUID()}.js`;
 
-    await expect(import(/* @vite-ignore */ url)).rejects.toThrow(TypeError);
+    await failImportAsync(url);
 
     await expect.poll(() => printedFor(url)).toHaveLength(2);
     const printed = await printedFor(url);
@@ -78,6 +83,19 @@ describe("failed module request setup", () => {
     const printed = await commands.scriptedRefusal("rejecting");
 
     expect(printed.at(-1)).toMatch(/^Module requests that failed in this run: http:\/\/localhost:\d+\/scripted-\S+ \(net::ERR_CONNECTION_REFUSED at \S+Z\)\. The spec files share one page, which keeps a failed module, so each later spec file that imports one of these failed to import too, with no request of its own\.$/u);
+  });
+
+  it("prints no closing line when every module request that failed was marked as failing on purpose", async () => {
+    const printed = await commands.scriptedRefusal("rejecting", true);
+
+    expect([printed.length, printed.some(line => line.startsWith("Module requests that failed in this run: "))]).toEqual([2, false]);
+  });
+
+  it("lists the first 20 failed modules in the closing line and counts the rest", async () => {
+    const printed = await commands.scriptedRefusal("rejecting", false, 22);
+    const closing = printed.at(-1) ?? "";
+
+    expect([closing.match(/http:\/\/localhost:\d+\/scripted-/gu)?.length, /\), and 2 more\. The spec files share one page/u.test(closing)]).toEqual([20, true]);
   });
 
   it("prints, when the port's sockets can't be listed, what Node's connections found and why the listing failed", async () => {
@@ -188,7 +206,7 @@ describe("failed module request setup", () => {
 
     await expect(fetch(fetched)).rejects.toThrow(TypeError);
     // The browser reports requests' ends in order, so once the module's is printed, the fetch's would have been printed before it.
-    await expect(import(/* @vite-ignore */ module)).rejects.toThrow(TypeError);
+    await failImportAsync(module);
     await expect.poll(() => printedFor(module)).toHaveLength(1);
 
     expect(await printedFor(fetched)).toEqual([]);

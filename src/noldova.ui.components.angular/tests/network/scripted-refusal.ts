@@ -27,15 +27,21 @@ export class ScriptedRefusal {
     ["hanging listing", () => new ConnectionProbe([process.execPath, ["-e", "setInterval(() => {}, 1000)"]])]
   ]);
 
-  public readonly print: (context: unknown, probe: string) => Promise<readonly string[]> = async (_context, probe) => {
+  public readonly print: (context: unknown, probe: string, isExpected?: boolean, count?: number) => Promise<readonly string[]> = async (_context, probe, isExpected = false, count = 1) => {
     const create = ScriptedRefusal.PROBES.get(probe);
     if (create === undefined)
       throw new Error(`No scripted probe is named "${probe}"; the names are ${[...ScriptedRefusal.PROBES.keys()].join(", ")}.`);
     const port = await new ClosedPort().find();
     const page = new RecordedPage();
     const run = new RecordedRun();
-    new FailedModuleRequests(create()).watch({ page, project: { vitest: run } });
-    page.fail(new RefusedRequest(`http://localhost:${port}/scripted-${randomUUID()}.js`));
+    const recorder = new FailedModuleRequests(create());
+    recorder.watch({ page, project: { vitest: run } });
+    for (let i = 0; i < count; i++) {
+      const url = `http://localhost:${port}/scripted-${randomUUID()}.js`;
+      if (isExpected)
+        recorder.expectFailure(undefined, url);
+      page.fail(new RefusedRequest(url));
+    }
     await run.closeAsync();
     return run.lines;
   };
