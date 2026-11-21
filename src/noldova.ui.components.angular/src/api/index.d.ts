@@ -2956,7 +2956,9 @@ export declare class CheckboxComponent {
   public readonly disabled: InputSignal<boolean>;
 
   /**
-   * Emits whether the box is checked each time the person toggles it.
+   * Emits the value the person asks for each time they toggle the box; the
+   * box keeps showing {@link CheckboxComponent.checked} until its owner binds
+   * the new value, so a change the owner refuses never shows.
    */
   public readonly checkedChange: OutputEmitterRef<boolean>;
 }
