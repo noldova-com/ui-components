@@ -293,6 +293,8 @@ export class GalleryResources {
     meterWarningCaption: "Warning",
     meterWarning: "92% · Nov 2",
     meterLong: "92% of this week's limit used, which resets on Nov 2",
+    meterSetCaption: "Grown, with its track and text size set",
+    meterSet: "42%",
     spinner: "Spinner",
     spinnerWorking: "Loading the list",
     spinnerDelayed: "Loading after a short wait",

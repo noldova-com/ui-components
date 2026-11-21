@@ -10284,6 +10284,13 @@ export declare class PopoverTriggerDirective {
  * `CanvasText`. The bar's width, height and the gap before the text are the
  * theme's `meter`, `meter-height` and `meter-gap` sizes.
  *
+ * Three variables set on its element change its look, and unset keep it:
+ * `--nol-meter-track`, the track's color, by default the fill's color at 25%;
+ * `--nol-meter-text-size`, the text's size, by default `--nol-text-panel`;
+ * and `--nol-meter-grow`, which at `1` makes the meter as wide as its
+ * container and grows its bar up to the gap before its text, never narrower
+ * than `meter`.
+ *
  * @example
  * ```ts
  * import { Component } from "@angular/core";
