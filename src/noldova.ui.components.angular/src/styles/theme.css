@@ -11,6 +11,7 @@
   --nol-window: #F8F8F8;
   --nol-panel: #FFFFFF;
   --nol-raised: #F8F8F8;
+  --nol-card: #FFFFFF;
   --nol-code: #F8F8F8;
   --nol-code-header: #F2F2F2;
   --nol-code-header-raised: #F2F2F2;
@@ -352,6 +353,7 @@
     --nol-window: #181818;
     --nol-panel: #1F1F1F;
     --nol-raised: #2B2B2B;
+    --nol-card: #2B2B2B;
     --nol-code: #181818;
     --nol-code-header: #2B2B2B;
     --nol-code-header-raised: #343434;
@@ -517,6 +519,7 @@
   --nol-window: #181818;
   --nol-panel: #1F1F1F;
   --nol-raised: #2B2B2B;
+  --nol-card: #2B2B2B;
   --nol-code: #181818;
   --nol-code-header: #2B2B2B;
   --nol-code-header-raised: #343434;

@@ -53,6 +53,7 @@ describe("Resources", () => {
       "code-header": "raised",
       "code-header-raised": "code-header",
       "attachment": "raised",
+      "card": "raised",
       "icon-color": "text",
       "text-strong": "text",
       "card-border": "widget-border",
