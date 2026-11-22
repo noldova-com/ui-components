@@ -367,7 +367,10 @@ export class Resources {
     "reference-pill-height",
     "reference-pill-padding",
     "reference-dot",
-    "reference-dot-gap"
+    "reference-dot-gap",
+    "icon-chooser-cell",
+    "icon-chooser-glyph",
+    "icon-chooser-height"
   ];
   public static readonly defaultThemeId: string = "noldova.default";
   public static readonly lightScheme: string = "light";

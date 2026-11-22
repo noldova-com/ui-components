@@ -26,6 +26,7 @@ export class GalleryResources {
   public static readonly focusedSelect: string = ".nol-select-button";
   public static readonly focusedRow: string = ".nol-virtual-list-row[tabindex=\"0\"]";
   public static readonly focusedFeed: string = ".nol-virtual-list-viewport[role=\"feed\"]";
+  public static readonly focusedIconChooser: string = ".nol-icon-chooser-viewport";
   public static readonly dialogTitleIdPrefix: string = "nol-gallery-dialog-";
   public static readonly mentionListIdPrefix: string = "nol-gallery-mention-";
   public static readonly hoveredMention: string = ".nol-mention-option[aria-selected=false]";
@@ -872,7 +873,10 @@ export class GalleryResources {
     permissionLongRequester: "A requester whose display name is far too long to fit beside its risk",
     permissionLongKind: "Extension from a publisher with a long name",
     permissionLongHeading: "Replace every reminder schedule in the notes module with the weekly schedule the settings name",
-    permissionLongCommand: "node scripts/migrate-reminders.mjs --from src/modules/notes/settings/reminders/schedule/daily-reminder-schedule.component.ts --to src/modules/notes/settings/reminders/schedule/weekly-reminder-schedule.component.ts"
+    permissionLongCommand: "node scripts/migrate-reminders.mjs --from src/modules/notes/settings/reminders/schedule/daily-reminder-schedule.component.ts --to src/modules/notes/settings/reminders/schedule/weekly-reminder-schedule.component.ts",
+    iconChooser: "Icon chooser",
+    iconChooserLabel: "Folder icon",
+    iconChooserInitial: "folder"
   } as const;
 
   public static formatReferenceBackground(color: string, percent: number): string {

@@ -15186,3 +15186,108 @@ export declare class VirtualRowDirective<T> {
    */
   public static ngTemplateContextGuard<T>(_: VirtualRowDirective<T>, _context: unknown): _context is IVirtualRowContext<T>;
 }
+
+/**
+ * An icon chooser, `nol-icon-chooser`: a search field over a grid of the
+ * kit's icons, with an optional "No icon" first, for choosing one icon or
+ * none. The grid is a listbox the person moves through with the arrow keys,
+ * Page Up, Page Down, Home and End, and chooses from with Enter, Space or a
+ * click; typing a letter in the grid moves to the search field and types it
+ * there, and Arrow Down in the search field moves back to the grid. It renders
+ * only the rows in view and a few around them, so the whole icon set stays
+ * fast. Its {@link IconChooserComponent.value} is a two-way model, so it works
+ * as a form control, and a signal forms field binds it through `[formField]`.
+ *
+ * @example
+ * ```ts
+ * import { Component, type WritableSignal, signal } from "@angular/core";
+ * import { IconChooserComponent } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-folder-icon",
+ *   imports: [IconChooserComponent],
+ *   template: "<nol-icon-chooser label=\"Folder icon\" [(value)]=\"icon\" />"
+ * })
+ * export class FolderIconComponent {
+ *   protected readonly icon: WritableSignal<string | null> = signal("folder");
+ * }
+ * ```
+ */
+export declare class IconChooserComponent {
+  /**
+   * Creates the chooser, which Angular does for each `nol-icon-chooser`
+   * element; once rendered, it measures its grid and follows its size.
+   *
+   * @example
+   * ```ts
+   * import { Component } from "@angular/core";
+   * import { IconChooserComponent } from "@noldova/ui.components.angular";
+   *
+   * @Component({
+   *   selector: "nol-badge-icon",
+   *   imports: [IconChooserComponent],
+   *   template: "<nol-icon-chooser label=\"Badge icon\" [allowsNone]=\"false\" />"
+   * })
+   * export class BadgeIconComponent {}
+   * ```
+   */
+  public constructor();
+
+  /**
+   * The grid's accessible name, such as the title of the setting it changes.
+   */
+  public readonly label: InputSignal<string>;
+
+  /**
+   * The icon names the grid offers, in this order; {@link IconNames.all}, the
+   * whole set, by default. The search keeps the names that hold every word
+   * typed, words parted by spaces, underscores or hyphens.
+   */
+  public readonly names: InputSignal<readonly string[]>;
+
+  /**
+   * Whether the grid offers "No icon" first, whose value is null; true by
+   * default.
+   */
+  public readonly allowsNone: InputSignal<boolean>;
+
+  /**
+   * Whether the chooser refuses a change: the grid stays focusable, marked
+   * `aria-disabled`, the field is read-only and a letter typed in the grid
+   * stays out of it, and a click, Enter or Space chooses nothing. False by
+   * default.
+   */
+  public readonly disabled: InputSignal<boolean>;
+
+  /**
+   * The chosen icon's name, or null for none, the default; the chooser sets
+   * it when the person chooses.
+   */
+  public readonly value: ModelSignal<string | null>;
+
+  /**
+   * Emits when the focus leaves the chooser, for a press elsewhere, a Tab
+   * past it or the window losing the focus, and not when it moves between
+   * the field and the grid; a signal forms field marks itself touched on it.
+   */
+  public readonly touch: OutputEmitterRef<void>;
+}
+
+/**
+ * The names of the kit's icon set, the Material Symbols the kit's font
+ * holds, generated from the pinned `material-symbols` package by
+ * `npm run icons`; a check fails when the two differ.
+ *
+ * @example
+ * ```ts
+ * import { IconNames } from "@noldova/ui.components.angular";
+ *
+ * const folders: readonly string[] = IconNames.all.filter(t => t.includes("folder"));
+ * ```
+ */
+export declare class IconNames {
+  /**
+   * Every icon name, in the package's order, such as "folder" or "zoom_in".
+   */
+  public static readonly all: readonly string[];
+}

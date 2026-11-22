@@ -54,6 +54,7 @@ for (const isForced of [false, true])
       const arrived = shown();
       const frames = framesOf(30);
 
+      expect(document.getSelection()?.isCollapsed ?? true, "the document holds no selection, which would stop the reveal").toBe(true);
       expect([start, arrived, frames.every((t, i) => full.startsWith(t) && t.length >= (frames[i - 1] ?? arrived).length), (frames.at(-1) ?? String.empty).length > 50,
         frames.some(t => t === full)]).toEqual(["Hello", "Hello", true, true, false]);
     });

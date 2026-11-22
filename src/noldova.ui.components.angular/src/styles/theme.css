@@ -357,6 +357,9 @@
   --nol-reference-pill-padding: 0.625rem;
   --nol-reference-dot: 0.4375rem;
   --nol-reference-dot-gap: 0.3rem;
+  --nol-icon-chooser-cell: 2rem;
+  --nol-icon-chooser-glyph: 1.25rem;
+  --nol-icon-chooser-height: 12rem;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -36,6 +36,7 @@ describe("ScreenshotFixture", () => {
   };
 
   afterEach(() => {
+    getSelection()?.removeAllRanges();
     elements.splice(0).forEach(element => element.remove());
     scrollTo(0, 0);
   });
@@ -90,6 +91,13 @@ describe("ScreenshotFixture", () => {
     await expect(ScreenshotFixture.pixelsAsync(element)).rejects.toThrow("A frame around the element is scaled, 71 px wide on the page for 160 px inside it, so its pixels aren't the page's.");
   });
 
+  it("fails, naming the selection, when the element's document holds one, since its colors would paint over what the capture reads", async () => {
+    const element = placed("left: 3px; top: 4px; width: 30px; height: 20px; background: rgb(204, 51, 51)");
+    getSelection()?.selectAllChildren(element);
+
+    await expect(ScreenshotFixture.pixelsAsync(element)).rejects.toThrow("The element's document holds a selection, \"Ag\", whose colors would paint over what the capture reads.");
+  });
+
   it("reads the same pixels, byte for byte, as Playwright's screenshot of an element at a fractional place in the test's frame", async () => {
     const results: string[] = [];
     for (const style of ["left: 13.5px; top: 41.25px", "left: 200.75px; top: 7.5px"]) {
@@ -117,6 +125,10 @@ describe("ScreenshotFixture", () => {
       results.push(sameAs(DomFixture.at(together, index), await ScreenshotFixture.pixelsAsync(element)).replace(/^\S+ /u, ""));
 
     expect(results).toEqual(["true", "true", "true"]);
+  });
+
+  it("fails, naming what is missing, when it is given no element to read", async () => {
+    await expect(ScreenshotFixture.piecesAsync([])).rejects.toThrow("A capture reads at least one element, and none was given.");
   });
 
   it("fails, naming the viewport, for elements read in one capture that no scroll brings into the frame's viewport together", async () => {

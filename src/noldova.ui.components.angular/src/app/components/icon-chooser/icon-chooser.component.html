@@ -1,0 +1,31 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+<input #search nol-text-field type="search" class="nol-icon-chooser-search" [attr.aria-label]="partResources.iconChooserSearchLabel"
+  [placeholder]="partResources.iconChooserSearchPlaceholder" [attr.aria-controls]="listId" [readOnly]="disabled()" [attr.aria-disabled]="disabled() || null"
+  (input)="findTyped()" (keydown)="enterGrid($event)">
+<div #viewport class="nol-icon-chooser-viewport" role="listbox" tabindex="0" [id]="listId" [attr.aria-label]="label()"
+  [attr.aria-activedescendant]="activeId()" [attr.aria-disabled]="disabled() || null" (scroll)="follow()" (focus)="revealOnKeyboardFocus()" (keydown)="move($event)">
+  <span #probe class="nol-icon-chooser-probe" aria-hidden="true"></span>
+  <div class="nol-icon-chooser-rows" [style.height.px]="rowCount() * cellSize()">
+    <div class="nol-icon-chooser-cells" [style.--nol-icon-chooser-columns]="columns()" [style.top.px]="firstRow() * cellSize()">
+      @for (cell of shown(); track cell.index) {
+        <div role="option" class="nol-icon-chooser-cell" [id]="optionId(cell.index)" [class.nol-icon-chooser-active]="cell.index === active()"
+          [class.nol-icon-chooser-detached]="cell.top !== null" [style.top.px]="cell.top" [style.inset-inline-start.px]="cell.start"
+          [class.nol-icon-chooser-selected]="cell.name === value()" [attr.aria-selected]="cell.name === value()" [attr.aria-label]="spoken(cell.name)"
+          [attr.aria-setsize]="choices().length" [attr.aria-posinset]="cell.index + 1" [attr.aria-disabled]="disabled() || null" [title]="spoken(cell.name)"
+          (click)="choose(cell.index)">
+          <span class="material-symbols-rounded nol-icon-chooser-glyph" [class.nol-icon-chooser-none]="cell.name === null" aria-hidden="true">{{ cell.name ?? partResources.iconChooserNoneGlyph }}</span>
+        </div>
+      }
+    </div>
+  </div>
+  @if (choices().length === 0) {
+    <p class="nol-icon-chooser-nothing">{{ partResources.iconChooserNothingFound }}</p>
+  }
+</div>
+<span class="nol-icon-chooser-count" role="status">{{ resultCount() }}</span>

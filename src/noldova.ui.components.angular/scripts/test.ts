@@ -14,6 +14,7 @@ import { AngularTestReport } from "./angular/angular-test-report.ts";
 import { CoverageMerge } from "./angular/coverage-merge.ts";
 import { AngularNewestCheck } from "./checks/angular-newest-check.ts";
 import { FailureScreenshotCheck } from "./checks/failure-screenshot-check.ts";
+import { IconNamesCheck } from "./checks/icon-names-check.ts";
 import type { ICheck } from "./checks/interfaces/i-check.ts";
 import { KitBundleCheck } from "./checks/kit-bundle-check.ts";
 import { KitCopiesCheck } from "./checks/kit-copies-check.ts";
@@ -27,6 +28,7 @@ import { LayoutTraceSuite } from "../tests/fixtures/layout-trace-suite.ts";
 import { ProcessRunner } from "./processes/process-runner.ts";
 import { TemporaryFolder } from "./processes/temporary-folder.ts";
 import Script from "./script.ts";
+import { TestShard } from "./test-shard.ts";
 
 export class Test extends Script {
   private static readonly BLANK_LINE: string = "";
@@ -66,13 +68,13 @@ export class Test extends Script {
 
   public override async runAsync(): Promise<void> {
     const filters: string[] = [];
-    let shard: { readonly part: number; readonly parts: number } | null = null;
+    let shard: TestShard | null = null;
     for (const argument of process.argv.slice(2)) {
       if (Test.ACCEPTED_OPTIONS.includes(argument))
         continue;
       const match = Test.SHARD_PATTERN.exec(argument);
       if (match !== null && shard === null && Number(match[1]) <= Number(match[2])) {
-        shard = { part: Number(match[1]), parts: Number(match[2]) };
+        shard = new TestShard(Number(match[1]), Number(match[2]));
         continue;
       }
       if (argument.startsWith(Test.OPTION_PREFIX)) {
@@ -88,6 +90,7 @@ export class Test extends Script {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
+      await this.runCheckAsync(new IconNamesCheck(Test.ROOT));
       await this.runCheckAsync(new FailureScreenshotCheck(Test.ROOT, new ProcessRunner()));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));
@@ -123,7 +126,7 @@ export class Test extends Script {
       this.failed = true;
   }
 
-  private async runAngularTestsAsync(filters: readonly string[], shard: { readonly part: number; readonly parts: number } | null): Promise<number> {
+  private async runAngularTestsAsync(filters: readonly string[], shard: TestShard | null): Promise<number> {
     const specs = await this.report.listSpecFilesAsync();
     const matched = filters.length === 0 ? specs : specs.filter(t => filters.some(u => `${Test.KIT_FOLDER}/${t}`.includes(u)));
     const selected = shard === null ? matched : matched.filter((_, index) => index % shard.parts === shard.part - 1);

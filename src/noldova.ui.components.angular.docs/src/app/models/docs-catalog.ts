@@ -32,6 +32,7 @@ import { FieldMessagePage } from "./pages/field-message-page.js";
 import { FileBadgePage } from "./pages/file-badge-page.js";
 import { GroupHeaderPage } from "./pages/group-header-page.js";
 import { IconButtonPage } from "./pages/icon-button-page.js";
+import { IconChooserPage } from "./pages/icon-chooser-page.js";
 import { InlineCodePage } from "./pages/inline-code-page.js";
 import { MarkdownViewPage } from "./pages/markdown-view-page.js";
 import { MenuBarItemPage } from "./pages/menu-bar-item-page.js";
@@ -78,6 +79,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(FieldMessagePage.content, "field-message", DocsGroup.Inputs),
     DocsCatalog.componentPage(IconButtonPage.content, "icon-button", DocsGroup.Inputs),
     DocsCatalog.componentPage(SelectPage.content, "select", DocsGroup.Choices),
+    DocsCatalog.componentPage(IconChooserPage.content, "icon-chooser", DocsGroup.Choices),
     DocsCatalog.componentPage(SplitButtonPage.content, "split-button", DocsGroup.Inputs),
     DocsCatalog.componentPage(TextFieldPage.content, "text-field", DocsGroup.Inputs),
     DocsCatalog.componentPage(TextFieldBoxPage.content, "text-field-box", DocsGroup.Inputs),

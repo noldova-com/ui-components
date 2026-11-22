@@ -13,6 +13,7 @@ import { GalleryChoiceRowComponent } from "../../../../src/app/components/galler
 import { GalleryColorChooserComponent } from "../../../../src/app/components/gallery/gallery-color-chooser.component";
 import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
 import { GalleryIconButtonComponent } from "../../../../src/app/components/gallery/gallery-icon-button.component";
+import { GalleryIconChooserComponent } from "../../../../src/app/components/gallery/gallery-icon-chooser.component";
 import { GalleryRadioComponent } from "../../../../src/app/components/gallery/gallery-radio.component";
 import { GallerySelectComponent } from "../../../../src/app/components/gallery/gallery-select.component";
 import { GallerySplitButtonComponent } from "../../../../src/app/components/gallery/gallery-split-button.component";
@@ -22,7 +23,8 @@ import { GalleryState } from "../../../../src/app/enums/gallery-state";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Focus cells of the forms section", () => {
-  const specimens = [GalleryButtonComponent, GalleryCheckboxComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryColorChooserComponent, GalleryIconButtonComponent, GalleryRadioComponent, GallerySelectComponent, GallerySplitButtonComponent, GallerySwitchComponent, GalleryTextFieldComponent];
+  const specimens = [GalleryButtonComponent, GalleryCheckboxComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryColorChooserComponent, GalleryIconButtonComponent,
+    GalleryIconChooserComponent, GalleryRadioComponent, GallerySelectComponent, GallerySplitButtonComponent, GallerySwitchComponent, GalleryTextFieldComponent];
 
   it.each(GalleryStateFixture.specimens(specimens))("shows in each of the Focus cells of $name the look its control has when it really holds the keyboard focus", async ({ specimen }) => {
     await GalleryStateFixture.expectFocusCellsShowTheirLookAsync(specimen);

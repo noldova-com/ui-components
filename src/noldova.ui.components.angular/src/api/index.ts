@@ -256,3 +256,5 @@ export { TypographyPainter } from "../app/services/typography-painter.js";
 export { AvatarColors } from "../app/models/avatar-colors.js";
 export { ColorChoices } from "../app/models/color-choices.js";
 export { DefaultTheme } from "../app/models/default-theme.js";
+export { IconChooserComponent } from "../app/components/icon-chooser/icon-chooser.component.js";
+export { IconNames } from "../app/models/icon-names.js";

@@ -307,6 +307,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [File badge](kit/file-badge.md)
 - [Group header](kit/group-header.md)
 - [Icon button](kit/icon-button.md)
+- [Icon chooser](kit/icon-chooser.md)
 - [Inline code](kit/inline-code.md)
 - [Jump to latest](kit/jump-to-latest.md)
 - [Link reference chip and card](kit/link-reference.md)

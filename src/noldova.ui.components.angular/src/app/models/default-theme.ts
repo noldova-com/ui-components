@@ -530,7 +530,10 @@ export class DefaultTheme {
       ["reference-pill-height", "1.75rem"],
       ["reference-pill-padding", "0.625rem"],
       ["reference-dot", "0.4375rem"],
-      ["reference-dot-gap", "0.3rem"]
+      ["reference-dot-gap", "0.3rem"],
+      ["icon-chooser-cell", "2rem"],
+      ["icon-chooser-glyph", "1.25rem"],
+      ["icon-chooser-height", "12rem"]
     ]),
     new Map([["tab", "pill"]]));
 }

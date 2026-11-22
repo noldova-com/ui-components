@@ -1,0 +1,18 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+<nol-gallery-specimen [name]="text.iconChooser" [size]="sizes.Wide" noHover noLongText>
+  <nol-gallery-cell [caption]="text.defaultState">
+    <nol-icon-chooser [label]="text.iconChooserLabel" [(value)]="icon" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.disabled">
+    <nol-icon-chooser [label]="text.disabled" [disabled]="true" [value]="text.iconChooserInitial" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-icon-chooser [nolGalleryFocus]="focusedIconChooser" [label]="text.focus" [value]="text.iconChooserInitial" />
+  </nol-gallery-cell>
+</nol-gallery-specimen>

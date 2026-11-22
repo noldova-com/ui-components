@@ -159,6 +159,15 @@ describe("ComponentPageComponent", () => {
       inputs: ["options", "value", "label", "describedBy", "disabled"],
       outputs: ["valueChange"]
     },
+    IconChooserComponent: {
+      specimen: "Icon chooser",
+      controls: "nol-icon-chooser",
+      roles: ["nol-icon-chooser input[type=\"search\"][aria-label=\"Search icons\"]", "nol-icon-chooser [role=\"listbox\"][aria-label=\"Folder icon\"]",
+        "nol-icon-chooser [role=\"option\"][aria-selected=\"true\"][aria-label=\"folder\"]", "nol-icon-chooser [role=\"status\"]"],
+      keys: ["Arrow keys", "Page Up, Page Down", "Home, End", "Enter, Space", "A letter", "Arrow Down in the search field"],
+      inputs: ["label", "names", "allowsNone", "disabled", "value"],
+      outputs: ["touch"]
+    },
     MenuComponent: {
       specimen: "Menu",
       controls: "nol-menu, button[aria-haspopup=\"menu\"]",

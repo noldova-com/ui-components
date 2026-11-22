@@ -78,7 +78,7 @@ class KitSectionControls {
 const kitSectionControls: readonly KitSectionControls[] = [
   new KitSectionControls(GalleryFormsComponent, ["ButtonComponent", "CheckboxComponent", "ChipComponent", "ChoicePillsComponent", "ChoiceRowComponent", "ColorChooserComponent", "ColorPickerComponent", "ConfigurationTableActionDirective",
     "ConfigurationTableComponent", "ConfigurationTableDirective", "ConfigurationTableFillDirective", "ConfigurationTableRowActionsDirective",
-    "ConfigurationTableShareDirective", "FieldMessageComponent", "IconButtonComponent", "MenuTriggerDirective", "MeterComponent", "ProgressComponent",
+    "ConfigurationTableShareDirective", "FieldMessageComponent", "IconButtonComponent", "IconChooserComponent", "MenuTriggerDirective", "MeterComponent", "ProgressComponent",
     "RadioComponent", "RadioGroupComponent", "RevealDelayDirective", "SelectComponent", "SpinnerComponent", "SplitButtonComponent", "SwitchComponent", "TextFieldBoxComponent", "TextFieldComponent",
     "TextFieldEndDirective", "TooltipDirective"]),
   new KitSectionControls(GalleryNavigationComponent, ["AvatarComponent", "CanvasComponent", "CanvasItemDirective", "CanvasMapComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "MessageActionDirective",

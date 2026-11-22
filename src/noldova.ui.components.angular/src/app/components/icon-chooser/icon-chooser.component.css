@@ -1,0 +1,130 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-icon-chooser-search {
+  width: 100%;
+}
+
+.nol-icon-chooser-viewport {
+  position: relative;
+  box-sizing: border-box;
+  height: var(--nol-icon-chooser-height);
+  overflow-y: auto;
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-radius-small);
+  outline: none;
+
+  &:is(:focus-visible, [data-nol-state="Focus"]) {
+    outline: var(--nol-border-width) solid var(--nol-accent);
+    outline-offset: calc(var(--nol-border-width) * -1);
+
+    @media (forced-colors: active) {
+      outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    }
+  }
+}
+
+.nol-icon-chooser-probe {
+  position: absolute;
+  width: 0;
+  height: var(--nol-icon-chooser-cell);
+  visibility: hidden;
+}
+
+.nol-icon-chooser-rows {
+  position: relative;
+}
+
+.nol-icon-chooser-cells {
+  position: absolute;
+  inset-inline: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--nol-icon-chooser-columns, 1), var(--nol-icon-chooser-cell));
+  grid-auto-rows: var(--nol-icon-chooser-cell);
+}
+
+.nol-icon-chooser-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-icon-color);
+  cursor: pointer;
+
+  &:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]) {
+    background-color: var(--nol-toolbar-hover);
+
+    @media (forced-colors: active) {
+      outline: var(--nol-border-width) dashed Highlight;
+      outline-offset: calc(var(--nol-border-width) * -1);
+    }
+  }
+
+  &.nol-icon-chooser-selected {
+    background-color: var(--nol-selected);
+
+    @media (forced-colors: active) {
+      color: HighlightText;
+      forced-color-adjust: none;
+      background-color: Highlight;
+    }
+  }
+
+  &.nol-icon-chooser-detached {
+    position: absolute;
+    inline-size: var(--nol-icon-chooser-cell);
+    block-size: var(--nol-icon-chooser-cell);
+  }
+
+  &[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: default;
+
+    @media (forced-colors: active) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}
+
+.nol-icon-chooser-viewport:is(:focus-visible, [data-nol-state="Focus"]) .nol-icon-chooser-active {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: calc(var(--nol-border-width) * -2);
+  }
+}
+
+.nol-icon-chooser-glyph {
+  font-size: var(--nol-icon-chooser-glyph);
+}
+
+.nol-icon-chooser-none {
+  color: var(--nol-text-muted);
+}
+
+.nol-icon-chooser-nothing {
+  margin: 0;
+  padding: var(--nol-space-2);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+}
+
+.nol-icon-chooser-count {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+}

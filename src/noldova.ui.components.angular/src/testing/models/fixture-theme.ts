@@ -529,7 +529,10 @@ export class FixtureTheme {
     ["reference-pill-height", "2rem"],
     ["reference-pill-padding", "0.75rem"],
     ["reference-dot", "0.5rem"],
-    ["reference-dot-gap", "0.375rem"]
+    ["reference-dot-gap", "0.375rem"],
+    ["icon-chooser-cell", "2.25rem"],
+    ["icon-chooser-glyph", "1.5rem"],
+    ["icon-chooser-height", "13.5rem"]
   ]);
   private static readonly SHAPES: ReadonlyMap<string, string> = new Map([["tab", "pill"]]);
 
