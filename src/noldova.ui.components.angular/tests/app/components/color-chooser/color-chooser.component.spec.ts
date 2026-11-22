@@ -81,7 +81,8 @@ describe("ColorChooserComponent", () => {
   const names = (): readonly (string | null)[] => items().map(t => t.getAttribute("aria-label"));
   const checked = (): readonly (string | null)[] => items().filter(t => t.getAttribute("aria-checked") === "true").map(t => t.getAttribute("aria-label"));
   const custom = (): HTMLButtonElement => DomFixture.present(items().at(-1));
-  const warning = (): HTMLElement | null => DomFixture.maybe(chooser(), "nol-field-message");
+  const warning = (): HTMLElement | null => DomFixture.maybe(chooser(), "nol-field-message:not(.nol-color-chooser-warning-room)");
+  const warningRoom = (): HTMLElement => DomFixture.one(chooser(), ".nol-color-chooser-warning-room");
   const picker = (): HTMLElement | null => document.querySelector("nol-color-picker");
   const swatchNames = ["Blue", "Teal", "Green", "Amber", "Orange", "Red", "Magenta", "Purple"];
 
@@ -389,6 +390,45 @@ describe("ColorChooserComponent", () => {
         expect(style.borderTopLeftRadius).toBe("50%");
         expect(DomFixture.present(warning()).getBoundingClientRect().top).toBeGreaterThanOrEqual(group().getBoundingClientRect().bottom - 1 / 32);
       });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const isForced of [false, true])
+      it(`keeps its own and the next element's top and height while a color dragged in its picker crosses the contrast limit and back, in ${mode} mode, forced colors ${isForced}`,
+        async () => {
+          render(DefaultTheme.theme, mode);
+          if (isForced)
+            await ForcedColorsFixture.activateAsync();
+          try {
+            await userEvent.click(custom());
+            fixture.detectChanges();
+            await DomChangeFixture.untilAsync(() => expect(picker()).not.toBeNull());
+            const area = DomFixture.one(DomFixture.present(picker()), ".nol-color-picker-area");
+            const held = new Set<number>();
+            vi.spyOn(area, "setPointerCapture").mockImplementation(t => void held.add(t));
+            vi.spyOn(area, "hasPointerCapture").mockImplementation(t => held.has(t));
+            vi.spyOn(area, "releasePointerCapture").mockImplementation(t => void held.delete(t));
+            const after = DomFixture.one(DomFixture.host(fixture), ".after");
+            const placeOf = (element: HTMLElement): string => `${element.getBoundingClientRect().top} ${element.getBoundingClientRect().height}`;
+            const shown: boolean[] = [];
+            const places = new Set<string>();
+            const room = [getComputedStyle(warningRoom()).visibility, warningRoom().getAttribute("aria-hidden"), warningRoom().textContent?.trim()];
+
+            for (const [index, share] of [0.5, 0, 0.5, 1, 0.5].entries()) {
+              const box = area.getBoundingClientRect();
+              area.dispatchEvent(new PointerEvent(index === 0 ? "pointerdown" : "pointermove",
+                { button: 0, buttons: 1, clientX: box.left + 1, clientY: box.top + box.height * share, pointerId: 7, bubbles: true, cancelable: true }));
+              fixture.detectChanges();
+              shown.push(warning() !== null);
+              places.add(`${placeOf(chooser())} ${placeOf(after)}`);
+            }
+            area.dispatchEvent(new PointerEvent("pointerup", { button: 0, pointerId: 7, bubbles: true }));
+
+            expect([shown, places.size]).toEqual([[false, true, false, true, false], 1]);
+            expect(room).toEqual(["hidden", "true", "Low contrast in the light and dark themes: this color may be hard to see on some surfaces."]);
+          } finally {
+            await ForcedColorsFixture.resetAsync();
+          }
+        });
 
   it("is 1.5rem round items 0.5rem apart in the default theme, wrapping onto further lines within its width", () => {
     render();

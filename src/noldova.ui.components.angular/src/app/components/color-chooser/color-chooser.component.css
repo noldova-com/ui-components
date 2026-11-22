@@ -102,6 +102,18 @@
   visibility: visible;
 }
 
+.nol-color-chooser-warning {
+  display: grid;
+}
+
+.nol-color-chooser-warning > nol-field-message {
+  grid-area: 1 / 1;
+}
+
+.nol-color-chooser-warning-room {
+  visibility: hidden;
+}
+
 .nol-color-chooser-popover {
   --nol-popover-preferred-width: calc(var(--nol-color-picker-width) + var(--nol-space-3) * 2 + var(--nol-border-width) * 2);
 }
