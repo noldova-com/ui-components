@@ -10,6 +10,17 @@ import { ArgumentException } from "@noldova/context.exceptions";
 
 import { SelectOption } from "../../../src/app/models/select-option";
 
+// What a refused option names: the parameter it refused and the exception's message.
+class Refusal {
+  public readonly parameterName: string | undefined;
+  public readonly message: string;
+
+  public constructor(parameterName: string | undefined, message: string) {
+    this.parameterName = parameterName;
+    this.message = message;
+  }
+}
+
 describe("SelectOption", () => {
   it("holds an option's value and the title it shows", () => {
     const option = new SelectOption("dark", "Dark");
@@ -37,22 +48,24 @@ describe("SelectOption", () => {
   });
 
   it("refuses an icon that isn't a Material Symbols name of IconNames.all, and an icon color that is neither a swatch nor a #rrggbb or #rgb color", () => {
-    const refusal = (create: () => SelectOption): [string | undefined, string] | null => {
+    const refusal = (create: () => SelectOption): Refusal | null => {
       try {
         create();
         return null;
       } catch (error) {
-        return error instanceof ArgumentException ? [error.parameterName, error.message] : ["other", ""];
+        if (!(error instanceof ArgumentException))
+          throw error;
+        return new Refusal(error.parameterName, error.message);
       }
     };
 
     expect([refusal(() => new SelectOption("design", "Design", null, false, "Groups")), refusal(() => new SelectOption("design", "Design", null, false, "")),
       refusal(() => new SelectOption("design", "Design", null, false, "groups", "cyan")), refusal(() => new SelectOption("design", "Design", null, false, "groups", "#12345")),
       refusal(() => new SelectOption("design", "Design", null, false, null, "red("))]).toEqual([
-      ["icon", "An option's icon is a Material Symbols name of IconNames.all, which \"Groups\" is not. (Parameter 'icon')"],
-      ["icon", "An option's icon is a Material Symbols name of IconNames.all, which \"\" is not. (Parameter 'icon')"],
-      ["iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"cyan\" is not. (Parameter 'iconColor')"],
-      ["iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"#12345\" is not. (Parameter 'iconColor')"],
-      ["iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"red(\" is not. (Parameter 'iconColor')"]]);
+      new Refusal("icon", "An option's icon is a Material Symbols name of IconNames.all, which \"Groups\" is not. (Parameter 'icon')"),
+      new Refusal("icon", "An option's icon is a Material Symbols name of IconNames.all, which \"\" is not. (Parameter 'icon')"),
+      new Refusal("iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"cyan\" is not. (Parameter 'iconColor')"),
+      new Refusal("iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"#12345\" is not. (Parameter 'iconColor')"),
+      new Refusal("iconColor", "An option's icon color is a kit swatch name or a #rrggbb or #rgb color, which \"red(\" is not. (Parameter 'iconColor')")]);
   });
 });
