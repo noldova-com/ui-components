@@ -150,14 +150,14 @@ describe("MarkdownTextReferences", () => {
     expect(JSON.stringify(before)).not.toContain(MarkdownNodeKind.Link);
   });
 
-  it("never asks about a comment, an instruction, a declaration or character data that closes, and asks about one that never does as text", () => {
+  it("never asks about a comment, an instruction, a declaration or character data that closes, and asks about one that never does, or a < that opens nothing, as text", () => {
     const references = new TestTextReferences();
-    const source = "#1 <!--> #2 <!---> #3 <!-- a #4 --> #5 <? b #6 ?> #7 <!DOCTYPE #8> #9 <![CDATA[ #10 ]]> #11 <? #12\n\na <!-- #13";
+    const source = "#1 <!--> #2 <!---> #3 <!-- a #4 --> #5 <? b #6 ?> #7 <!DOCTYPE #8> #9 <![CDATA[ #10 ]]> #11 <? #12\n\na <!-- #13\n\n#14 < 2 <3 #15";
 
     const tree = treeOf(source, references);
 
-    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/1", "issues/2", "issues/3", "issues/5", "issues/7", "issues/9", "issues/11", "issues/12", "issues/13"]);
-    expect(references.asked).toEqual(["#1 ", " #2 ", " #3 ", " #5 ", " #7 ", " #9 ", " #11 <? #12", "a <!-- #13"]);
+    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/1", "issues/2", "issues/3", "issues/5", "issues/7", "issues/9", "issues/11", "issues/12", "issues/13", "issues/14", "issues/15"]);
+    expect(references.asked).toEqual(["#1 ", " #2 ", " #3 ", " #5 ", " #7 ", " #9 ", " #11 <? #12", "a <!-- #13", "#14 < 2 <3 #15"]);
   });
 
   it("closes a tag's innermost open namesake, with the tags opened after it, and covers every run between an open tag and its closing tag", () => {
