@@ -87,10 +87,12 @@ describe("MarkdownMath", () => {
 
   it("reads a long paragraph of formulas that never close in work that grows with its length, not with its square, and leaves it as text", async () => {
     const parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
-    const sources = ["\\(".repeat(2_000), "\\[a ".repeat(1_000), "$a ".repeat(1_000)];
+    const sourcesOf = (count: number): readonly string[] => ["\\(".repeat(count), "\\[a ".repeat(count / 2), "$a ".repeat(count * 3 / 5)];
+    const mostReadPerCharacter = (sources: readonly string[]): number =>
+      Math.max(...sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length));
+    const [short, long] = [sourcesOf(2_000), sourcesOf(100_000)];
 
-    const readPerCharacter = sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length);
-
-    expect([Math.max(...readPerCharacter) < 4, (await Promise.all(sources.map(plainAsync))).map(t => t[1])]).toEqual([true, [[Text], [Text], [Text]]]);
+    expect(mostReadPerCharacter(short)).toBeLessThan(4);
+    expect([mostReadPerCharacter(long) < 4, (await Promise.all(long.map(plainAsync))).map(t => t[1])]).toEqual([true, [[Text], [Text], [Text]]]);
   });
 });
