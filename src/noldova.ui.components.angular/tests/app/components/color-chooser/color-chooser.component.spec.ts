@@ -391,6 +391,17 @@ describe("ColorChooserComponent", () => {
         expect(DomFixture.present(warning()).getBoundingClientRect().top).toBeGreaterThanOrEqual(group().getBoundingClientRect().bottom - 1 / 32);
       });
 
+  it("keeps the room of its longest warning below the group, hidden from sight and from screen readers, the live warning over it, at the chooser's width", () => {
+    render();
+    update(() => host.value.set("#E4E4E4"));
+    const room = warningRoom().getBoundingClientRect();
+    const shown = DomFixture.present(warning()).getBoundingClientRect();
+
+    expect([getComputedStyle(warningRoom()).visibility, warningRoom().getAttribute("aria-hidden"), warningRoom().textContent?.trim()])
+      .toEqual(["hidden", "true", "Low contrast in the light and dark themes: this color may be hard to see on some surfaces."]);
+    expect([shown.top - room.top, shown.left - room.left, room.width - chooser().getBoundingClientRect().width, shown.bottom <= room.bottom]).toEqual([0, 0, 0, true]);
+  });
+
   for (const mode of AppearanceFixture.modes)
     for (const isForced of [false, true])
       it(`keeps its own and the next element's top and height while a color dragged in its picker crosses the contrast limit and back, in ${mode} mode, forced colors ${isForced}`,
@@ -411,7 +422,6 @@ describe("ColorChooserComponent", () => {
             const placeOf = (element: HTMLElement): string => `${element.getBoundingClientRect().top} ${element.getBoundingClientRect().height}`;
             const shown: boolean[] = [];
             const places = new Set<string>();
-            const room = [getComputedStyle(warningRoom()).visibility, warningRoom().getAttribute("aria-hidden"), warningRoom().textContent?.trim()];
 
             for (const [index, share] of [0.5, 0, 0.5, 1, 0.5].entries()) {
               const box = area.getBoundingClientRect();
@@ -424,7 +434,6 @@ describe("ColorChooserComponent", () => {
             area.dispatchEvent(new PointerEvent("pointerup", { button: 0, pointerId: 7, bubbles: true }));
 
             expect([shown, places.size]).toEqual([[false, true, false, true, false], 1]);
-            expect(room).toEqual(["hidden", "true", "Low contrast in the light and dark themes: this color may be hard to see on some surfaces."]);
           } finally {
             await ForcedColorsFixture.resetAsync();
           }
