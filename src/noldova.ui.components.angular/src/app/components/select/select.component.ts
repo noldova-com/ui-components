@@ -17,6 +17,7 @@ import "@noldova/context.core";
 
 import { ChipKind } from "../../enums/chip-kind.js";
 import { OverlayAlignment } from "../../enums/overlay-alignment.js";
+import { ColorChoices } from "../../models/color-choices.js";
 import { OverlayAnchoring } from "../../models/overlay-anchoring.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { SelectGroup } from "../../models/select-group.js";
@@ -47,7 +48,7 @@ export class SelectComponent {
   private readonly optionTooltips: Signal<readonly TooltipDirective[]> = viewChildren(TooltipDirective);
   private readonly labelIdPrefix: string = `${SelectResources.selectGroupLabelIdPrefix}${SelectComponent.count++}-`;
   private readonly choices: Signal<readonly SelectOption[]> = computed(() => this.options().flatMap(t => t instanceof SelectGroup ? t.options : [t]));
-  private readonly chosen: Signal<SelectOption | null> = computed(() => this.choices().find(t => t.value === this.value()) ?? null);
+  protected readonly chosen: Signal<SelectOption | null> = computed(() => this.choices().find(t => t.value === this.value()) ?? null);
   private overlay: AnchoredOverlay | null = null;
   private revealer: ResizeObserver | null = null;
   private followsKeys: boolean = false;
@@ -86,6 +87,10 @@ export class SelectComponent {
 
   public focus(): void {
     this.button().nativeElement.focus();
+  }
+
+  protected iconColorOf(option: SelectOption): string | null {
+    return ColorChoices.toCss(option.iconColor);
   }
 
   protected toggle(button: HTMLButtonElement, list: TemplateRef<unknown>): void {
@@ -140,7 +145,7 @@ export class SelectComponent {
   }
 
   private static ignoreDisabled(event: Event): void {
-    if (!(event.target instanceof Element && event.target.closest(SelectResources.selectDisabledOptionSelector) !== null))
+    if (!(event.target instanceof Element && !Object.isNull(event.target.closest(SelectResources.selectDisabledOptionSelector))))
       return;
     event.preventDefault();
     event.stopPropagation();

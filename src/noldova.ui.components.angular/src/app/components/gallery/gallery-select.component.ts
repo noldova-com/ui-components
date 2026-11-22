@@ -29,5 +29,6 @@ export class GallerySelectComponent {
   protected readonly focusedSelect: string = GalleryResources.focusedSelect;
   protected readonly options: readonly SelectOption[] = GalleryResources.text.selectOptions.map(t => new SelectOption(t.value, t.title, t.tag));
   protected readonly groupOptions: readonly SelectGroup[] = GalleryResources.text.selectGroups.map(t => new SelectGroup(t.label, t.options.map(option => new SelectOption(option.value, option.title, option.tag, option.isDisabled))));
+  protected readonly iconOptions: readonly SelectOption[] = GalleryResources.text.selectIcons.map(t => new SelectOption(t.value, t.title, null, false, t.icon, t.iconColor));
   protected readonly choice: WritableSignal<string> = signal(GalleryResources.text.selectInitial);
 }
