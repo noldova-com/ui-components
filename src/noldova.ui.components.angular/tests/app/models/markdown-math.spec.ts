@@ -13,6 +13,7 @@ import { MarkdownNodeKind } from "../../../src/app/enums/markdown-node-kind";
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
 import { MarkdownParser } from "../../../src/app/services/markdown.parser";
+import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 describe("MarkdownMath", () => {
   const { Paragraph, Text, Math: InlineMath, MathDisplay, InlineCode, Code, Quote, BulletList, ListItem, SoftBreak } = MarkdownNodeKind;
@@ -82,5 +83,14 @@ describe("MarkdownMath", () => {
       [[Paragraph, [Text, "$$"], [SoftBreak, "\n"], [Text, "x"]], [Paragraph, [Text, "y"], [SoftBreak, "\n"], [Text, "$$"]]],
       [[Paragraph, [MathDisplay, "$$x$$", 2], [Text, " and more"]]]
     ]);
+  });
+
+  it("reads a long paragraph of formulas that never close in work that grows with its length, not with its square, and leaves it as text", async () => {
+    const parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
+    const sources = ["\\(".repeat(20_000), "\\[a ".repeat(10_000), "$a ".repeat(10_000)];
+
+    const readPerCharacter = sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length);
+
+    expect([Math.max(...readPerCharacter) < 4, (await Promise.all(sources.map(plainAsync))).map(t => t[1])]).toEqual([true, [[Text], [Text], [Text]]]);
   });
 });

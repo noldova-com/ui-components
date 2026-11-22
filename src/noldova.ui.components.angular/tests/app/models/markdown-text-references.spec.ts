@@ -19,6 +19,7 @@ import { MarkdownTextReferences } from "../../../src/app/models/markdown-text-re
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
 import { MarkdownParser } from "../../../src/app/services/markdown.parser";
 import { Resources } from "../../../src/resources";
+import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 class TestTextReferences implements ILinkReferenceSource {
   public readonly asked: string[] = [];
@@ -147,5 +148,34 @@ describe("MarkdownTextReferences", () => {
 
     expect([MarkdownTextReferences.of(null), MarkdownTextReferences.of(plain), treeOf("See #12", null), treeOf("See #12", plain)]).toEqual([null, null, before, before]);
     expect(JSON.stringify(before)).not.toContain(MarkdownNodeKind.Link);
+  });
+
+  it("never asks about a comment, an instruction, a declaration or character data that closes, and asks about one that never does as text", () => {
+    const references = new TestTextReferences();
+    const source = "#1 <!--> #2 <!---> #3 <!-- a #4 --> #5 <? b #6 ?> #7 <!DOCTYPE #8> #9 <![CDATA[ #10 ]]> #11 <? #12\n\na <!-- #13";
+
+    const tree = treeOf(source, references);
+
+    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/1", "issues/2", "issues/3", "issues/5", "issues/7", "issues/9", "issues/11", "issues/12", "issues/13"]);
+    expect(references.asked).toEqual(["#1 ", " #2 ", " #3 ", " #5 ", " #7 ", " #9 ", " #11 <? #12", "a <!-- #13"]);
+  });
+
+  it("closes a tag's innermost open namesake, with the tags opened after it, and covers every run between an open tag and its closing tag", () => {
+    const references = new TestTextReferences();
+    const source = "<b><b>#1</b>#2</b>#3 <i><u>#4</i>#5</u>#6 </b>#7\n\na <u>b **#8** c **#9** d</u> #10";
+
+    const tree = treeOf(source, references);
+
+    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/3", "issues/5", "issues/6", "issues/7", "issues/10"]);
+    expect(references.asked).toEqual(["#3 ", "#5", "#6 ", "#7", "a ", " #10"]);
+  });
+
+  it("reads a long paragraph of comments, instructions and declarations that never close in work that grows with its length, not with its square, and asks about all of it", () => {
+    const references = new TestTextReferences();
+    const sources = ["<?", "<!--", "<!a"].map(t => `a ${t.repeat(Math.floor(200_000 / t.length))}`);
+
+    const readPerCharacter = sources.map(source => TextScanFixture.scannedBy(() => treeOf(source, references)) / source.length);
+
+    expect([Math.max(...readPerCharacter) < 4, references.asked]).toEqual([true, sources]);
   });
 });
