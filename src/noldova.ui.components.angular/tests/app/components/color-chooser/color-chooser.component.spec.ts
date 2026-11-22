@@ -428,7 +428,7 @@ describe("ColorChooserComponent", () => {
               area.dispatchEvent(new PointerEvent(index === 0 ? "pointerdown" : "pointermove",
                 { button: 0, buttons: 1, clientX: box.left + 1, clientY: box.top + box.height * share, pointerId: 7, bubbles: true, cancelable: true }));
               fixture.detectChanges();
-              shown.push(warning() !== null);
+              shown.push(!Object.isNull(warning()));
               places.add(`${placeOf(chooser())} ${placeOf(after)}`);
             }
             area.dispatchEvent(new PointerEvent("pointerup", { button: 0, pointerId: 7, bubbles: true }));
