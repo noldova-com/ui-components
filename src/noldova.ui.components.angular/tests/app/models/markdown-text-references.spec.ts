@@ -19,7 +19,6 @@ import { MarkdownTextReferences } from "../../../src/app/models/markdown-text-re
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
 import { MarkdownParser } from "../../../src/app/services/markdown.parser";
 import { Resources } from "../../../src/resources";
-import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 class TestTextReferences implements ILinkReferenceSource {
   public readonly asked: string[] = [];
@@ -170,12 +169,23 @@ describe("MarkdownTextReferences", () => {
     expect(references.asked).toEqual(["#3 ", "#5", "#6 ", "#7", "a ", " #10"]);
   });
 
-  it("reads a long paragraph of comments, instructions and declarations that never close in work that grows with its length, not with its square, and asks about all of it", () => {
-    const references = new TestTextReferences();
-    const sources = ["<?", "<!--", "<!a"].map(t => `a ${t.repeat(Math.floor(200_000 / t.length))}`);
+  it("takes about four times as long, never sixteen, for a paragraph of unclosed comments, instructions, declarations or unmatched tags four times as long, and asks about all of an unclosed one", () => {
+    const paragraphOf = (unit: string, length: number): string => `a ${unit.repeat(Math.floor(length / unit.length))}`;
+    const fastestOf = (source: string, references: TestTextReferences): number => Math.min(...Array.from({ length: 3 }, () => {
+      const start = performance.now();
+      treeOf(source, references);
+      return performance.now() - start;
+    }));
+    const growthOf = (make: (length: number) => string): readonly [boolean, readonly string[]] => {
+      const references = new TestTextReferences();
+      const ratio = fastestOf(make(200_000), references) / fastestOf(make(50_000), references);
+      return [ratio < 8, [...new Set(references.asked)]];
+    };
+    const units = ["<?", "<!--", "<!a"];
 
-    const readPerCharacter = sources.map(source => TextScanFixture.scannedBy(() => treeOf(source, references)) / source.length);
+    const unclosed = units.map(unit => growthOf(length => paragraphOf(unit, length)));
+    const [tagsGrowLinearly] = growthOf(length => `${paragraphOf("<a>", length / 2)} ${paragraphOf("</b>", length / 2)}`);
 
-    expect([Math.max(...readPerCharacter) < 4, references.asked]).toEqual([true, sources]);
+    expect([unclosed, tagsGrowLinearly]).toEqual([units.map(unit => [true, [paragraphOf(unit, 200_000), paragraphOf(unit, 50_000)]]), true]);
   });
 });
