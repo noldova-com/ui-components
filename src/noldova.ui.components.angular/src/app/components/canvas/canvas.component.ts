@@ -47,7 +47,9 @@ import { CanvasResources } from "./canvas.resources.js";
     "(pointercancel)": "onPointerEnd($event)",
     "(lostpointercapture)": "onPointerEnd($event)",
     "(focusin)": "onFocusIn($event)",
-    "(keydown)": "onKeyDown($event)"
+    "(keydown)": "onKeyDown($event)",
+    "(mousedown)": "onMouseDown()",
+    "(mouseup)": "forgetPress()"
   }
 })
 export class CanvasComponent {
@@ -60,6 +62,8 @@ export class CanvasComponent {
   private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   private readonly pointers: Map<number, CanvasPoint> = new Map<number, CanvasPoint>();
   private pressStart: CanvasPoint = new CanvasPoint(0, 0);
+  private pointed: EventTarget | null = null;
+  private pressed: EventTarget | null = null;
   private hasFitted: boolean = false;
 
   protected readonly partResources: typeof CanvasResources = CanvasResources;
@@ -150,6 +154,7 @@ export class CanvasComponent {
   }
 
   protected onPointerDown(event: PointerEvent): void {
+    this.pointed = event.target;
     const path = event.composedPath();
     const inside = path.slice(0, path.indexOf(this.host)).filter((t): t is Element => t instanceof Element);
     if (event.button !== Resources.primaryButton || inside.some(t => t.matches(CanvasResources.canvasNoPanSelector)))
@@ -186,9 +191,23 @@ export class CanvasComponent {
       this.isDragging.set(false);
   }
 
+  // A press focuses with its mousedown, which only a click or a tap sends, a tap's after its pointerup; a press that slides off, drags,
+  // is held for its menu or is cancelled sends none. The mousedown takes its pointerdown's target, since the canvas's capture of the
+  // pointer may send the mousedown itself to the canvas, and its mouseup, the next key or the focus it gives ends it.
+  protected onMouseDown(): void {
+    this.pressed = this.pointed;
+    this.pointed = null;
+  }
+
+  protected forgetPress(): void {
+    this.pressed = null;
+  }
+
   protected onFocusIn(event: FocusEvent): void {
     const target = event.target;
-    if (!(target instanceof Element) || !this.plane().nativeElement.contains(target))
+    const pressed = this.pressed;
+    this.pressed = null;
+    if (!(target instanceof Element) || !this.plane().nativeElement.contains(target) || (pressed instanceof Node && target.contains(pressed)))
       return;
     const plane = this.plane().nativeElement;
     const drawn = plane.getBoundingClientRect();
@@ -209,6 +228,7 @@ export class CanvasComponent {
   }
 
   protected onKeyDown(event: KeyboardEvent): void {
+    this.pressed = null;
     if (event.target !== this.host || event.ctrlKey || event.altKey || event.metaKey)
       return;
     const step = CanvasResources.canvasKeyStepRem * this.rootSize();

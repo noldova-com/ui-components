@@ -10,6 +10,7 @@ import { ComponentPortal } from "@angular/cdk/portal";
 import { Component, Injector, computed, input, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
+import { cdp, userEvent } from "vitest/browser";
 
 import { CanvasMapComponent } from "../../../../src/app/components/canvas-map/canvas-map.component";
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
@@ -17,6 +18,7 @@ import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.co
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
+import { DragGesture } from "../../../../src/app/models/drag-gesture";
 import { OverlayAnchoring } from "../../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
 import { AnchoredOverlay } from "../../../../src/app/services/anchored-overlay";
@@ -24,6 +26,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
 @Component({
@@ -40,7 +43,7 @@ class OverlayContentComponent {
         @if (cards().length > 0) {
           <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(' + columns() + ', 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
             @for (card of cards(); track card) {
-              <div nolCanvasItem class="card" [style.height.rem]="5">{{ card }} <button type="button" class="open">Open</button></div>
+              <div nolCanvasItem class="card" [style.height.rem]="5">{{ card }} <button type="button" class="open" (click)="opened.update(t => [...t, card])">Open</button></div>
             }
           </div>
         }
@@ -54,6 +57,7 @@ class CanvasHostComponent {
   public readonly mapShown = signal(true);
   public readonly hidden = signal(false);
   public readonly alignment = signal(CanvasFitAlignment.Centre);
+  public readonly opened = signal<readonly number[]>([]);
 }
 
 describe("CanvasComponent", () => {
@@ -109,6 +113,49 @@ describe("CanvasComponent", () => {
   };
 
   const rootSize = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // The canvas's free area: inside its edges, below the tool band and above the map, each by the band's inset.
+  const free = (): DOMRect => {
+    const inset = band().offsetTop;
+    const top = band().getBoundingClientRect().bottom + inset;
+    const bottom = map().getBoundingClientRect().bottom - 7 * rootSize() - inset;
+    return new DOMRect(canvas().getBoundingClientRect().left + canvas().clientLeft + inset, top, canvas().clientWidth - inset * 2, bottom - top);
+  };
+  const inside = (box: DOMRect, area: DOMRect): boolean =>
+    box.left >= area.left - 2 && box.top >= area.top - 2 && box.right <= area.right + 2 && box.bottom <= area.bottom + 2;
+  // A point of this frame in the top page's coordinates, where the browser's own input lands.
+  const onPage = (x: number, y: number): CanvasPoint => {
+    let point = new CanvasPoint(x, y);
+    for (let shown: Window = window, frame = shown.frameElement; !Object.isNull(frame); shown = shown.parent, frame = shown.frameElement) {
+      const box = frame.getBoundingClientRect();
+      const scale = box.width / shown.innerWidth;
+      point = new CanvasPoint(box.left + frame.clientLeft + point.x * scale, box.top + frame.clientTop + point.y * scale);
+    }
+    return point;
+  };
+  // A tap of a finger at the point, as a touch screen sends it: its pointerup comes before the mousedown that focuses. No touch emulation, which
+  // leaves the page saying it has no hover and a coarse pointer after it ends, for every spec file after this one on the page.
+  const tapAsync = async (x: number, y: number, moved: number = 0): Promise<void> => {
+    const point = onPage(x, y);
+    await cdp().send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: point.x, y: point.y }] });
+    if (moved !== 0) {
+      const to = onPage(x + moved, y);
+      await cdp().send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: to.x, y: to.y }] });
+    }
+    await cdp().send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  };
+  // Moves the browser's mouse and pen to the top page's corner, off this frame, so the point a tap or press left them at hovers nothing in
+  // the specs after.
+  const awayAsync = async (): Promise<void> => {
+    const pointerTypes: readonly ("mouse" | "pen")[] = ["mouse", "pen"];
+    for (const pointerType of pointerTypes)
+      await cdp().send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0, pointerType });
+  };
+  // A press of a pen's tip at the point.
+  const penAsync = async (x: number, y: number): Promise<void> => {
+    const point = onPage(x, y);
+    await cdp().send("Input.dispatchMouseEvent", { type: "mousePressed", x: point.x, y: point.y, button: "left", buttons: 1, clickCount: 1, pointerType: "pen" });
+    await cdp().send("Input.dispatchMouseEvent", { type: "mouseReleased", x: point.x, y: point.y, button: "left", buttons: 0, clickCount: 1, pointerType: "pen" });
+  };
 
   beforeEach(async () => {
     AppearanceFixture.apply();
@@ -393,14 +440,6 @@ describe("CanvasComponent", () => {
     await measuredAsync(24);
     [1, 2, 3, 4].forEach(() => button("zoom-in").click());
     await fixture.whenStable();
-    const free = (): DOMRect => {
-      const inset = band().offsetTop;
-      const top = band().getBoundingClientRect().bottom + inset;
-      const bottom = map().getBoundingClientRect().bottom - 7 * rootSize() - inset;
-      return new DOMRect(canvas().getBoundingClientRect().left + canvas().clientLeft + inset, top, canvas().clientWidth - inset * 2, bottom - top);
-    };
-    const inside = (box: DOMRect, area: DOMRect): boolean =>
-      box.left >= area.left - 2 && box.top >= area.top - 2 && box.right <= area.right + 2 && box.bottom <= area.bottom + 2;
     const last = DomFixture.oneOf(DomFixture.at(cards(), 23), ".open", HTMLButtonElement);
     const first = DomFixture.oneOf(DomFixture.at(cards(), 0), ".open", HTMLButtonElement);
     instance().centreOn(new CanvasPoint(0, 0));
@@ -417,6 +456,185 @@ describe("CanvasComponent", () => {
     await fixture.whenStable();
 
     expect([drawn, shown, kept, inside(first.getBoundingClientRect(), free())]).toEqual([true, [true, 0, 0], settled, true]);
+  });
+
+  // Card 7's Open button, zoomed in and placed across the canvas's left edge, so only a sliver of it shows.
+  const placeAcrossEdgeAsync = async (): Promise<HTMLButtonElement> => {
+    await measuredAsync(24);
+    [1, 2, 3, 4].forEach(() => button("zoom-in").click());
+    await fixture.whenStable();
+    const open = DomFixture.oneOf(DomFixture.at(cards(), 6), ".open", HTMLButtonElement);
+    await acrossEdgeAsync(open);
+    return open;
+  };
+  const acrossEdgeAsync = async (open: HTMLButtonElement): Promise<void> => {
+    instance().centreOn(new CanvasPoint(0, 0));
+    await fixture.whenStable();
+    const area = canvas().getBoundingClientRect();
+    const start = open.getBoundingClientRect();
+    const zoom = view().zoom;
+    const dx = area.left + canvas().clientLeft - start.width * 0.4 - start.left;
+    const dy = area.top + area.height / 2 - start.height / 2 - start.top;
+    instance().centreOn(new CanvasPoint(-dx / zoom, -dy / zoom));
+    await fixture.whenStable();
+  };
+
+  it("activates a control a press lands on and leaves it under the pointer, though it reaches past the free area, and still pans one the keyboard focuses into view", async () => {
+    const open = await placeAcrossEdgeAsync();
+    const above = DomFixture.oneOf(DomFixture.at(cards(), 5), ".open", HTMLButtonElement);
+    const area = canvas().getBoundingClientRect();
+    const placed = open.getBoundingClientRect();
+    const before = view();
+
+    await userEvent.click(open, { position: { x: area.left + canvas().clientLeft + 2 - placed.left, y: placed.height / 2 } });
+    await fixture.whenStable();
+    const pressed = [host.opened(), document.activeElement === open, view()];
+    const after = open.getBoundingClientRect();
+    await userEvent.tab({ shift: true });
+    await fixture.whenStable();
+    const reached = above.getBoundingClientRect();
+
+    expect(placed.left).toBeLessThan(area.left);
+    expect(placed.right).toBeGreaterThan(area.left + 2);
+    expect(pressed).toEqual([[7], true, before]);
+    AppearanceFixture.expectPixels(after.left, placed.left);
+    AppearanceFixture.expectPixels(after.top, placed.top);
+    expect(document.activeElement).toBe(above);
+    expect(view()).not.toEqual(before);
+    expect(inside(reached, free())).toBe(true);
+  });
+
+  it("activates a control a touch tap or a pen press lands on and leaves it under the finger or pen, though it reaches past the free area", async () => {
+    const open = await placeAcrossEdgeAsync();
+    const placed = open.getBoundingClientRect();
+    const x = canvas().getBoundingClientRect().left + canvas().clientLeft + 2;
+    const y = placed.top + placed.height / 2;
+    const before = view();
+
+    // What the page says of its pointer, which the spec files after this one on the page read, as a message showing its actions without a hover.
+    const input = (): unknown[] => [matchMedia("(hover: hover)").matches, matchMedia("(any-hover: hover)").matches, matchMedia("(pointer: fine)").matches,
+      navigator.maxTouchPoints];
+    const inputBefore = input();
+    let tapped: unknown[] = [];
+    let tappedLeft = Number.NaN;
+    let pressed: unknown[] = [];
+    try {
+      await tapAsync(x, y);
+      await vi.waitFor(() => expect(host.opened()).toEqual([7]), HangLimitFixture.wait);
+      await fixture.whenStable();
+      tapped = [document.activeElement === open, view()];
+      tappedLeft = open.getBoundingClientRect().left;
+      open.blur();
+      await penAsync(x, y);
+      await vi.waitFor(() => expect(host.opened()).toEqual([7, 7]), HangLimitFixture.wait);
+      await fixture.whenStable();
+      pressed = [document.activeElement === open, view()];
+    }
+    finally {
+      await awayAsync();
+    }
+
+    expect(placed.left).toBeLessThan(x - 2);
+    expect(tapped).toEqual([true, before]);
+    AppearanceFixture.expectPixels(tappedLeft, placed.left);
+    expect(pressed).toEqual([true, before]);
+    expect(input()).toEqual(inputBefore);
+    AppearanceFixture.expectPixels(open.getBoundingClientRect().left, placed.left);
+  });
+
+  it("leaves a card a touch tap focuses under the finger, though the canvas holds the pointer the tap's pointerup comes to", async () => {
+    const open = await placeAcrossEdgeAsync();
+    const card = DomFixture.at(cards(), 6);
+    card.tabIndex = -1;
+    const area = canvas().getBoundingClientRect();
+    const x = area.left + canvas().clientLeft + 2;
+    const shown = card.getBoundingClientRect();
+    const placed = open.getBoundingClientRect();
+    const before = view();
+
+    let tapped: unknown[] = [];
+    try {
+      await tapAsync(x, shown.bottom - 4);
+      await vi.waitFor(() => expect(document.activeElement).toBe(card), HangLimitFixture.wait);
+      await fixture.whenStable();
+      tapped = [host.opened(), view()];
+    }
+    finally {
+      await awayAsync();
+    }
+
+    expect(shown.left).toBeLessThan(area.left);
+    expect(placed.bottom).toBeLessThan(shown.bottom - 4);
+    expect(shown.bottom - 4).toBeLessThan(area.bottom);
+    expect(tapped).toEqual([[], before]);
+  });
+
+  it("activates a control under a touch tap that moves past the canvas's drag start but within the browser's tap distance, and leaves it under the finger", async () => {
+    const open = await placeAcrossEdgeAsync();
+    const placed = open.getBoundingClientRect();
+    const x = canvas().getBoundingClientRect().left + canvas().clientLeft + 2;
+    const moved = DragGesture.threshold * 2;
+
+    let movedBy = Number.NaN;
+    let focused = false;
+    try {
+      await tapAsync(x, placed.top + placed.height / 2, moved);
+      await vi.waitFor(() => expect(host.opened()).toEqual([7]), HangLimitFixture.wait);
+      await fixture.whenStable();
+      movedBy = open.getBoundingClientRect().left - placed.left;
+      focused = document.activeElement === open;
+    }
+    finally {
+      await awayAsync();
+    }
+
+    expect(focused).toBe(true);
+    // A press on a control never drags the canvas, so only a pan for the focus could move the button.
+    AppearanceFixture.expectPixels(movedBy, 0);
+  });
+
+  it("pans a control a program focuses into view once no click can follow a press on it: cancelled, slid off, dragged, held for its menu, released, or a key after it", async () => {
+    const open = await placeAcrossEdgeAsync();
+    const card = DomFixture.at(cards(), 6);
+    card.tabIndex = -1;
+    holdCapture(canvas());
+    const placed = open.getBoundingClientRect();
+    const x = placed.left + 2;
+    const y = placed.top + placed.height / 2;
+    // Presses the target and ends the press as `end` does, then has the program focus `focused`, which a press it didn't end keeps in place.
+    const pannedAsync = async (target: HTMLElement, focused: HTMLElement, end: () => void): Promise<boolean> => {
+      focused.blur();
+      await acrossEdgeAsync(open);
+      pointer(target, "pointerdown", 31, x, y);
+      end();
+      await fixture.whenStable();
+      const ended = view();
+      focused.focus();
+      await fixture.whenStable();
+      return view().x !== ended.x;
+    };
+
+    const cancelled = await pannedAsync(open, open, () => pointer(open, "pointercancel", 31, x, y));
+    const slid = await pannedAsync(open, open, () => pointer(open, "pointerup", 31, x + DragGesture.threshold + 20, y));
+    const dragged = await pannedAsync(card, card, () => {
+      pointer(canvas(), "pointermove", 31, x - 40, y);
+      pointer(canvas(), "pointerup", 31, x - 40, y);
+    });
+    const held = await pannedAsync(open, open, () => {
+      open.dispatchEvent(new MouseEvent("contextmenu", { clientX: x, clientY: y, bubbles: true, cancelable: true }));
+      pointer(open, "pointerup", 31, x, y);
+    });
+    const mouse = (type: string): boolean => open.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, bubbles: true, cancelable: true }));
+    const released = await pannedAsync(open, open, () => {
+      mouse("mousedown");
+      mouse("mouseup");
+    });
+    const keyed = await pannedAsync(open, open, () => {
+      mouse("mousedown");
+      key(canvas(), "Shift");
+    });
+
+    expect([cancelled, slid, dragged, held, released, keyed]).toEqual([true, true, true, true, true, true]);
   });
 
   it("keeps an overlay anchored to an item against it through a focus reveal, a keyboard pan and a zoom, and loses it once a pan takes the item out of its free area", async () => {

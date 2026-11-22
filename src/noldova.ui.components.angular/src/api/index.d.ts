@@ -2774,6 +2774,10 @@ export declare class CardComponent {
  * content, such as a button, a link or a field, or on an element marked
  * `data-nol-canvas-no-pan`, never starts a pan. With the focus on the canvas
  * itself, the arrow keys pan by 3rem, plus and minus zoom by 25%, and 0 fits.
+ * When the keyboard or a program moves the focus to an element outside its
+ * free area, it pans the element into view; a press that focuses an element
+ * pans nothing, so the element stays under the pointer and the click
+ * activates it.
  *
  * Once its content first has a size, it fits it: the whole content shows,
  * centred, never above 100%, below the toolbar and above the map. A resize
