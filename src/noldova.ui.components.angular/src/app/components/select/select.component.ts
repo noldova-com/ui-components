@@ -145,7 +145,7 @@ export class SelectComponent {
   }
 
   private static ignoreDisabled(event: Event): void {
-    if (!(event.target instanceof Element && event.target.closest(SelectResources.selectDisabledOptionSelector) !== null))
+    if (!(event.target instanceof Element && !Object.isNull(event.target.closest(SelectResources.selectDisabledOptionSelector))))
       return;
     event.preventDefault();
     event.stopPropagation();

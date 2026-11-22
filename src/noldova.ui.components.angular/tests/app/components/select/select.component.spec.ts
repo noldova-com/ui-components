@@ -521,6 +521,28 @@ describe("SelectComponent", () => {
     expect([button[0], getComputedStyle(icon).color]).toEqual([button[1], getComputedStyle(title).color]);
   });
 
+  it("draws the chosen and the active option's icon in the highlighted text its title takes in forced colors, and a disabled chosen one's in its title's GrayText", async () => {
+    await ForcedColorsFixture.activateAsync();
+    render();
+    renderIcons();
+    const colors = (index: number): [string, string] => {
+      const row = DomFixture.at(options(), index);
+      return [getComputedStyle(DomFixture.oneOf(row, ".nol-select-option-icon", HTMLElement)).color, getComputedStyle(DomFixture.oneOf(row, ".nol-select-option-title", HTMLElement)).color];
+    };
+    await openAsync(4);
+    const chosen = colors(0);
+    await userEvent.keyboard("{ArrowDown}");
+    await DomChangeFixture.untilAsync(() => expect(activeAt()).toBe(1));
+    const moved = [colors(0), colors(1)];
+    await userEvent.keyboard("{Escape}");
+    fixture.componentInstance.options.set([new SelectOption("design", "Design", null, true, "groups", "teal"), new SelectOption("build", "Build", null, false, "construction", "#c2410c")]);
+    fixture.detectChanges();
+    await openAsync(2);
+    const disabled = colors(0);
+
+    expect([chosen, ...moved, disabled].map(t => t[0] === t[1])).toEqual([true, true, true, true]);
+  });
+
   it("keeps an option's icon out of its name and its button's name", async () => {
     render();
     renderIcons();

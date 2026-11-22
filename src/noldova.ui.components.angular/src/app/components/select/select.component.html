@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
   [attr.aria-label]="name()" [attr.aria-describedby]="describedBy()" (click)="toggle(button, list)">
   @if (chosen(); as option) {
     @if (option.icon; as glyph) {
-      <span class="nol-select-icon material-symbols-rounded" aria-hidden="true" [style.color]="iconColorOf(option)">{{ glyph }}</span>
+      <span class="nol-select-icon material-symbols-rounded" aria-hidden="true" [style.--nol-select-icon-color]="iconColorOf(option)">{{ glyph }}</span>
     }
   }
   <span class="nol-select-value" data-truncates>{{ title() }}</span>
@@ -29,7 +29,7 @@ LICENSE file in the root directory of this source tree.
             [nolTooltipSide]="optionTooltipSide" [nolTooltipBeside]="partResources.selectListSelector" [nolTooltipTruncated]="true"
             (click)="closeOnCurrent(option.value, button)">
             @if (option.icon; as glyph) {
-              <span class="nol-select-option-icon material-symbols-rounded" aria-hidden="true" [style.color]="iconColorOf(option)">{{ glyph }}</span>
+              <span class="nol-select-option-icon material-symbols-rounded" aria-hidden="true" [style.--nol-select-icon-color]="iconColorOf(option)">{{ glyph }}</span>
             }
             <span class="nol-select-option-title" data-truncates>{{ option.title }}</span>
             @if (option.tag; as tag) {

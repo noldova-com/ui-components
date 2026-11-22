@@ -56,6 +56,7 @@
 .nol-select-icon,
 .nol-select-option-icon {
   flex: none;
+  color: var(--nol-select-icon-color, currentColor);
   font-size: var(--nol-icon);
 }
 
@@ -168,6 +169,10 @@
     &::before {
       background-color: Highlight;
     }
+
+    & .nol-select-option-icon {
+      color: HighlightText;
+    }
   }
 }
 
@@ -192,6 +197,10 @@
     --nol-icon-color: GrayText;
     --nol-list-highlight: GrayText;
     --nol-list-active-text: GrayText;
+  }
+
+  .nol-select-option[aria-disabled="true"]:is([aria-selected="true"], .cdk-option-active) .nol-select-option-icon {
+    color: GrayText;
   }
 
   .nol-select-option[aria-disabled="true"]:is([aria-selected="true"], .cdk-option-active)::before {

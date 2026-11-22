@@ -11607,9 +11607,10 @@ export declare class SelectOption {
   public readonly icon: string | null;
 
   /**
-   * The icon's color, a kit swatch name such as `teal` or a `#rrggbb` color,
-   * as `ColorChoices` takes it, or null, the default, for the text color. In
-   * forced colors the icon takes the system text color, as the title does.
+   * The icon's color, a kit swatch name such as `teal` or a `#rrggbb` or
+   * `#rgb` color, as `ColorChoices` takes it, or null, the default, for the
+   * text color. In forced colors the icon takes the system color its row's
+   * title takes.
    */
   public readonly iconColor: string | null;
 
@@ -11624,8 +11625,11 @@ export declare class SelectOption {
    * chosen; it can be chosen when left out or false.
    * @param icon The Material Symbols icon a select draws before its title;
    * none when left out or null.
-   * @param iconColor The icon's color, a kit swatch name or a `#rrggbb` color;
-   * the text color when left out or null.
+   * @param iconColor The icon's color, a kit swatch name or a `#rrggbb` or
+   * `#rgb` color; the text color when left out or null.
+   * @throws ArgumentException synchronously when the icon isn't a name of
+   * {@link IconNames.all}, or the icon color is neither a swatch name nor a
+   * `#rrggbb` or `#rgb` color.
    * @example
    * ```ts
    * import { Component, type WritableSignal, signal } from "@angular/core";
