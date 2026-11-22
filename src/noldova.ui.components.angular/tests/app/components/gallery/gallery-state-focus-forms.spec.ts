@@ -10,6 +10,7 @@ import { GalleryButtonComponent } from "../../../../src/app/components/gallery/g
 import { GalleryCheckboxComponent } from "../../../../src/app/components/gallery/gallery-checkbox.component";
 import { GalleryChoicePillsComponent } from "../../../../src/app/components/gallery/gallery-choice-pills.component";
 import { GalleryChoiceRowComponent } from "../../../../src/app/components/gallery/gallery-choice-row.component";
+import { GalleryColorChooserComponent } from "../../../../src/app/components/gallery/gallery-color-chooser.component";
 import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
 import { GalleryIconButtonComponent } from "../../../../src/app/components/gallery/gallery-icon-button.component";
 import { GalleryRadioComponent } from "../../../../src/app/components/gallery/gallery-radio.component";
@@ -21,7 +22,7 @@ import { GalleryState } from "../../../../src/app/enums/gallery-state";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Focus cells of the forms section", () => {
-  const specimens = [GalleryButtonComponent, GalleryCheckboxComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryIconButtonComponent, GalleryRadioComponent, GallerySelectComponent, GallerySplitButtonComponent, GallerySwitchComponent, GalleryTextFieldComponent];
+  const specimens = [GalleryButtonComponent, GalleryCheckboxComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryColorChooserComponent, GalleryIconButtonComponent, GalleryRadioComponent, GallerySelectComponent, GallerySplitButtonComponent, GallerySwitchComponent, GalleryTextFieldComponent];
 
   it.each(GalleryStateFixture.specimens(specimens))("shows in each of the Focus cells of $name the look its control has when it really holds the keyboard focus", async ({ specimen }) => {
     await GalleryStateFixture.expectFocusCellsShowTheirLookAsync(specimen);

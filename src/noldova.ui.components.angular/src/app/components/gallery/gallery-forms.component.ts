@@ -14,6 +14,7 @@ import { GalleryCheckboxComponent } from "./gallery-checkbox.component.js";
 import { GalleryChipComponent } from "./gallery-chip.component.js";
 import { GalleryChoicePillsComponent } from "./gallery-choice-pills.component.js";
 import { GalleryChoiceRowComponent } from "./gallery-choice-row.component.js";
+import { GalleryColorChooserComponent } from "./gallery-color-chooser.component.js";
 import { GalleryConfigurationTableComponent } from "./gallery-configuration-table.component.js";
 import { GalleryIconButtonComponent } from "./gallery-icon-button.component.js";
 import { GalleryMeterComponent } from "./gallery-meter.component.js";
@@ -29,9 +30,9 @@ import { GalleryTextFieldComponent } from "./gallery-text-field.component.js";
 
 @Component({
   selector: "nol-gallery-forms",
-  imports: [GalleryButtonComponent, GalleryCellComponent, GalleryCheckboxComponent, GalleryChipComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryConfigurationTableComponent,
-    GalleryIconButtonComponent, GalleryMeterComponent, GalleryProgressComponent, GalleryRadioComponent, GallerySelectComponent, GallerySpecimenComponent, GallerySpinnerComponent, GallerySplitButtonComponent,
-    GallerySwitchComponent, GalleryTextFieldComponent],
+  imports: [GalleryButtonComponent, GalleryCellComponent, GalleryCheckboxComponent, GalleryChipComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryColorChooserComponent,
+    GalleryConfigurationTableComponent, GalleryIconButtonComponent, GalleryMeterComponent, GalleryProgressComponent, GalleryRadioComponent, GallerySelectComponent, GallerySpecimenComponent,
+    GallerySpinnerComponent, GallerySplitButtonComponent, GallerySwitchComponent, GalleryTextFieldComponent],
   templateUrl: "./gallery-forms.component.html",
   styleUrl: "./gallery-forms.component.css"
 })

@@ -1,0 +1,127 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-2);
+  width: var(--nol-color-picker-width);
+  max-width: 100%;
+  min-width: 0;
+  color: var(--nol-text);
+  font-size: var(--nol-text-panel);
+}
+
+.nol-color-picker-area,
+.nol-color-picker-hue {
+  position: relative;
+  border-radius: var(--nol-radius-small);
+  touch-action: none;
+  cursor: crosshair;
+  forced-color-adjust: none;
+}
+
+.nol-color-picker-area {
+  height: var(--nol-color-area-height);
+  background-image: linear-gradient(to top, black, transparent), linear-gradient(to right, white, transparent);
+}
+
+.nol-color-picker-hue {
+  height: var(--nol-color-slider-height);
+  margin-inline: calc(var(--nol-color-slider-height) / 2);
+  background-image: linear-gradient(to right in hsl longer hue, hsl(0 100% 50%), hsl(359 100% 50%));
+}
+
+.nol-color-picker-thumb {
+  position: absolute;
+  box-sizing: border-box;
+  width: var(--nol-color-slider-height);
+  height: var(--nol-color-slider-height);
+  border: calc(var(--nol-border-width) * 2) solid var(--nol-panel);
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--nol-border-width) var(--nol-text-strong);
+  translate: -50% -50%;
+  outline: none;
+}
+
+.nol-color-picker-hue > .nol-color-picker-thumb {
+  top: 50%;
+}
+
+.nol-color-picker-thumb:is(:focus-visible, [data-nol-state="Focus"]) {
+  box-shadow: 0 0 0 var(--nol-border-width) var(--nol-text-strong), 0 0 0 calc(var(--nol-border-width) * 3) var(--nol-accent);
+
+  @media (forced-colors: active) {
+    box-shadow: none;
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
+.nol-color-picker-hex {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-color-picker-hex-text {
+  display: contents;
+}
+
+.nol-color-picker-compare {
+  display: flex;
+}
+
+.nol-color-picker-original,
+.nol-color-picker-swatch {
+  box-sizing: border-box;
+  width: var(--nol-color-swatch-size);
+  height: var(--nol-color-swatch-size);
+  margin: 0;
+  padding: 0;
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: var(--nol-radius-small);
+  forced-color-adjust: none;
+}
+
+.nol-color-picker-original {
+  border-inline-end-width: 0;
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.nol-color-picker-original + .nol-color-picker-swatch {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.nol-color-picker-original:is(:hover, [data-nol-state="Hover"]) {
+  border-color: var(--nol-text-strong);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
+.nol-color-picker-original:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-color-picker-hex-field {
+  min-width: 0;
+  font-family: var(--nol-font-mono);
+}

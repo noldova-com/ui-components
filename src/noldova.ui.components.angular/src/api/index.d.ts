@@ -490,7 +490,17 @@ export declare enum FieldMessageKind {
    * that names it in `aria-describedby` and never interrupts, however often
    * it renders.
    */
-  Note = "Note"
+  Note = "Note",
+
+  /**
+   * A warning that stays on screen while its state lasts, such as a chosen
+   * color with low contrast: warning-colored text that names the state, read
+   * with its field and with no live role, and it never blocks the field. Its
+   * owner speaks it politely through the {@link Announcer} when it appears or
+   * its text changes, since a live region added with its text is often not
+   * read.
+   */
+  Warning = "Warning"
 }
 
 /**
@@ -3119,6 +3129,55 @@ export declare enum ChoiceRowType {
 }
 
 /**
+ * A standard swatch of a {@link ColorChooserComponent}: one of the kit's
+ * palette colors, which keeps its own value in each theme and mode, from the
+ * theme's `swatch-<name>` key, so a choice reads well in light and dark.
+ * The value is what the chooser stores, and {@link ColorChoices.toCss}
+ * paints it as `var(--nol-swatch-<name>)`.
+ */
+export declare enum ColorSwatch {
+  /**
+   * Blue, `--nol-swatch-blue`.
+   */
+  Blue = "blue",
+
+  /**
+   * Teal, `--nol-swatch-teal`.
+   */
+  Teal = "teal",
+
+  /**
+   * Green, `--nol-swatch-green`.
+   */
+  Green = "green",
+
+  /**
+   * Amber, `--nol-swatch-amber`.
+   */
+  Amber = "amber",
+
+  /**
+   * Orange, `--nol-swatch-orange`.
+   */
+  Orange = "orange",
+
+  /**
+   * Red, `--nol-swatch-red`.
+   */
+  Red = "red",
+
+  /**
+   * Magenta, `--nol-swatch-magenta`.
+   */
+  Magenta = "magenta",
+
+  /**
+   * Purple, `--nol-swatch-purple`.
+   */
+  Purple = "purple"
+}
+
+/**
  * A choice row, `nol-choice-row`: a radio or a checkbox with a label and an
  * optional muted description under it, the whole row being the control's
  * hit target. The mark stays centered on the label's first line however the
@@ -4182,6 +4241,79 @@ export declare class AvatarColors {
    * @returns The hash, an unsigned 32-bit integer.
    */
   public static hashOf(key: string): number;
+}
+
+/**
+ * Reads the values a {@link ColorChooserComponent} stores: a
+ * {@link ColorSwatch}'s name, a custom color as `#RRGGBB`, or null for none,
+ * so an owner paints what was chosen wherever it shows it, such as an icon.
+ *
+ * @example
+ * ```ts
+ * import { ColorChoices } from "@noldova/ui.components.angular";
+ *
+ * const fill: string | null = ColorChoices.toCss("teal");
+ * ```
+ */
+export declare class ColorChoices {
+  /**
+   * The standard swatches, in the order the chooser shows them: Blue, Teal,
+   * Green, Amber, Orange, Red, Magenta and Purple.
+   */
+  public static readonly swatches: readonly ColorSwatch[];
+
+  /**
+   * Whether a value is a standard swatch's name.
+   *
+   * @param value The stored value.
+   * @returns True for one of {@link ColorChoices.swatches}.
+   */
+  public static isSwatch(value: string | null): value is ColorSwatch;
+
+  /**
+   * A custom color as `#RRGGBB` in capitals, from `#RGB` or `#RRGGBB` in either
+   * case.
+   *
+   * @param value The stored value.
+   * @returns The color, or null when the value is null, a swatch or no such
+   * color.
+   */
+  public static readCustom(value: string | null): string | null;
+
+  /**
+   * The CSS color that paints a value: `var(--nol-swatch-<name>)` for a
+   * swatch, so it follows the theme and mode it is painted in, or the custom
+   * color.
+   *
+   * @param value The stored value.
+   * @returns The color, or null for none or a value that is no color.
+   */
+  public static toCss(value: string | null): string | null;
+
+  /**
+   * The color a value has in a theme and mode, as `#RRGGBB`, for an owner that
+   * draws it outside CSS, such as on a canvas.
+   *
+   * @param value The stored value.
+   * @param theme The theme, whose `swatch-<name>` key, or its `author-<n>`
+   * fallback, gives a swatch's color.
+   * @param mode The mode.
+   * @returns The color, or null for none, a value that is no color, or a
+   * swatch the theme gives no opaque hex color.
+   */
+  public static resolve(value: string | null, theme: Theme, mode: ThemeMode): string | null;
+
+  /**
+   * The modes in which a custom color has under 3:1 contrast, the
+   * non-text minimum, with any of the theme's window, panel, raised and card
+   * surfaces; a surface the theme gives no opaque hex color is skipped.
+   *
+   * @param value The stored value.
+   * @param theme The theme.
+   * @returns Light, Dark, both in that order, or none; none for a swatch or
+   * no color.
+   */
+  public static lowContrastModes(value: string | null, theme: Theme): readonly ThemeMode[];
 }
 
 /**
@@ -10426,6 +10558,139 @@ export declare class QueryMatcher {
    * ```
    */
   public static find(query: string, text: string): readonly number[];
+}
+
+/**
+ * A color chooser, `nol-color-chooser`: a radio group of the kit's standard
+ * swatches, an optional None first, and a Custom color last, which opens a
+ * {@link ColorPickerComponent} in a popover. The chosen swatch, or None, shows
+ * a ring, and a swatch or custom color also a check mark; each item names its
+ * color in its accessible name and tooltip. The chosen item, or the first
+ * when none is, is the one Tab stop, and the arrow keys, Home and End move the
+ * choice and the focus together, wrapping at the ends; reaching Custom this
+ * way chooses the last custom color, and Enter or Space opens its picker.
+ * A custom color with under 3:1 contrast with the theme's window, panel,
+ * raised or card surface in either mode shows a warning below the group,
+ * which names the mode and describes the group, is spoken politely when it
+ * appears or changes, and never blocks the choice.
+ * Its {@link ColorChooserComponent.value} is a model, so it binds two-way and
+ * works as an Angular signal forms control, whose field
+ * {@link ColorChooserComponent.touch} marks touched.
+ *
+ * @example
+ * ```ts
+ * import { Component, type WritableSignal, signal } from "@angular/core";
+ * import { ColorChooserComponent } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-node-type-color",
+ *   imports: [ColorChooserComponent],
+ *   template: "<nol-color-chooser label=\"Icon color\" [allowNone]=\"true\" [(value)]=\"color\" />"
+ * })
+ * export class NodeTypeColorComponent {
+ *   protected readonly color: WritableSignal<string | null> = signal("teal");
+ * }
+ * ```
+ */
+export declare class ColorChooserComponent {
+  /**
+   * The chosen color: a {@link ColorSwatch}'s name, a custom color as
+   * `#RRGGBB`, or null for none; null by default. A value that is none of
+   * these chooses no item.
+   */
+  public readonly value: ModelSignal<string | null>;
+
+  /**
+   * The group's accessible name, such as the title of the setting it changes.
+   */
+  public readonly label: InputSignal<string>;
+
+  /**
+   * Whether the group offers None first, which chooses null; false by
+   * default.
+   */
+  public readonly allowNone: InputSignal<boolean>;
+
+  /**
+   * Whether the group is disabled: its items stay focusable, marked
+   * `aria-disabled`, and choose nothing, and Custom opens no picker; false
+   * by default.
+   */
+  public readonly disabled: InputSignal<boolean>;
+
+  /**
+   * The id, or space-separated ids, of the elements that describe the group,
+   * such as a setting's description; the contrast warning is added after
+   * them while it shows. Null by default.
+   */
+  public readonly describedBy: InputSignal<string | null>;
+
+  /**
+   * The theme the contrast warning checks: the theme the app paints, when it
+   * is not {@link DefaultTheme.theme}, or another for a chooser painted in
+   * another theme, such as in a preview; null by default, which checks
+   * {@link DefaultTheme.theme}.
+   */
+  public readonly theme: InputSignal<Theme | null>;
+
+  /**
+   * Emits when the focus leaves the chooser and its picker, for a press
+   * elsewhere, a Tab past it or the window losing the focus, and not when it
+   * moves between the items or into the picker; a signal forms field marks
+   * itself touched on it.
+   */
+  public readonly touch: OutputEmitterRef<void>;
+
+  /**
+   * Creates the chooser, which remembers the last custom color it held so
+   * that Custom offers it again after a swatch is chosen. Angular creates it
+   * from its selector.
+   */
+  public constructor();
+}
+
+/**
+ * A color picker, `nol-color-picker`: a saturation and brightness area, a hue
+ * slider and a hex field, each operable by keyboard. The area's thumb is one
+ * slider whose arrow keys change the saturation, left and right, and the
+ * brightness, up and down, Page Up and Page Down the brightness by 10, and
+ * Home and End the saturation to its ends; the hue slider's arrow keys change
+ * the hue by 1, Page Up and Page Down by 10, and Home and End to 0 and 359;
+ * Shift multiplies an arrow's step by 10. A press or drag on the area or the
+ * track moves its thumb there. The hex field takes `#RGB` or `#RRGGBB`, with or
+ * without `#`, as typed, and shows the current color again when it loses the
+ * focus or on Enter. The hex row starts with the color the picker was first
+ * given and the new one as a joined pair; the first is a button named, and
+ * with a tooltip, "Back to the original color, #RRGGBB", which chooses that
+ * color again, and the picker shows none when its first value was no color.
+ * It does not keep its own value: it reports each new color
+ * through {@link ColorPickerComponent.valueChange}, and its owner binds it
+ * back to {@link ColorPickerComponent.value}.
+ */
+export declare class ColorPickerComponent {
+  /**
+   * The color as `#RRGGBB` or `#RGB`; a value that is neither shows the
+   * last color, or black at first. The first value is kept as the original
+   * color, which a later value never changes.
+   */
+  public readonly value: InputSignal<string>;
+
+  /**
+   * The picker's accessible name, which names its group.
+   */
+  public readonly label: InputSignal<string>;
+
+  /**
+   * Emits each new color as `#RRGGBB` in capitals, only when it differs from
+   * {@link ColorPickerComponent.value}.
+   */
+  public readonly valueChange: OutputEmitterRef<string>;
+
+  /**
+   * Creates the picker, which ends a drag still under way when it is
+   * destroyed. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**

@@ -87,6 +87,29 @@ describe("FieldMessageComponent", () => {
       });
 
   for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`has no live role, which its owner's announcement stands in for, and the ${theme.id} theme's warning color when its kind is a warning, still read with its field, with the same gap, in ${mode} mode`, () => {
+        render(theme, mode);
+        fixture.componentInstance.kind.set(FieldMessageKind.Warning);
+        fixture.detectChanges();
+        const style = getComputedStyle(note());
+
+        expect([note().getAttribute("role"), note().classList.contains("nol-field-message-warning"), note().classList.contains("nol-field-message-note"),
+          noted().getAttribute("aria-describedby") === note().id]).toEqual([null, true, false, true]);
+        expect(style.color).toBe(AppearanceFixture.readColor(theme, mode, "warning"));
+        AppearanceFixture.expectLook(style.marginTop, theme, "space-1", "margin-top");
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps a warning at least 4.5:1 on the window and the panel, in ${mode} mode`, () => {
+      render(DefaultTheme.theme, mode);
+      fixture.componentInstance.kind.set(FieldMessageKind.Warning);
+      fixture.detectChanges();
+
+      expect(["window", "panel"].map(t => AppearanceFixture.contrast(getComputedStyle(note()).color, AppearanceFixture.readColor(DefaultTheme.theme, mode, t)) >= 4.5)).toEqual([true, true]);
+    });
+
+  for (const mode of AppearanceFixture.modes)
     it(`keeps an error and a note at least 4.5:1 on the window and the panel, in ${mode} mode`, () => {
       render(DefaultTheme.theme, mode);
       const low = [{ kind: "error", element: message() }, { kind: "note", element: note() }].flatMap(t => ["window", "panel"]

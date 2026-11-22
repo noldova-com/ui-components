@@ -8,6 +8,7 @@
 
 import "@noldova/context.core";
 
+import { RgbColor } from "./rgb-color.js";
 import { TerminalOutputColorResources } from "./terminal-output-color.resources.js";
 
 export class TerminalOutputColor {
@@ -27,16 +28,11 @@ export class TerminalOutputColor {
   }
 
   public get luminance(): number {
-    const linear = (channel: number): number => {
-      const value = channel / 255;
-      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-    };
-    return 0.2126 * linear(this.red) + 0.7152 * linear(this.green) + 0.0722 * linear(this.blue);
+    return RgbColor.luminanceOf(this.red, this.green, this.blue);
   }
 
   public contrastWith(other: TerminalOutputColor): number {
-    const [one, two] = [this.luminance, other.luminance];
-    return (Math.max(one, two) + 0.05) / (Math.min(one, two) + 0.05);
+    return RgbColor.contrastOf(this.luminance, other.luminance);
   }
 
   public over(other: TerminalOutputColor, share: number): TerminalOutputColor {

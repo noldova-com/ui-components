@@ -165,6 +165,14 @@ The default theme's grays for surfaces, borders, hover, selection and the focuse
 | `--nol-author-6` | `author-6`, fallback `accent` | #D3424C | #E48A90 | Red, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
 | `--nol-author-7` | `author-7`, fallback `accent` | #CF31A5 | #E283C9 | Magenta, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
 | `--nol-author-8` | `author-8`, fallback `accent` | #9358D8 | #B992E5 | Purple, an author's color, which picks the hue of its message's avatar, as the [avatar](kit/avatar.md) says, and never paints its start bar, which only selection paints |
+| `--nol-swatch-blue` | `swatch-blue`, fallback `author-1` | #2F78CA | #76A7DF | Blue, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-1`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-teal` | `swatch-teal`, fallback `author-2` | #1F8582 | #2AB5B0 | Teal, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-2`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-green` | `swatch-green`, fallback `author-3` | #20882E | #2CBB3F | Green, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-3`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-amber` | `swatch-amber`, fallback `author-4` | #977023 | #CF9A30 | Amber, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-4`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-orange` | `swatch-orange`, fallback `author-5` | #B75E2B | #DB9267 | Orange, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-5`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-red` | `swatch-red`, fallback `author-6` | #D3424C | #E48A90 | Red, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-6`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-magenta` | `swatch-magenta`, fallback `author-7` | #CF31A5 | #E283C9 | Magenta, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-7`'s values; at least 3:1 on the window, panel, raised and card surfaces |
+| `--nol-swatch-purple` | `swatch-purple`, fallback `author-8` | #9358D8 | #B992E5 | Purple, a standard swatch of the [color chooser](kit/color-chooser.md), with `author-8`'s values; at least 3:1 on the window, panel, raised and card surfaces |
 | `--nol-avatar-default` | `avatar-default`, fallback `selected` | #DBEAFE | #1E3A5F | The avatar's fill without a color |
 | `--nol-avatar-default-text` | `avatar-default-text`, fallback `text` | #1E40AF | #BFDBFE | The avatar's letter without a color; at least 4.5:1 on its fill |
 | `--nol-avatar-teal` | `avatar-teal`, fallback `avatar-default` | #CCFBF1 | #134E4A | Teal, a filled avatar's fill |
@@ -285,6 +293,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [Checkbox](kit/checkbox.md)
 - [Choice pills (toggle group)](kit/choice-pills.md)
 - [Choice row](kit/choice-row.md)
+- [Color chooser](kit/color-chooser.md)
 - [Code block](kit/code-block.md)
 - [Completion list](kit/completion-list.md)
 - [Configuration table](kit/configuration-table.md)

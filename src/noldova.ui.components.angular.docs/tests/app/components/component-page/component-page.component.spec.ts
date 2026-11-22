@@ -140,6 +140,16 @@ describe("ComponentPageComponent", () => {
       inputs: ["options", "value", "label", "describedBy"],
       outputs: ["valueChange"]
     },
+    ColorChooserComponent: {
+      specimen: "Color chooser",
+      controls: "nol-color-chooser",
+      roles: ["[role=\"radiogroup\"][aria-label=\"Icon color\"]", "button.nol-color-chooser-item[role=\"radio\"][aria-checked=\"true\"][tabindex=\"0\"][aria-label=\"Teal\"]",
+        "button.nol-color-chooser-item[role=\"radio\"][aria-checked=\"false\"][tabindex=\"-1\"][aria-label=\"None\"]",
+        "[role=\"radiogroup\"][aria-label=\"Label color\"][aria-describedby^=\"nol-docs-color-chooser-note \"]", "nol-field-message.nol-field-message-warning:not([role])"],
+      keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End", "Enter", "Escape"],
+      inputs: ["value", "label", "allowNone", "disabled", "describedBy", "theme"],
+      outputs: ["touch"]
+    },
     SelectComponent: {
       specimen: "Select",
       controls: "nol-select",
@@ -839,6 +849,31 @@ describe("ComponentPageComponent", () => {
       await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(group, "[aria-checked=\"true\"]").textContent?.trim()).toBe("High"));
       expect(document.activeElement?.textContent?.trim()).toBe("High");
       expect(DocsFixture.all(group, "[tabindex=\"0\"]").map(t => t.textContent?.trim())).toEqual(["High"]);
+    });
+  });
+
+  describe("the Color chooser page", () => {
+    it("chooses the next color and moves the focus and the Tab stop to it on Arrow Right, and shows the choice", async () => {
+      const host = await renderAsync(expectPage("ColorChooserComponent"));
+      const group = DocsFixture.one(section(host, "Examples"), "[role=\"radiogroup\"][aria-label=\"Icon color\"]");
+
+      DocsFixture.one(group, "[aria-checked=\"true\"]").focus();
+      await userEvent.keyboard("{ArrowRight}");
+
+      await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(group, "[aria-checked=\"true\"]").getAttribute("aria-label")).toBe("Green"));
+      expect(document.activeElement?.getAttribute("aria-label")).toBe("Green");
+      expect(DocsFixture.all(group, "[tabindex=\"0\"]").map(t => t.getAttribute("aria-label"))).toEqual(["Green"]);
+      expect(section(host, "Examples").textContent).toContain("Chosen: green");
+    });
+
+    it("warns that the low-contrast custom color is hard to see in the light theme, and describes the group by its note and the warning", async () => {
+      const host = await renderAsync(expectPage("ColorChooserComponent"));
+      const group = DocsFixture.one(section(host, "Examples"), "[role=\"radiogroup\"][aria-label=\"Label color\"]");
+      const [note, warning] = (group.getAttribute("aria-describedby") ?? "").split(" ").map(t => document.getElementById(t)?.textContent?.trim());
+
+      expect(note).toBe("Shown on the label's chip in every list.");
+      expect(warning).toBe("Low contrast in the light theme: this color may be hard to see on some surfaces.");
+      expect(DocsFixture.one(group, "[aria-checked=\"true\"]").getAttribute("aria-label")).toBe("Custom color #E4E4E4");
     });
   });
 

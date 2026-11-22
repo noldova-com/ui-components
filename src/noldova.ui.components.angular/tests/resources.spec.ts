@@ -7,6 +7,7 @@
  */
 
 import { ThemeMode } from "../src/app/enums/theme-mode";
+import { ColorToken } from "../src/app/models/color-token";
 import { DefaultTheme } from "../src/app/models/default-theme";
 import { Theme } from "../src/app/models/theme";
 import { Resources } from "../src/resources";
@@ -36,11 +37,19 @@ describe("Resources", () => {
       expect(DefaultTheme.theme.readLook(name), name).toBeDefined();
   });
 
-  it("keys each color by its variable without the prefix, and gives no two keys of the color and look maps the same name or variable", () => {
+  it("names each color's variable after its key, keeps its fallback, and keeps the public token's shape", () => {
+    const window = Resources.colorTokens.find(t => t.key === "window");
+    const swatch = Resources.colorTokens.find(t => t.key === "swatch-blue");
+
+    expect(Resources.colorTokens.map(t => t.variable)).toEqual(Resources.colorTokens.map(t => `--nol-${t.key}`));
+    expect(window).toEqual(new ColorToken("--nol-window", "window"));
+    expect(swatch).toEqual(new ColorToken("--nol-swatch-blue", "swatch-blue", "author-1"));
+  });
+
+  it("gives no two keys of the color and look maps the same name or variable", () => {
     const colorKeys = Resources.colorTokens.map(t => t.key);
     const variables = [...Resources.colorTokens.map(t => t.variable), ...Resources.lookTokens.map(t => Resources.formatLookVariable(t))];
 
-    expect(Resources.colorTokens.filter(t => t.variable !== `--nol-${t.key}`).map(t => t.variable)).toEqual([]);
     expect(Resources.lookTokens.filter(t => colorKeys.includes(t))).toEqual([]);
     expect(new Set(variables).size).toBe(variables.length);
   });
@@ -90,6 +99,14 @@ describe("Resources", () => {
       "author-6": "accent",
       "author-7": "accent",
       "author-8": "accent",
+      "swatch-blue": "author-1",
+      "swatch-teal": "author-2",
+      "swatch-green": "author-3",
+      "swatch-amber": "author-4",
+      "swatch-orange": "author-5",
+      "swatch-red": "author-6",
+      "swatch-magenta": "author-7",
+      "swatch-purple": "author-8",
       "avatar-default": "selected",
       "avatar-default-text": "text",
       "avatar-teal": "avatar-default",

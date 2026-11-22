@@ -1,0 +1,45 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div #group class="nol-color-chooser-group" role="radiogroup" [attr.aria-label]="label()" [attr.aria-describedby]="descriptions()"
+  [attr.aria-disabled]="disabled() ? resources.trueValue : null" (keydown)="move($event, group)">
+  @for (item of items(); track $index; let index = $index) {
+    @if (item.kind === kinds.Custom && !disabled()) {
+      <button type="button" role="radio" class="nol-color-chooser-item" [class.nol-color-chooser-item-checked]="isChecked(item)" [attr.aria-checked]="isChecked(item)"
+        [attr.aria-label]="item.label" [nolTooltip]="item.label" [attr.tabindex]="index === tabStop() ? 0 : -1" [nolPopoverTrigger]="picker"
+        (click)="choose(item)">
+        @if (fill(item); as color) {
+          <span class="nol-color-chooser-fill" [style.background-color]="color"></span>
+        } @else {
+          <span class="nol-color-chooser-glyph material-symbols-rounded" aria-hidden="true">{{ glyph(item) }}</span>
+        }
+        <svg class="nol-color-chooser-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5 6 11.5 13 4.5" /></svg>
+      </button>
+    } @else {
+      <button type="button" role="radio" class="nol-color-chooser-item" [class.nol-color-chooser-item-checked]="isChecked(item)" [attr.aria-checked]="isChecked(item)"
+        [attr.aria-label]="item.label" [nolTooltip]="item.label" [attr.aria-disabled]="disabled() ? resources.trueValue : null"
+        [attr.tabindex]="index === tabStop() ? 0 : -1" (click)="choose(item)">
+        @if (fill(item); as color) {
+          <span class="nol-color-chooser-fill" [style.background-color]="color"></span>
+        } @else {
+          <span class="nol-color-chooser-glyph material-symbols-rounded" aria-hidden="true">{{ glyph(item) }}</span>
+        }
+        <svg class="nol-color-chooser-mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5 6 11.5 13 4.5" /></svg>
+      </button>
+    }
+  }
+</div>
+@if (warning(); as text) {
+  <nol-field-message [attr.id]="warningId" [kind]="messageKinds.Warning">{{ text }}</nol-field-message>
+}
+
+<ng-template #picker>
+  <div nolPopover class="nol-color-chooser-popover" [attr.id]="pickerId" [label]="partResources.colorChooserPickerLabel" (focusout)="leave($event)">
+    <nol-color-picker [label]="partResources.colorChooserPickerLabel" [value]="pickerValue()" (valueChange)="pick($event)" />
+  </div>
+</ng-template>

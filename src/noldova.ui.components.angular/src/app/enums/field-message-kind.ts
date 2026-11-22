@@ -8,5 +8,6 @@
 
 export enum FieldMessageKind {
   Error = "Error",
-  Note = "Note"
+  Note = "Note",
+  Warning = "Warning"
 }

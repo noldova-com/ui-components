@@ -1,0 +1,107 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.nol-color-chooser-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nol-space-2);
+  padding: calc(var(--nol-border-width) * 3);
+}
+
+.nol-color-chooser-item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--nol-color-swatch-size);
+  height: var(--nol-color-swatch-size);
+  margin: 0;
+  padding: 0;
+  border: var(--nol-border-width) solid var(--nol-input-border);
+  border-radius: 50%;
+  background-color: var(--nol-input);
+  color: var(--nol-icon-color);
+  cursor: pointer;
+}
+
+.nol-color-chooser-item:not([aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]) {
+  border-color: var(--nol-text-strong);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
+.nol-color-chooser-item-checked {
+  box-shadow: 0 0 0 calc(var(--nol-border-width) * 2) var(--nol-panel), 0 0 0 calc(var(--nol-border-width) * 3) var(--nol-text-strong);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid CanvasText;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
+.nol-color-chooser-item:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * 4);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-color-chooser-item[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+
+  @media (forced-colors: active) {
+    border-color: GrayText;
+  }
+}
+
+.nol-color-chooser-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  forced-color-adjust: none;
+}
+
+.nol-color-chooser-glyph {
+  font-size: var(--nol-icon);
+  line-height: 1;
+}
+
+.nol-color-chooser-mark {
+  position: absolute;
+  inset: 0;
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  margin: auto;
+  fill: none;
+  stroke: var(--nol-panel);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+  pointer-events: none;
+  forced-color-adjust: none;
+}
+
+.nol-color-chooser-item-checked > .nol-color-chooser-fill ~ .nol-color-chooser-mark {
+  visibility: visible;
+}
+
+.nol-color-chooser-popover {
+  --nol-popover-preferred-width: calc(var(--nol-color-picker-width) + var(--nol-space-3) * 2 + var(--nol-border-width) * 2);
+}

@@ -23,6 +23,7 @@ import { CheckboxPage } from "./pages/checkbox-page.js";
 import { ChipPage } from "./pages/chip-page.js";
 import { ChoicePillsPage } from "./pages/choice-pills-page.js";
 import { ChoiceRowPage } from "./pages/choice-row-page.js";
+import { ColorChooserPage } from "./pages/color-chooser-page.js";
 import { CodeBlockPage } from "./pages/code-block-page.js";
 import { CompletionListPage } from "./pages/completion-list-page.js";
 import { ConfigurationTablePage } from "./pages/configuration-table-page.js";
@@ -73,6 +74,7 @@ export class DocsCatalog {
     DocsCatalog.componentPage(ChoiceRowPage.content, "choice-row", DocsGroup.Choices),
     DocsCatalog.componentPage(RadioGroupPage.content, "radio-group", DocsGroup.Choices),
     DocsCatalog.componentPage(ChoicePillsPage.content, "choice-pills", DocsGroup.Choices),
+    DocsCatalog.componentPage(ColorChooserPage.content, "color-chooser", DocsGroup.Choices),
     DocsCatalog.componentPage(FieldMessagePage.content, "field-message", DocsGroup.Inputs),
     DocsCatalog.componentPage(IconButtonPage.content, "icon-button", DocsGroup.Inputs),
     DocsCatalog.componentPage(SelectPage.content, "select", DocsGroup.Choices),
@@ -115,6 +117,7 @@ export class DocsCatalog {
   ];
   public static readonly excludedComponents: ReadonlySet<string> = new Set([
     "CanvasMapComponent",
+    "ColorPickerComponent",
     "DiffViewComponent",
     "DockingGuideComponent",
     "DockingPlateComponent",

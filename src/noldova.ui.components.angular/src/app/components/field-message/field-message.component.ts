@@ -17,7 +17,8 @@ import { FieldMessageKind } from "../../enums/field-message-kind.js";
   host: {
     "class": "nol-field-message",
     "[attr.role]": "kind() === kinds.Error ? 'alert' : null",
-    "[class.nol-field-message-note]": "kind() === kinds.Note"
+    "[class.nol-field-message-note]": "kind() === kinds.Note",
+    "[class.nol-field-message-warning]": "kind() === kinds.Warning"
   }
 })
 export class FieldMessageComponent {

@@ -85,7 +85,15 @@ describe("DefaultTheme", () => {
       ["author-5", "#B75E2B", "#DB9267"],
       ["author-6", "#D3424C", "#E48A90"],
       ["author-7", "#CF31A5", "#E283C9"],
-      ["author-8", "#9358D8", "#B992E5"]
+      ["author-8", "#9358D8", "#B992E5"],
+      ["swatch-blue", "#2F78CA", "#76A7DF"],
+      ["swatch-teal", "#1F8582", "#2AB5B0"],
+      ["swatch-green", "#20882E", "#2CBB3F"],
+      ["swatch-amber", "#977023", "#CF9A30"],
+      ["swatch-orange", "#B75E2B", "#DB9267"],
+      ["swatch-red", "#D3424C", "#E48A90"],
+      ["swatch-magenta", "#CF31A5", "#E283C9"],
+      ["swatch-purple", "#9358D8", "#B992E5"]
     ];
 
     for (const [key, light, dark] of expected) {
@@ -128,6 +136,10 @@ describe("DefaultTheme", () => {
       ["dialog-actions-padding", "1.25rem 1.25rem 0.5rem"],
       ["dialog-medium-width", "40rem"],
       ["checkbox-size", "1.125rem"],
+      ["color-swatch-size", "1.5rem"],
+      ["color-area-height", "8rem"],
+      ["color-slider-height", "0.75rem"],
+      ["color-picker-width", "15rem"],
       ["toast-width", "22.5rem"],
       ["spinner", "1rem"],
       ["spinner-ring", "0.75rem"],
@@ -232,7 +244,15 @@ describe("DefaultTheme contrast", () => {
     ...on("author-5", [["window"], ["panel"], ["panel", "selected"]], partRatio),
     ...on("author-6", [["window"], ["panel"], ["panel", "selected"]], partRatio),
     ...on("author-7", [["window"], ["panel"], ["panel", "selected"]], partRatio),
-    ...on("author-8", [["window"], ["panel"], ["panel", "selected"]], partRatio)
+    ...on("author-8", [["window"], ["panel"], ["panel", "selected"]], partRatio),
+    ...on("swatch-blue", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-teal", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-green", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-amber", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-orange", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-red", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-magenta", [["window"], ["panel"], ["raised"], ["card"]], partRatio),
+    ...on("swatch-purple", [["window"], ["panel"], ["raised"], ["card"]], partRatio)
   ];
   const exempt: ReadonlyMap<string, string> = new Map([
     ["card-border", "Decorative card edge; a card stands apart from its surface by its fill and layout."],

@@ -18,6 +18,8 @@ export class GalleryResources {
   public static readonly stateAttribute: string = "data-nol-state";
   public static readonly hoveredPill: string = ".nol-choice-pill[aria-checked=\"false\"]";
   public static readonly focusedPill: string = ".nol-choice-pill[aria-checked=\"true\"]";
+  public static readonly hoveredSwatch: string = ".nol-color-chooser-item[aria-checked=\"false\"]";
+  public static readonly focusedSwatch: string = ".nol-color-chooser-item[aria-checked=\"true\"]";
   public static readonly focusedCheckbox: string = ".nol-checkbox-box";
   public static readonly focusedSwitch: string = ".nol-switch-track";
   public static readonly focusedRadio: string = ".nol-radio-box";
@@ -327,6 +329,13 @@ export class GalleryResources {
     ],
     choicePillInitial: "light",
     choicePillEnabled: "system",
+    colorChooser: "Color chooser",
+    colorChooserLabel: "Icon color",
+    colorChooserInitial: "teal",
+    colorChooserLowContrast: "#E4E4E4",
+    colorChooserLowContrastCaption: "Custom, low contrast",
+    colorPicker: "Custom color picker",
+    colorPickerInitial: "#3A7D44",
     configurationTable: "Configuration table",
     configurationAdd: "Add",
     configurationName: "Name",

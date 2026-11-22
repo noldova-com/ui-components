@@ -9,6 +9,7 @@
 import { GalleryButtonComponent } from "../../../../src/app/components/gallery/gallery-button.component";
 import { GalleryChoicePillsComponent } from "../../../../src/app/components/gallery/gallery-choice-pills.component";
 import { GalleryChoiceRowComponent } from "../../../../src/app/components/gallery/gallery-choice-row.component";
+import { GalleryColorChooserComponent } from "../../../../src/app/components/gallery/gallery-color-chooser.component";
 import { GalleryConfigurationTableComponent } from "../../../../src/app/components/gallery/gallery-configuration-table.component";
 import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
 import { GalleryIconButtonComponent } from "../../../../src/app/components/gallery/gallery-icon-button.component";
@@ -17,7 +18,7 @@ import { GalleryState } from "../../../../src/app/enums/gallery-state";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Hover cells of the forms section", () => {
-  const specimens = [GalleryButtonComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryConfigurationTableComponent, GalleryIconButtonComponent, GallerySplitButtonComponent];
+  const specimens = [GalleryButtonComponent, GalleryChoicePillsComponent, GalleryChoiceRowComponent, GalleryColorChooserComponent, GalleryConfigurationTableComponent, GalleryIconButtonComponent, GallerySplitButtonComponent];
 
   it.each(GalleryStateFixture.specimens(specimens))("shows in each of the Hover cells of $name the look its control has when the pointer is really over it", async ({ specimen }) => {
     await GalleryStateFixture.expectHoverCellsShowTheirLookAsync(specimen);

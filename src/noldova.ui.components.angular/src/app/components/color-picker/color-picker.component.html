@@ -1,0 +1,33 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<div #area class="nol-color-picker-area" [style.background-color]="hueColor()" (pointerdown)="pressShade($event, area, shade)">
+  <div #shade class="nol-color-picker-thumb" role="slider" tabindex="0" [attr.aria-label]="partResources.colorPickerShadeLabel" aria-valuemin="0"
+    [attr.aria-valuemax]="partResources.colorPickerMaximumShade" [attr.aria-valuenow]="color().saturation" [attr.aria-valuetext]="shadeText()"
+    [style.left.%]="color().saturation" [style.top.%]="partResources.colorPickerMaximumShade - color().brightness" [style.background-color]="hex()"
+    (keydown)="moveShade($event)"></div>
+</div>
+<div #track class="nol-color-picker-hue" (pointerdown)="pressHue($event, track, hue)">
+  <div #hue class="nol-color-picker-thumb" role="slider" tabindex="0" [attr.aria-label]="partResources.colorPickerHueLabel" aria-valuemin="0"
+    [attr.aria-valuemax]="partResources.colorPickerMaximumHue" [attr.aria-valuenow]="color().hue" [attr.aria-valuetext]="hueText()"
+    [style.left.%]="color().hue / partResources.colorPickerMaximumHue * 100" [style.background-color]="hueColor()" (keydown)="moveHue($event)"></div>
+</div>
+<div class="nol-color-picker-hex">
+  <span class="nol-color-picker-compare">
+    @if (original(); as original) {
+      <button type="button" class="nol-color-picker-original" [style.background-color]="original.toHex()" [attr.aria-label]="partResources.formatOriginal(original.toHex())"
+        [nolTooltip]="partResources.formatOriginal(original.toHex())" (click)="restore(original)"></button>
+    }
+    <span class="nol-color-picker-swatch" [style.background-color]="hex()"></span>
+  </span>
+  <label class="nol-color-picker-hex-text">
+    <span class="nol-color-picker-hex-label">{{ partResources.colorPickerHexLabel }}</span>
+    <input #field nol-text-field class="nol-color-picker-hex-field" spellcheck="false" autocomplete="off" [value]="draft()"
+      (input)="type()" (blur)="settle()" (keydown)="settleOnEnter($event)" />
+  </label>
+</div>

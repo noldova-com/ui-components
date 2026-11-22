@@ -17,3 +17,7 @@
 :host(.nol-field-message-note) {
   color: var(--nol-text-muted);
 }
+
+:host(.nol-field-message-warning) {
+  color: var(--nol-warning);
+}
