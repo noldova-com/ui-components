@@ -38,7 +38,7 @@ export class MarkdownMathRenderer {
 
   public render(element: HTMLElement, tex: string, isDisplay: boolean): boolean {
     const katex = this.loading.ifLoaded(t => t);
-    if (Object.isUndefined(katex))
+    if (Object.isUndefined(katex) || MarkdownMathRendererResources.markdownMathNegativeSpacePattern.test(tex))
       return false;
     try {
       katex.default.render(tex, element, { ...MarkdownMathRendererResources.markdownMathOptions, displayMode: isDisplay, macros: { ...MarkdownMathRendererResources.markdownMathUntrustedMacros } });

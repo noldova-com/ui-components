@@ -11,5 +11,7 @@ import type { KatexOptions } from "katex";
 export class MarkdownMathRendererResources {
   public static readonly markdownMathOptions: KatexOptions = { throwOnError: true, trust: false, strict: "ignore", output: "htmlAndMathml", maxSize: 20, maxExpand: 1000 };
   public static readonly markdownMathUntrustedMacros: Readonly<Record<string, string>> = Object.fromEntries(["\\href", "\\url", "\\includegraphics", "\\htmlClass",
-    "\\htmlId", "\\htmlStyle", "\\htmlData"].map(t => [t, "\\nolUntrusted"]));
+    "\\htmlId", "\\htmlStyle", "\\htmlData", "\\smash", "\\raisebox", "\\llap", "\\rlap", "\\clap", "\\mathllap", "\\mathrlap", "\\mathclap"]
+    .map(t => [t, "\\nolUntrusted"]));
+  public static readonly markdownMathNegativeSpacePattern: RegExp = /\\(?:kern|mkern|mskip|hskip|hspace\*?|vspace\*?)\s*\{?\s*-/u;
 }

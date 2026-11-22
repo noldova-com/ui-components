@@ -212,6 +212,55 @@ describe("MarkdownViewComponent's math", () => {
     ]);
   });
 
+  it("shows a formula that would draw outside its own box or move by a negative space as its source, and draws one that moves forward", async () => {
+    const refused = ["$\\smash{x}$", "$\\raisebox{1em}{x}$", "$\\llap{x}$", "$\\rlap{x}$", "$\\clap{x}$", "$\\mathllap{x}$", "$\\mathrlap{x}$", "$\\mathclap{x}$",
+      "$a\\kern-2em b$", "$a\\mkern{-18mu}b$", "$a\\mskip -18mu b$", "$a\\hskip-2em b$", "$a\\hspace{-2em}b$", "$a\\hspace*{ -2em}b$"];
+    await renderAsync([...refused, "$a\\kern2em b$"].join(" "));
+    await drawnAsync(1);
+
+    expect(formulas().map(t => Object.isNull(t.querySelector(".katex")) ? t.textContent : null)).toEqual([...refused, null]);
+  });
+
+  it("keeps a formula that would raise or lower its content over a heading inside its own line, below the heading", async () => {
+    await renderAsync("# Heading\n\nText $\\smash{\\raisebox{20em}{x}}$ and $\\raisebox{-20em}{x}$ by $y$");
+    await drawnAsync(1);
+    const raised = formulas().slice(0, 2);
+    const heading = DomFixture.one(view(), ".nol-markdown-heading").getBoundingClientRect();
+    const paragraph = DomFixture.one(view(), "p:not(.nol-markdown-heading)").getBoundingClientRect();
+    const boxes = raised.map(t => t.getBoundingClientRect());
+
+    expect([...raised.map(t => Object.isNull(t.querySelector(".katex"))), ...boxes.map(t => t.top >= heading.bottom && t.top >= paragraph.top - 1 && t.bottom <= paragraph.bottom + 1)])
+      .toEqual([true, true, true, true]);
+  });
+
+  it("clips what inline math draws to its own box, so content a formula moves over earlier text leaves that text uncovered", async () => {
+    await renderAsync("Some words written before the formula $x\\def\\nk{\\kern}\\nk-12em\\rule{1em}{1em}$ after");
+    await drawnAsync(1);
+    const inline = DomFixture.one(view(), ".nol-markdown-math");
+    const rule = DomFixture.one(inline, ".katex-rule").getBoundingClientRect();
+    const box = inline.getBoundingClientRect();
+    const hit = document.elementFromPoint(rule.left + rule.width / 2, rule.top + rule.height / 2);
+
+    expect([rule.right < box.left, Object.isNull(hit), inline.contains(hit), getComputedStyle(inline).overflowX]).toEqual([true, false, false, "clip"]);
+  });
+
+  it("keeps inline math on its line's baseline", async () => {
+    await renderAsync("Area $x^2 + y_1$ here");
+    await drawnAsync(1);
+    const inline = DomFixture.one(view(), ".nol-markdown-math");
+    const probe = (): HTMLElement => {
+      const element = document.createElement("span");
+      element.style.cssText = "display: inline-block; width: 0; height: 0";
+      return element;
+    };
+    const outside = probe();
+    const inside = probe();
+    inline.after(outside);
+    DomFixture.one(inline, ".katex-html").append(inside);
+
+    AppearanceFixture.expectPixels(inside.getBoundingClientRect().top, outside.getBoundingClientRect().top);
+  });
+
   it("loads KaTeX once a streamed text holds a math delimiter, before any formula closes, once per view, and not without Markdown", async () => {
     statics.module = null;
     const importsAsync = vi.spyOn(statics, "importAsync");
