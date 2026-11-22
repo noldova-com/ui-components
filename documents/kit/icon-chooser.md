@@ -18,7 +18,7 @@ Panel for the field, the "No icon matches." note and the count below the grid.
 
 The icon set is the kit's Material Symbols, `IconNames.all`, generated from the pinned `material-symbols` package by `npm run icons` in the kit's folder; the Icon names check fails when the list and the installed package differ.
 An app may offer fewer names through `names`.
-"No icon", whose value is null, comes first unless `allowsNone` is false; its glyph is the muted `block` symbol.
+"No icon", whose value is null, comes first unless `allowNone` is false; its glyph is the muted `block` symbol.
 The search keeps the names that hold every word typed, in any case, words parted by spaces, underscores or hyphens; "No icon" stays first while searching, and "No icon matches." shows when no name does.
 A live status below the grid says how many icons are offered.
 

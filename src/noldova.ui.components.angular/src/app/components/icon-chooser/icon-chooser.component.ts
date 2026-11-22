@@ -46,7 +46,7 @@ export class IconChooserComponent implements FormValueControl<string | null> {
 
   public readonly label = input.required<string>();
   public readonly names = input<readonly string[]>(IconNames.all);
-  public readonly allowsNone = input<boolean>(true);
+  public readonly allowNone = input<boolean>(true);
   public readonly disabled = input<boolean>(false);
   public readonly value = model<string | null>(null);
   public readonly touch = output<void>();
@@ -58,7 +58,7 @@ export class IconChooserComponent implements FormValueControl<string | null> {
   protected readonly choices: Signal<readonly (string | null)[]> = computed(() => {
     const words = IconChooserComponent.wordsOf(this.query());
     const found = this.names().filter(t => words.every(u => t.includes(u)));
-    return this.allowsNone() ? [null, ...found] : found;
+    return this.allowNone() ? [null, ...found] : found;
   });
   protected readonly columns: Signal<number> = computed(() => this.cell() > 0 ? Math.max(1, Math.floor(this.width() / this.cell())) : 1);
   protected readonly rowCount: Signal<number> = computed(() => Math.ceil(this.choices().length / this.columns()));

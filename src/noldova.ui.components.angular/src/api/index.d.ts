@@ -15230,7 +15230,7 @@ export declare class IconChooserComponent {
    * @Component({
    *   selector: "nol-badge-icon",
    *   imports: [IconChooserComponent],
-   *   template: "<nol-icon-chooser label=\"Badge icon\" [allowsNone]=\"false\" />"
+   *   template: "<nol-icon-chooser label=\"Badge icon\" [allowNone]=\"false\" />"
    * })
    * export class BadgeIconComponent {}
    * ```
@@ -15253,7 +15253,7 @@ export declare class IconChooserComponent {
    * Whether the grid offers "No icon" first, whose value is null; true by
    * default.
    */
-  public readonly allowsNone: InputSignal<boolean>;
+  public readonly allowNone: InputSignal<boolean>;
 
   /**
    * Whether the chooser refuses a change: the grid stays focusable, marked

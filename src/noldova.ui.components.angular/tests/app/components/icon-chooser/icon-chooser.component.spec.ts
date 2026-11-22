@@ -21,13 +21,13 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   imports: [IconChooserComponent],
   template: `
     <div class="frame" style="width: 20rem">
-      <nol-icon-chooser label="Folder icon" [names]="names()" [allowsNone]="allowsNone()" [disabled]="disabled()" [(value)]="value" />
+      <nol-icon-chooser label="Folder icon" [names]="names()" [allowNone]="allowNone()" [disabled]="disabled()" [(value)]="value" />
     </div>
   `
 })
 class IconChooserHostComponent {
   public readonly names = signal<readonly string[]>(["folder", "folder_open", "home", "zoom_in", "zoom_out", "zoom_out_map"]);
-  public readonly allowsNone = signal(true);
+  public readonly allowNone = signal(true);
   public readonly disabled = signal(false);
   public readonly value = signal<string | null>("home");
 }
@@ -92,7 +92,7 @@ describe("IconChooserComponent", () => {
 
   it("leaves No icon out when it is not allowed", async () => {
     await renderAsync();
-    host.allowsNone.set(false);
+    host.allowNone.set(false);
     await settleAsync();
 
     expect(labels()[0]).toBe("folder");
@@ -108,7 +108,7 @@ describe("IconChooserComponent", () => {
     await userEvent.type(search(), "out-map");
     await settleAsync();
     const mapped = labels();
-    host.allowsNone.set(false);
+    host.allowNone.set(false);
     await userEvent.clear(search());
     await userEvent.type(search(), "nothing");
     await settleAsync();
@@ -120,7 +120,7 @@ describe("IconChooserComponent", () => {
 
   it("keeps its value when Enter, Space or an arrow is pressed in a grid where nothing matches", async () => {
     await renderAsync();
-    host.allowsNone.set(false);
+    host.allowNone.set(false);
     await userEvent.type(search(), "nothing");
     await settleAsync();
     grid().focus();
