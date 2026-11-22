@@ -29,6 +29,7 @@ Disabled, the group and its items are marked `aria-disabled="true"`, at half opa
 The chooser reports that it was touched when the focus leaves it and its picker, but not when it moves between the items or into the picker, so a signal forms field bound to it marks itself touched.
 
 A custom color with under 3:1 contrast, the non-text minimum, with the theme's window, panel, raised or card surface in the light or the dark mode shows a warning [field message](field-message.md) below the group, which names the mode or modes, describes the group and never blocks the choice.
+The room below the group holds the longest warning, the one naming both modes, at the chooser's width, whether or not a warning shows, so the warning comes and goes while a color is dragged, typed or chosen without moving the chooser's height or anything after it.
 The chooser speaks the warning politely through the kit's announcer when it appears or its text changes, but not for a value it starts with, since the field message has no live role.
 It checks the default theme unless the owner gives the chooser another one, as an app painted in its own theme does, since the chooser leaves the page's painting to its owner; a swatch shows none, since its own values keep the contrast.
 

@@ -28,6 +28,7 @@ export class GalleryResources {
   public static readonly focusedFeed: string = ".nol-virtual-list-viewport[role=\"feed\"]";
   public static readonly focusedIconChooser: string = ".nol-icon-chooser-viewport";
   public static readonly dialogTitleIdPrefix: string = "nol-gallery-dialog-";
+  public static readonly colorChooserDialogTitleId: string = "nol-gallery-color-chooser-dialog-title";
   public static readonly mentionListIdPrefix: string = "nol-gallery-mention-";
   public static readonly hoveredMention: string = ".nol-mention-option[aria-selected=false]";
   public static readonly completionListIdPrefix: string = "nol-gallery-completion-";
@@ -342,6 +343,9 @@ export class GalleryResources {
     colorChooserInitial: "teal",
     colorChooserLowContrast: "#E4E4E4",
     colorChooserLowContrastCaption: "Custom, low contrast",
+    colorChooserDialogCaption: "In a dialog",
+    colorChooserDialogTitle: "Choose a label color",
+    colorChooserDialogSave: "Save",
     colorPicker: "Custom color picker",
     colorPickerInitial: "#3A7D44",
     configurationTable: "Configuration table",

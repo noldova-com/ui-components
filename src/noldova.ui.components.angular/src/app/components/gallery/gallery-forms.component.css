@@ -19,6 +19,10 @@
   max-width: 12rem;
 }
 
+.nol-gallery-dialog {
+  max-width: 100%;
+}
+
 .nol-gallery-table-holder {
   width: 100%;
   box-sizing: border-box;

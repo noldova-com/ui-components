@@ -10576,7 +10576,9 @@ export declare class QueryMatcher {
  * A custom color with under 3:1 contrast with the theme's window, panel,
  * raised or card surface in either mode shows a warning below the group,
  * which names the mode and describes the group, is spoken politely when it
- * appears or changes, and never blocks the choice.
+ * appears or changes, and never blocks the choice. The room below the group
+ * always holds the longest warning, so the chooser keeps its height whether
+ * or not one shows.
  * Its {@link ColorChooserComponent.value} is a model, so it binds two-way and
  * works as an Angular signal forms control, whose field
  * {@link ColorChooserComponent.touch} marks touched.

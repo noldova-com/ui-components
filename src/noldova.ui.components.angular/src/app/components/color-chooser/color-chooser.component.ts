@@ -16,6 +16,7 @@ import { AnnouncementPoliteness } from "../../enums/announcement-politeness.js";
 import { ColorChooserItemKind } from "../../enums/color-chooser-item-kind.js";
 import { ColorSwatch } from "../../enums/color-swatch.js";
 import { FieldMessageKind } from "../../enums/field-message-kind.js";
+import { ThemeMode } from "../../enums/theme-mode.js";
 import { ColorChoices } from "../../models/color-choices.js";
 import { ColorChoicesResources } from "../../models/color-choices.resources.js";
 import { ColorChooserItem } from "../../models/color-chooser-item.js";
@@ -57,6 +58,7 @@ export class ColorChooserComponent implements FormValueControl<string | null> {
   protected readonly partResources: typeof ColorChooserResources = ColorChooserResources;
   protected readonly kinds: typeof ColorChooserItemKind = ColorChooserItemKind;
   protected readonly messageKinds: typeof FieldMessageKind = FieldMessageKind;
+  protected readonly warningRoom: string = ColorChooserResources.formatContrastWarning([ThemeMode.Light, ThemeMode.Dark]);
   protected readonly warningId: string = `${ColorChooserResources.colorChooserIdPrefix}${ColorChooserComponent.nextId}${ColorChooserResources.colorChooserWarningSuffix}`;
   protected readonly pickerId: string = `${ColorChooserResources.colorChooserIdPrefix}${ColorChooserComponent.nextId++}${ColorChooserResources.colorChooserPickerSuffix}`;
   protected readonly custom: Signal<string | null> = computed(() => ColorChoices.readCustom(this.value()));

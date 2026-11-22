@@ -34,9 +34,12 @@ LICENSE file in the root directory of this source tree.
     }
   }
 </div>
-@if (warning(); as text) {
-  <nol-field-message [attr.id]="warningId" [kind]="messageKinds.Warning">{{ text }}</nol-field-message>
-}
+<div class="nol-color-chooser-warning">
+  <nol-field-message class="nol-color-chooser-warning-room" aria-hidden="true" [kind]="messageKinds.Warning">{{ warningRoom }}</nol-field-message>
+  @if (warning(); as text) {
+    <nol-field-message [attr.id]="warningId" [kind]="messageKinds.Warning">{{ text }}</nol-field-message>
+  }
+</div>
 
 <ng-template #picker>
   <div nolPopover class="nol-color-chooser-popover" [attr.id]="pickerId" [label]="partResources.colorChooserPickerLabel" (focusout)="leave($event)">
