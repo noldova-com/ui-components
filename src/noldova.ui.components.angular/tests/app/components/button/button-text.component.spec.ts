@@ -16,6 +16,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent],
@@ -143,11 +144,13 @@ describe("ButtonComponent's text variant", () => {
 
     await userEvent.hover(page.getByTestId("text-locked"));
     button("text-locked").focus();
-    const locked = getComputedStyle(button("text-locked"));
-    const disabled = getComputedStyle(button("text-disabled"));
+    const look = (name: string): readonly string[] => {
+      const [style, face] = [getComputedStyle(button(name)), OpacityFixture.faceStyle(button(name))];
+      return [style.opacity, style.cursor, style.backgroundColor, face.backgroundColor, face.opacity];
+    };
 
-    expect([locked.opacity, locked.cursor, locked.backgroundColor]).toEqual(["0.4", "default", "rgba(0, 0, 0, 0)"]);
-    expect([button("text-disabled").disabled, disabled.opacity, disabled.cursor, disabled.backgroundColor]).toEqual([true, "0.4", "default", "rgba(0, 0, 0, 0)"]);
+    expect(button("text-disabled").disabled).toBe(true);
+    expect([look("text-locked"), look("text-disabled")]).toEqual(Array<readonly string[]>(2).fill(["1", "default", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "0.4"]));
     expect(document.activeElement).toBe(button("text-locked"));
   });
 });

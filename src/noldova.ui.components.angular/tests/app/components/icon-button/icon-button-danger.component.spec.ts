@@ -16,6 +16,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [IconButtonComponent],
@@ -88,7 +89,8 @@ describe("IconButtonComponent's danger look", () => {
   it("dims like the plain button while disabled, and leaves the filled and overlay looks their own colors", () => {
     render();
 
-    expect([getComputedStyle(button("off")).opacity, getComputedStyle(button("off")).color]).toEqual(["0.5", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "error")]);
+    expect([getComputedStyle(button("off")).opacity, getComputedStyle(button("off")).color, OpacityFixture.faded(button("off"))])
+      .toEqual(["1", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "error"), 0.5]);
     expect([button("filled"), button("overlay")].map(t => t.classList.contains("nol-icon-button-danger"))).toEqual([false, false]);
     expect([getComputedStyle(button("filled")).color, getComputedStyle(button("overlay")).color])
       .toEqual([AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "button-text"), "rgb(255, 255, 255)"]);

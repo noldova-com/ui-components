@@ -85,6 +85,14 @@ body {
   line-height: 1;
 }
 
+/* Content projected into a disabled icon button, such as a view badge, fades as the button's own face does; the button's styles reach
+ * only its own template. */
+@media (forced-colors: none) {
+  .nol-icon-button:is(:disabled, [aria-disabled="true"]) > :not(.nol-icon-button-face) {
+    opacity: var(--nol-icon-button-fade);
+  }
+}
+
 :where(button, a, [role="button"], [role="tab"], [role="menuitem"], [role="option"], [role="treeitem"]):not(:disabled, [aria-disabled="true"]) {
   cursor: pointer;
 }

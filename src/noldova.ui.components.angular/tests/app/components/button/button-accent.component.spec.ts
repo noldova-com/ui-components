@@ -18,6 +18,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent],
@@ -116,15 +117,17 @@ describe("ButtonComponent's accent variant", () => {
   for (const mode of AppearanceFixture.modes)
     it(`looks disabled on its selected fill without the hover while disabled or aria-disabled, the aria-disabled one staying focusable, in ${mode} mode`, async () => {
       render(DefaultTheme.theme, mode);
-      const selected = AppearanceFixture.readColor(DefaultTheme.theme, mode, "selected");
 
       await userEvent.hover(page.getByTestId("locked"));
       button("locked").focus();
-      const locked = getComputedStyle(button("locked"));
-      const disabled = getComputedStyle(button("disabled"));
+      const selected = AppearanceFixture.readColor(DefaultTheme.theme, mode, "selected");
+      const look = (name: string): readonly string[] => {
+        const [style, face] = [getComputedStyle(button(name)), OpacityFixture.faceStyle(button(name))];
+        return [style.opacity, style.cursor, style.backgroundColor, style.backgroundImage, face.backgroundColor, face.backgroundImage, face.opacity];
+      };
 
-      expect([button("locked").matches(":hover"), locked.opacity, locked.cursor, locked.backgroundColor, locked.backgroundImage]).toEqual([true, "0.5", "default", selected, "none"]);
-      expect([disabled.opacity, disabled.cursor, disabled.backgroundColor, disabled.backgroundImage]).toEqual(["0.5", "default", selected, "none"]);
+      expect(button("locked").matches(":hover")).toBe(true);
+      expect([look("locked"), look("disabled")]).toEqual(Array<readonly string[]>(2).fill(["1", "default", "rgba(0, 0, 0, 0)", "none", selected, "none", "0.5"]));
       expect(document.activeElement).toBe(button("locked"));
     });
 

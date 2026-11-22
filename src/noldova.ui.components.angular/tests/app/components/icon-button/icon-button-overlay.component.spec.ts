@@ -16,6 +16,18 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
+
+// A point on the page, such as the middle of a button or of its glyph.
+class Point {
+  public readonly x: number;
+  public readonly y: number;
+
+  public constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
 
 @Component({
   imports: [IconButtonComponent],
@@ -39,7 +51,6 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 class OverlayIconButtonHostComponent {}
 
 describe("IconButtonComponent's overlay look", () => {
-  const overlay = "rgba(0, 0, 0, 0.7)";
   const white = "rgb(255, 255, 255)";
   let fixture: ComponentFixture<OverlayIconButtonHostComponent>;
 
@@ -52,7 +63,7 @@ describe("IconButtonComponent's overlay look", () => {
   const button = (name: string): HTMLButtonElement => DomFixture.oneOf(DomFixture.host(fixture), `button.${name}`, HTMLButtonElement);
   const pad = (name: string): CSSStyleDeclaration => getComputedStyle(button(name), "::before");
   const glyph = (name: string): DOMRect => DomFixture.one(button(name), ".nol-icon-button-glyph").getBoundingClientRect();
-  const center = (box: DOMRect): readonly [number, number] => [box.left + box.width / 2, box.top + box.height / 2];
+  const center = (box: DOMRect): Point => new Point(box.left + box.width / 2, box.top + box.height / 2);
   const hoverLayer = (token = "toolbar-hover"): string => {
     const probe = DomFixture.one(DomFixture.host(fixture), ".probe");
     probe.style.backgroundImage = `linear-gradient(var(--nol-${token}), var(--nol-${token}))`;
@@ -74,8 +85,8 @@ describe("IconButtonComponent's overlay look", () => {
         render(theme, mode);
         const size = AppearanceFixture.measureLook("icon-button");
         const box = button("remove").getBoundingClientRect();
-        const [glyphX, glyphY] = center(glyph("remove"));
-        const [boxX, boxY] = center(box);
+        const { x: glyphX, y: glyphY } = center(glyph("remove"));
+        const { x: boxX, y: boxY } = center(box);
 
         expect([button("remove").classList.contains("nol-icon-button-overlay"), button("plain").classList.contains("nol-icon-button-overlay")]).toEqual([true, false]);
         expect([pad("remove").backgroundImage, pad("remove").borderTopLeftRadius]).toEqual(["none", "50%"]);
@@ -167,16 +178,25 @@ describe("IconButtonComponent's overlay look", () => {
         button(name).setAttribute("data-nol-state", "Hover");
         const style = getComputedStyle(button(name));
 
-        expect([pad(name).backgroundColor, pad(name).backgroundImage, style.color, style.opacity, style.cursor]).toEqual([overlay, "none", white, "0.5", "default"]);
+        const [face, fill] = [OpacityFixture.faceStyle(button(name)), OpacityFixture.faceStyle(button(name), "::before")];
+
+        expect([pad(name).backgroundColor, pad(name).backgroundImage, style.color, style.opacity, style.cursor, fill.backgroundColor, fill.backgroundImage, face.opacity])
+          .toEqual(["rgba(0, 0, 0, 0)", "none", white, "1", "default", pad("remove").backgroundColor, "none", "0.5"]);
+        expect([fill.width, fill.height, fill.borderTopLeftRadius]).toEqual([pad(name).width, pad(name).height, "50%"]);
         AppearanceFixture.expectPixels(button(name).getBoundingClientRect().width, button("remove").getBoundingClientRect().width);
         AppearanceFixture.expectLook(pad(name).width, DefaultTheme.theme, "icon-button", "width");
       }
+      const pinned = OpacityFixture.faceStyle(button("pinned-locked"), "::before");
+
+      expect([pad("pinned-locked").backgroundColor, pad("pinned-locked").backgroundImage, pinned.backgroundColor, OpacityFixture.faded(button("pinned-locked"))])
+        .toEqual(["rgba(0, 0, 0, 0)", "none", pad("remove").backgroundColor, 0.5]);
+      expect(pinned.backgroundImage).toBe(`${hoverLayer()}, none`);
     });
 
   for (const mode of AppearanceFixture.modes)
-    it(`is a ButtonText ring around a ButtonText glyph under forced colors, or GrayText while disabled or aria-disabled, at the same size, in ${mode} mode`, async () => {
+    it(`is a ButtonText ring around a ButtonText glyph under forced colors, or GrayText at full opacity while disabled or aria-disabled, on the overlay backdrop too, at the same size, in ${mode} mode`, async () => {
       render(DefaultTheme.theme, mode);
-      const before = [button("remove").getBoundingClientRect().width, parseFloat(pad("remove").width)];
+      const before = { button: button("remove").getBoundingClientRect().width, pad: parseFloat(pad("remove").width) };
       await ForcedColorsFixture.activateAsync();
       const width = AppearanceFixture.measureLook("border-width");
       const ring = (name: string): readonly unknown[] => [pad(name).borderTopStyle, parseFloat(pad(name).borderTopWidth), pad(name).borderTopColor, getComputedStyle(button(name)).color];
@@ -186,9 +206,11 @@ describe("IconButtonComponent's overlay look", () => {
         ["solid", width, ForcedColorsFixture.resolve("GrayText"), ForcedColorsFixture.resolve("GrayText")],
         ["solid", width, ForcedColorsFixture.resolve("GrayText"), ForcedColorsFixture.resolve("GrayText")]
       ]);
+      expect(["off", "locked", "lifted-off", "lifted-locked"].map(t => [getComputedStyle(button(t)).opacity, OpacityFixture.drawn(DomFixture.one(button(t), ".nol-icon-button-glyph"))]))
+        .toEqual(Array<readonly unknown[]>(4).fill(["1", 1]));
       expect(pad("remove").backgroundColor).toBe(ForcedColorsFixture.resolve("ButtonFace"));
-      AppearanceFixture.expectPixels(button("remove").getBoundingClientRect().width, before[0] as number);
-      AppearanceFixture.expectPixels(parseFloat(pad("remove").width), before[1] as number);
+      AppearanceFixture.expectPixels(button("remove").getBoundingClientRect().width, before.button);
+      AppearanceFixture.expectPixels(parseFloat(pad("remove").width), before.pad);
     });
 
   for (const mode of AppearanceFixture.modes)
@@ -225,27 +247,31 @@ describe("IconButtonComponent's overlay look", () => {
       it(`lays the overlay control's hover over its fill under the pointer and while pressed, at the same size, on the overlay backdrop, in the ${theme.id} theme in ${mode} mode`, async () => {
         render(theme, mode);
         const fill = pad("lifted").backgroundColor;
-        const before = [button("lifted").getBoundingClientRect(), parseFloat(pad("lifted").width), parseFloat(pad("lifted").height)] as const;
+        const before = { box: button("lifted").getBoundingClientRect(), width: parseFloat(pad("lifted").width), height: parseFloat(pad("lifted").height) };
 
         await userEvent.hover(page.getByTestId("lifted"));
 
         expect([pad("lifted").backgroundColor, pad("lifted").backgroundImage, pad("lifted").borderTopLeftRadius]).toEqual([fill, `${hoverLayer("overlay-control-hover")}, none`, "50%"]);
         expect([pad("lifted-pinned").backgroundColor, pad("lifted-pinned").backgroundImage]).toEqual([fill, `${hoverLayer("overlay-control-hover")}, none`]);
         expect(hoverLayer("overlay-control-hover")).toContain("linear-gradient");
-        AppearanceFixture.expectPixels(button("lifted").getBoundingClientRect().width, before[0].width);
-        AppearanceFixture.expectPixels(button("lifted").getBoundingClientRect().height, before[0].height);
-        AppearanceFixture.expectPixels(parseFloat(pad("lifted").width), before[1]);
-        AppearanceFixture.expectPixels(parseFloat(pad("lifted").height), before[2]);
+        AppearanceFixture.expectPixels(button("lifted").getBoundingClientRect().width, before.box.width);
+        AppearanceFixture.expectPixels(button("lifted").getBoundingClientRect().height, before.box.height);
+        AppearanceFixture.expectPixels(parseFloat(pad("lifted").width), before.width);
+        AppearanceFixture.expectPixels(parseFloat(pad("lifted").height), before.height);
       });
 
   for (const mode of AppearanceFixture.modes)
     it(`is at 35% opacity on the overlay control's fill while disabled or aria-disabled on the overlay backdrop, without the hover layer under the pointer, in ${mode} mode`, () => {
       render(DefaultTheme.theme, mode);
-      const look = (name: string): readonly string[] => [pad(name).backgroundColor, pad(name).backgroundImage, getComputedStyle(button(name)).opacity];
+      const fill = pad("lifted").backgroundColor;
+      const look = (name: string): readonly string[] => {
+        const [face, fill] = [OpacityFixture.faceStyle(button(name)), OpacityFixture.faceStyle(button(name), "::before")];
+        return [pad(name).backgroundColor, pad(name).backgroundImage, getComputedStyle(button(name)).opacity, fill.backgroundColor, fill.backgroundImage, face.opacity];
+      };
       button("lifted-off").setAttribute("data-nol-state", "Hover");
       button("lifted-locked").setAttribute("data-nol-state", "Hover");
 
-      expect([look("lifted-off"), look("lifted-locked")]).toEqual([[pad("lifted").backgroundColor, "none", "0.35"], [pad("lifted").backgroundColor, "none", "0.35"]]);
+      expect([look("lifted-off"), look("lifted-locked")]).toEqual(Array<readonly string[]>(2).fill(["rgba(0, 0, 0, 0)", "none", "1", fill, "none", "0.35"]));
     });
 
   for (const mode of AppearanceFixture.modes)

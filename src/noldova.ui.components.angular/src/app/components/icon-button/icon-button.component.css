@@ -6,7 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* The ::before draws the fill and the focus ring. A disabled button draws its fill on the face instead, which holds the glyph and fades
+ * as one with it, and keeps its ring above the face at full strength. */
 :host {
+  --nol-icon-button-face: var(--nol-icon-button);
+  --nol-icon-button-face-radius: var(--nol-radius-small);
+
   display: inline-grid;
   place-items: center;
   box-sizing: border-box;
@@ -26,9 +31,30 @@
 :host::before {
   content: "";
   grid-area: 1 / 1;
-  width: var(--nol-icon-button);
-  height: var(--nol-icon-button);
-  border-radius: var(--nol-radius-small);
+  width: var(--nol-icon-button-face);
+  height: var(--nol-icon-button-face);
+  border-radius: var(--nol-icon-button-face-radius);
+}
+
+.nol-icon-button-face {
+  display: grid;
+  grid-area: 1 / 1;
+  place-items: center;
+  width: var(--nol-icon-button-face);
+  height: var(--nol-icon-button-face);
+}
+
+.nol-icon-button-face::before {
+  content: "";
+  grid-area: 1 / 1;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--nol-icon-button-face-radius);
+}
+
+:host(.nol-icon-button-overlay) .nol-icon-button-face::before {
+  border: var(--nol-border-width) solid transparent;
 }
 
 :host(:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"]))::before,
@@ -98,8 +124,10 @@
   }
 }
 
+/* Content projected into the button, such as a view badge, fades with it through the kit's base styles. */
 :host(:is(:disabled, [aria-disabled="true"])) {
-  opacity: 0.5;
+  --nol-icon-button-fade: 0.5;
+
   cursor: default;
 
   @media (forced-colors: active) {
@@ -113,6 +141,9 @@
 }
 
 :host(.nol-icon-button-filled) {
+  --nol-icon-button-face: var(--nol-button-height);
+  --nol-icon-button-face-radius: 50%;
+
   min-width: max(var(--nol-icon-button-target), var(--nol-button-height));
   min-height: max(var(--nol-icon-button-target), var(--nol-button-height));
   color: var(--nol-button-text);
@@ -120,10 +151,7 @@
 
 :host(.nol-icon-button-filled)::before {
   box-sizing: border-box;
-  width: var(--nol-button-height);
-  height: var(--nol-button-height);
   border: var(--nol-border-width) solid transparent;
-  border-radius: 50%;
   background-color: var(--nol-button);
 }
 
@@ -136,7 +164,8 @@
 }
 
 :host(.nol-icon-button-filled:is(:disabled, [aria-disabled="true"])) {
-  opacity: 1;
+  --nol-icon-button-fade: 1;
+
   color: var(--nol-text-muted);
 }
 
@@ -163,13 +192,14 @@
 }
 
 :host(.nol-icon-button-overlay) {
+  --nol-icon-button-face-radius: 50%;
+
   color: var(--nol-overlay-text);
 }
 
 :host(.nol-icon-button-overlay)::before {
   box-sizing: border-box;
   border: var(--nol-border-width) solid transparent;
-  border-radius: 50%;
   background-color: var(--nol-overlay);
 }
 
@@ -188,7 +218,7 @@
   }
 
   :host(.nol-icon-button-backdrop:is(:disabled, [aria-disabled="true"])) {
-    opacity: 0.35;
+    --nol-icon-button-fade: 0.35;
   }
 
   :host(.nol-icon-button-backdrop)::before {
@@ -202,23 +232,17 @@
 }
 
 :host(.nol-icon-button-tab-action) {
+  --nol-icon-button-face: var(--nol-tab-close);
+
   min-width: max(var(--nol-pointer-target), var(--nol-tab-action-slot));
   min-height: max(var(--nol-pointer-target), var(--nol-tab-action-slot));
 }
 
-:host(.nol-icon-button-tab-action)::before {
-  width: var(--nol-tab-close);
-  height: var(--nol-tab-close);
-}
-
 :host(.nol-icon-button-tall) {
+  --nol-icon-button-face: var(--nol-button-height);
+
   min-width: max(var(--nol-icon-button-target), var(--nol-button-height));
   min-height: max(var(--nol-icon-button-target), var(--nol-button-height));
-}
-
-:host(.nol-icon-button-tall)::before {
-  width: var(--nol-button-height);
-  height: var(--nol-button-height);
 }
 
 @media (forced-colors: active) {
@@ -256,10 +280,51 @@
   --nol-progress: currentColor;
 }
 
-:host(.nol-icon-button-busy) > :not(.nol-icon-button-spinner) {
+:host(.nol-icon-button-busy) .nol-icon-button-face > :not(.nol-icon-button-spinner) {
   opacity: 0;
 }
 
 .nol-icon-button-spinner {
   grid-area: 1 / 1;
+}
+
+/* A disabled button's fill moves from its ::before to its face, which fades it with the glyph as one, while the ::before keeps only
+ * the focus ring and draws it above the face. These come last, after every fill they replace. The filled look, which fades nothing,
+ * keeps its own disabled fill on its ::before. */
+@media (forced-colors: none) {
+  :host(:is(:disabled, [aria-disabled="true"])) {
+    isolation: isolate;
+  }
+
+  :host(:is(:disabled, [aria-disabled="true"]):not(.nol-icon-button-filled))::before,
+  :host([aria-pressed="true"]:is(:disabled, [aria-disabled="true"]):not(.nol-icon-button-filled))::before,
+  :host(.nol-icon-button-overlay:is(:disabled, [aria-disabled="true"]))::before,
+  :host(.nol-icon-button-backdrop:is(:disabled, [aria-disabled="true"]))::before {
+    z-index: 1;
+    background: none;
+  }
+
+  :host(:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face {
+    opacity: var(--nol-icon-button-fade);
+  }
+
+  :host([aria-pressed="true"]:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face::before {
+    background-color: var(--nol-toolbar-hover);
+  }
+
+  :host(.nol-icon-button-overlay:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face::before {
+    background-color: var(--nol-overlay);
+  }
+
+  :host(.nol-icon-button-overlay[aria-pressed="true"]:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face::before {
+    background: linear-gradient(var(--nol-toolbar-hover), var(--nol-toolbar-hover)), var(--nol-overlay);
+  }
+
+  :host(.nol-icon-button-backdrop:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face::before {
+    background-color: var(--nol-overlay-control);
+  }
+
+  :host(.nol-icon-button-backdrop[aria-pressed="true"]:is(:disabled, [aria-disabled="true"])) .nol-icon-button-face::before {
+    background: linear-gradient(var(--nol-overlay-control-hover), var(--nol-overlay-control-hover)), var(--nol-overlay-control);
+  }
 }

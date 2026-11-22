@@ -6,7 +6,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* A variant names its fill, border and padding here. The face inside the button covers its padding box and holds its icon and label; a
+ * disabled button draws its fill and border on the face, which then reaches under the border too, its contents in the same place, and
+ * fades the face as one, never itself with its focus outline. */
 :host {
+  --nol-button-fill: var(--nol-button);
+  --nol-button-edge: var(--nol-button-border);
+  --nol-button-edge-width: var(--nol-border-width);
+  --nol-button-padding-block: 0px;
+  --nol-button-padding-inline: var(--nol-button-padding);
+  --nol-button-fade: 0.5;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -15,10 +25,10 @@
   min-width: 0;
   max-width: 100%;
   min-height: var(--nol-button-height);
-  padding: 0 var(--nol-button-padding);
-  border: var(--nol-border-width) solid var(--nol-button-border);
+  padding: var(--nol-button-padding-block) var(--nol-button-padding-inline);
+  border: var(--nol-button-edge-width) solid var(--nol-button-edge);
   border-radius: var(--nol-radius-small);
-  background-color: var(--nol-button);
+  background-color: var(--nol-button-fill);
   color: var(--nol-button-text);
   font: inherit;
   text-decoration: none;
@@ -29,6 +39,20 @@
 
 :where(:host) {
   margin: 0;
+}
+
+.nol-button-face {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  gap: inherit;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: calc(-1 * var(--nol-button-padding-block)) calc(-1 * var(--nol-button-padding-inline));
+  padding: var(--nol-button-padding-block) var(--nol-button-padding-inline);
+  border-radius: inherit;
 }
 
 .nol-button-icon {
@@ -50,7 +74,8 @@
 }
 
 :host(.nol-button-danger) {
-  background-color: var(--nol-error);
+  --nol-button-fill: var(--nol-error);
+
   color: var(--nol-button-danger-text);
 }
 
@@ -59,7 +84,8 @@
 }
 
 :host(.nol-button-secondary) {
-  background-color: var(--nol-button-secondary);
+  --nol-button-fill: var(--nol-button-secondary);
+
   color: var(--nol-button-secondary-text);
 }
 
@@ -68,9 +94,11 @@
 }
 
 :host(.nol-button-text) {
+  --nol-button-fill: transparent;
+  --nol-button-edge-width: 0px;
+  --nol-button-fade: 0.4;
+
   width: calc-size(auto, max(4rem, size));
-  border: 0;
-  background-color: transparent;
   color: var(--nol-text);
 }
 
@@ -88,13 +116,26 @@
 }
 
 :host(:is(:disabled, [aria-disabled="true"])) {
-  opacity: 0.5;
   cursor: default;
 
+  @media (forced-colors: none) {
+    border-color: transparent;
+    background: none;
+  }
+
   @media (forced-colors: active) {
-    border-color: GrayText;
+    --nol-button-edge: GrayText;
+
     color: GrayText;
-    opacity: 1;
+  }
+}
+
+@media (forced-colors: none) {
+  :host(:is(:disabled, [aria-disabled="true"])) .nol-button-face {
+    margin: calc(-1 * (var(--nol-button-edge-width) + var(--nol-button-padding-block))) calc(-1 * (var(--nol-button-edge-width) + var(--nol-button-padding-inline)));
+    border: var(--nol-button-edge-width) solid var(--nol-button-edge);
+    background-color: var(--nol-button-fill);
+    opacity: var(--nol-button-fade);
   }
 }
 
@@ -102,18 +143,13 @@
   outline-offset: calc(var(--nol-border-width) * -1);
 }
 
-:host(.nol-button-text:is(:disabled, [aria-disabled="true"])) {
-  opacity: 0.4;
-
-  @media (forced-colors: active) {
-    opacity: 1;
-  }
-}
-
 :host(.nol-button-overlay) {
-  border: var(--nol-border-width) solid transparent;
+  --nol-button-fill: var(--nol-overlay);
+  --nol-button-edge: transparent;
+  --nol-button-edge-width: var(--nol-border-width);
+  --nol-button-fade: 0.5;
+
   border-radius: calc(var(--nol-button-height) / 2);
-  background-color: var(--nol-overlay);
   color: var(--nol-overlay-text);
 }
 
@@ -125,22 +161,12 @@
   outline-offset: calc(var(--nol-border-width) * 2);
 }
 
-:host(.nol-button-overlay:is(:disabled, [aria-disabled="true"])) {
-  opacity: 0.5;
-
-  @media (forced-colors: active) {
-    opacity: 1;
-  }
-}
-
 @media (forced-colors: none) {
   :host(.nol-button-backdrop) {
-    background-color: var(--nol-overlay-control);
-    color: var(--nol-overlay-control-text);
-  }
+    --nol-button-fill: var(--nol-overlay-control);
+    --nol-button-fade: 0.35;
 
-  :host(.nol-button-backdrop:is(:disabled, [aria-disabled="true"])) {
-    opacity: 0.35;
+    color: var(--nol-overlay-control-text);
   }
 
   :host(.nol-button-backdrop:not(:disabled, [aria-disabled="true"]):is(:hover, [data-nol-state="Hover"])) {
@@ -150,22 +176,25 @@
 
 @media (forced-colors: active) {
   :host(.nol-button-overlay) {
-    border-color: ButtonText;
-    background-color: ButtonFace;
+    --nol-button-edge: ButtonText;
+    --nol-button-fill: ButtonFace;
+
     color: ButtonText;
   }
 
   :host(.nol-button-overlay:is(:disabled, [aria-disabled="true"])) {
-    border-color: GrayText;
+    --nol-button-edge: GrayText;
+
     color: GrayText;
   }
 }
 
 :host(.nol-button-outlined) {
+  --nol-button-fill: transparent;
+  --nol-button-edge: var(--nol-border);
+  --nol-button-padding-block: var(--nol-space-1);
+
   min-height: 0;
-  padding: var(--nol-space-1) var(--nol-button-padding);
-  border-color: var(--nol-border);
-  background-color: transparent;
   color: var(--nol-text-muted);
 }
 
@@ -179,12 +208,14 @@
 
 @media (forced-colors: active) {
   :host(.nol-button-outlined) {
-    border-color: ButtonText;
+    --nol-button-edge: ButtonText;
+
     color: ButtonText;
   }
 
   :host(.nol-button-outlined:is(:disabled, [aria-disabled="true"])) {
-    border-color: GrayText;
+    --nol-button-edge: GrayText;
+
     color: GrayText;
   }
 }
@@ -198,14 +229,15 @@
 }
 
 :host(.nol-button-compact.nol-button-outlined) {
-  padding-block: 0;
+  --nol-button-padding-block: 0px;
 }
 
 :host(.nol-button-accent) {
+  --nol-button-fill: var(--nol-selected);
+  --nol-button-edge: transparent;
+  --nol-button-padding-inline: var(--nol-chip-padding);
+
   min-height: var(--nol-chip);
-  padding: 0 var(--nol-chip-padding);
-  border-color: transparent;
-  background-color: var(--nol-selected);
   color: var(--nol-text);
 }
 
@@ -216,7 +248,8 @@
 
 @media (forced-colors: active) {
   :host(.nol-button-accent) {
-    border-color: ButtonText;
+    --nol-button-edge: ButtonText;
+
     color: ButtonText;
   }
 
@@ -225,7 +258,8 @@
   }
 
   :host(.nol-button-accent:is(:disabled, [aria-disabled="true"])) {
-    border-color: GrayText;
+    --nol-button-edge: GrayText;
+
     color: GrayText;
   }
 }
@@ -236,7 +270,7 @@
   position: relative;
 }
 
-:host(.nol-button-busy) > :not(.nol-button-spinner) {
+:host(.nol-button-busy) .nol-button-face > :not(.nol-button-spinner) {
   opacity: 0;
 }
 

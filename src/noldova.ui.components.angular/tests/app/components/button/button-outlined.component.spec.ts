@@ -17,6 +17,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent],
@@ -107,11 +108,13 @@ describe("ButtonComponent's outlined variant", () => {
 
     await userEvent.hover(page.getByTestId("locked"));
     button("locked").focus();
-    const locked = getComputedStyle(button("locked"));
-    const disabled = getComputedStyle(button("disabled"));
+    const border = AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "border");
+    const look = (name: string): readonly string[] => {
+      const [style, face] = [getComputedStyle(button(name)), OpacityFixture.faceStyle(button(name))];
+      return [style.opacity, style.cursor, style.backgroundColor, style.borderTopColor, face.backgroundColor, face.borderTopColor, face.opacity];
+    };
 
-    expect([locked.opacity, locked.cursor, locked.backgroundColor]).toEqual(["0.5", "default", "rgba(0, 0, 0, 0)"]);
-    expect([disabled.opacity, disabled.cursor, disabled.backgroundColor]).toEqual(["0.5", "default", "rgba(0, 0, 0, 0)"]);
+    expect([look("locked"), look("disabled")]).toEqual(Array<readonly string[]>(2).fill(["1", "default", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", border, "0.5"]));
     expect(document.activeElement).toBe(button("locked"));
   });
 

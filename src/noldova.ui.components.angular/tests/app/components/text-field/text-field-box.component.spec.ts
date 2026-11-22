@@ -18,6 +18,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [IconButtonComponent, TextFieldBoxComponent, TextFieldComponent],
@@ -49,13 +50,23 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 })
 class TextFieldBoxHostComponent {}
 
-interface Placement {
-  box: DOMRect;
-  field: DOMRect;
-  button: DOMRect;
-  pill: DOMRect;
-  border: number;
-  textEnd: number;
+// Where a text field box's parts sit: the box, its field, its button and the button's pill, the field's border, and where its text ends.
+class Placement {
+  public readonly box: DOMRect;
+  public readonly field: DOMRect;
+  public readonly button: DOMRect;
+  public readonly pill: DOMRect;
+  public readonly border: number;
+  public readonly textEnd: number;
+
+  public constructor(box: DOMRect, field: DOMRect, button: DOMRect, pill: DOMRect, border: number, textEnd: number) {
+    this.box = box;
+    this.field = field;
+    this.button = button;
+    this.pill = pill;
+    this.border = border;
+    this.textEnd = textEnd;
+  }
 }
 
 describe("TextFieldBoxComponent", () => {
@@ -81,11 +92,9 @@ describe("TextFieldBoxComponent", () => {
     const height = parseFloat(pill.height);
     const field = input(name).getBoundingClientRect();
     const border = parseFloat(style.borderRightWidth);
-    return {
-      box: box(name).getBoundingClientRect(), field, button: target,
-      pill: new DOMRect(target.left + (target.width - width) / 2, target.top + (target.height - height) / 2, width, height),
-      border, textEnd: field.right - border - parseFloat(style.paddingRight)
-    };
+    return new Placement(box(name).getBoundingClientRect(), field, target,
+      new DOMRect(target.left + (target.width - width) / 2, target.top + (target.height - height) / 2, width, height), border,
+      field.right - border - parseFloat(style.paddingRight));
   }
 
   function expectInside(at: Placement): void {
@@ -188,7 +197,7 @@ describe("TextFieldBoxComponent", () => {
 
   it("dims a disabled field and its disabled button alike, and draws both in GrayText under forced colors", async () => {
     render();
-    const looks = [getComputedStyle(input("locked")).opacity, getComputedStyle(button("locked")).opacity];
+    const looks = [getComputedStyle(input("locked")).opacity, String(OpacityFixture.faded(button("locked")))];
     await ForcedColorsFixture.activateAsync();
     try {
       const gray = ForcedColorsFixture.resolve("GrayText");

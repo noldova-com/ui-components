@@ -22,7 +22,19 @@ import { ThemeMode } from "../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 import { AccessibilityFixture } from "../../fixtures/accessibility.fixture";
+import { DomFixture } from "../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../fixtures/forced-colors.fixture";
+
+// A point on the page, such as the middle of a control or of its spinner.
+class Point {
+  public readonly x: number;
+  public readonly y: number;
+
+  public constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
 
 @Component({
   imports: [ButtonComponent, IconButtonComponent, MenuComponent, MenuItemComponent, SplitButtonComponent, ToolbarButtonComponent],
@@ -70,21 +82,15 @@ describe("BusyGuard", () => {
     fixture.detectChanges();
   }
 
-  const element = (selector: string): HTMLElement => {
-    const root: unknown = fixture.nativeElement;
-    const found = root instanceof HTMLElement ? root.querySelector<HTMLElement>(selector) : null;
-    if (found === null)
-      throw new Error(`Nothing matches ${selector}.`);
-    return found;
-  };
+  const element = (selector: string): HTMLElement => DomFixture.one(DomFixture.host(fixture), selector);
   const control = (name: string): HTMLElement => element(name.startsWith("nol-") ? name : `.row > .${name}`);
-  const spinner = (target: HTMLElement): HTMLElement | null => target.querySelector<HTMLElement>(":scope > nol-spinner");
-  const ring = (target: HTMLElement): HTMLElement | null => spinner(target)?.querySelector<HTMLElement>(".nol-spinner-ring") ?? null;
+  const spinner = (target: HTMLElement): HTMLElement | null => DomFixture.maybe(target, ":scope > nol-spinner, :scope > :is(.nol-button-face, .nol-icon-button-face) > nol-spinner");
+  const ring = (target: HTMLElement): HTMLElement => DomFixture.one(DomFixture.present(spinner(target)), ".nol-spinner-ring");
   const box = (target: HTMLElement): readonly number[] => {
     const rect = target.getBoundingClientRect();
     return [rect.left, rect.top, rect.width, rect.height];
   };
-  const centre = (rect: DOMRect): readonly [number, number] => [rect.left + rect.width / 2, rect.top + rect.height / 2];
+  const centre = (rect: DOMRect): Point => new Point(rect.left + rect.width / 2, rect.top + rect.height / 2);
   const menu = (): HTMLElement | null => document.querySelector<HTMLElement>(".cdk-overlay-container nol-menu.shells");
   const press = (target: HTMLElement, key: string): boolean =>
     target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
@@ -104,21 +110,20 @@ describe("BusyGuard", () => {
       expect(controls.map(t => box(control(t)))).toEqual(before);
       for (const name of controls) {
         const target = control(name);
-        const shown = spinner(target);
+        const shown = DomFixture.present(spinner(target));
         const turning = ring(target);
-        if (shown === null || turning === null)
-          throw new Error(`${name} shows no spinner.`);
-        const [x, y] = centre(target.getBoundingClientRect());
-        const [ringX, ringY] = centre(turning.getBoundingClientRect());
+        const middle = centre(target.getBoundingClientRect());
+        const ringMiddle = centre(turning.getBoundingClientRect());
 
         expect([name, target.getAttribute("aria-busy")]).toEqual([name, "true"]);
-        AppearanceFixture.expectPixels(ringX, x);
-        AppearanceFixture.expectPixels(ringY, y);
+        AppearanceFixture.expectPixels(ringMiddle.x, middle.x);
+        AppearanceFixture.expectPixels(ringMiddle.y, middle.y);
         AppearanceFixture.expectPixels(shown.getBoundingClientRect().width, AppearanceFixture.measureLook("spinner"));
         AppearanceFixture.expectPixels(turning.getBoundingClientRect().width, AppearanceFixture.measureLook("spinner-ring"));
         expect([name, getComputedStyle(turning).borderTopColor]).toEqual([name, getComputedStyle(target).color]);
-        expect([name, [...target.children].filter(t => t !== shown).map(t => getComputedStyle(t).opacity)])
-          .toEqual([name, [...target.children].filter(t => t !== shown).map(() => "0")]);
+        const content = [...DomFixture.present(shown.parentElement).children].filter(t => t !== shown);
+
+        expect([name, content.map(t => getComputedStyle(t).opacity)]).toEqual([name, content.map(() => "0")]);
       }
     });
 
@@ -165,7 +170,7 @@ describe("BusyGuard", () => {
     const pressed = fixture.componentInstance.clicks;
     await userEvent.click(control("icon"));
 
-    expect([pressed, fixture.componentInstance.clicks, spinner(control("pressable")) !== null, control("pressable").getAttribute("aria-busy"), box(control("pressable"))])
+    expect([pressed, fixture.componentInstance.clicks, !Object.isNull(spinner(control("pressable"))), control("pressable").getAttribute("aria-busy"), box(control("pressable"))])
       .toEqual([3, 3, true, "true", idle]);
   });
 
@@ -186,7 +191,7 @@ describe("BusyGuard", () => {
       setBusy(true);
       await ForcedColorsFixture.activateAsync();
       const sides = (name: string): readonly string[] => {
-        const style = getComputedStyle(ring(control(name)) ?? control(name));
+        const style = getComputedStyle(ring(control(name)));
         return [style.borderTopColor, style.borderBottomColor];
       };
 

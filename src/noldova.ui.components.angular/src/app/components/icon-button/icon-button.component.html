@@ -6,8 +6,10 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<span class="nol-icon-button-glyph material-symbols-rounded" aria-hidden="true">{{ icon() }}</span>
+<span class="nol-icon-button-face"
+  ><span class="nol-icon-button-glyph material-symbols-rounded" aria-hidden="true">{{ icon() }}</span>
+  @if (busy()) {
+    <nol-spinner class="nol-icon-button-spinner" [isDelayed]="false" />
+  }
+</span>
 <ng-content />
-@if (busy()) {
-  <nol-spinner class="nol-icon-button-spinner" [isDelayed]="false" />
-}

@@ -26,6 +26,7 @@ import { TooltipDefaults } from "../../../../src/app/models/tooltip-defaults";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [IconButtonComponent, MenuComponent, MenuItemComponent, SplitButtonComponent],
@@ -99,7 +100,7 @@ describe("SplitButtonComponent", () => {
       AppearanceFixture.expectPixels(half.height, icon.height);
       expect(half.width).toBeGreaterThanOrEqual(24);
     }
-    for (const [element, box] of [[main(), first], [arrow(), second]] as const) {
+    for (const { element, box } of [{ element: main(), box: first }, { element: arrow(), box: second }]) {
       AppearanceFixture.expectLook(pad(element).height, theme, "icon-button", "height");
       AppearanceFixture.expectPixels(Number.parseFloat(pad(element).width), box.width);
       AppearanceFixture.expectPixels(Number.parseFloat(pad(element).height), Number.parseFloat(pad(plain()).height));
@@ -141,7 +142,7 @@ describe("SplitButtonComponent", () => {
 
     await openAsync();
 
-    expect([menu() !== null, arrow().getAttribute("aria-expanded"), fixture.componentInstance.created]).toEqual([true, "true", 1]);
+    expect([!Object.isNull(menu()), arrow().getAttribute("aria-expanded"), fixture.componentInstance.created]).toEqual([true, "true", 1]);
   });
 
   it("gives the main half its label as its tooltip, or the tooltip it is given, and the arrow its name, both on the side it is given", async () => {
@@ -162,8 +163,8 @@ describe("SplitButtonComponent", () => {
     await renderAsync();
     const bare = TestBed.createComponent(SplitButtonComponent);
     onTestFinished(() => bare.destroy());
-    for (const [name, value] of [["icon", "add"], ["label", "New terminal"], ["menuLabel", "Choose a shell"], ["menu", null]] as const)
-      bare.componentRef.setInput(name, value);
+    for (const input of [{ name: "icon", value: "add" }, { name: "label", value: "New terminal" }, { name: "menuLabel", value: "Choose a shell" }, { name: "menu", value: null }])
+      bare.componentRef.setInput(input.name, input.value);
     bare.detectChanges();
 
     expect(bare.debugElement.queryAll(By.directive(TooltipDirective)).map(t => t.injector.get(TooltipDirective).side()))
@@ -177,8 +178,9 @@ describe("SplitButtonComponent", () => {
     main().focus();
     main().click();
 
-    expect([main().getAttribute("aria-disabled"), document.activeElement, getComputedStyle(main()).opacity, fixture.componentInstance.created]).toEqual(["true", main(), "0.5", 0]);
-    expect([arrow().hasAttribute("aria-disabled"), getComputedStyle(arrow()).opacity]).toEqual([false, "1"]);
+    expect([main().getAttribute("aria-disabled"), document.activeElement, getComputedStyle(main()).opacity, OpacityFixture.faded(main()), fixture.componentInstance.created])
+      .toEqual(["true", main(), "1", 0.5, 0]);
+    expect([arrow().hasAttribute("aria-disabled"), getComputedStyle(arrow()).opacity, OpacityFixture.faded(arrow())]).toEqual([false, "1", 1]);
 
     await openAsync();
 
@@ -200,7 +202,7 @@ describe("SplitButtonComponent", () => {
         const border = AppearanceFixture.readColor(theme, mode, "widget-border");
         const fill = resolveFill("toolbar-hover");
 
-        for (const [hovered, other] of [[main(), arrow()], [arrow(), main()]] as const) {
+        for (const { hovered, other } of [{ hovered: main(), other: arrow() }, { hovered: arrow(), other: main() }]) {
           await userEvent.hover(hovered);
 
           expect([outline().outlineStyle, outline().outlineColor, edge().visibility, edge().backgroundColor]).toEqual(["solid", border, "visible", border]);
@@ -219,7 +221,8 @@ describe("SplitButtonComponent", () => {
       .toEqual(["solid", "visible", resolveFill("toolbar-hover"), "rgba(0, 0, 0, 0)"]);
   });
 
-  for (const [alignment, name, edgeOf] of [[OverlayAlignment.Start, "start", (t: DOMRect) => t.left], [OverlayAlignment.End, "end", (t: DOMRect) => t.right]] as const)
+  for (const { alignment, name, edgeOf } of [{ alignment: OverlayAlignment.Start, name: "start", edgeOf: (t: DOMRect) => t.left },
+    { alignment: OverlayAlignment.End, name: "end", edgeOf: (t: DOMRect) => t.right }])
     it(`opens the menu below the arrow, lined up with its ${name}`, async () => {
       await renderAsync();
       fixture.componentInstance.alignment.set(alignment);

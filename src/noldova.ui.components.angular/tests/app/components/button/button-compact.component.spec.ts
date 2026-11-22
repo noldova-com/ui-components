@@ -30,6 +30,7 @@ import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent, IconButtonComponent, MessageActionDirective, MessageComponent, MessageFooterEndDirective],
@@ -180,7 +181,7 @@ describe("ButtonComponent's compact size", () => {
       await renderAsync(DefaultTheme.theme, mode);
       const height = AppearanceFixture.measureLook("button-compact-height");
 
-      expect([style("off").opacity, style("locked").opacity]).toEqual(["0.5", "0.5"]);
+      expect([style("off").opacity, style("locked").opacity, OpacityFixture.faded(button("off")), OpacityFixture.faded(button("locked"))]).toEqual(["1", "1", 0.5, 0.5]);
       AppearanceFixture.expectPixels(box("off").height, height);
       AppearanceFixture.expectPixels(box("locked").height, height);
     });

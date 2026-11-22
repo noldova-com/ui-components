@@ -17,6 +17,8 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { GalleryFixture } from "../../../fixtures/gallery.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [IconButtonComponent],
@@ -147,7 +149,44 @@ describe("IconButtonComponent", () => {
     button().focus();
     const style = getComputedStyle(button());
 
-    expect([style.opacity, style.cursor, pad().backgroundColor, document.activeElement === button()]).toEqual(["0.5", "default", "rgba(0, 0, 0, 0)", true]);
+    expect([style.opacity, style.cursor, pad().backgroundColor, OpacityFixture.faceStyle(button(), "::before").backgroundColor, document.activeElement === button(), OpacityFixture.faded(button())])
+      .toEqual(["1", "default", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", true, 0.5]);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps the keyboard focus outline of a disabled or aria-disabled button at full strength, at least 3:1 on the window, and dims a pressed one's fill, in ${mode} mode`, () => {
+      AppearanceFixture.apply(DefaultTheme.theme, mode);
+      const accent = AppearanceFixture.readColor(DefaultTheme.theme, mode, "accent");
+      const ground = AppearanceFixture.readColor(DefaultTheme.theme, mode, "window");
+      fixture.componentInstance.pressed.set(true);
+      fixture.detectChanges();
+      const ring = (): readonly string[] => [pad().outlineStyle, pad().outlineColor, OpacityFixture.over(button(), pad().outlineColor, ground), pad().backgroundColor,
+        OpacityFixture.faceStyle(button(), "::before").backgroundColor, OpacityFixture.faceStyle(button()).opacity];
+      button().setAttribute("data-nol-state", "Focus");
+      fixture.componentInstance.disabled.set(true);
+      fixture.detectChanges();
+      const disabled = ring();
+      fixture.componentInstance.disabled.set(false);
+      fixture.detectChanges();
+      button().setAttribute("aria-disabled", "true");
+      const unavailable = ring();
+
+      expect([disabled, unavailable]).toEqual(Array<readonly string[]>(2).fill(["solid", accent, OpacityFixture.onGround(accent, 1, ground), "rgba(0, 0, 0, 0)",
+        GalleryFixture.colorOf(DomFixture.host(fixture), "background-color", "var(--nol-toolbar-hover)"), "0.5"]));
+      expect(AppearanceFixture.contrast(accent, ground)).toBeGreaterThanOrEqual(3);
+    });
+
+  it("dims nothing of a disabled or aria-disabled button under forced colors, its glyph in GrayText at full opacity", async () => {
+    button().setAttribute("aria-disabled", "true");
+    await ForcedColorsFixture.activateAsync();
+    try {
+      const look = [getComputedStyle(button()).opacity, OpacityFixture.faded(button()), getComputedStyle(button()).color];
+
+      expect(look).toEqual(["1", 1, ForcedColorsFixture.resolve("GrayText")]);
+    }
+    finally {
+      await ForcedColorsFixture.resetAsync();
+    }
   });
 
   for (const mode of AppearanceFixture.modes)

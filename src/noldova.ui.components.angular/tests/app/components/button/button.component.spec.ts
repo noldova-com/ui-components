@@ -18,6 +18,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { GalleryFixture } from "../../../fixtures/gallery.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent],
@@ -36,6 +37,8 @@ import { GalleryFixture } from "../../../fixtures/gallery.fixture";
     <button type="button" class="danger-locked" nol-button [danger]="true" aria-disabled="true">Delete</button>
     <button type="button" class="danger-secondary" nol-button [variant]="secondary" [danger]="true">Delete</button>
     <button type="button" class="danger-text" nol-button [variant]="text" [danger]="true">Delete</button>
+    <button type="button" class="overlay-off" nol-button [variant]="text" [overlay]="true" disabled>Hide</button>
+    <button type="button" class="backdrop-locked" nol-button [variant]="text" [overlay]="true" [backdrop]="true" aria-disabled="true">Hide</button>
   `
 })
 class ButtonHostComponent {
@@ -78,7 +81,7 @@ describe("ButtonComponent", () => {
     expect(button("secondary").classList.contains("nol-button-secondary")).toBe(true);
     expect([button("text").classList.contains("nol-button-text"), button("text").classList.contains("nol-button-secondary"), button("primary").classList.contains("nol-button-text")])
       .toEqual([true, false, false]);
-    expect(getComputedStyle(button("primary")).opacity).toBe("0.5");
+    expect(OpacityFixture.faded(button("primary"))).toBe(0.5);
     expect(getComputedStyle(button("primary")).cursor).toBe("default");
   });
 
@@ -170,9 +173,32 @@ describe("ButtonComponent", () => {
     button("locked").focus();
     const style = getComputedStyle(button("locked"));
 
-    expect([style.opacity, style.cursor, style.backgroundColor]).toEqual(["0.5", "default", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "button")]);
+    const face = OpacityFixture.faceStyle(button("locked"));
+
+    expect([style.opacity, style.cursor, style.backgroundColor, style.borderTopColor, face.backgroundColor, face.borderTopColor, face.opacity]).toEqual(["1", "default", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)",
+      AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "button"), GalleryFixture.colorOf(DomFixture.host(fixture), "border-top-color", "var(--nol-button-border)"), "0.5"]);
     expect(document.activeElement).toBe(button("locked"));
   });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps the keyboard focus outline of a disabled or aria-disabled button at full strength, at least 3:1 on the window, in ${mode} mode`, () => {
+      render(DefaultTheme.theme, mode);
+      button("text").setAttribute("aria-disabled", "true");
+      button("secondary").disabled = true;
+      const accent = AppearanceFixture.readColor(DefaultTheme.theme, mode, "accent");
+      const ground = AppearanceFixture.readColor(DefaultTheme.theme, mode, "window");
+      const ring = (name: string): readonly string[] => {
+        button(name).setAttribute("data-nol-state", "Focus");
+        const style = getComputedStyle(button(name));
+        const seen = [style.outlineStyle, style.outlineColor, OpacityFixture.over(button(name), style.outlineColor, ground)];
+        button(name).removeAttribute("data-nol-state");
+        return seen;
+      };
+
+      expect(["locked", "unavailable", "danger-locked", "text", "secondary"].map(ring)).toEqual(Array<readonly string[]>(5).fill(["solid", accent, OpacityFixture.onGround(accent, 1, ground)]));
+      expect(AppearanceFixture.contrast(accent, ground)).toBeGreaterThanOrEqual(3);
+      expect(OpacityFixture.faded(button("text"))).toBe(0.4);
+    });
 
   it("shows keyboard focus outside its fill, so the outline never blends into a primary button", async () => {
     render();
@@ -222,13 +248,15 @@ describe("ButtonComponent", () => {
 
   it("gives a disabled danger button the primary button's disabled look, without the danger hover", async () => {
     render();
-    const fill = AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "error");
 
     for (const name of ["danger-off", "danger-locked"]) {
       await userEvent.hover(button(name));
       const style = getComputedStyle(button(name));
 
-      expect([style.opacity, style.cursor, style.backgroundColor]).toEqual(["0.5", "default", fill]);
+      const face = OpacityFixture.faceStyle(button(name));
+
+      expect([style.opacity, style.cursor, style.backgroundColor, face.backgroundColor, face.opacity])
+        .toEqual(["1", "default", "rgba(0, 0, 0, 0)", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "error"), "0.5"]);
     }
   });
 
@@ -246,7 +274,7 @@ describe("ButtonComponent", () => {
   it("ignores danger on a secondary or a text button, which keeps its own look", () => {
     render();
 
-    for (const [name, look] of [["danger-secondary", "secondary"], ["danger-text", "text"]] as const) {
+    for (const { name, look } of [{ name: "danger-secondary", look: "secondary" }, { name: "danger-text", look: "text" }]) {
       const style = getComputedStyle(button(name));
       const own = getComputedStyle(button(look));
 
@@ -267,16 +295,18 @@ describe("ButtonComponent", () => {
     });
 
   for (const mode of AppearanceFixture.modes)
-    it(`keeps a disabled or aria-disabled button of every variant at full opacity under forced colors, so its label stays GrayText, in ${mode} mode`, async () => {
+    it(`keeps a disabled or aria-disabled button of every variant, the overlay and backdrop looks included, and its contents at full opacity under forced colors, so its label stays GrayText, in ${mode} mode`, async () => {
       render(DefaultTheme.theme, mode);
       await ForcedColorsFixture.activateAsync();
       button("text").disabled = true;
       button("danger-text").setAttribute("aria-disabled", "true");
       button("secondary").disabled = true;
       const gray = ForcedColorsFixture.resolve("GrayText");
-      const look = (name: string): readonly string[] => [getComputedStyle(button(name)).color, getComputedStyle(button(name)).opacity];
+      const names = ["text", "danger-text", "secondary", "unavailable", "locked", "overlay-off", "backdrop-locked"];
+      const look = (name: string): readonly unknown[] =>
+        [getComputedStyle(button(name)).color, getComputedStyle(button(name)).opacity, OpacityFixture.drawn(DomFixture.one(button(name), ".nol-button-label"))];
 
-      expect(["text", "danger-text", "secondary", "unavailable", "locked"].map(look)).toEqual(Array<readonly string[]>(5).fill([gray, "1"]));
+      expect(names.map(look)).toEqual(Array<readonly unknown[]>(names.length).fill([gray, "1", 1]));
     });
 
   for (const mode of AppearanceFixture.modes)

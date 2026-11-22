@@ -17,6 +17,7 @@ Accessible name.
 Toolbar hover; pointer hit region at least 24px.
 Under forced colors hover is a 1px dashed `Highlight` outline drawn three border widths inside the button's edge, clear of an overlay's or filled button's ring, so a hovered button never looks like a resting one.
 An icon button marked aria-disabled, which stays focusable, looks disabled and shows no hover, as a disabled one does.
+A disabled icon button fades its fill, its glyph and any content it holds, such as a view badge, together, at half opacity unless its look says otherwise, and never its keyboard focus outline, which keeps full strength; under forced colors nothing is faded.
 Under forced colors a pressed icon button's glyph is `HighlightText` on `Highlight`, and a disabled or aria-disabled one's is `GrayText`; pressed and disabled or aria-disabled, its glyph is `GrayText` on `Canvas` inside a 1px `GrayText` outline, which its keyboard focus outline replaces.
 
 ## Tab action size

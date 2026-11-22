@@ -18,6 +18,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 
 @Component({
   imports: [ButtonComponent, IconButtonComponent],
@@ -159,8 +160,10 @@ describe("ButtonComponent's overlay look", () => {
       for (const name of ["off", "locked"]) {
         button(name).setAttribute("data-nol-state", "Hover");
 
-        expect([style(name).backgroundColor, style(name).backgroundImage, style(name).color, style(name).opacity, style(name).cursor])
-          .toEqual([style("fit").backgroundColor, "none", style("fit").color, "0.5", "default"]);
+        const face = OpacityFixture.faceStyle(button(name));
+
+        expect([style(name).backgroundColor, style(name).backgroundImage, style(name).color, style(name).opacity, style(name).cursor, face.backgroundColor, face.backgroundImage, face.opacity])
+          .toEqual(["rgba(0, 0, 0, 0)", "none", style("fit").color, "1", "default", style("fit").backgroundColor, "none", "0.5"]);
         AppearanceFixture.expectPixels(button(name).getBoundingClientRect().width, button("fit").getBoundingClientRect().width);
         AppearanceFixture.expectPixels(button(name).getBoundingClientRect().height, button("fit").getBoundingClientRect().height);
       }
@@ -233,11 +236,15 @@ describe("ButtonComponent's overlay look", () => {
   for (const mode of AppearanceFixture.modes)
     it(`is at 35% opacity on the overlay control's fill while disabled or aria-disabled on the overlay backdrop, without the hover layer under the pointer, in ${mode} mode`, () => {
       render(DefaultTheme.theme, mode);
-      const look = (name: string): readonly string[] => [style(name).backgroundColor, style(name).backgroundImage, style(name).opacity];
+      const fill = style("lifted").backgroundColor;
+      const look = (name: string): readonly string[] => {
+        const face = OpacityFixture.faceStyle(button(name));
+        return [style(name).backgroundColor, style(name).backgroundImage, style(name).opacity, face.backgroundColor, face.backgroundImage, face.opacity];
+      };
       button("lifted-off").setAttribute("data-nol-state", "Hover");
       button("lifted-locked").setAttribute("data-nol-state", "Hover");
 
-      expect([look("lifted-off"), look("lifted-locked")]).toEqual([[style("lifted").backgroundColor, "none", "0.35"], [style("lifted").backgroundColor, "none", "0.35"]]);
+      expect([look("lifted-off"), look("lifted-locked")]).toEqual(Array<readonly string[]>(2).fill(["rgba(0, 0, 0, 0)", "none", "1", fill, "none", "0.35"]));
     });
 
   for (const mode of AppearanceFixture.modes)

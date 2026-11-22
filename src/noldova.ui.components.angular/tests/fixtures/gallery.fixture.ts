@@ -52,18 +52,29 @@ class OverlaysStandInComponent {
 class ContentStandInComponent {
 }
 
+// A section of the kit's gallery and the empty stand-in a test renders in its place.
+class KitSection {
+  public readonly section: Type<unknown>;
+  public readonly standIn: Type<unknown>;
+
+  public constructor(section: Type<unknown>, standIn: Type<unknown>) {
+    this.section = section;
+    this.standIn = standIn;
+  }
+}
+
 export class GalleryFixture {
-  private static readonly KIT_SECTIONS: readonly (readonly [Type<unknown>, Type<unknown>])[] = [
-    [GalleryFormsComponent, FormsStandInComponent],
-    [GalleryNavigationComponent, NavigationStandInComponent],
-    [GalleryOverlaysComponent, OverlaysStandInComponent],
-    [GalleryContentComponent, ContentStandInComponent]
+  private static readonly KIT_SECTIONS: readonly KitSection[] = [
+    new KitSection(GalleryFormsComponent, FormsStandInComponent),
+    new KitSection(GalleryNavigationComponent, NavigationStandInComponent),
+    new KitSection(GalleryOverlaysComponent, OverlaysStandInComponent),
+    new KitSection(GalleryContentComponent, ContentStandInComponent)
   ];
 
-  public static readonly kitSections: readonly Type<unknown>[] = GalleryFixture.KIT_SECTIONS.map(([section]) => section);
+  public static readonly kitSections: readonly Type<unknown>[] = GalleryFixture.KIT_SECTIONS.map(t => t.section);
 
   public static standInForTheKitSections(...kept: readonly Type<unknown>[]): void {
-    TestBed.overrideProvider(GalleryTokens.kitSections, { useValue: GalleryFixture.KIT_SECTIONS.map(([section, standIn]) => kept.includes(section) ? section : standIn) });
+    TestBed.overrideProvider(GalleryTokens.kitSections, { useValue: GalleryFixture.KIT_SECTIONS.map(t => kept.includes(t.section) ? t.section : t.standIn) });
   }
 
   public static standInForTheCodeHighlighter(): void {
@@ -106,13 +117,11 @@ export class GalleryFixture {
   }
 
   public static busyControls(root: unknown): readonly HTMLElement[] {
-    return root instanceof HTMLElement ? [...root.querySelectorAll<HTMLElement>("[aria-busy=\"true\"]")] : [];
+    return DomFixture.all(DomFixture.host({ nativeElement: root }), "[aria-busy=\"true\"]");
   }
 
   public static expectSpinnerCentred(control: HTMLElement): void {
-    const ring = control.querySelector<HTMLElement>(":scope > nol-spinner .nol-spinner-ring");
-    if (ring === null)
-      throw new Error("The busy control shows no spinner.");
+    const ring = DomFixture.one(control, ":scope > nol-spinner .nol-spinner-ring, :scope > :is(.nol-button-face, .nol-icon-button-face) > nol-spinner .nol-spinner-ring");
     const [box, turning] = [control.getBoundingClientRect(), ring.getBoundingClientRect()];
 
     AppearanceFixture.expectPixels(turning.left + turning.width / 2, box.left + box.width / 2);
