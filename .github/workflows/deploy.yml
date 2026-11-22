@@ -154,7 +154,7 @@ jobs:
     if: >-
       ${{ !cancelled() && needs.find.result == 'success'
       && (needs.approve.result == 'success' || (needs.approve.result == 'skipped' && inputs.commit != '')) }}
-    uses: noldova-com/.github/.github/workflows/move-image-label.yml@17213c40842a4f4ae78cdb072582c686e72c57c9 # v2.41.5
+    uses: noldova-com/.github/.github/workflows/move-image-label.yml@a1478e51ced58ce0f7cb6cdb30d5b175ae1e7c73 # v2.42.0
     permissions:
       packages: write
     with:
