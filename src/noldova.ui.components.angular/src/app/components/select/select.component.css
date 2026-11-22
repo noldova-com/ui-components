@@ -53,6 +53,12 @@
   flex: auto;
 }
 
+.nol-select-icon,
+.nol-select-option-icon {
+  flex: none;
+  font-size: var(--nol-icon);
+}
+
 .nol-select-arrow {
   flex: none;
   color: var(--nol-text);

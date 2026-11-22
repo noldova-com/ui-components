@@ -460,6 +460,77 @@ describe("SelectComponent", () => {
         expect(getComputedStyle(DomFixture.oneOf(DomFixture.at(options(), 1), ".nol-select-option-tag", Element)).color).toBe(AppearanceFixture.readColor(theme, mode, "list-active-text"));
       });
 
+  function renderIcons(): void {
+    fixture.componentInstance.options.set([new SelectOption("design", "Design", null, false, "groups", "teal"), new SelectOption("build", "Build", null, false, "construction", "#c2410c"),
+      new SelectOption("lab", "Lab", null, false, "science"), new SelectOption("everyone", "Everyone")]);
+    fixture.componentInstance.value.set("design");
+    fixture.detectChanges();
+  }
+
+  function rgbOf(color: string): string {
+    const probe = document.body.appendChild(document.createElement("div"));
+    probe.style.color = color;
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
+    return resolved;
+  }
+
+  function expectIconBeforeTitle(icon: HTMLElement, title: HTMLElement): void {
+    const glyph = icon.getBoundingClientRect();
+    const text = title.getBoundingClientRect();
+    AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("icon"));
+    AppearanceFixture.expectPixels(text.left - glyph.right, AppearanceFixture.measureLook("space-2"));
+    AppearanceFixture.expectPixels((glyph.top + glyph.bottom) / 2, (text.top + text.bottom) / 2);
+  }
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws an option's icon before its title, a small space from it and centred on its line, in its swatch, its custom color or the text color, in its list and on its button, in the ${theme.id} theme in ${mode} mode`, async () => {
+        render(theme, mode);
+        renderIcons();
+        const chosen = DomFixture.one(DomFixture.host(fixture), ".nol-select-icon");
+        expectIconBeforeTitle(chosen, DomFixture.one(DomFixture.host(fixture), ".nol-select-value"));
+        const shown = [chosen.textContent?.trim(), getComputedStyle(chosen).color];
+
+        await openAsync(4);
+        const icons = options().map(t => t.querySelector<HTMLElement>(".nol-select-option-icon"));
+        for (const row of options().slice(0, 3))
+          expectIconBeforeTitle(DomFixture.oneOf(row, ".nol-select-option-icon", HTMLElement), DomFixture.oneOf(row, ".nol-select-option-title", HTMLElement));
+        const lab = DomFixture.oneOf(DomFixture.at(options(), 2), ".nol-select-option-title", HTMLElement);
+
+        expect(shown).toEqual(["groups", resolve("--nol-swatch-teal")]);
+        expect(icons.map(t => t?.textContent?.trim())).toEqual(["groups", "construction", "science", undefined]);
+        expect(icons.slice(1, 3).map(t => Object.isNull(t) ? null : getComputedStyle(t).color)).toEqual([rgbOf("#c2410c"), getComputedStyle(lab).color]);
+      });
+
+  it("draws an option's icon in the system text color its title takes in forced colors, before the title as in the other modes", async () => {
+    await ForcedColorsFixture.activateAsync();
+    render();
+    renderIcons();
+    const chosen = DomFixture.one(DomFixture.host(fixture), ".nol-select-icon");
+    const value = DomFixture.one(DomFixture.host(fixture), ".nol-select-value");
+    expectIconBeforeTitle(chosen, value);
+    const button = [getComputedStyle(chosen).color, getComputedStyle(value).color];
+
+    await openAsync(4);
+    const row = DomFixture.at(options(), 1);
+    const icon = DomFixture.oneOf(row, ".nol-select-option-icon", HTMLElement);
+    const title = DomFixture.oneOf(row, ".nol-select-option-title", HTMLElement);
+    expectIconBeforeTitle(icon, title);
+
+    expect([button[0], getComputedStyle(icon).color]).toEqual([button[1], getComputedStyle(title).color]);
+  });
+
+  it("keeps an option's icon out of its name and its button's name", async () => {
+    render();
+    renderIcons();
+
+    await expect.element(page.getByRole("button", { name: "Mode, Design", exact: true })).toBeVisible();
+    await openAsync(4);
+    await expect.element(page.getByRole("option", { name: "Build", exact: true })).toBeVisible();
+    expect([...document.querySelectorAll(".nol-select-icon, .nol-select-option-icon")].map(t => t.getAttribute("aria-hidden"))).toEqual(["true", "true", "true", "true"]);
+  });
+
   it("reads an option's tag with its title, and the chosen option's tag in its button's name", async () => {
     render();
     fixture.componentInstance.options.set([new SelectOption("Low", "Low"), new SelectOption("Medium", "Medium", "Recommended")]);

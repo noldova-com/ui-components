@@ -11599,6 +11599,21 @@ export declare class SelectOption {
   public readonly isDisabled: boolean;
 
   /**
+   * A Material Symbols icon name a select draws before the title, in its list
+   * and on its button while the option is chosen, such as `groups`, or null,
+   * the default, for none. Screen readers skip it, so the option's name stays
+   * its title. Choice pills don't show it.
+   */
+  public readonly icon: string | null;
+
+  /**
+   * The icon's color, a kit swatch name such as `teal` or a `#rrggbb` color,
+   * as `ColorChoices` takes it, or null, the default, for the text color. In
+   * forced colors the icon takes the system text color, as the title does.
+   */
+  public readonly iconColor: string | null;
+
+  /**
    * Creates the option.
    *
    * @param value The value it stands for.
@@ -11607,6 +11622,10 @@ export declare class SelectOption {
    * left out or null.
    * @param isDisabled Whether a select's list shows it without letting it be
    * chosen; it can be chosen when left out or false.
+   * @param icon The Material Symbols icon a select draws before its title;
+   * none when left out or null.
+   * @param iconColor The icon's color, a kit swatch name or a `#rrggbb` color;
+   * the text color when left out or null.
    * @example
    * ```ts
    * import { Component, type WritableSignal, signal } from "@angular/core";
@@ -11623,7 +11642,7 @@ export declare class SelectOption {
    * }
    * ```
    */
-  public constructor(value: string, title: string, tag?: string | null, isDisabled?: boolean);
+  public constructor(value: string, title: string, tag?: string | null, isDisabled?: boolean, icon?: string | null, iconColor?: string | null);
 }
 
 /**

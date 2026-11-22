@@ -280,6 +280,13 @@ export class GalleryResources {
       { label: "In your plan", options: [{ value: "fast", title: "Fast", tag: null, isDisabled: false }, { value: "balanced", title: "Balanced", tag: "Recommended", isDisabled: false }] },
       { label: "Upgrade to use", options: [{ value: "deep", title: "Deep", tag: null, isDisabled: true }] }
     ],
+    selectIconsCaption: "Icons, colored and plain",
+    selectIcons: [
+      { value: "design", title: "Design", icon: "groups", iconColor: "teal" },
+      { value: "build", title: "Build", icon: "construction", iconColor: "#c2410c" },
+      { value: "lab", title: "Lab", icon: "science", iconColor: null },
+      { value: "everyone", title: "Everyone", icon: null, iconColor: null }
+    ],
     progress: "Progress",
     determinate: "Half done",
     indeterminate: "Unknown amount",

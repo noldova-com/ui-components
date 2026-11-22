@@ -11,11 +11,15 @@ export class SelectOption {
   public readonly title: string;
   public readonly tag: string | null;
   public readonly isDisabled: boolean;
+  public readonly icon: string | null;
+  public readonly iconColor: string | null;
 
-  public constructor(value: string, title: string, tag: string | null = null, isDisabled: boolean = false) {
+  public constructor(value: string, title: string, tag: string | null = null, isDisabled: boolean = false, icon: string | null = null, iconColor: string | null = null) {
     this.value = value;
     this.title = title;
     this.tag = tag;
     this.isDisabled = isDisabled;
+    this.icon = icon;
+    this.iconColor = iconColor;
   }
 }

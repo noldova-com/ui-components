@@ -8,6 +8,11 @@ LICENSE file in the root directory of this source tree.
 
 <button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [attr.aria-disabled]="disabled() ? resources.trueValue : null"
   [attr.aria-label]="name()" [attr.aria-describedby]="describedBy()" (click)="toggle(button, list)">
+  @if (chosen(); as option) {
+    @if (option.icon; as glyph) {
+      <span class="nol-select-icon material-symbols-rounded" aria-hidden="true" [style.color]="iconColorOf(option)">{{ glyph }}</span>
+    }
+  }
   <span class="nol-select-value" data-truncates>{{ title() }}</span>
   <span class="nol-select-arrow material-symbols-rounded" aria-hidden="true">{{ partResources.selectGlyph }}</span>
 </button>
@@ -22,7 +27,11 @@ LICENSE file in the root directory of this source tree.
         @for (option of section.options; track option.value) {
           <div class="nol-select-option" [cdkOption]="option.value" [cdkOptionTypeaheadLabel]="option.title" [cdkOptionDisabled]="option.isDisabled" [attr.data-value]="option.value" [nolTooltip]="option.title"
             [nolTooltipSide]="optionTooltipSide" [nolTooltipBeside]="partResources.selectListSelector" [nolTooltipTruncated]="true"
-            (click)="closeOnCurrent(option.value, button)"><span class="nol-select-option-title" data-truncates>{{ option.title }}</span>
+            (click)="closeOnCurrent(option.value, button)">
+            @if (option.icon; as glyph) {
+              <span class="nol-select-option-icon material-symbols-rounded" aria-hidden="true" [style.color]="iconColorOf(option)">{{ glyph }}</span>
+            }
+            <span class="nol-select-option-title" data-truncates>{{ option.title }}</span>
             @if (option.tag; as tag) {
               <nol-chip class="nol-select-option-tag" [kind]="tagKind">{{ tag }}</nol-chip>
             }
