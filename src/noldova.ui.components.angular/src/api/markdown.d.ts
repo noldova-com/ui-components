@@ -74,7 +74,11 @@ export declare function provideMarkdown(): EnvironmentProviders;
  * KaTeX can't read, one still being written while the text streams, and
  * every formula until KaTeX has loaded show their source as written,
  * delimiters included. KaTeX takes no command that links, loads or sets
- * attributes, and bounds the size and macro expansion a formula asks for.
+ * attributes, none that draws outside its own box, such as `\smash`,
+ * `\raisebox` or `\llap`, and no negative `\kern`, `\mkern`, `\mskip`,
+ * `\hskip` or `\hspace`, and bounds the size and macro expansion a formula
+ * asks for. Inline math clips what it draws to its own box, so nothing it
+ * draws covers the text around it.
  *
  * An `ng-template nolMessageImage`, `MessageImageDirective` from
  * `@noldova/ui.components.angular`, inside the view draws each image in its

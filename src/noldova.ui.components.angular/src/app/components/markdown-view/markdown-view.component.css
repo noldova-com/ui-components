@@ -187,6 +187,13 @@
   opacity: 0.5;
 }
 
+.nol-markdown-math:not(.nol-markdown-math-display) {
+  display: inline-block;
+  max-width: 100%;
+  overflow: clip;
+  overflow-clip-margin: var(--nol-space-1);
+}
+
 .nol-markdown-math-display {
   display: block;
   max-width: 100%;
