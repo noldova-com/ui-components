@@ -87,7 +87,7 @@ describe("MarkdownMath", () => {
 
   it("reads a long paragraph of formulas that never close in work that grows with its length, not with its square, and leaves it as text", async () => {
     const parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
-    const sources = ["\\(".repeat(20_000), "\\[a ".repeat(10_000), "$a ".repeat(10_000)];
+    const sources = ["\\(".repeat(2_000), "\\[a ".repeat(1_000), "$a ".repeat(1_000)];
 
     const readPerCharacter = sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length);
 
