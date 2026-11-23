@@ -4,6 +4,12 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.31
+
+- `@noldova/ui.components.angular`: the canvas's dot grid takes its dot size, gap and color as inputs on `CanvasComponent`: `dotSize` and `dotGap`, CSS lengths, 1px and 1.5rem by default, and `dotColor`, a CSS color, `var(--nol-menu-border)` by default, so an app that sets none sees no change. The grid keeps its size at every zoom, and forced colors still drop it.
+- `@noldova/ui.components.angular`: a canvas that fills a whole pane can float its controls and drop its card. `controlsPlacement`, a new `CanvasControlsPlacement`, is `Edges` by default, as before, or `Floating`: the toolbar `space-3` inside the canvas's bottom-right corner, the overview map `space-3` above it, and no hint, with Fit leaving them clear. `isFlush` takes off the canvas's border and radius and puts it on the panel surface rather than the window surface. The docs site's canvas page shows both.
+- `@noldova/ui.components.angular`: the quick input has an embedded look for an owner's own popup: with `isEmbedded` it draws no card of its own, with no border, radius, background, shadow or top margin, at its container's full width and at most its height. Its floating card is unchanged by default. The docs site's quick input page shows it.
+
 ## 0.0.30
 
 - `@noldova/ui.components.angular`: a streaming reply reveals its text on every frame that has text to show, rather than in bursts about 50 ms apart, so it flows instead of jumping forward in steps. The gap is now an input in milliseconds, `revealBurst`, 0 by default, on the message (`MessageComponent`) and the Markdown view (`MarkdownViewComponent`), which pass it to the reveal; a positive value, such as 48 for every third frame at 60 Hz, shows more at most once per that many milliseconds, as before. Once the stream ends, the rest shows every frame either way, catching up within about 60 ms. `TextReveal` takes it as an optional third argument, `burst`, also 0 by default.
