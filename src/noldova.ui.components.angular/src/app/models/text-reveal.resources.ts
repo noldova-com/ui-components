@@ -10,5 +10,4 @@ export class TextRevealResources {
   public static readonly markdownRevealCatchUp: number = 250;
   public static readonly markdownRevealEndedCatchUp: number = 60;
   public static readonly markdownRevealMinimumRate: number = 40;
-  public static readonly markdownRevealBurst: number = 48;
 }

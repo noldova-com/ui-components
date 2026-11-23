@@ -58,6 +58,7 @@ export class MessageRunComponent {
 
   public readonly blocks = input.required<readonly MessageBlock[]>();
   public readonly streaming = input<boolean>(false);
+  public readonly revealBurst = input<number>(0);
   public readonly collapsible = input<boolean>(true);
   public readonly mentions = input<readonly MentionCandidate[]>([]);
   public readonly mentionNames = input<boolean>(true);

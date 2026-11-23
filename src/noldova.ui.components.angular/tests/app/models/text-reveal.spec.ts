@@ -87,8 +87,18 @@ describe("TextReveal", () => {
     return changed;
   }
 
-  it("shows a growing text in bursts three frames apart, changing nothing in the frames between, at the pace it would show every frame", () => {
+  it("shows a growing text on every frame by default, from the second frame on, which has time to reveal for", () => {
     const reveal = new TextReveal(0, () => undefined);
+
+    reveal.follow(1000, false, true);
+    const changed = changedFrames(() => reveal.count, 60);
+
+    expect(changed).toEqual(Array.from({ length: 59 }, (_, t) => t + 2));
+    expect(reveal.count).toBeGreaterThan(950);
+  });
+
+  it("shows a growing text in bursts three frames apart with a 48 ms burst, changing nothing in the frames between, at the pace it would show every frame", () => {
+    const reveal = new TextReveal(0, () => undefined, 48);
 
     reveal.follow(1000, false, true);
     const changed = changedFrames(() => reveal.count, 60);
@@ -99,7 +109,7 @@ describe("TextReveal", () => {
   });
 
   it("shows its share in every frame once the text has ended, however close to the last burst", () => {
-    const reveal = new TextReveal(0, () => undefined);
+    const reveal = new TextReveal(0, () => undefined, 48);
     reveal.follow(1000, false, true);
     const streamed = changedFrames(() => reveal.count, 7);
 
@@ -165,7 +175,7 @@ describe("TextReveal", () => {
   });
 
   it("goes on a little each burst when told again after it was disposed, however long ago", () => {
-    const reveal = new TextReveal(0, () => undefined);
+    const reveal = new TextReveal(0, () => undefined, 48);
 
     reveal.follow(1000, false, true);
     vi.advanceTimersByTime(64);

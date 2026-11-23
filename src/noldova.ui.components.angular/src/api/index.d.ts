@@ -8680,8 +8680,8 @@ export declare class MessageCode extends MessageBlock {
  * than 24 elements, 8 lists or 8 quotes is drawn at the deepest level, and
  * text past 200,000 characters is shown plain. While the message streams,
  * each of its text blocks that is not interim reveals a little at a time,
- * in bursts about 50 ms apart and every frame once the message ends, as a
- * Markdown view's `streaming` input says, holding back an unfinished
+ * every frame, or in bursts {@link MessageComponent.revealBurst} apart, and
+ * every frame once the message ends, as a Markdown view's `streaming` input says, holding back an unfinished
  * end of at most 300 characters, and the parts already shown keep their
  * elements, also when a slot comes before them, such as an activity row. A
  * text block past the text blocks the message is first drawn with reveals
@@ -9099,6 +9099,16 @@ export declare class MessageComponent {
    * a reply.
    */
   public readonly math: InputSignal<boolean>;
+
+  /**
+   * How far apart, in milliseconds, a streaming text block's reveal shows
+   * more; 0 when not bound, which shows more on every frame that has text
+   * to show. It means what the Markdown view's `revealBurst` input from
+   * `@noldova/ui.components.angular/markdown` means, and reaches each of the
+   * message's text blocks, so an app that would rather lay a long reply out
+   * less often sets it, such as to 48 for every third frame at 60 Hz.
+   */
+  public readonly revealBurst: InputSignal<number>;
 
   /**
    * Emits where to open the app's context menu for the message: at the
@@ -12673,10 +12683,11 @@ export declare class TerminalOutputRun {
  * a {@link GraphemeText} for text. It shows a share of what is still
  * hidden, so that it would catch up within about 250 ms while the text
  * grows and 60 ms once it has ended, and never fewer than 40 a second.
- * While the text grows, it shows that share in bursts at least 48 ms apart,
- * every third frame at 60 Hz, and the frames between change nothing, since
- * each change lays its text out again; once the text has ended, every
- * animation frame shows its share. It never shows more than has arrived,
+ * While the text grows, it shows that share on every animation frame, or,
+ * with a burst, at most once per that many milliseconds, such as every third
+ * frame at 60 Hz for 48, and the frames between change nothing, since each
+ * change lays its text out again; once the text has ended, every animation
+ * frame shows its share. It never shows more than has arrived,
  * and runs no frames once it has caught up.
  */
 export declare class TextReveal {
@@ -12687,6 +12698,9 @@ export declare class TextReveal {
    * nothing, or the text's count to show what it has at once.
    * @param changed Called with the new {@link TextReveal.count} on each
    * frame that changes it.
+   * @param burst The least time, in milliseconds, between two frames that
+   * show more while the text grows; 0, the default, shows more on every
+   * frame. It doesn't hold back the frames once the text has ended.
    * @example
    * ```ts
    * import { type Signal, type WritableSignal, computed, signal } from "@angular/core";
@@ -12705,7 +12719,7 @@ export declare class TextReveal {
    * }
    * ```
    */
-  public constructor(initial: number, changed: (count: number) => void);
+  public constructor(initial: number, changed: (count: number) => void, burst?: number);
 
   /**
    * How much it shows now, a whole number.
@@ -12720,8 +12734,8 @@ export declare class TextReveal {
    * that at once.
    * @param isEnded Whether the text has stopped growing, which makes it
    * catch up faster.
-   * @param animate Whether to reveal a little at a time, in bursts about
-   * 50 ms apart while the text grows and every frame once it has ended;
+   * @param animate Whether to reveal a little at a time, every frame, or in
+   * its bursts while the text grows, and every frame once it has ended;
    * false shows what has arrived at once, such as when reduced motion is preferred.
    * @example
    * ```ts
@@ -12736,8 +12750,8 @@ export declare class TextReveal {
 
   /**
    * Cancels its next frame, so it changes nothing more until it is told
-   * again; then it goes on a little at a time from what it shows, in
-   * bursts while the text grows and every frame once it has ended, however
+   * again; then it goes on a little at a time from what it shows, every
+   * frame or in its bursts while the text grows and every frame once it has ended, however
    * long it was disposed.
    *
    * @example

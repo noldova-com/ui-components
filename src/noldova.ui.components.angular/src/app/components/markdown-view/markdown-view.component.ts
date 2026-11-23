@@ -90,6 +90,7 @@ export class MarkdownViewComponent {
   public readonly streaming = input<boolean>(false);
   public readonly entering = input<boolean>(false);
   public readonly paced = input<boolean>(false);
+  public readonly revealBurst = input<number>(0);
   public readonly mentions = input<readonly MentionCandidate[]>([]);
   public readonly mentionNames = input<boolean>(true);
   public readonly linkActivate = output<string>();
@@ -108,7 +109,7 @@ export class MarkdownViewComponent {
   public readonly shellRunOutputs = input<ReadonlySet<number>>(new Set());
 
   public constructor() {
-    afterRenderEffect(() => this.reveal?.follow(this.streaming(), this.entering(), this.paced()));
+    afterRenderEffect(() => this.reveal?.follow(this.streaming(), this.entering(), this.paced(), this.revealBurst()));
     let drawn = String.empty;
     effect(() => {
       const text = this.text();

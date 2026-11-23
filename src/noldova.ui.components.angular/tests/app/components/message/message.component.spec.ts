@@ -101,7 +101,7 @@ class MessageFeedHostComponent {
           [key]="key()" [collapsedHeight]="collapsedHeight()" [layout]="layout()" [timeFormat]="timeFormat()" [twentyFourHour]="twentyFourHour()" [copyText]="copyText()" [labelId]="labelled() ? 'label-' + index : null" (copied)="events.push(['copied', $event])" (retry)="events.push(['retry'])" (attachmentOpen)="events.push(['attachment', $event])"
           [fileLinks]="true" [linkSchemes]="linkSchemes" (linkActivate)="events.push(['link', $event])" (fileActivate)="events.push(['file', $event])" (contextMenuRequest)="events.push(['menu', $event])"
           [folderLinks]="folders()" (filePathsChange)="paths.push($event)"
-          [shellRuns]="shellRuns()" (shellRun)="events.push(['run', $event.code, $event.language])">
+          [shellRuns]="shellRuns()" [revealBurst]="revealBurst()" (shellRun)="events.push(['run', $event.code, $event.language])">
           <ng-template nolMessageSlot="card"><span class="card">Card</span></ng-template>
           <ng-template nolMessageSlot="notes"><nol-markdown-view text="Our [z](src/z.ts)" [fileLinks]="true" /></ng-template>
           <ng-template nolMessageImage let-src="src" let-alt="alt" let-title="title">
@@ -132,6 +132,7 @@ class MessageHostComponent {
   public readonly shown: WritableSignal<readonly number[]> = signal([0]);
   public readonly pictureWidth: WritableSignal<number> = signal(3);
   public readonly shellRuns: WritableSignal<boolean> = signal(false);
+  public readonly revealBurst: WritableSignal<number> = signal(0);
   public readonly events: unknown[][] = [];
   public readonly folders: WritableSignal<ReadonlySet<string>> = signal(new Set());
   public readonly paths: (readonly string[])[] = [];
@@ -619,6 +620,33 @@ describe("MessageComponent", () => {
       vi.useRealTimers();
     }
   });
+
+  for (const [pace, burst, gap] of [["on every frame by default", 0, 1], ["three frames apart with a 48 ms burst", 48, 3]] as const)
+    it(`reveals its streaming text ${pace}, passing its revealBurst down to the text block's reveal`, async () => {
+      vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
+      try {
+        const reply = `Start, ${"word ".repeat(200)}end`;
+        const seen = (): number => RevealedTextFixture.visible(find("nol-markdown-view")).trim().length;
+        await renderAsync(t => {
+          t.status.set(MessageStatus.Streaming);
+          t.revealBurst.set(burst);
+          t.blocks.set([new MessageText("Start,")]);
+        });
+        await changeAsync(() => host.blocks.set([new MessageText(reply)]));
+        await new Promise(resolve => setTimeout(resolve));
+        const changed: number[] = [];
+        for (let frame = 1; frame <= 30; frame++) {
+          const before = seen();
+          vi.advanceTimersByTime(16);
+          if (seen() !== before)
+            changed.push(frame);
+        }
+
+        expect([changed.length >= 30 / gap - 2, changed.slice(1).every((t, i) => t - (changed[i] ?? 0) === gap)]).toEqual([true, true]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
 
   it("keeps revealing text at the streaming pace when a step after it makes it interim partway through, until it has caught up", async () => {
     vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });

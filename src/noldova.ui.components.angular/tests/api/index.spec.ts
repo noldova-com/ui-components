@@ -29,7 +29,7 @@ describe("the kit's entry", () => {
     reveal.follow(text.count, false, true);
     vi.advanceTimersByTime(1000);
 
-    expect([kit.GraphemeText, kit.TextReveal, text.count, shown]).toEqual([GraphemeText, TextReveal, 3, ["a", "a👍🏽é"]]);
+    expect([kit.GraphemeText, kit.TextReveal, text.count, shown]).toEqual([GraphemeText, TextReveal, 3, ["a", "a👍🏽", "a👍🏽é"]]);
   });
 
   it("publishes the follower its streaming code block uses, so an app's own growing list opens at its end, stays where the reader scrolled up to, follows again near its end, and holds its end when the area is made shorter", () => {

@@ -144,8 +144,8 @@ export declare class MarkdownViewComponent {
   /**
    * Whether the text is still streaming in; false when not bound. While it
    * streams, the text that arrives shows a little at a time, by whole
-   * characters, in bursts about 50 milliseconds apart, every third frame at
-   * 60 Hz, closing the gap with what has arrived by about two thirds
+   * characters, every frame, or in bursts {@link MarkdownViewComponent.revealBurst}
+   * apart when it is set, closing the gap with what has arrived by about two thirds
    * every quarter of a second and by at least 40 characters a second. Once it
    * ends, the rest shows every frame, closing the gap the same way every 60
    * milliseconds. Under
@@ -178,6 +178,17 @@ export declare class MarkdownViewComponent {
    * shows whole either way.
    */
   public readonly paced: InputSignal<boolean>;
+
+  /**
+   * How far apart, in milliseconds, the streaming text's reveal shows more;
+   * 0 when not bound, which shows more on every frame that has text to show.
+   * A positive value shows more at most once per that many milliseconds, so
+   * 48 shows it every third frame at 60 Hz and lays the text out a third as
+   * often. Once `streaming` ends, the rest shows every frame either way. A
+   * value is taken when a reveal starts, as `streaming` turns on or the text
+   * is replaced.
+   */
+  public readonly revealBurst: InputSignal<number>;
 
   /**
    * The people and agents whose mentions the view marks, the mention field's

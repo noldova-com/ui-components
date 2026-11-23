@@ -26,19 +26,21 @@ export class MarkdownReveal {
   private isSelected: boolean = false;
   private isReplaced: boolean = false;
   private isDrawn: boolean = false;
+  private burst: number = 0;
 
   public constructor(root: Node) {
     this.root = root;
     this.text = new RenderedText(root);
   }
 
-  public follow(isStreaming: boolean, isEntering: boolean, isPaced: boolean = false): void {
+  public follow(isStreaming: boolean, isEntering: boolean, isPaced: boolean = false, burst: number = 0): void {
     this.isStreaming = isStreaming;
     this.isPaced = isPaced;
+    this.burst = burst;
     if (Object.isNull(this.reveal) && isStreaming && !this.motion.matches) {
       this.text.restore();
       this.isReplaced = false;
-      this.reveal = new TextReveal(isEntering && !this.isDrawn ? 0 : this.text.count, t => this.show(t));
+      this.reveal = new TextReveal(isEntering && !this.isDrawn ? 0 : this.text.count, t => this.show(t), burst);
       this.observer.observe(this.root, { characterData: true, childList: true, subtree: true, attributeFilter: [MarkdownRevealResources.markdownHiddenAttribute] });
       document.addEventListener(Resources.selectionChangeEvent, this.selected);
       this.isSelected = this.isSelecting();
@@ -79,7 +81,7 @@ export class MarkdownReveal {
     if (this.isReplaced) {
       this.isReplaced = false;
       this.reveal?.dispose();
-      this.reveal = new TextReveal(this.available, t => this.show(t));
+      this.reveal = new TextReveal(this.available, t => this.show(t), this.burst);
     }
     const reveal = this.reveal as TextReveal;
     const isAnimated = !this.motion.matches && !this.isSelected && (this.isStreaming || reveal.count < this.available);

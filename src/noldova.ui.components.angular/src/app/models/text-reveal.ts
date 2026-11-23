@@ -13,14 +13,16 @@ import { TextRevealResources } from "./text-reveal.resources.js";
 
 export class TextReveal {
   private readonly changed: (count: number) => void;
+  private readonly burst: number;
   private shown: number;
   private available: number;
   private isEnded: boolean = false;
   private frame: number | null = null;
   private previous: number | null = null;
 
-  public constructor(initial: number, changed: (count: number) => void) {
+  public constructor(initial: number, changed: (count: number) => void, burst: number = 0) {
     this.changed = changed;
+    this.burst = burst;
     this.shown = initial;
     this.available = initial;
   }
@@ -51,7 +53,7 @@ export class TextReveal {
 
   private step(time: number): void {
     this.frame = null;
-    if (!this.isEnded && !Object.isNull(this.previous) && time - this.previous < TextRevealResources.markdownRevealBurst) {
+    if (!this.isEnded && !Object.isNull(this.previous) && time - this.previous < this.burst) {
       this.schedule();
       return;
     }
