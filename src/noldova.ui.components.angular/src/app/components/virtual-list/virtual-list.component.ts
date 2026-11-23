@@ -619,11 +619,11 @@ export class VirtualListComponent<T> {
 
   private resolve(): void {
     const { source, cache } = this.state();
-    if (Object.isNull(this.anchor.key) || Object.isUndefined(cache.itemAt(this.anchor.index)))
+    const resolved = this.anchor.resolve(t => cache.findIndex(item => source.keyOf(item) === t));
+    if (resolved === this.anchor)
       return;
-    const { index, distance } = this.anchor.resolve(t => cache.findIndex(item => source.keyOf(item) === t));
-    const isMoved = index !== this.anchor.index;
-    this.anchor = new VirtualListAnchor(index, distance);
+    const isMoved = resolved.index !== this.anchor.index;
+    this.anchor = new VirtualListAnchor(resolved.index, resolved.distance);
     if (isMoved)
       this.correct();
   }
