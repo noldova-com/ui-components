@@ -4,10 +4,16 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.29
+
+- `@noldova/ui.components.angular`: the link reference chip and a work item's state are exported, so an app can show a reference outside a Markdown view, such as in a list row, a table cell or a commit subject: `a[nol-link-reference-chip]` (`LinkReferenceChipComponent`) takes the `reference` and emits `linkActivate` and `linkMenu` as in a Markdown view, opens its card the same way, and has `isShown`, `show()` and `hide()`; `nol-link-reference-work-item-state` (`LinkReferenceWorkItemStateComponent`) takes the `state` and draws its dot and label after the chip. The app binds the chip's `href` and handles its click. The chip now draws its own link color and underline, `--nol-link` underlined at 45% of it, and `LinkText` under forced colors, so it looks the same outside a Markdown view as inside one, where it is unchanged. The docs site has a page for each.
+
 ## 0.0.28
 
+0.0.28 was released at #54's merge, so it also holds that pull request's change, the internal one below.
+
 - `@noldova/ui.components.angular`: a Markdown view reads a paragraph of math or HTML openers that never close in time that grows with its length, not with its square: inline math remembers, for each closing delimiter, where none follows, and the text references find HTML tags in one forward scan that remembers where each kind's close is missing. A long message full of unclosed `\(`, `$`, `<?`, `<!--` or `<!` no longer holds the page for seconds, and a streaming message no longer repeats that cost on each update. Rendering is unchanged.
-- Internal, with no change to the packages: the docs site's spec run prints each test as it ends (#52).
+- Internal, with no change to the packages: the docs site's spec run prints each test as it ends (#52), and a setup spec polls for the font sanitizer's reason after the decode warning, which once arrived late on Windows arm64 (#54).
 
 ## 0.0.27
 
