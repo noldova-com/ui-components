@@ -1045,7 +1045,7 @@ describe("CanvasComponent with its dots bound", () => {
   let fixture: ComponentFixture<DotsCanvasHostComponent>;
 
   const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
-  const instance = (): CanvasComponent => fixture.debugElement.query(By.directive(CanvasComponent)).componentInstance as CanvasComponent;
+  const instance = (): CanvasComponent => fixture.debugElement.query(By.directive(CanvasComponent)).injector.get(CanvasComponent);
   const rootSize = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
   const grid = (): readonly string[] => [getComputedStyle(canvas()).backgroundImage, getComputedStyle(canvas()).backgroundSize];
 
