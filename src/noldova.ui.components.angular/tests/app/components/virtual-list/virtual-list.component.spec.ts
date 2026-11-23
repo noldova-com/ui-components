@@ -3135,6 +3135,22 @@ describe("VirtualListComponent", () => {
     expect([byKey, byIndex]).toEqual([[-10, true], 0]);
   });
 
+  it("keeps a saved position's key while rows were added before it and its page loads after the page of its old index, waiting at that index, then opens at its row", async () => {
+    const source = new VirtualListSourceFixture(1000, 30);
+    const answerAsync = async (start: number): Promise<void> => {
+      await source.readAt(source.reads.findIndex(t => t.start === start)).answerAsync(Array.from({ length: 50 }, (_, t) => start + t < 10 ? `new ${start + t}` : `item ${start + t - 10}`));
+      await settleAsync();
+    };
+    await renderFeedAsync(source, new VirtualListPosition(145, "item 145", 10));
+    await answerAsync(100);
+    const waiting = offsetOfArticle("item 135");
+
+    await answerAsync(150);
+
+    AppearanceFixture.expectPixels(waiting, -10);
+    AppearanceFixture.expectPixels(offsetOfArticle("item 145"), -10);
+  });
+
   it("emits where the person reads as they scroll, with the key of the row at the top when it has loaded", async () => {
     const source = new VirtualListSourceFixture(200, 30);
     await renderFeedAsync(source, new VirtualListPosition(0, null, 0));
