@@ -34,6 +34,8 @@ import { GroupHeaderPage } from "./pages/group-header-page.js";
 import { IconButtonPage } from "./pages/icon-button-page.js";
 import { IconChooserPage } from "./pages/icon-chooser-page.js";
 import { InlineCodePage } from "./pages/inline-code-page.js";
+import { LinkReferenceChipPage } from "./pages/link-reference-chip-page.js";
+import { LinkReferenceWorkItemStatePage } from "./pages/link-reference-work-item-state-page.js";
 import { MarkdownViewPage } from "./pages/markdown-view-page.js";
 import { MenuBarItemPage } from "./pages/menu-bar-item-page.js";
 import { MenuBarPage } from "./pages/menu-bar-page.js";
@@ -100,6 +102,8 @@ export class DocsCatalog {
     DocsCatalog.componentPage(InlineCodePage.content, "inline-code", DocsGroup.Content),
     DocsCatalog.componentPage(CodeBlockPage.content, "code-block", DocsGroup.Content),
     DocsCatalog.componentPage(FileBadgePage.content, "file-badge", DocsGroup.Content),
+    DocsCatalog.componentPage(LinkReferenceChipPage.content, "link-reference-chip", DocsGroup.Content),
+    DocsCatalog.componentPage(LinkReferenceWorkItemStatePage.content, "link-reference-work-item-state", DocsGroup.Content),
     DocsCatalog.componentPage(SectionHeaderPage.content, "section-header", DocsGroup.Content),
     DocsCatalog.componentPage(GroupHeaderPage.content, "group-header", DocsGroup.Content),
     DocsCatalog.componentPage(ChipPage.content, "chip", DocsGroup.Status),

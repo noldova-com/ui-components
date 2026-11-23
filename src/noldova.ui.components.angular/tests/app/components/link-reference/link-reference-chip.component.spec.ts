@@ -69,6 +69,17 @@ class TestTextReferences extends TestReferences {
 }
 
 @Component({
+  imports: [LinkReferenceChipComponent],
+  template: `<p class="line">Fixed in @if (reference(); as item) {<a nol-link-reference-chip [reference]="item" [href]="url" (linkActivate)="opens.push($event)"></a>} today.</p>`,
+  styles: [".line { width: 40rem; margin-top: 4rem; }"]
+})
+class ChipAloneHostComponent {
+  public readonly url: string = "https://code.example/app/pull/12";
+  public readonly reference: WritableSignal<LinkReference | null> = signal(null);
+  public readonly opens: LinkOpenEvent[] = [];
+}
+
+@Component({
   imports: [MarkdownViewComponent],
   template: `<div class="frame"><nol-markdown-view [text]="text()" [references]="references()" (linkActivate)="activated.push($event)" (linkOpen)="opens.push($event)"
     (linkMenu)="menus.push($event)" /></div>`,
@@ -1221,5 +1232,100 @@ describe("LinkReferenceChipComponent's card age", () => {
       .toEqual([times.shortRelativeOf(time, clock.now() - 60 * 60 * 1000 - Resources.messageClockInterval), times.shortRelativeOf(time, clock.now()), false, "nowrap", "tabular-nums"]);
     expect(first).toBe("2h ago");
     fixture.destroy();
+  });
+});
+
+describe("LinkReferenceChipComponent outside a Markdown view", () => {
+  const url = "https://code.example/app/pull/12";
+  const square = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16'/%3E%3C/svg%3E";
+  const merged = new LinkReferenceState("Merged", new LinkReferenceColor("#8250DF", "color-mix(in srgb, #8250DF 14%, transparent)"),
+    new LinkReferenceColor("#A371F7", "color-mix(in srgb, #A371F7 18%, transparent)"));
+  const itemOf = (options: ILinkReferenceOptions = {}): LinkReference => new LinkReference("example/app#12", "Pull request", new LinkReferenceImage(square), {
+    state: merged, title: "Keep a reply's links readable while it streams", location: "example/app #12", author: new LinkReferenceAuthor("ada"),
+    time: new Date(Date.UTC(2026, 9, 13, 8, 0, 0)), itemHref: url, ...options
+  });
+  const pixels = (rem: number): number => AppearanceFixture.toPixels(rem);
+  const resolve = (color: string): string => ForcedColorsFixture.resolve(color);
+  const chip = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "a.nol-link-reference-chip");
+  const part = (name: string): HTMLElement => DomFixture.one(chip(), `.nol-link-reference-chip-${name}`);
+  const card = (): HTMLElement | null => document.querySelector<HTMLElement>("nol-link-reference-card");
+  let fixture: ComponentFixture<ChipAloneHostComponent>;
+  let clock: TestTimeSource;
+
+  async function renderAsync(item: LinkReference, mode: ThemeMode = ThemeMode.Light): Promise<void> {
+    AppearanceFixture.apply(DefaultTheme.theme, mode);
+    fixture = TestBed.createComponent(ChipAloneHostComponent);
+    fixture.componentInstance.reference.set(item);
+    await fixture.whenStable();
+  }
+
+  beforeEach(() => {
+    clock = new TestTimeSource();
+    TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: clock }] });
+  });
+
+  afterEach(async () => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+    await ForcedColorsFixture.resetAsync();
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the item in a line of the app's text, the state's icon 1rem at its start and 0.25rem before its reference and title, on the text's baseline, in ${mode} mode`, async () => {
+      await renderAsync(itemOf(), mode);
+      const box = chip().getBoundingClientRect();
+      const icon = part("icon").getBoundingClientRect();
+      const text = part("text").getBoundingClientRect();
+      const lead = DomFixture.one(DomFixture.host(fixture), "p.line").firstChild;
+      if (!(lead instanceof Text))
+        throw new Error("The line doesn't start with text.");
+      const before = document.createRange();
+      before.selectNodeContents(lead);
+      const label = document.createRange();
+      label.selectNodeContents(part("text"));
+
+      expect([chip().textContent, chip().getAttribute("href"), document.querySelector(".nol-markdown-view")])
+        .toEqual(["example/app#12 · Keep a reply's links readable while it streams", url, null]);
+      expect([icon.width, icon.height]).toEqual([pixels(1), pixels(1)]);
+      AppearanceFixture.expectPixels(icon.left, box.left);
+      AppearanceFixture.expectPixels(text.left - icon.right, pixels(0.25));
+      AppearanceFixture.expectPixels(icon.top + icon.height / 2, box.top + box.height / 2);
+      AppearanceFixture.expectPixels(label.getBoundingClientRect().bottom, before.getBoundingClientRect().bottom);
+      expect(getComputedStyle(part("icon")).backgroundColor).toBe(resolve(mode === ThemeMode.Light ? "#8250DF" : "#A371F7"));
+    });
+
+  it("cuts a long title at 27.5rem with an ellipsis, its icon whole", async () => {
+    await renderAsync(itemOf({ title: "Keep a reply's links readable while it streams, ".repeat(8) }));
+
+    AppearanceFixture.expectPixels(chip().getBoundingClientRect().width, pixels(27.5));
+    expect([getComputedStyle(part("text")).textOverflow, part("icon").getBoundingClientRect().width]).toEqual(["ellipsis", pixels(1)]);
+  });
+
+  it("opens the item's card below it on hover, and gives the app a link the person opens in the card, closing the card", async () => {
+    await renderAsync(itemOf());
+    await userEvent.hover(chip());
+    clock.advance(Resources.tooltipRestDelay);
+    await DomChangeFixture.untilAsync(() => expect(card()).not.toBeNull());
+    await fixture.whenStable();
+    const shown = card();
+    if (Object.isNull(shown))
+      throw new Error("No card shows.");
+    const top = shown.getBoundingClientRect().top;
+    const link = shown.querySelector<HTMLElement>(LinkReferenceChipResources.linkReferenceLinkSelector);
+    if (Object.isNull(link))
+      throw new Error("The card has no link.");
+    await userEvent.click(link);
+    await fixture.whenStable();
+
+    expect(top > chip().getBoundingClientRect().bottom).toBe(true);
+    expect([fixture.componentInstance.opens.map(t => t.url), card()]).toEqual([[url], null]);
+  });
+
+  it("keeps the chip's icon and mark in the link color under forced colors", async () => {
+    await ForcedColorsFixture.activateAsync();
+    await renderAsync(itemOf({ mark: new LinkReferenceImage(square) }));
+    const linkColor = resolve("LinkText");
+
+    expect([getComputedStyle(part("icon")).backgroundColor, getComputedStyle(part("mark")).backgroundColor]).toEqual([linkColor, linkColor]);
   });
 });

@@ -39,6 +39,8 @@ export { GroupHeaderComponent } from "../app/components/group-header/group-heade
 export { IconButtonComponent } from "../app/components/icon-button/icon-button.component.js";
 export { InlineCodeComponent } from "../app/components/inline-code/inline-code.component.js";
 export { KeptOpenMenuItemDirective } from "../app/components/menu/kept-open-menu-item.directive.js";
+export { LinkReferenceChipComponent } from "../app/components/link-reference/link-reference-chip.component.js";
+export { LinkReferenceWorkItemStateComponent } from "../app/components/link-reference/link-reference-work-item-state.component.js";
 export { MentionFieldDirective } from "../app/components/mention-field/mention-field.directive.js";
 export { ContextMenuTriggerDirective } from "../app/components/menu/context-menu-trigger.directive.js";
 export { MenuBarItemComponent } from "../app/components/menu-bar/menu-bar-item.component.js";

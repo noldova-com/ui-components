@@ -1,0 +1,25 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+ul {
+  display: grid;
+  gap: var(--nol-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--nol-link);
+  text-decoration: underline;
+}
+
+p {
+  margin: var(--nol-space-3) 0 0;
+  color: var(--nol-text-muted);
+}

@@ -7221,6 +7221,132 @@ export declare class LinkReferenceWorkItemState {
 }
 
 /**
+ * A link reference chip, `a[nol-link-reference-chip]`: a link to an item on
+ * a code host drawn as the item, as a Markdown view draws a link its
+ * {@link ILinkReferenceSource} knows, for an app that shows a reference
+ * outside Markdown, such as in a list row, a table cell or a commit subject.
+ * It shows the host's mark when the reference has one, the state's icon in
+ * the state's color and the reference with its title, on the line's
+ * baseline, at most 27.5rem wide, cutting the title with an ellipsis.
+ * Pointing at it until the tooltip delay ends, or reaching it with the
+ * keyboard, opens the item's card below it once the reference has a state,
+ * unless it has no card, `hasCard: false`; Tab from the chip moves into the
+ * card, and Escape or leaving both closes it.
+ *
+ * The app binds the link's `href` and handles its click, and gives the link
+ * its color and underline, which a Markdown view's links take from the view.
+ * The chip takes the text it sits in. A work item's state follows the chip
+ * as a {@link LinkReferenceWorkItemStateComponent}, outside the link.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { LinkReference, LinkReferenceChipComponent, LinkReferenceImage } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-pull-request-cell",
+ *   imports: [LinkReferenceChipComponent],
+ *   template: `<a nol-link-reference-chip [reference]="pullRequest" [href]="url"></a>`
+ * })
+ * export class PullRequestCellComponent {
+ *   protected readonly url: string = "https://code.example/app/pull/12";
+ *   protected readonly pullRequest: LinkReference = new LinkReference("example/app#12", "Pull request",
+ *     new LinkReferenceImage("assets/pull-request.svg"), { title: "Keep a reply's links readable while it streams" });
+ * }
+ * ```
+ */
+export declare class LinkReferenceChipComponent {
+  /**
+   * Creates the chip, which Angular does for each `a[nol-link-reference-chip]`
+   * element.
+   *
+   * @example
+   * ```ts
+   * import { Component } from "@angular/core";
+   * import { LinkReference, LinkReferenceChipComponent, LinkReferenceImage } from "@noldova/ui.components.angular";
+   *
+   * @Component({
+   *   selector: "nol-commit-subject",
+   *   imports: [LinkReferenceChipComponent],
+   *   template: `Fix the sign-in <a nol-link-reference-chip [reference]="issue" href="https://code.example/app/issues/7"></a>`
+   * })
+   * export class CommitSubjectComponent {
+   *   protected readonly issue: LinkReference = new LinkReference("example/app#7", "Issue", new LinkReferenceImage("assets/issue.svg"));
+   * }
+   * ```
+   */
+  public constructor();
+
+  /**
+   * The item the chip draws, with its state, its title and the parts its
+   * card shows.
+   */
+  public readonly reference: InputSignal<LinkReference>;
+
+  /**
+   * Whether the chip's card is open.
+   */
+  public get isShown(): boolean;
+
+  /**
+   * Emits each link the person opens in the chip's card, such as the item's
+   * place or its author: its address, how it was opened and the event, as
+   * the Markdown view's `linkOpen` says. The card closes first.
+   */
+  public readonly linkActivate: OutputEmitterRef<LinkOpenEvent>;
+
+  /**
+   * Emits each link in the chip's card the person asks the menu of, by a
+   * right-click, the ContextMenu key or Shift+F10, as the Markdown view's
+   * `linkMenu` says.
+   */
+  public readonly linkMenu: OutputEmitterRef<LinkMenuEvent>;
+
+  /**
+   * Opens the chip's card below it at once, as reaching the chip with the
+   * keyboard does; it does nothing while the card is open, the reference
+   * has no state yet or it has no card.
+   */
+  public show(): void;
+
+  /**
+   * Closes the chip's card, and puts the focus back on the chip when it was
+   * in the card.
+   */
+  public hide(): void;
+}
+
+/**
+ * A work item's state, `nol-link-reference-work-item-state`: a round
+ * 0.4375rem dot in the state's tone, 0.3rem before its label in the muted
+ * text, as a Markdown view shows it after a work item's chip and the chip's
+ * card shows it in its foot. An app that shows a work item's chip outside
+ * Markdown puts it after the chip, a space apart and outside its link.
+ * Under forced colors the dot is the text color.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { LinkReferenceTone, LinkReferenceWorkItemState, LinkReferenceWorkItemStateComponent } from "@noldova/ui.components.angular";
+ *
+ * @Component({
+ *   selector: "nol-work-item-row",
+ *   imports: [LinkReferenceWorkItemStateComponent],
+ *   template: `Sign-in fails on Linux <nol-link-reference-work-item-state [state]="active" />`
+ * })
+ * export class WorkItemRowComponent {
+ *   protected readonly active: LinkReferenceWorkItemState = new LinkReferenceWorkItemState("Active", new LinkReferenceTone("#007ACC", "#007ACC"));
+ * }
+ * ```
+ */
+export declare class LinkReferenceWorkItemStateComponent {
+  /**
+   * The state it shows: its label and its dot's tone.
+   */
+  public readonly state: InputSignal<LinkReferenceWorkItemState>;
+}
+
+/**
  * The link schemes of an app's own that a Markdown view makes links of, on
  * top of the http, https and mailto addresses it always does, such as an app
  * scheme that opens another chat. A link whose address has one of them, as

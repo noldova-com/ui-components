@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<ul>
+  <li><a nol-link-reference-chip [reference]="streaming" [href]="streamingUrl" (click)="open($event, streamingUrl)"></a></li>
+  <li><a nol-link-reference-chip [reference]="signIn" [href]="signInUrl" (click)="open($event, signInUrl)"></a></li>
+</ul>
+<p>{{ opened() }}</p>

@@ -314,6 +314,23 @@ describe("ComponentPageComponent", () => {
       inputs: ["fileName", "isFolder"],
       outputs: []
     },
+    LinkReferenceChipComponent: {
+      specimen: "Reference chips",
+      controls: "a.nol-link-reference-chip",
+      roles: ["li > a.nol-link-reference-chip[href=\"https://code.example/app/pull/12\"] .nol-link-reference-chip-text",
+        "a.nol-link-reference-chip nol-link-reference-image[aria-hidden=\"true\"]"],
+      keys: ["Tab", "Shift+Tab", "Escape"],
+      inputs: ["reference"],
+      outputs: ["linkActivate", "linkMenu"]
+    },
+    LinkReferenceWorkItemStateComponent: {
+      specimen: "Work item state",
+      controls: "nol-link-reference-work-item-state",
+      roles: ["a.nol-link-reference-chip + nol-link-reference-work-item-state .nol-link-reference-work-item-dot[aria-hidden=\"true\"]"],
+      keys: [],
+      inputs: ["state"],
+      outputs: []
+    },
     SectionHeaderComponent: {
       specimen: "Section header",
       controls: "nol-section-header",

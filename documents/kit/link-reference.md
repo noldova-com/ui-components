@@ -34,6 +34,7 @@ The author's face and its letter keep the byline avatar's size, `avatar-byline` 
 ## Surface and behavior
 
 The app gives the Markdown view, or the message, a reader of links, `references`; the view asks it once about each link's address and text, and draws a link it knows as the item's chip, which activates as any link does.
+Outside Markdown, such as in a list row, a table cell or a commit subject, the app draws the chip itself, `a[nol-link-reference-chip]` (`LinkReferenceChipComponent`), with its reference, and a work item's state after it, `nol-link-reference-work-item-state` (`LinkReferenceWorkItemStateComponent`): the chip and its card look and behave as in a Markdown view, and the app binds the link's address, handles its click and gives it its color and underline, which a Markdown view's links take from the view.
 While the app reads the item, the chip shows its reference beside its kind's icon in the muted text color, and has no card; once read, it shows the item's title and its icon in the state's color; a link the app turns out not to know is a plain link again.
 The chip keeps the link's color and underline, the underline at 45% of the link color and 0.2em below the text.
 The app gives each state's colors, its icon's and its badge's, in light and dark, so each code host keeps its own; the kit has no state colors of its own.

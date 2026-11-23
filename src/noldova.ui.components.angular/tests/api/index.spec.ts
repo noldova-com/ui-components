@@ -7,6 +7,8 @@
  */
 
 import * as kit from "../../src/api/index";
+import { LinkReferenceChipComponent } from "../../src/app/components/link-reference/link-reference-chip.component";
+import { LinkReferenceWorkItemStateComponent } from "../../src/app/components/link-reference/link-reference-work-item-state.component";
 import { LinkGesture } from "../../src/app/enums/link-gesture";
 import { GraphemeText } from "../../src/app/models/grapheme-text";
 import { LinkMenuEvent } from "../../src/app/models/link-menu-event";
@@ -72,5 +74,9 @@ describe("the kit's entry", () => {
     const opened = new kit.LinkOpenEvent("https://example.com/", new MouseEvent("auxclick", { button: 1 }));
 
     expect([kit.LinkGesture, kit.LinkOpenEvent, kit.LinkMenuEvent, opened.gesture]).toEqual([LinkGesture, LinkOpenEvent, LinkMenuEvent, LinkGesture.Middle]);
+  });
+
+  it("publishes the link reference chip and a work item's state, so an app shows a reference outside a Markdown view", () => {
+    expect([kit.LinkReferenceChipComponent, kit.LinkReferenceWorkItemStateComponent]).toEqual([LinkReferenceChipComponent, LinkReferenceWorkItemStateComponent]);
   });
 });
