@@ -9,6 +9,7 @@
 import type { StateBlock, StateInline } from "markdown-it";
 
 import "@noldova/context.core";
+import { ArgumentOutOfRangeException } from "@noldova/context.exceptions";
 
 import { Resources } from "../../resources.js";
 import { MarkdownMathScan } from "./markdown-math-scan.js";
@@ -73,10 +74,18 @@ export class MarkdownMath {
   }
 
   private static indentOf(state: StateBlock, line: number): number {
-    return state.sCount[line] as number;
+    return MarkdownMath.entryOf(state.sCount, line);
   }
 
   private static lineOf(state: StateBlock, line: number): string {
-    return state.src.slice((state.bMarks[line] as number) + (state.tShift[line] as number), state.eMarks[line]).trimEnd();
+    const start = MarkdownMath.entryOf(state.bMarks, line) + MarkdownMath.entryOf(state.tShift, line);
+    return state.src.slice(start, MarkdownMath.entryOf(state.eMarks, line)).trimEnd();
+  }
+
+  private static entryOf(entries: readonly number[], line: number): number {
+    const entry = entries[line];
+    if (Object.isUndefined(entry))
+      throw new ArgumentOutOfRangeException(MarkdownMathResources.markdownLineParameter, line, MarkdownMathResources.formatMarkdownLineOutOfRange(line));
+    return entry;
   }
 }

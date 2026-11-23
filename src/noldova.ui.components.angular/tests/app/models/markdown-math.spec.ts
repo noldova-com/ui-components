@@ -6,13 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { TestBed } from "@angular/core/testing";
-import type { MarkdownIt } from "markdown-it";
+import { ArgumentOutOfRangeException } from "@noldova/context.exceptions";
 
 import { MarkdownNodeKind } from "../../../src/app/enums/markdown-node-kind";
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
+import { MarkdownMath } from "../../../src/app/models/markdown-math";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
-import { MarkdownParser } from "../../../src/app/services/markdown.parser";
+import { LoadedMarkdownParser } from "../../fixtures/loaded-markdown-parser.fixture";
 import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 describe("MarkdownMath", () => {
@@ -20,10 +20,12 @@ describe("MarkdownMath", () => {
   const shapeOf = (node: MarkdownNode): unknown[] =>
     [node.kind, ...[node.text, node.value].filter(t => t !== String.empty && t !== 0), ...node.children.map(shapeOf)];
   const treeAsync = async (source: string): Promise<readonly MarkdownNode[]> =>
-    MarkdownTree.of((await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt).parse(source, {}));
+    MarkdownTree.of((await LoadedMarkdownParser.ofAsync()).parse(source, {}));
   const shapesAsync = async (source: string): Promise<unknown[]> => (await treeAsync(source)).map(shapeOf);
   const plainAsync = async (source: string): Promise<unknown[]> => {
-    const [paragraph] = await treeAsync(source) as [MarkdownNode];
+    const paragraph = (await treeAsync(source)).at(0);
+    if (Object.isUndefined(paragraph))
+      throw new Error("The source made no paragraph.");
     return [paragraph.kind, [...new Set(paragraph.children.map(t => t.kind))], paragraph.children.map(t => t.text).join(String.empty)];
   };
 
@@ -86,13 +88,20 @@ describe("MarkdownMath", () => {
   });
 
   it("reads a long paragraph of formulas that never close in work that grows with its length, not with its square, and leaves it as text", async () => {
-    const parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
+    const parser = await LoadedMarkdownParser.ofAsync();
     const sourcesOf = (count: number): readonly string[] => ["\\(".repeat(count), "\\[a ".repeat(count / 2), "$a ".repeat(count * 3 / 5)];
     const mostReadPerCharacter = (sources: readonly string[]): number =>
       Math.max(...sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length));
-    const [short, long] = [sourcesOf(2_000), sourcesOf(100_000)];
+    const long = sourcesOf(100_000);
 
-    expect(mostReadPerCharacter(short)).toBeLessThan(4);
+    expect(mostReadPerCharacter(sourcesOf(2_000))).toBeLessThan(4);
     expect([mostReadPerCharacter(long) < 4, (await Promise.all(long.map(plainAsync))).map(t => t[1])]).toEqual([true, [[Text], [Text], [Text]]]);
+  });
+
+  it("refuses a block line the block parser holds no marks for, naming the line", async () => {
+    const parser = await LoadedMarkdownParser.ofAsync();
+    const state = new parser.block.State("$$x$$", parser, {}, []);
+
+    expect(() => MarkdownMath.block(state, state.lineMax + 1, state.lineMax + 2, false)).toThrow(new ArgumentOutOfRangeException("line", state.lineMax + 1, `The block parser has no line ${state.lineMax + 1}.`));
   });
 });

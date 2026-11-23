@@ -19,4 +19,9 @@ export class MarkdownMathResources {
   public static readonly markdownDollar: string = "$";
   public static readonly markdownBackslash: string = "\\";
   public static readonly markdownDigitPattern: RegExp = /\d/u;
+  public static readonly markdownLineParameter: string = "line";
+
+  public static formatMarkdownLineOutOfRange(line: number): string {
+    return `The block parser has no line ${line}.`;
+  }
 }

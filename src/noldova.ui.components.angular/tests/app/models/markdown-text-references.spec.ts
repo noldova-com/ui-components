@@ -7,7 +7,6 @@
  */
 
 import type { Signal } from "@angular/core";
-import { TestBed } from "@angular/core/testing";
 import type { MarkdownIt } from "markdown-it";
 
 import { MarkdownNodeKind } from "../../../src/app/enums/markdown-node-kind";
@@ -17,8 +16,8 @@ import { LinkReferenceMatch } from "../../../src/app/models/link-reference-match
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
 import { MarkdownTextReferences } from "../../../src/app/models/markdown-text-references";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
-import { MarkdownParser } from "../../../src/app/services/markdown.parser";
 import { Resources } from "../../../src/resources";
+import { LoadedMarkdownParser } from "../../fixtures/loaded-markdown-parser.fixture";
 import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 class TestTextReferences implements ILinkReferenceSource {
@@ -55,7 +54,7 @@ describe("MarkdownTextReferences", () => {
   let parser: MarkdownIt;
 
   beforeEach(async () => {
-    parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
+    parser = await LoadedMarkdownParser.ofAsync();
   });
 
   const shapeOf = (node: MarkdownNode): unknown[] =>
@@ -170,25 +169,27 @@ describe("MarkdownTextReferences", () => {
     expect(references.asked).toEqual(["#3 ", "#5", "#6 ", "#7", "a ", " #10"]);
   });
 
-  it("takes about eight times as long, never sixty-four, for a paragraph of unclosed comments, instructions, declarations or unmatched tags eight times as long, reads each character a few times, and asks about all of an unclosed one", () => {
-    const paragraphOf = (unit: string, length: number): string => `a ${unit.repeat(Math.floor(length / unit.length))}`;
-    const fastestOf = (source: string, references: TestTextReferences): number => Math.min(...Array.from({ length: 3 }, () => {
-      const start = performance.now();
-      treeOf(source, references);
-      return performance.now() - start;
-    }));
-    const growthOf = (make: (length: number) => string): readonly [boolean, readonly string[]] => {
+  const paragraphOf = (unit: string, length: number): string => `a ${unit.repeat(Math.floor(length / unit.length))}`;
+  const fastestOf = (source: string, references: TestTextReferences): number => Math.min(...Array.from({ length: 3 }, () => {
+    const start = performance.now();
+    treeOf(source, references);
+    return performance.now() - start;
+  }));
+  const growthOf = (make: (length: number) => string, references: TestTextReferences): number =>
+    fastestOf(make(200_000), references) / fastestOf(make(25_000), references);
+
+  for (const unit of ["<?", "<!--", "<!a"])
+    it(`takes about eight times as long, never sixty-four, for a paragraph of unclosed ${unit} eight times as long, reads each character a few times, and asks about all of it`, () => {
       const references = new TestTextReferences();
-      const ratio = fastestOf(make(400_000), references) / fastestOf(make(50_000), references);
-      return [ratio < 22, [...new Set(references.asked)]];
-    };
-    const units = ["<?", "<!--", "<!a"];
+      const long = paragraphOf(unit, 200_000);
 
-    const unclosed = units.map(unit => growthOf(length => paragraphOf(unit, length)));
-    const mostReadPerCharacter = Math.max(...units.map(unit => paragraphOf(unit, 200_000))
-      .map(source => TextScanFixture.scannedBy(() => treeOf(source, new TestTextReferences())) / source.length));
-    const [tagsGrowLinearly] = growthOf(length => `${paragraphOf("<a>", length / 2)} ${paragraphOf("</b>", length / 2)}`);
+      const growth = growthOf(length => paragraphOf(unit, length), references);
+      const readPerCharacter = TextScanFixture.scannedBy(() => treeOf(long, new TestTextReferences())) / long.length;
 
-    expect([unclosed, tagsGrowLinearly, mostReadPerCharacter < 4]).toEqual([units.map(unit => [true, [paragraphOf(unit, 400_000), paragraphOf(unit, 50_000)]]), true, true]);
+      expect([growth < 22, readPerCharacter < 4, [...new Set(references.asked)]]).toEqual([true, true, [long, paragraphOf(unit, 25_000)]]);
+    });
+
+  it("takes about eight times as long, never sixty-four, for a paragraph of opening tags and unmatched closing tags eight times as long", () => {
+    expect(growthOf(length => `${paragraphOf("<a>", length / 2)} ${paragraphOf("</b>", length / 2)}`, new TestTextReferences())).toBeLessThan(22);
   });
 });
