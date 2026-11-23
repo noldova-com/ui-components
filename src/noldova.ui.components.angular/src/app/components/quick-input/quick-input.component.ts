@@ -27,7 +27,8 @@ import { Resources } from "../../../resources.js";
   templateUrl: "./quick-input.component.html",
   styleUrl: "./quick-input.component.css",
   host: {
-    "[class.nol-quick-input-has-icon]": "icon() !== null"
+    "[class.nol-quick-input-has-icon]": "icon() !== null",
+    "[class.nol-quick-input-embedded]": "isEmbedded()"
   }
 })
 export class QuickInputComponent {
@@ -79,6 +80,7 @@ export class QuickInputComponent {
   public readonly query = model<string>(String.empty);
   public readonly itemsQuery = input<string | null>(null);
   public readonly isFocusing = input<boolean>(true);
+  public readonly isEmbedded = input<boolean>(false);
   public readonly chosen = output<QuickInputItem>();
   public readonly dismissed = output<void>();
   public readonly tabKey = output<KeyboardEvent>();
