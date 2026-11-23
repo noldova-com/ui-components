@@ -476,7 +476,7 @@ describe("ComponentPageComponent", () => {
       keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End", "Enter", "Space", "Escape", "Shift+F10", "Context Menu"],
       inputs: ["author", "authorDescription", "time", "blocks", "status", "error", "key", "continuation", "selected", "selectionLook", "header", "footer", "actionsTop",
         "actionsEnd", "flashStart", "labelId", "collapsedHeight", "layout", "timeFormat", "twentyFourHour", "mentions", "mentionNames", "copyText", "fileLinks", "linkSchemes",
-        "folderLinks", "references", "shellRuns", "shellRunStates", "shellRunOutputs", "math"],
+        "folderLinks", "references", "shellRuns", "shellRunStates", "shellRunOutputs", "math", "revealBurst"],
       outputs: ["copied", "retry", "attachmentOpen", "linkActivate", "linkOpen", "linkMenu", "fileActivate", "filePathsChange", "shellRun", "contextMenuRequest"]
     },
     MarkdownViewComponent: {
@@ -487,7 +487,7 @@ describe("ComponentPageComponent", () => {
         "nol-markdown-view nol-code-block [role=\"toolbar\"][aria-label=\"Code block actions\"]", "nol-markdown-view a.nol-markdown-link[href=\"https://example.com/notes\"]",
         "nol-markdown-view .nol-markdown-mention"],
       keys: ["Tab", "Enter"],
-      inputs: ["text", "streaming", "entering", "paced", "mentions", "mentionNames", "fileLinks", "linkSchemes", "folderLinks", "references", "shellRuns", "shellRunStates",
+      inputs: ["text", "streaming", "entering", "paced", "revealBurst", "mentions", "mentionNames", "fileLinks", "linkSchemes", "folderLinks", "references", "shellRuns", "shellRunStates",
         "shellRunOutputs", "math"],
       outputs: ["linkActivate", "linkOpen", "linkMenu", "fileActivate", "filePathsChange", "shellRun"]
     }

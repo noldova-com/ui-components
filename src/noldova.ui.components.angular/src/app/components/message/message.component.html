@@ -74,7 +74,7 @@ LICENSE file in the root directory of this source tree.
       @for (part of parts(); track part.key) {
         <div class="nol-message-part" [class.nol-message-part-attached]="isAttached(part)">
           @if (part.isRun) {
-            <nol-message-run [blocks]="part.blocks" [streaming]="isStreaming()" [collapsible]="!isColumn()" [entering]="entering()" [mentions]="mentions()"
+            <nol-message-run [blocks]="part.blocks" [streaming]="isStreaming()" [revealBurst]="revealBurst()" [collapsible]="!isColumn()" [entering]="entering()" [mentions]="mentions()"
               [mentionNames]="mentionNames()" [fileLinks]="fileLinks()" [folderLinks]="folderLinks()" [references]="references()" [linkSchemes]="linkSchemes()" [shellRuns]="shellRuns()" [math]="math()" (linkActivate)="linkActivate.emit($event)" (linkOpen)="linkOpen.emit($event)" (linkMenu)="linkMenu.emit($event)"
               (fileActivate)="fileActivate.emit($event)" (shellRun)="shellRun.emit($event)" />
           } @else {

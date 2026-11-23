@@ -199,6 +199,7 @@ export class MessageComponent {
   public readonly shellRunStates = input<ReadonlyMap<number, ShellRunState>>(new Map());
   public readonly shellRunOutputs = input<ReadonlySet<number>>(new Set());
   public readonly math = input<boolean>(true);
+  public readonly revealBurst = input<number>(0);
   public readonly contextMenuRequest = output<MessageMenuRequest>();
 
   public constructor() {

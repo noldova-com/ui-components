@@ -67,12 +67,13 @@ class MarkdownFileLinkHostComponent {
 
 @Component({
   imports: [MarkdownViewComponent],
-  template: `@if (shown()) {<nol-markdown-view [text]="text()" [streaming]="streaming()" />}`,
+  template: `@if (shown()) {<nol-markdown-view [text]="text()" [streaming]="streaming()" [revealBurst]="revealBurst()" />}`,
   styles: "nol-markdown-view { width: 30rem; }"
 })
 class MarkdownRevealHostComponent {
   public readonly text: WritableSignal<string> = signal(String.empty);
   public readonly streaming: WritableSignal<boolean> = signal(false);
+  public readonly revealBurst: WritableSignal<number> = signal(0);
   public readonly shown: WritableSignal<boolean> = signal(true);
 }
 
@@ -836,9 +837,10 @@ describe("MarkdownViewComponent", () => {
       await new Promise(resolve => setTimeout(resolve));
     }
 
-    async function streamAsync(text: string): Promise<void> {
+    async function streamAsync(text: string, burst: number = 0): Promise<void> {
       reveal = TestBed.createComponent(MarkdownRevealHostComponent);
       reveal.componentInstance.text.set(text);
+      reveal.componentInstance.revealBurst.set(burst);
       reveal.componentInstance.streaming.set(true);
       await settleAsync();
     }
@@ -849,27 +851,32 @@ describe("MarkdownViewComponent", () => {
     }
 
     describe(LayoutTraceFixture.suite, () => {
-      it("lays out its text in one frame of every three while it streams, as each burst reveals more, and in every frame once the stream ends, until the text is whole", async () => {
-        const full = `Start of a **reply** with ${"word ".repeat(80)}end`;
-        await streamAsync("Start");
-        await changeRevealAsync(t => t.text.set(full));
-        const layoutsOfAsync = async (frames: number): Promise<number> => (await LayoutTraceFixture.forcedPassesAsync(() => {
-          for (let frame = 0; frame < frames; frame++) {
-            vi.advanceTimersByTime(16);
-            void document.body.offsetHeight;
-          }
-        })).filter(t => t.startsWith("Layout ")).length;
+      const paces: readonly (readonly [string, number, number, number])[] = [
+        ["in every frame but the first, which has no time to reveal for, while it streams by default", 0, 29, 29],
+        ["in one frame of every three while it streams with a 48 ms burst, as each burst reveals more", 48, 9, 10]
+      ];
+      for (const [pace, burst, least, most] of paces)
+        it(`lays out its text ${pace}, and in every frame once the stream ends, until the text is whole`, async () => {
+          const full = `Start of a **reply** with ${"word ".repeat(80)}end`;
+          await streamAsync("Start", burst);
+          await changeRevealAsync(t => t.text.set(full));
+          const layoutsOfAsync = async (frames: number): Promise<number> => (await LayoutTraceFixture.forcedPassesAsync(() => {
+            for (let frame = 0; frame < frames; frame++) {
+              vi.advanceTimersByTime(16);
+              void document.body.offsetHeight;
+            }
+          })).filter(t => t.startsWith("Layout ")).length;
 
-        const streamed = visible();
-        const streaming = await layoutsOfAsync(30);
-        const shownStreaming = visible();
-        await changeRevealAsync(t => t.streaming.set(false));
-        const ended = await layoutsOfAsync(6);
-        framesOf(20);
+          const streamed = visible();
+          const streaming = await layoutsOfAsync(30);
+          const shownStreaming = visible();
+          await changeRevealAsync(t => t.streaming.set(false));
+          const ended = await layoutsOfAsync(6);
+          framesOf(20);
 
-        expect([streaming >= 9 && streaming <= 10, ended]).toEqual([true, 6]);
-        expect([shownStreaming.length > streamed.length, visible()]).toEqual([true, `Start of a reply with ${"word ".repeat(80)}end`]);
-      });
+          expect([streaming >= least && streaming <= most ? "in range" : streaming, ended]).toEqual(["in range", 6]);
+          expect([shownStreaming.length > streamed.length, visible()]).toEqual([true, `Start of a reply with ${"word ".repeat(80)}end`]);
+        });
     });
 
     it("shows the text it starts with, then reveals what arrives frame by frame, by whole characters, toward it and never past it, keeping each element it drew", async () => {
