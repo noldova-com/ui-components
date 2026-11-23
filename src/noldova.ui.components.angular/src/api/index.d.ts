@@ -11063,6 +11063,14 @@ export declare class QuickInputComponent {
   public readonly isFocusing: InputSignal<boolean>;
 
   /**
+   * Whether it is embedded in its owner's own surface, such as a popup of the
+   * owner's: then it draws no card of its own, with no border, radius,
+   * background, shadow or top margin, at the width its container gives.
+   * False when not bound, when it is a floating card.
+   */
+  public readonly isEmbedded: InputSignal<boolean>;
+
+  /**
    * Emits the result the person chose with Enter or a click. When Enter
    * comes right after typing, it waits until the items for the new query
    * have rendered, and, while {@link QuickInputComponent.itemsQuery} names

@@ -13,6 +13,7 @@ export class QuickInputPageResources {
   public static readonly componentName: string = "QuickInputComponent";
   public static readonly quickInputSearchTitle: string = "Search that marks what matches";
   public static readonly quickInputGroupsTitle: string = "Results in sections, and a text while none match";
+  public static readonly quickInputEmbeddedTitle: string = "Embedded in its owner's popup, with no card of its own";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Arrow Down", "Makes the next result the active one."),
     new DocsKey("Arrow Up", "Makes the previous result the active one."),

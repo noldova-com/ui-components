@@ -15,6 +15,7 @@ Panel; details, group headings and the footer small; matches and group headings 
 ## Surface and behavior
 
 Quick-input surface, `--nol-menu-border` border and extra-large shadow; non-modal, placed by the owner, scrolling its results under the thin scrollbar.
+With `isEmbedded`, inside an owner's own surface such as its popup, it draws no card: no border, radius, background, shadow or top margin, at the full width of its container and at most its height.
 The field is a combobox over a listbox, focused on opening, with the first result active; the owner filters the results as the person types, which makes the first result active again; Up, Down, Home, End, Page Up and Page Down move the active result, and a change to the results keeps it where the person put it while it is listed, until the query changes, and otherwise makes the first result active; the active result stays in view by scrolling the results alone, never the page around them, and uses the selected fill, Enter or a click chooses it, and Escape asks the owner to close it.
 An owner that finds results asynchronously gives `itemsQuery`, the query its results answer, so Enter pressed while they are still an earlier query's waits for the results of the query typed and then chooses the active one, once however often it was pressed.
 Typing or Escape while Enter waits drops the wait, so results that come later choose nothing.

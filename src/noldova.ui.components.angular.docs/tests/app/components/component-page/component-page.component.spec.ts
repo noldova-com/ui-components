@@ -242,7 +242,7 @@ describe("ComponentPageComponent", () => {
         "[role=\"listbox\"][aria-label=\"Search notes\"] [role=\"option\"][aria-selected=\"true\"]", "[role=\"listbox\"][aria-label=\"Run a command\"] [role=\"group\"][aria-labelledby]",
         "nol-quick-input [role=\"status\"]"],
       keys: ["Arrow Down", "Arrow Up", "Home", "End", "Page Down", "Page Up", "Enter", "Escape", "Tab"],
-      inputs: ["items", "label", "icon", "emptyText", "isEmptyTextAlert", "query", "itemsQuery", "isFocusing"],
+      inputs: ["items", "label", "icon", "emptyText", "isEmptyTextAlert", "query", "itemsQuery", "isFocusing", "isEmbedded"],
       outputs: ["chosen", "dismissed", "tabKey"]
     },
     ToolbarButtonComponent: {
