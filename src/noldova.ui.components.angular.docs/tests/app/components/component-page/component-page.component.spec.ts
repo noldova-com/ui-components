@@ -411,7 +411,7 @@ describe("ComponentPageComponent", () => {
         "nol-canvas .nol-canvas-bar[role=\"toolbar\"][aria-label=\"Canvas view\"]", "nol-canvas .nol-canvas-zoom[aria-live=\"polite\"]",
         "nol-canvas button.nol-canvas-map-toggle[aria-label=\"Hide the overview map\"][aria-pressed=\"true\"]", "nol-canvas-map[role=\"button\"][aria-label=\"Overview map: click a spot to move there\"] svg[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Left", "Arrow Right", "Arrow Up", "Arrow Down", "+", "-", "0"],
-      inputs: ["label", "mapShown", "fitAlignment"],
+      inputs: ["label", "mapShown", "fitAlignment", "dotSize", "dotGap", "dotColor"],
       outputs: []
     },
     TabComponent: {

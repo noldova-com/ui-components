@@ -34,4 +34,7 @@ export class CanvasResources {
   public static readonly canvasPercent: number = 100;
   public static readonly canvasPrimaryButtons: number = 1;
   public static readonly canvasFocusSlackPixels: number = 0.5;
+  public static readonly canvasDotSize: string = "1px";
+  public static readonly canvasDotGap: string = "1.5rem";
+  public static readonly canvasDotColor: string = "var(--nol-menu-border)";
 }
