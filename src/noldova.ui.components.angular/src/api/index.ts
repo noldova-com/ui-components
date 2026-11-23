@@ -95,6 +95,7 @@ export { AvatarColor } from "../app/enums/avatar-color.js";
 export { AvatarSize } from "../app/enums/avatar-size.js";
 export { ButtonSize } from "../app/enums/button-size.js";
 export { ButtonVariant } from "../app/enums/button-variant.js";
+export { CanvasControlsPlacement } from "../app/enums/canvas-controls-placement.js";
 export { CanvasFitAlignment } from "../app/enums/canvas-fit-alignment.js";
 export { ChipKind } from "../app/enums/chip-kind.js";
 export { ChoiceRowType } from "../app/enums/choice-row-type.js";

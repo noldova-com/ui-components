@@ -1,0 +1,15 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-canvas class="nol-docs-canvas-pane" label="Organization" [controlsPlacement]="floating" [isFlush]="true" dotSize="0.5px" dotGap="1rem">
+  <div class="nol-docs-canvas-pane-teams">
+    @for (team of teams; track team) {
+      <div nolCanvasItem class="nol-docs-canvas-pane-team">{{ team }}</div>
+    }
+  </div>
+</nol-canvas>

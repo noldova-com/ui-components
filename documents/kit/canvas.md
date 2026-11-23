@@ -12,6 +12,8 @@ The toolbar stands `space-2`, 0.5rem, inside the canvas's top-left corner: a pan
 The hint, "Drag to move · scroll to pan · pinch or Ctrl+scroll to zoom", follows it `space-1` away on the same kind of panel, with `space-1` by `space-2` padding, and wraps below it on a canvas too narrow for both; neither takes the pointer between them.
 The overview map stands `space-2` inside the canvas's bottom-right corner: its drawing 7rem high, or 14rem wide and less high for wider content, never stretched, in the content's proportions, inside a 1px card border and a medium radius.
 Fit leaves the band of the toolbar and the hint at the top and, while the map shows, the band of the map at its full 7rem height clear, whatever height the map has at that moment, and `space-2` at each side, so no item stands under either.
+With `controlsPlacement` Floating, for a canvas that fills a whole pane, the controls float in its bottom-right corner instead: the toolbar `space-3`, 0.75rem, inside the corner, the map `space-3` above it at the same inset, and no hint. Fit then leaves `space-3` at the top and each side clear, and at the bottom the band of the toolbar and, while the map shows, of the map at its full 7rem height.
+With `isFlush`, a canvas that fills a pane has no border or radius and stands on the panel surface rather than the window surface.
 
 ## Text role
 

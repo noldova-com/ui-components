@@ -204,6 +204,26 @@ export declare enum ButtonVariant {
 }
 
 /**
+ * Where a {@link CanvasComponent} shows its controls: its toolbar, its hint
+ * and its overview map.
+ */
+export declare enum CanvasControlsPlacement {
+  /**
+   * The toolbar and the hint at the canvas's top-left, `space-2` inside it,
+   * and the map at its bottom-right, `space-2` inside it; the default.
+   */
+  Edges = "Edges",
+
+  /**
+   * The toolbar floating `space-3` inside the canvas's bottom-right corner
+   * and the map `space-3` above it, at the same inset, with no hint, as a
+   * canvas that fills a whole pane wants. Fit leaves the band of the toolbar
+   * and the map clear at the bottom, and only the inset at the top.
+   */
+  Floating = "Floating"
+}
+
+/**
  * Where a {@link CanvasComponent}'s Fit puts the content down the free area;
  * across, it is always centred.
  */
@@ -2840,6 +2860,20 @@ export declare class CanvasComponent {
    * goes whatever it is.
    */
   public readonly dotColor: InputSignal<string>;
+
+  /**
+   * Where the controls show: the toolbar and the hint at the top and the map
+   * at the bottom-right, the default, or floating together at the
+   * bottom-right with no hint.
+   */
+  public readonly controlsPlacement: InputSignal<CanvasControlsPlacement>;
+
+  /**
+   * Whether the canvas fills a pane flush: no border or radius, on the panel
+   * surface, `--nol-panel`, rather than the window surface inside a card
+   * border. False when not bound.
+   */
+  public readonly isFlush: InputSignal<boolean>;
 
   /**
    * Where the content shows: its offset on the canvas in CSS pixels and its
