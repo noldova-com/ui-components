@@ -15,6 +15,7 @@ import { cdp, userEvent } from "vitest/browser";
 import { CanvasMapComponent } from "../../../../src/app/components/canvas-map/canvas-map.component";
 import { CanvasItemDirective } from "../../../../src/app/components/canvas/canvas-item.directive";
 import { CanvasComponent } from "../../../../src/app/components/canvas/canvas.component";
+import { CanvasControlsPlacement } from "../../../../src/app/enums/canvas-controls-placement";
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
@@ -39,7 +40,7 @@ class OverlayContentComponent {
   imports: [CanvasComponent, CanvasItemDirective],
   template: `
     <div [hidden]="hidden()">
-      <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [(mapShown)]="mapShown" [fitAlignment]="alignment()">
+      <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [(mapShown)]="mapShown" [fitAlignment]="alignment()" [controlsPlacement]="placement()" [isFlush]="flush()">
         @if (cards().length > 0) {
           <div [style.display]="'grid'" [style.grid-template-columns]="'repeat(' + columns() + ', 12rem)'" [style.gap.rem]="1" [style.padding.rem]="1">
             @for (card of cards(); track card) {
@@ -57,6 +58,8 @@ class CanvasHostComponent {
   public readonly mapShown = signal(true);
   public readonly hidden = signal(false);
   public readonly alignment = signal(CanvasFitAlignment.Centre);
+  public readonly placement = signal(CanvasControlsPlacement.Edges);
+  public readonly flush = signal(false);
   public readonly opened = signal<readonly number[]>([]);
 }
 
@@ -207,6 +210,24 @@ describe("CanvasComponent", () => {
         expect(getComputedStyle(canvas()).backgroundImage).toContain(AppearanceFixture.readColor(theme, mode, "menu-border"));
       });
 
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`fills a pane flush with no border or radius on the panel surface once it says so, and has its card border and the window surface by default, in the ${theme.id} theme in ${mode} mode`, async () => {
+        AppearanceFixture.apply(theme, mode);
+        const look = (): readonly (string | number)[] => {
+          const style = getComputedStyle(canvas());
+          return [style.borderTopStyle, Number.parseFloat(style.borderTopWidth), Number.parseFloat(style.borderTopLeftRadius), style.backgroundColor, canvas().clientLeft];
+        };
+        const card = look();
+        host.flush.set(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect([card[0], card[3], look()]).toEqual(["solid", AppearanceFixture.readColor(theme, mode, "window"), ["none", 0, 0, AppearanceFixture.readColor(theme, mode, "panel"), 0]]);
+        AppearanceFixture.expectPixels(Number(card[1]), AppearanceFixture.measureLook("border-width"));
+        AppearanceFixture.expectPixels(Number(card[2]), AppearanceFixture.measureLook("radius-large"));
+      });
+
   it("fits every item inside it, clear of its toolbar, its hint and its map under forced colors, drawing them in system colors", async () => {
     await ForcedColorsFixture.activateAsync();
     instance().fit();
@@ -224,6 +245,61 @@ describe("CanvasComponent", () => {
       .toEqual([ForcedColorsFixture.resolve("Canvas"), ForcedColorsFixture.resolve("Highlight"), ForcedColorsFixture.resolve("CanvasText"),
         ForcedColorsFixture.resolve("CanvasText"), ForcedColorsFixture.resolve("CanvasText"), ForcedColorsFixture.resolve("Canvas")]);
     AppearanceFixture.expectPixels(tip.left - toolbar.right, AppearanceFixture.measureLook("space-1"));
+  });
+
+  it("places its toolbar and hint at its top-left and its map at its bottom-right, space-2 inside its border, by default", async () => {
+    await measuredAsync(24);
+    const frame = canvas().getBoundingClientRect();
+    const toolbar = tools().getBoundingClientRect();
+    const overview = map().getBoundingClientRect();
+    const inset = AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("border-width");
+
+    AppearanceFixture.expectPixels(toolbar.left - frame.left, inset);
+    AppearanceFixture.expectPixels(toolbar.top - frame.top, inset);
+    AppearanceFixture.expectPixels(frame.right - overview.right, inset);
+    AppearanceFixture.expectPixels(frame.bottom - overview.bottom, inset);
+    expect([getComputedStyle(hint()).display, hint().getBoundingClientRect().width > 0]).toEqual(["block", true]);
+  });
+
+  it("floats its toolbar space-3 inside its bottom-right corner and its map space-3 above it, with no hint, and fits its items clear of both", async () => {
+    host.placement.set(CanvasControlsPlacement.Floating);
+    fixture.detectChanges();
+    await measuredAsync(24);
+    instance().fit();
+    await fixture.whenStable();
+    const frame = canvas().getBoundingClientRect();
+    const toolbar = tools().getBoundingClientRect();
+    const overview = map().getBoundingClientRect();
+    const space = AppearanceFixture.measureLook("space-3");
+    const inset = space + AppearanceFixture.measureLook("border-width");
+    const placed = cards().map(t => t.getBoundingClientRect());
+
+    AppearanceFixture.expectPixels(frame.right - toolbar.right, inset);
+    AppearanceFixture.expectPixels(frame.bottom - toolbar.bottom, inset);
+    AppearanceFixture.expectPixels(frame.right - overview.right, inset);
+    AppearanceFixture.expectPixels(toolbar.top - overview.bottom, space);
+    expect([getComputedStyle(hint()).display, document.elementFromPoint(overview.left + overview.width / 2, overview.top + overview.height / 2)?.closest("nol-canvas-map") === map()])
+      .toEqual(["none", true]);
+    expect(placed.filter(t => t.left < frame.left + inset - 1 || t.top < frame.top + inset - 1 || t.right > frame.right || t.bottom > frame.bottom || overlaps(t, toolbar) || overlaps(t, overview)))
+      .toEqual([]);
+  });
+
+  it("fits its items above its floating toolbar once its map is hidden, from space-3 below its top", async () => {
+    host.placement.set(CanvasControlsPlacement.Floating);
+    host.alignment.set(CanvasFitAlignment.Top);
+    host.cards.set([1, 2]);
+    fixture.detectChanges();
+    await measuredAsync(2);
+    button("map-toggle").click();
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.maybe(canvas(), "nol-canvas-map")).toBeNull());
+    instance().fit();
+    await fixture.whenStable();
+    const frame = canvas().getBoundingClientRect();
+    const toolbar = tools().getBoundingClientRect();
+
+    AppearanceFixture.expectPixels(view().y, AppearanceFixture.measureLook("space-3"));
+    AppearanceFixture.expectPixels(frame.bottom - toolbar.bottom, AppearanceFixture.measureLook("space-3") + AppearanceFixture.measureLook("border-width"));
+    expect(cards().map(t => t.getBoundingClientRect()).filter(t => overlaps(t, toolbar))).toEqual([]);
   });
 
   it("fits a few items at 100%, never larger", async () => {

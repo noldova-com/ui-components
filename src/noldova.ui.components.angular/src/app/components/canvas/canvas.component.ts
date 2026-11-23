@@ -11,6 +11,7 @@ import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, af
 import "@noldova/context.core";
 
 import { ButtonVariant } from "../../enums/button-variant.js";
+import { CanvasControlsPlacement } from "../../enums/canvas-controls-placement.js";
 import { CanvasFitAlignment } from "../../enums/canvas-fit-alignment.js";
 import { CanvasBox } from "../../models/canvas-box.js";
 import { CanvasItems } from "../../models/canvas-items.js";
@@ -40,6 +41,8 @@ import { CanvasResources } from "./canvas.resources.js";
     "[attr.aria-roledescription]": "partResources.canvasRoleDescription",
     "[attr.aria-keyshortcuts]": "partResources.canvasKeyShortcuts",
     "[class.nol-canvas-dragging]": "isDragging()",
+    "[class.nol-canvas-floating]": "isFloating()",
+    "[class.nol-canvas-flush]": "isFlush()",
     "[style.background-position]": "gridPosition()",
     "(pointerdown)": "onPointerDown($event)",
     "(pointermove)": "onPointerMove($event)",
@@ -78,11 +81,14 @@ export class CanvasComponent {
   protected readonly gridPosition: Signal<string> = computed(() => `${this.shown().x}px ${this.shown().y}px`);
   protected readonly zoomText: Signal<string> = computed(() => `${Math.round(this.shown().zoom * CanvasResources.canvasPercent)}%`);
   protected readonly visibleBox: Signal<CanvasBox> = computed(() => this.shown().visible(this.size().width, this.size().height));
+  protected readonly isFloating: Signal<boolean> = computed(() => this.controlsPlacement() === CanvasControlsPlacement.Floating);
   protected readonly mapLabel: Signal<string> = computed(() => this.mapShown() ? CanvasResources.canvasHideMapLabel : CanvasResources.canvasShowMapLabel);
 
   public readonly label = input.required<string>();
   public readonly mapShown = model<boolean>(true);
   public readonly fitAlignment = input<CanvasFitAlignment>(CanvasFitAlignment.Centre);
+  public readonly controlsPlacement = input<CanvasControlsPlacement>(CanvasControlsPlacement.Edges);
+  public readonly isFlush = input<boolean>(false);
   public readonly view: Signal<CanvasView> = this.shown.asReadonly();
 
   public constructor() {
@@ -284,10 +290,16 @@ export class CanvasComponent {
   private freeArea(): CanvasBox {
     const size = this.size();
     const tools = this.tools().nativeElement;
+    const map = this.map()?.nativeElement;
+    const mapRoom = CanvasMapResources.canvasMapHeightRem * this.rootSize();
+    if (this.isFloating()) {
+      const inset = size.height - tools.offsetTop - tools.offsetHeight;
+      const bottom = Object.isUndefined(map) ? tools.offsetTop - inset : tools.offsetTop + map.offsetTop + map.clientHeight - mapRoom - inset;
+      return new CanvasBox(inset, inset, size.width - inset * 2, bottom - inset);
+    }
     const inset = tools.offsetTop;
     const top = inset + tools.offsetHeight + inset;
-    const map = this.map()?.nativeElement;
-    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - CanvasMapResources.canvasMapHeightRem * this.rootSize() - inset;
+    const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - mapRoom - inset;
     return new CanvasBox(inset, top, size.width - inset * 2, bottom - top);
   }
 
