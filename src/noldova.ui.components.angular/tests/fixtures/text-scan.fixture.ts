@@ -48,7 +48,7 @@ export class TextScanFixture {
     const visit = (value: unknown): void => {
       if (value instanceof RegExp)
         patterns.add(String(value));
-      else if (typeof value === "object" && !Object.isNull(value))
+      else if (Object.isObject(value))
         Object.values(value).forEach(visit);
     };
     Object.values(resources).forEach(visit);

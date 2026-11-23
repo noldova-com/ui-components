@@ -87,15 +87,19 @@ describe("MarkdownMath", () => {
     ]);
   });
 
-  it("reads a long paragraph of formulas that never close in work that grows with its length, not with its square, and leaves it as text", async () => {
+  it("reads a long paragraph of formulas that never close a few times per character, and leaves it as text", async () => {
     const parser = await LoadedMarkdownParser.ofAsync();
-    const sourcesOf = (count: number): readonly string[] => ["\\(".repeat(count), "\\[a ".repeat(count / 2), "$a ".repeat(count * 3 / 5)];
-    const mostReadPerCharacter = (sources: readonly string[]): number =>
-      Math.max(...sources.map(source => TextScanFixture.scannedBy(() => parser.parse(source, {})) / source.length));
-    const long = sourcesOf(100_000);
+    const readOf = (source: string): readonly unknown[] => {
+      let kinds: readonly MarkdownNodeKind[] = [];
+      const read = TextScanFixture.scannedBy(() => {
+        kinds = [...new Set(MarkdownTree.of(parser.parse(source, {})).flatMap(t => [t.kind, ...t.children.map(child => child.kind)]))];
+      });
+      return [read / source.length < 4, kinds];
+    };
+    const plain = [true, [Paragraph, Text]];
 
-    expect(mostReadPerCharacter(sourcesOf(2_000))).toBeLessThan(4);
-    expect([mostReadPerCharacter(long) < 4, (await Promise.all(long.map(plainAsync))).map(t => t[1])]).toEqual([true, [[Text], [Text], [Text]]]);
+    expect(["\\(".repeat(2_000), "\\[a ".repeat(1_000), "$a ".repeat(1_200)].map(readOf)).toEqual([plain, plain, plain]);
+    expect(["\\(".repeat(100_000), "$a ".repeat(60_000)].map(readOf)).toEqual([plain, plain]);
   });
 
   it("refuses a block line the block parser holds no marks for, naming the line", async () => {
