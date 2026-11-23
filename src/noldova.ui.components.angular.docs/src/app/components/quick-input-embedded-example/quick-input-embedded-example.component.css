@@ -1,0 +1,21 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: grid;
+  gap: var(--nol-space-2);
+  justify-items: start;
+}
+
+.nol-docs-quick-input-popup {
+  width: 22rem;
+  border: var(--nol-border-width) solid var(--nol-menu-border);
+  border-radius: var(--nol-radius-large);
+  background: var(--nol-raised);
+  box-shadow: var(--nol-shadow-large);
+}
