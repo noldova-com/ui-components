@@ -174,6 +174,19 @@ function lengthOf(css: string): number {
   return height;
 }
 
+@Component({
+  imports: [QuickInputComponent],
+  template: `
+    <div style="width: 22rem; height: 300px; display: flex; flex-direction: column;">
+      <nol-quick-input [items]="items" label="Search teammates" [isFocusing]="false" [isEmbedded]="embedded()" />
+    </div>
+  `
+})
+class EmbeddedHostComponent {
+  public readonly items: readonly QuickInputItem[] = many;
+  public readonly embedded = signal(false);
+}
+
 describe("QuickInputComponent", () => {
   let fixture: ComponentFixture<QuickInputHostComponent>;
   let host: QuickInputHostComponent;
@@ -1011,6 +1024,37 @@ describe("QuickInputComponent", () => {
         expect([style.borderTopColor, style.borderRightColor, style.borderBottomColor, style.borderLeftColor]).toEqual(Array<string>(4).fill(menuBorder));
         expect([style.borderTopStyle, menuBorder === AppearanceFixture.readColor(theme, mode, "widget-border")]).toEqual(["solid", false]);
         AppearanceFixture.expectPixels(Number.parseFloat(style.borderTopWidth), AppearanceFixture.measureLook("border-width"));
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws no card of its own once embedded, at its container's width and height, and its card by default, in the ${theme.id} theme in ${mode} mode`, async () => {
+        AppearanceFixture.apply(theme, mode);
+        const embedded = create(EmbeddedHostComponent);
+        embedded.detectChanges();
+        await embedded.whenStable();
+        const surface = DomFixture.one(DomFixture.host(embedded), "nol-quick-input");
+        const container = DomFixture.one(DomFixture.host(embedded), "div");
+        const look = (): readonly (string | number)[] => {
+          const style = getComputedStyle(surface);
+          return [style.borderTopStyle, style.borderRightStyle, style.borderBottomStyle, style.borderLeftStyle, Number.parseFloat(style.borderTopLeftRadius), style.backgroundColor,
+            style.boxShadow, style.marginTop];
+        };
+        const card = look();
+        embedded.componentInstance.embedded.set(true);
+        embedded.detectChanges();
+        await embedded.whenStable();
+        const box = surface.getBoundingClientRect();
+        const frame = container.getBoundingClientRect();
+
+        expect([card.slice(0, 4), card[5], card[6] === "none", look()]).toEqual([Array<string>(4).fill("solid"), AppearanceFixture.readColor(theme, mode, "quick-input"), false,
+          ["none", "none", "none", "none", 0, "rgba(0, 0, 0, 0)", "none", "0px"]]);
+        AppearanceFixture.expectPixels(Number(card[4]), AppearanceFixture.measureLook("radius-large"));
+        AppearanceFixture.expectPixels(Number.parseFloat(String(card[7])), AppearanceFixture.measureLook("quick-input-margin"));
+        AppearanceFixture.expectPixels(box.left, frame.left);
+        AppearanceFixture.expectPixels(box.width, frame.width);
+        AppearanceFixture.expectPixels(box.top, frame.top);
+        expect(box.bottom).toBeLessThanOrEqual(frame.bottom + 0.5);
       });
 
   it("takes its width, margin, padding, gap, field and rows from the theme and fits its options in its height", () => {

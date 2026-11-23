@@ -23,6 +23,12 @@
   user-select: none;
 }
 
+:host(.nol-canvas-flush) {
+  border: none;
+  border-radius: 0;
+  background-color: var(--nol-panel);
+}
+
 :host(.nol-canvas-dragging) {
   cursor: grabbing;
 }
@@ -95,6 +101,26 @@
   z-index: 1;
   right: var(--nol-space-2);
   bottom: var(--nol-space-2);
+}
+
+:host(.nol-canvas-floating) .nol-canvas-tools {
+  top: auto;
+  left: auto;
+  right: var(--nol-space-3);
+  bottom: var(--nol-space-3);
+  flex-direction: column-reverse;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: var(--nol-space-3);
+}
+
+:host(.nol-canvas-floating) .nol-canvas-hint {
+  display: none;
+}
+
+:host(.nol-canvas-floating) .nol-canvas-map {
+  position: static;
+  pointer-events: auto;
 }
 
 @media (forced-colors: active) {

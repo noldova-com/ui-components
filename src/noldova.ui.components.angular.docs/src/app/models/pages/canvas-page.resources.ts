@@ -12,6 +12,7 @@ export class CanvasPageResources {
   public static readonly title: string = "Canvas";
   public static readonly componentName: string = "CanvasComponent";
   public static readonly canvasTeamsTitle: string = "Teams to pan and zoom";
+  public static readonly canvasPaneTitle: string = "A whole pane, its controls floating";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus to the canvas, then through its content's controls and its toolbar."),
     new DocsKey("Arrow Left", "With the focus on the canvas itself, moves the content 3rem to the right, showing more to the left."),

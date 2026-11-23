@@ -19,7 +19,10 @@ LICENSE file in the root directory of this source tree.
     <button type="button" nol-icon-button nolToolbarItem class="nol-canvas-map-toggle" [icon]="partResources.canvasMapGlyph" [label]="mapLabel()" [pressed]="mapShown()" (click)="toggleMap()"></button>
   </div>
   <span class="nol-canvas-hint">{{ partResources.canvasHint }}</span>
+  @if (isFloating() && mapShown()) {
+    <nol-canvas-map class="nol-canvas-map" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" (fit)="fit()" />
+  }
 </div>
-@if (mapShown()) {
+@if (!isFloating() && mapShown()) {
   <nol-canvas-map class="nol-canvas-map" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" (fit)="fit()" />
 }
