@@ -4,6 +4,11 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.30
+
+- `@noldova/ui.components.angular`: a streaming reply reveals its text on every frame that has text to show, rather than in bursts about 50 ms apart, so it flows instead of jumping forward in steps. The gap is now an input in milliseconds, `revealBurst`, 0 by default, on the message (`MessageComponent`) and the Markdown view (`MarkdownViewComponent`), which pass it to the reveal; a positive value, such as 48 for every third frame at 60 Hz, shows more at most once per that many milliseconds, as before. Once the stream ends, the rest shows every frame either way, catching up within about 60 ms. `TextReveal` takes it as an optional third argument, `burst`, also 0 by default.
+- `@noldova/ui.components.angular`: a feed opened at a saved position whose row was moved by rows added before it, and whose page loads after the page of its old index, now opens at that row: it keeps the saved key until the page holding it loads, then moves to the row, instead of staying on whatever row then had the old index, which a later reported position would have saved over the real one.
+
 ## 0.0.29
 
 - `@noldova/ui.components.angular`: the link reference chip and a work item's state are exported, so an app can show a reference outside a Markdown view, such as in a list row, a table cell or a commit subject: `a[nol-link-reference-chip]` (`LinkReferenceChipComponent`) takes the `reference` and emits `linkActivate` and `linkMenu` as in a Markdown view, opens its card the same way, and has `isShown`, `show()` and `hide()`; `nol-link-reference-work-item-state` (`LinkReferenceWorkItemStateComponent`) takes the `state` and draws its dot and label after the chip. The app binds the chip's `href` and handles its click. The chip now draws its own link color and underline, `--nol-link` underlined at 45% of it, and `LinkText` under forced colors, so it looks the same outside a Markdown view as inside one, where it is unchanged. The docs site has a page for each.
