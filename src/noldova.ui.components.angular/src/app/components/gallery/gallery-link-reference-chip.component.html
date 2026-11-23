@@ -1,0 +1,37 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.referenceChips" [size]="sizes.Wide" noHover>
+  <nol-gallery-cell [caption]="text.referenceStates">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="referenced" [references]="references" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceRuns">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="runs" [references]="references" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceMoreKinds">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="moreKinds" [references]="references" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceMarks">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="marked" [references]="references" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceReadingCaption">
+    <div class="nol-gallery-message"><nol-message [author]="reviewer" [time]="time" [blocks]="reading" [references]="references" /></div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referencePullCard"><nol-link-reference-card [reference]="pullRequest" [state]="open" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceIssueCard"><nol-link-reference-card [reference]="issue" [state]="open" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceRunCard"><nol-link-reference-card [reference]="run" [state]="failed" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceMergeCard"><nol-link-reference-card [reference]="mergeRequest" [state]="open" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceWorkItemCard"><nol-link-reference-card [reference]="workItem" [state]="bug" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceCommitCard"><nol-link-reference-card [reference]="commit" [state]="commitState" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <a nol-link-reference-chip nolGalleryFocus="" [reference]="pullRequest" [href]="pullUrl" (click)="$event.preventDefault()"></a>
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-message nol-gallery-narrow"><nol-message [author]="reviewer" [time]="time" [blocks]="longReference" [references]="references" /></div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

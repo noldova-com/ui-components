@@ -314,6 +314,23 @@ describe("ComponentPageComponent", () => {
       inputs: ["fileName", "isFolder"],
       outputs: []
     },
+    LinkReferenceChipComponent: {
+      specimen: "Reference chips",
+      controls: "a.nol-link-reference-chip",
+      roles: ["li > a.nol-link-reference-chip[href=\"https://code.example/app/pull/12\"] .nol-link-reference-chip-text",
+        "a.nol-link-reference-chip nol-link-reference-image[aria-hidden=\"true\"]"],
+      keys: ["Tab", "Shift+Tab", "Escape"],
+      inputs: ["reference"],
+      outputs: ["linkActivate", "linkMenu"]
+    },
+    LinkReferenceWorkItemStateComponent: {
+      specimen: "Work item state",
+      controls: "nol-link-reference-work-item-state",
+      roles: ["a.nol-link-reference-chip + nol-link-reference-work-item-state .nol-link-reference-work-item-dot[aria-hidden=\"true\"]"],
+      keys: [],
+      inputs: ["state"],
+      outputs: []
+    },
     SectionHeaderComponent: {
       specimen: "Section header",
       controls: "nol-section-header",
@@ -761,6 +778,27 @@ describe("ComponentPageComponent", () => {
       expect(rows.find(t => t[0] === "variant")?.slice(1, 3)).toEqual(["ButtonVariant", "ButtonVariant.Primary"]);
       expect(rows.find(t => t[0] === "busy")?.slice(1, 3)).toEqual(["boolean", "false"]);
       expect(section(host, "API").textContent).toContain("button[nol-button], a[nol-button]");
+    });
+  });
+
+  describe("the Link reference chip page", () => {
+    it("says which pull request a click on its chip opened, in place of following the link", async () => {
+      const host = await renderAsync(expectPage("LinkReferenceChipComponent"));
+      const examples = section(host, "Examples");
+      const chip = DocsFixture.one(examples, "a.nol-link-reference-chip[href=\"https://code.example/app/pull/15\"]");
+
+      expect(examples.textContent).toContain("No pull request opened yet");
+      expect(chip.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))).toBe(false);
+      await DomChangeFixture.untilAsync(() => expect(examples.textContent).toContain("Opened https://code.example/app/pull/15"));
+    });
+  });
+
+  describe("the Work item state page", () => {
+    it("keeps a click on the chip before the state from following its link", async () => {
+      const host = await renderAsync(expectPage("LinkReferenceWorkItemStateComponent"));
+      const chip = DocsFixture.one(section(host, "Examples"), "a.nol-link-reference-chip");
+
+      expect(chip.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))).toBe(false);
     });
   });
 

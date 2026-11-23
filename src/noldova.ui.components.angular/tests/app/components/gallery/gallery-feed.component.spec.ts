@@ -47,10 +47,11 @@ describe("GalleryFeedComponent", () => {
     AppearanceFixture.reset();
   });
 
-  it("shows the messages, the reference chips and the virtual feed in turn, the feed's specimen right under the chips and filling its own component's box, and marks the chips' Focus cell's chip, drawn before any parser loads, keeping the gallery in place when it is clicked", async () => {
+  it("shows the messages, the reference chips, the work item states and the virtual feed in turn, each in its own section component, the feed's specimen right under the states and filling its own component's box, and marks the chips' Focus cell's chip, drawn before any parser loads, keeping the gallery in place when it is clicked", async () => {
     await renderAsync();
     const parts = [...element().children].map(t => t.tagName.toLowerCase());
-    const chips = DomFixture.one(element(), ":scope > nol-gallery-specimen").getBoundingClientRect();
+    const chips = DomFixture.one(element(), ":scope > nol-gallery-link-reference-chip > nol-gallery-specimen").getBoundingClientRect();
+    const states = DomFixture.one(element(), ":scope > nol-gallery-link-reference-work-item-state > nol-gallery-specimen").getBoundingClientRect();
     const host = DomFixture.one(element(), ":scope > nol-gallery-virtual-feed");
     const box = host.getBoundingClientRect();
     const feed = DomFixture.one(host, ":scope > nol-gallery-specimen").getBoundingClientRect();
@@ -59,8 +60,10 @@ describe("GalleryFeedComponent", () => {
     const click = new MouseEvent("click", { bubbles: true, cancelable: true });
     chip.dispatchEvent(click);
 
-    expect([parts, host.children.length]).toEqual([["nol-gallery-message", "nol-gallery-specimen", "nol-gallery-virtual-feed"], 1]);
-    expect([box.top - chips.bottom, feed.top - box.top, box.bottom - feed.bottom, feed.left - chips.left, feed.right - chips.right]).toEqual([0, 0, 0, 0, 0]);
+    expect([parts, host.children.length])
+      .toEqual([["nol-gallery-message", "nol-gallery-link-reference-chip", "nol-gallery-link-reference-work-item-state", "nol-gallery-virtual-feed"], 1]);
+    expect([states.top - chips.bottom, box.top - states.bottom, feed.top - box.top, box.bottom - feed.bottom, feed.left - chips.left, feed.right - chips.right])
+      .toEqual([0, 0, 0, 0, 0, 0]);
     expect([chip.getAttribute("data-nol-state"), chip.textContent?.trim(), click.defaultPrevented])
       .toEqual(["Focus", `example/app#12${Resources.linkReferenceSeparator}Keep a reply's links readable while it streams`, true]);
   });

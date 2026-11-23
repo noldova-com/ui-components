@@ -1,0 +1,13 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<nol-gallery-specimen [name]="text.referenceWorkItemStates" noHover noFocus>
+  <nol-gallery-cell [caption]="text.referenceActive"><nol-link-reference-work-item-state [state]="active" /></nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.referenceResolved"><nol-link-reference-work-item-state [state]="resolved" /></nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption"><nol-link-reference-work-item-state class="nol-gallery-narrow" [state]="long" /></nol-gallery-cell>
+</nol-gallery-specimen>
