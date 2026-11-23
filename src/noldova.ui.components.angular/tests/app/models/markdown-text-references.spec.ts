@@ -15,6 +15,7 @@ import type { LinkReference } from "../../../src/app/models/link-reference";
 import { LinkReferenceMatch } from "../../../src/app/models/link-reference-match";
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
 import { MarkdownTextReferences } from "../../../src/app/models/markdown-text-references";
+import { MarkdownTextReferencesResources } from "../../../src/app/models/markdown-text-references.resources";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
 import { Resources } from "../../../src/resources";
 import { LoadedMarkdownParser } from "../../fixtures/loaded-markdown-parser.fixture";
@@ -170,26 +171,21 @@ describe("MarkdownTextReferences", () => {
   });
 
   const paragraphOf = (unit: string, length: number): string => `a ${unit.repeat(Math.floor(length / unit.length))}`;
-  const fastestOf = (source: string, references: TestTextReferences): number => Math.min(...Array.from({ length: 3 }, () => {
-    const start = performance.now();
-    treeOf(source, references);
-    return performance.now() - start;
-  }));
-  const growthOf = (make: (length: number) => string, references: TestTextReferences): number =>
-    fastestOf(make(200_000), references) / fastestOf(make(25_000), references);
+  const readPerCharacterOf = (source: string, references: TestTextReferences): number => TextScanFixture.scannedBy(() => treeOf(source, references)) / source.length;
+  const searchesIn = (source: string): readonly string[] => TextScanFixture.searchesOver(source.length / 2, TextScanFixture.patternsOf(MarkdownTextReferencesResources),
+    () => treeOf(source, new TestTextReferences()));
 
   for (const unit of ["<?", "<!--", "<!a"])
-    it(`takes about eight times as long, never sixty-four, for a paragraph of unclosed ${unit} eight times as long, reads each character a few times, and asks about all of it`, () => {
+    it(`reads a paragraph of unclosed ${unit} a few times per character, searches it only where a tag starts, and asks about all of it`, () => {
       const references = new TestTextReferences();
-      const long = paragraphOf(unit, 200_000);
+      const source = paragraphOf(unit, 100_000);
 
-      const growth = growthOf(length => paragraphOf(unit, length), references);
-      const readPerCharacter = TextScanFixture.scannedBy(() => treeOf(long, new TestTextReferences())) / long.length;
-
-      expect([growth < 22, readPerCharacter < 4, [...new Set(references.asked)]]).toEqual([true, true, [long, paragraphOf(unit, 25_000)]]);
+      expect([readPerCharacterOf(source, references) < 4, searchesIn(source), [...new Set(references.asked)]]).toEqual([true, [], [source]]);
     });
 
-  it("takes about eight times as long, never sixty-four, for a paragraph of opening tags and unmatched closing tags eight times as long", () => {
-    expect(growthOf(length => `${paragraphOf("<a>", length / 2)} ${paragraphOf("</b>", length / 2)}`, new TestTextReferences())).toBeLessThan(22);
+  it("reads a paragraph of opening tags and unmatched closing tags a few times per character, and searches it only where a tag starts", () => {
+    const source = `${paragraphOf("<a>", 50_000)} ${paragraphOf("</b>", 50_000)}`;
+
+    expect([readPerCharacterOf(source, new TestTextReferences()) < 4, searchesIn(source)]).toEqual([true, []]);
   });
 });

@@ -23,4 +23,35 @@ export class TextScanFixture {
     }
     return scanned;
   }
+
+  // Lists the given regular expressions, by their source and flags, as a clone matchAll makes keeps them, that run over text of at least the
+  // given length while a piece of work runs and may search ahead: neither sticky nor anchored at the start.
+  public static searchesOver(length: number, patterns: ReadonlySet<string>, work: () => unknown): readonly string[] {
+    const exec = RegExp.prototype.exec;
+    const searches = new Set<string>();
+    const spy = vi.spyOn(RegExp.prototype, "exec").mockImplementation(function (this: RegExp, text: string): RegExpExecArray | null {
+      if (patterns.has(String(this)) && text.length >= length && !this.sticky && !(this.source.startsWith("^") && !this.multiline))
+        searches.add(String(this));
+      return exec.call(this, text);
+    });
+    try {
+      work();
+    } finally {
+      spy.mockRestore();
+    }
+    return [...searches];
+  }
+
+  // Collects, by source and flags, the regular expressions a resources class holds in its static fields, and in the arrays and objects they hold.
+  public static patternsOf(resources: object): ReadonlySet<string> {
+    const patterns = new Set<string>();
+    const visit = (value: unknown): void => {
+      if (value instanceof RegExp)
+        patterns.add(String(value));
+      else if (typeof value === "object" && !Object.isNull(value))
+        Object.values(value).forEach(visit);
+    };
+    Object.values(resources).forEach(visit);
+    return patterns;
+  }
 }
