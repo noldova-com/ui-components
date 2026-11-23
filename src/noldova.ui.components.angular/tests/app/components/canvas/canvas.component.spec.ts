@@ -204,7 +204,8 @@ describe("CanvasComponent", () => {
         AppearanceFixture.expectPixels(tip.top + tip.height / 2, toolbar.top + toolbar.height / 2);
         expect([getComputedStyle(hint()).backgroundColor, getComputedStyle(hint()).color, icon.width > 0, icon.right <= button("fit").getBoundingClientRect().right])
           .toEqual([AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "text-muted"), true, true]);
-        expect(getComputedStyle(canvas()).backgroundImage).toContain(AppearanceFixture.readColor(theme, mode, "menu-border"));
+        expect([getComputedStyle(canvas()).backgroundImage, getComputedStyle(canvas()).backgroundSize])
+          .toEqual([`radial-gradient(${AppearanceFixture.readColor(theme, mode, "menu-border")} 1px, rgba(0, 0, 0, 0) 1px)`, `${String(rootSize() * 1.5)}px ${String(rootSize() * 1.5)}px`]);
       });
 
   it("fits every item inside it, clear of its toolbar, its hint and its map under forced colors, drawing them in system colors", async () => {
@@ -1023,5 +1024,67 @@ describe("CanvasComponent with items inside its content's components", () => {
     DomFixture.host(fixture).append(DomFixture.one(canvas(), ".lead"));
 
     await changedAsync(() => expect(sizes()).toEqual([size(8), size(8)]));
+  });
+});
+
+@Component({
+  imports: [CanvasComponent, CanvasItemDirective],
+  template: `
+    <nol-canvas label="Organization" [style.width.px]="800" [style.height.px]="500" [dotSize]="size()" [dotGap]="gap()" [dotColor]="color()">
+      <div nolCanvasItem [style.width.rem]="12" [style.height.rem]="5">Design</div>
+    </nol-canvas>
+  `
+})
+class DotsCanvasHostComponent {
+  public readonly size = signal("0.5px");
+  public readonly gap = signal("1rem");
+  public readonly color = signal("rgb(255, 0, 0)");
+}
+
+describe("CanvasComponent with its dots bound", () => {
+  let fixture: ComponentFixture<DotsCanvasHostComponent>;
+
+  const canvas = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-canvas");
+  const instance = (): CanvasComponent => fixture.debugElement.query(By.directive(CanvasComponent)).injector.get(CanvasComponent);
+  const rootSize = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const grid = (): readonly string[] => [getComputedStyle(canvas()).backgroundImage, getComputedStyle(canvas()).backgroundSize];
+
+  beforeEach(async () => {
+    AppearanceFixture.apply();
+    fixture = TestBed.createComponent(DotsCanvasHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(async () => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+    await ForcedColorsFixture.resetAsync();
+  });
+
+  it("draws its grid with the dot size, gap and color it is given, the same at every zoom", async () => {
+    await DomChangeFixture.untilAsync(() => expect(DomFixture.allOf(canvas(), ".nol-canvas-map-box", SVGRectElement)).toHaveLength(1));
+    const drawn = grid();
+    const bounds = canvas().getBoundingClientRect();
+    canvas().dispatchEvent(new WheelEvent("wheel", { clientX: bounds.left + bounds.width / 2, clientY: bounds.top + bounds.height / 2, deltaY: -100, ctrlKey: true, bubbles: true, cancelable: true }));
+    await DomChangeFixture.untilAsync(() => expect(instance().view().zoom).not.toBe(1));
+
+    expect([drawn, grid()]).toEqual([["radial-gradient(rgb(255, 0, 0) 0.5px, rgba(0, 0, 0, 0) 0.5px)", `${String(rootSize())}px ${String(rootSize())}px`], drawn]);
+  });
+
+  it("redraws its grid when its dot size, gap or color changes", async () => {
+    fixture.componentInstance.size.set("2px");
+    fixture.componentInstance.gap.set("3rem");
+    fixture.componentInstance.color.set("rgb(0, 0, 255)");
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(grid()).toEqual(["radial-gradient(rgb(0, 0, 255) 2px, rgba(0, 0, 0, 0) 2px)", `${String(rootSize() * 3)}px ${String(rootSize() * 3)}px`]);
+  });
+
+  it("draws no grid under forced colors, whatever dots it is given", async () => {
+    await ForcedColorsFixture.activateAsync();
+
+    expect(getComputedStyle(canvas()).backgroundImage).toBe("none");
   });
 });

@@ -15,8 +15,8 @@
   border: var(--nol-border-width) solid var(--nol-card-border);
   border-radius: var(--nol-radius-large);
   background-color: var(--nol-window);
-  background-image: radial-gradient(var(--nol-menu-border) 1px, transparent 1px);
-  background-size: 1.5rem 1.5rem;
+  background-image: radial-gradient(var(--nol-canvas-dot-color) var(--nol-canvas-dot-size), transparent var(--nol-canvas-dot-size));
+  background-size: var(--nol-canvas-dot-gap) var(--nol-canvas-dot-gap);
   cursor: grab;
   outline: none;
   touch-action: none;

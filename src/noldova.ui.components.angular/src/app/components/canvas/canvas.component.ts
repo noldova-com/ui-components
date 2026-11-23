@@ -41,6 +41,9 @@ import { CanvasResources } from "./canvas.resources.js";
     "[attr.aria-keyshortcuts]": "partResources.canvasKeyShortcuts",
     "[class.nol-canvas-dragging]": "isDragging()",
     "[style.background-position]": "gridPosition()",
+    "[style.--nol-canvas-dot-size]": "dotSize()",
+    "[style.--nol-canvas-dot-gap]": "dotGap()",
+    "[style.--nol-canvas-dot-color]": "dotColor()",
     "(pointerdown)": "onPointerDown($event)",
     "(pointermove)": "onPointerMove($event)",
     "(pointerup)": "onPointerEnd($event)",
@@ -83,6 +86,9 @@ export class CanvasComponent {
   public readonly label = input.required<string>();
   public readonly mapShown = model<boolean>(true);
   public readonly fitAlignment = input<CanvasFitAlignment>(CanvasFitAlignment.Centre);
+  public readonly dotSize = input<string>(CanvasResources.canvasDotSize);
+  public readonly dotGap = input<string>(CanvasResources.canvasDotGap);
+  public readonly dotColor = input<string>(CanvasResources.canvasDotColor);
   public readonly view: Signal<CanvasView> = this.shown.asReadonly();
 
   public constructor() {

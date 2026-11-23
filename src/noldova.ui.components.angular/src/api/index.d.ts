@@ -2823,6 +2823,25 @@ export declare class CanvasComponent {
   public readonly fitAlignment: InputSignal<CanvasFitAlignment>;
 
   /**
+   * The size of each dot in the canvas's grid, a CSS length: 1px when not
+   * bound.
+   */
+  public readonly dotSize: InputSignal<string>;
+
+  /**
+   * The distance between the grid's dots, across and down, a CSS length:
+   * 1.5rem when not bound. The grid keeps it at every zoom.
+   */
+  public readonly dotGap: InputSignal<string>;
+
+  /**
+   * The color of the grid's dots, a CSS color: the menu border color,
+   * `var(--nol-menu-border)`, when not bound. Under forced colors the grid
+   * goes whatever it is.
+   */
+  public readonly dotColor: InputSignal<string>;
+
+  /**
    * Where the content shows: its offset on the canvas in CSS pixels and its
    * zoom.
    */
