@@ -21,7 +21,7 @@ export class TestDocs extends Script {
   private static readonly ANGULAR_PROJECT: string = "docs";
   private static readonly ROOT: string = path.resolve(Config.ROOT);
   private static readonly ANGULAR_CLI_PATH: string = path.join(TestDocs.ROOT, "node_modules/@angular/cli/bin/ng.js");
-  private static readonly ANGULAR_TEST_ARGUMENTS: readonly string[] = ["test", TestDocs.ANGULAR_PROJECT, "--reporters=default", "--reporters=json", "--output-file"];
+  private static readonly ANGULAR_TEST_ARGUMENTS: readonly string[] = ["test", TestDocs.ANGULAR_PROJECT, "--reporters=verbose", "--reporters=json", "--output-file"];
   private static readonly REPORT_FILE: string = "../../_build/docs-tests.json";
   private static readonly DEPENDENCY_CACHE: string = "../../node_modules/.vite";
   private static readonly COVERAGE_FILE: string = "../../_build/angular-coverage/coverage-final.json";
