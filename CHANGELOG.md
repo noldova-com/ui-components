@@ -4,6 +4,11 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.28
+
+- `@noldova/ui.components.angular`: a Markdown view reads a paragraph of math or HTML openers that never close in time that grows with its length, not with its square: inline math remembers, for each closing delimiter, where none follows, and the text references find HTML tags in one forward scan that remembers where each kind's close is missing. A long message full of unclosed `\(`, `$`, `<?`, `<!--` or `<!` no longer holds the page for seconds, and a streaming message no longer repeats that cost on each update. Rendering is unchanged.
+- Internal, with no change to the packages: the docs site's spec run prints each test as it ends (#52).
+
 ## 0.0.27
 
 - `@noldova/ui.components.angular`: a select's options can show an icon before their title: `SelectOption` takes `icon`, a Material Symbols name, and `iconColor`, a kit swatch name such as `teal` or a `#rrggbb` or `#rgb` color, as `ColorChoices` takes it, both optional after `isDisabled`. The select draws the icon before the title in the list and on its button while the option is chosen, at the kit's icon size and centred on the title's line, in its color or the text color, and in forced colors in the system color its row's title takes; it is hidden from assistive technology, so the option's name stays its title. The constructor refuses an icon outside `IconNames.all` and a color that is neither a swatch nor such a color.
