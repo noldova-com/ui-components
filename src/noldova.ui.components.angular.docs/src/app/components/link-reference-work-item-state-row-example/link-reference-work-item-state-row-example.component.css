@@ -9,8 +9,3 @@
 p {
   margin: 0;
 }
-
-a {
-  color: var(--nol-link);
-  text-decoration: underline;
-}

@@ -317,6 +317,14 @@ describe("LinkReferenceChipComponent", () => {
       expect([withMark, drawn()]).toEqual([[false, true], [false, false]]);
     });
 
+  it("keeps a chip in a Markdown view in the link color, underlined in it, under forced colors, as the view's other links", async () => {
+    await ForcedColorsFixture.activateAsync();
+    await renderAsync(itemOf());
+    const style = getComputedStyle(chip());
+
+    expect([style.color, style.textDecorationLine, style.textDecorationColor]).toEqual([resolve("LinkText"), "underline", resolve("LinkText")]);
+  });
+
   it("draws the place of a mark the host can't show yet in the link color under forced colors", async () => {
     await ForcedColorsFixture.activateAsync();
     await renderAsync(itemOf({ isMarkPending: true }));
@@ -1271,8 +1279,13 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
   });
 
   for (const mode of AppearanceFixture.modes)
-    it(`draws the item in a line of the app's text, the state's icon 1rem at its start and 0.25rem before its reference and title, on the text's baseline, in ${mode} mode`, async () => {
+    it(`draws the item in a line of the app's text in the link color, underlined at 45% of it 0.2em below, the state's icon 1rem at its start and 0.25rem before its reference and title, on the text's baseline, in ${mode} mode`, async () => {
       await renderAsync(itemOf(), mode);
+      const style = getComputedStyle(chip());
+      const underline = document.body.appendChild(document.createElement("span"));
+      underline.style.color = "color-mix(in srgb, var(--nol-link) 45%, transparent)";
+      const underlineColor = getComputedStyle(underline).color;
+      underline.remove();
       const box = chip().getBoundingClientRect();
       const icon = part("icon").getBoundingClientRect();
       const text = part("text").getBoundingClientRect();
@@ -1291,6 +1304,8 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
       AppearanceFixture.expectPixels(text.left - icon.right, pixels(0.25));
       AppearanceFixture.expectPixels(icon.top + icon.height / 2, box.top + box.height / 2);
       AppearanceFixture.expectPixels(label.getBoundingClientRect().bottom, before.getBoundingClientRect().bottom);
+      expect([style.color, style.textDecorationLine, style.textDecorationColor, style.textUnderlineOffset])
+        .toEqual([AppearanceFixture.readColor(DefaultTheme.theme, mode, "link"), "underline", underlineColor, `${Number.parseFloat(style.fontSize) * 0.2}px`]);
       expect(getComputedStyle(part("icon")).backgroundColor).toBe(resolve(mode === ThemeMode.Light ? "#8250DF" : "#A371F7"));
     });
 
@@ -1321,11 +1336,13 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
     expect([fixture.componentInstance.opens.map(t => t.url), card()]).toEqual([[url], null]);
   });
 
-  it("keeps the chip's icon and mark in the link color under forced colors", async () => {
+  it("keeps the chip's text, underline, icon and mark in the link color under forced colors", async () => {
     await ForcedColorsFixture.activateAsync();
     await renderAsync(itemOf({ mark: new LinkReferenceImage(square) }));
     const linkColor = resolve("LinkText");
+    const style = getComputedStyle(chip());
 
-    expect([getComputedStyle(part("icon")).backgroundColor, getComputedStyle(part("mark")).backgroundColor]).toEqual([linkColor, linkColor]);
+    expect([style.color, style.textDecorationLine, style.textDecorationColor, getComputedStyle(part("icon")).backgroundColor, getComputedStyle(part("mark")).backgroundColor])
+      .toEqual([linkColor, "underline", linkColor, linkColor, linkColor]);
   });
 });

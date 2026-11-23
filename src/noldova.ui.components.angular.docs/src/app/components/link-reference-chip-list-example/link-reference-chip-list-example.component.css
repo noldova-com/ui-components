@@ -15,11 +15,6 @@ ul {
   list-style: none;
 }
 
-a {
-  color: var(--nol-link);
-  text-decoration: underline;
-}
-
 p {
   margin: var(--nol-space-3) 0 0;
   color: var(--nol-text-muted);

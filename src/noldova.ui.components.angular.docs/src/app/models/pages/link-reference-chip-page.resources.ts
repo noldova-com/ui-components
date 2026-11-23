@@ -20,6 +20,6 @@ export class LinkReferenceChipPageResources {
   public static readonly roles: readonly string[] = [
     "The chip is a link, read as its reference and title; the state's icon and the host's mark are hidden from assistive technology.",
     "The card's parts that have an address are links of their own, reached with Tab from the chip.",
-    "The app gives the link its address, its color and its underline, as for any link in its own text."
+    "The app gives the link its address and handles its click; the chip draws itself in the link color, underlined."
   ];
 }

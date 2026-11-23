@@ -11,6 +11,8 @@
   align-items: baseline;
   gap: var(--nol-space-1);
   max-width: min(100%, var(--nol-reference-chip-max-width));
+  color: var(--nol-link);
+  text-decoration-line: underline;
   text-decoration-color: color-mix(in srgb, var(--nol-link) 45%, transparent);
   text-underline-offset: 0.2em;
 }
@@ -51,6 +53,7 @@
 
 @media (forced-colors: active) {
   :host {
+    color: LinkText;
     text-decoration-color: LinkText;
   }
 

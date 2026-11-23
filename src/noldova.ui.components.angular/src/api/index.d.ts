@@ -7233,8 +7233,8 @@ export declare class LinkReferenceWorkItemState {
  * unless it has no card, `hasCard: false`; Tab from the chip moves into the
  * card, and Escape or leaving both closes it.
  *
- * The app binds the link's `href` and handles its click, and gives the link
- * its color and underline, which a Markdown view's links take from the view.
+ * The chip is drawn in the link color, underlined at 45% of it, as in a
+ * Markdown view, and the app binds the link's `href` and handles its click.
  * The chip takes the text it sits in. A work item's state follows the chip
  * as a {@link LinkReferenceWorkItemStateComponent}, outside the link.
  *

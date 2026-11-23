@@ -29,7 +29,7 @@ LICENSE file in the root directory of this source tree.
   <nol-gallery-cell [caption]="text.referenceWorkItemCard"><nol-link-reference-card [reference]="workItem" [state]="bug" /></nol-gallery-cell>
   <nol-gallery-cell [caption]="text.referenceCommitCard"><nol-link-reference-card [reference]="commit" [state]="commitState" /></nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
-    <a class="nol-markdown-link" nol-link-reference-chip nolGalleryFocus="" [reference]="pullRequest" [href]="pullUrl" (click)="$event.preventDefault()"></a>
+    <a nol-link-reference-chip nolGalleryFocus="" [reference]="pullRequest" [href]="pullUrl" (click)="$event.preventDefault()"></a>
   </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
     <div class="nol-gallery-message nol-gallery-narrow"><nol-message [author]="reviewer" [time]="time" [blocks]="longReference" [references]="references" /></div>
