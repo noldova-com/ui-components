@@ -13,11 +13,16 @@ import "@noldova/context.core";
 import type { ILinkReferenceSource } from "../interfaces/i-link-reference-source.js";
 import { LinkReferenceMatch } from "./link-reference-match.js";
 import { Resources } from "../../resources.js";
+import { MarkdownHtmlOpening } from "./markdown-html-opening.js";
+import { MarkdownHtmlScan } from "./markdown-html-scan.js";
+import type { MarkdownTextRange } from "./markdown-text-range.js";
+import { MarkdownTextPlace } from "./markdown-text-place.js";
 import { MarkdownTextReferencesResources } from "./markdown-text-references.resources.js";
+import { MarkdownTextRun } from "./markdown-text-run.js";
 
 export class MarkdownTextReferences {
   private static readonly lines: WeakMap<Token, number> = new WeakMap();
-  private static readonly places: WeakMap<StateInline, readonly [number, number, number]> = new WeakMap();
+  private static readonly places: WeakMap<StateInline, MarkdownTextPlace> = new WeakMap();
   private readonly find: (text: string) => readonly LinkReferenceMatch[];
 
   private constructor(find: (text: string) => readonly LinkReferenceMatch[]) {
@@ -42,10 +47,10 @@ export class MarkdownTextReferences {
   }
 
   private static note(state: StateInline, at: number): void {
-    const [seen, last, line] = MarkdownTextReferences.places.get(state) ?? [0, 0, 0];
-    for (const token of state.tokens.slice(seen))
-      MarkdownTextReferences.lines.set(token, line);
-    MarkdownTextReferences.places.set(state, [state.tokens.length, at, line + state.src.slice(last, at).split("\n").length - 1]);
+    const place = MarkdownTextReferences.places.get(state) ?? new MarkdownTextPlace(0, 0, 0);
+    for (const token of state.tokens.slice(place.seen))
+      MarkdownTextReferences.lines.set(token, place.line);
+    MarkdownTextReferences.places.set(state, new MarkdownTextPlace(state.tokens.length, at, place.line + state.src.slice(place.last, at).split("\n").length - 1));
   }
 
   public static rule(state: StateCore): void {
@@ -62,9 +67,9 @@ export class MarkdownTextReferences {
     let isStart = true;
     for (const [index, line] of content.split("\n").entries()) {
       if (Object.isUndefined(end)) {
-        const opening = MarkdownTextReferencesResources.markdownHtmlBlocks.find(([start]) => start.test(line));
+        const opening = MarkdownTextReferencesResources.markdownHtmlBlocks.find(t => t.start.test(line));
         if (!Object.isUndefined(opening))
-          end = opening[1];
+          end = opening.end;
         else if (isStart && MarkdownTextReferencesResources.markdownHtmlTagLinePattern.test(line))
           end = null;
       }
@@ -92,27 +97,45 @@ export class MarkdownTextReferences {
     return html;
   }
 
-  private static addHtml(runs: readonly (readonly [readonly Token[], string, [number, number][]])[]): void {
-    const open: [string, number, number][] = [];
-    for (const [run, [, text, ranges]] of runs.entries())
-      for (const tag of text.matchAll(MarkdownTextReferencesResources.markdownHtmlTagPattern)) {
-        const end = tag.index + tag[0].length;
-        ranges.push([tag.index, end]);
-        const name = tag[1]?.toLowerCase();
-        const closed = tag[3]?.toLowerCase();
-        if (!Object.isUndefined(name) && tag[2] !== "/" && !MarkdownTextReferencesResources.markdownHtmlVoidTags.has(name))
-          open.push([name, run, tag.index]);
-        else if (!Object.isUndefined(closed)) {
-          const index = open.map(t => t[0]).lastIndexOf(closed);
-          const opening = open[index];
+  private static addHtml(runs: readonly MarkdownTextRun[]): void {
+    const open: MarkdownHtmlOpening[] = [];
+    const named = new Map<string, MarkdownHtmlOpening[]>();
+    for (const run of runs)
+      for (const tag of MarkdownHtmlScan.tagsOf(run.text)) {
+        run.cover(tag.start, tag.end);
+        if (!Object.isNull(tag.opened)) {
+          const peers = named.get(tag.opened) ?? [];
+          named.set(tag.opened, peers);
+          const opening = new MarkdownHtmlOpening(run, tag.start, open.length, peers);
+          open.push(opening);
+          peers.push(opening);
+        } else if (!Object.isNull(tag.closed)) {
+          const opening = named.get(tag.closed)?.at(-1);
           if (!Object.isUndefined(opening)) {
-            open.splice(index);
-            for (const [between, [, , covered]] of runs.entries())
-              if (between >= opening[1] && between <= run)
-                covered.push([between === opening[1] ? opening[2] : 0, between === run ? end : Infinity]);
+            for (const closed of open.splice(opening.depth))
+              closed.peers.pop();
+            MarkdownTextReferences.coverBetween(opening, run, tag.end);
           }
         }
       }
+    let depth = 0;
+    for (const run of runs) {
+      depth -= run.closes;
+      if (depth > 0)
+        run.cover(0, Infinity);
+      depth += run.opens;
+    }
+  }
+
+  private static coverBetween(opening: MarkdownHtmlOpening, run: MarkdownTextRun, end: number): void {
+    if (opening.run === run) {
+      run.cover(opening.start, end);
+      return;
+    }
+    opening.run.cover(opening.start, Infinity);
+    run.cover(0, end);
+    opening.run.opens++;
+    run.closes++;
   }
 
   private linked(state: StateCore, tokens: readonly Token[], html: ReadonlySet<Token>): Token[] {
@@ -134,11 +157,11 @@ export class MarkdownTextReferences {
         isInLink = false;
     }
     runs.push(run);
-    const parts: [Token[], string, [number, number][]][] = runs.map(t => [t, t.map(token => token.content).join(String.empty), []]);
+    const parts = runs.map(t => new MarkdownTextRun(t, t.map(token => token.content).join(String.empty)));
     MarkdownTextReferences.addHtml(parts);
     const linked: Token[] = [];
-    for (const [index, [each, text, html]] of parts.entries()) {
-      linked.push(...this.runOf(state, each, text, html));
+    for (const [index, part] of parts.entries()) {
+      linked.push(...this.runOf(state, part));
       const other = others[index];
       if (!Object.isUndefined(other))
         linked.push(other);
@@ -146,7 +169,7 @@ export class MarkdownTextReferences {
     return linked;
   }
 
-  private matchesOf(text: string, html: readonly (readonly [number, number])[]): readonly LinkReferenceMatch[] {
+  private matchesOf(text: string, html: readonly MarkdownTextRange[]): readonly LinkReferenceMatch[] {
     const matches: LinkReferenceMatch[] = [];
     let at = 0;
     const ask = (end: number): void => {
@@ -155,15 +178,16 @@ export class MarkdownTextReferences {
           if (match.start >= 0 && match.start + match.length <= end - at)
             matches.push(new LinkReferenceMatch(at + match.start, match.length, match.url));
     };
-    for (const [start, end] of [...html].sort((a, b) => a[0] - b[0])) {
-      ask(start);
-      at = Math.max(at, end);
+    for (const range of [...html].sort((a, b) => a.start - b.start)) {
+      ask(range.start);
+      at = Math.max(at, range.end);
     }
     ask(text.length);
     return matches;
   }
 
-  private runOf(state: StateCore, run: readonly Token[], text: string, html: readonly (readonly [number, number])[]): readonly Token[] {
+  private runOf(state: StateCore, part: MarkdownTextRun): readonly Token[] {
+    const { tokens: run, text, ranges: html } = part;
     const first = run[0];
     if (Object.isUndefined(first) || text.length === 0)
       return run;

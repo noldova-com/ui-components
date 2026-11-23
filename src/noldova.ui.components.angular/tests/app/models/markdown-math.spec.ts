@@ -6,23 +6,26 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { TestBed } from "@angular/core/testing";
-import type { MarkdownIt } from "markdown-it";
+import { ArgumentOutOfRangeException } from "@noldova/context.exceptions";
 
 import { MarkdownNodeKind } from "../../../src/app/enums/markdown-node-kind";
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
+import { MarkdownMath } from "../../../src/app/models/markdown-math";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
-import { MarkdownParser } from "../../../src/app/services/markdown.parser";
+import { LoadedMarkdownParser } from "../../fixtures/loaded-markdown-parser.fixture";
+import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 describe("MarkdownMath", () => {
   const { Paragraph, Text, Math: InlineMath, MathDisplay, InlineCode, Code, Quote, BulletList, ListItem, SoftBreak } = MarkdownNodeKind;
   const shapeOf = (node: MarkdownNode): unknown[] =>
     [node.kind, ...[node.text, node.value].filter(t => t !== String.empty && t !== 0), ...node.children.map(shapeOf)];
   const treeAsync = async (source: string): Promise<readonly MarkdownNode[]> =>
-    MarkdownTree.of((await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt).parse(source, {}));
+    MarkdownTree.of((await LoadedMarkdownParser.ofAsync()).parse(source, {}));
   const shapesAsync = async (source: string): Promise<unknown[]> => (await treeAsync(source)).map(shapeOf);
   const plainAsync = async (source: string): Promise<unknown[]> => {
-    const [paragraph] = await treeAsync(source) as [MarkdownNode];
+    const paragraph = (await treeAsync(source)).at(0);
+    if (Object.isUndefined(paragraph))
+      throw new Error("The source made no paragraph.");
     return [paragraph.kind, [...new Set(paragraph.children.map(t => t.kind))], paragraph.children.map(t => t.text).join(String.empty)];
   };
 
@@ -82,5 +85,27 @@ describe("MarkdownMath", () => {
       [[Paragraph, [Text, "$$"], [SoftBreak, "\n"], [Text, "x"]], [Paragraph, [Text, "y"], [SoftBreak, "\n"], [Text, "$$"]]],
       [[Paragraph, [MathDisplay, "$$x$$", 2], [Text, " and more"]]]
     ]);
+  });
+
+  it("reads a long paragraph of formulas that never close a few times per character, and leaves it as text", async () => {
+    const parser = await LoadedMarkdownParser.ofAsync();
+    const readOf = (source: string): readonly unknown[] => {
+      let kinds: readonly MarkdownNodeKind[] = [];
+      const read = TextScanFixture.scannedBy(() => {
+        kinds = [...new Set(MarkdownTree.of(parser.parse(source, {})).flatMap(t => [t.kind, ...t.children.map(child => child.kind)]))];
+      });
+      return [read / source.length < 4, kinds];
+    };
+    const plain = [true, [Paragraph, Text]];
+
+    expect(["\\(".repeat(2_000), "\\[a ".repeat(1_000), "$a ".repeat(1_200)].map(readOf)).toEqual([plain, plain, plain]);
+    expect(["\\(".repeat(100_000), "$a ".repeat(60_000)].map(readOf)).toEqual([plain, plain]);
+  });
+
+  it("refuses a block line the block parser holds no marks for, naming the line", async () => {
+    const parser = await LoadedMarkdownParser.ofAsync();
+    const state = new parser.block.State("$$x$$", parser, {}, []);
+
+    expect(() => MarkdownMath.block(state, state.lineMax + 1, state.lineMax + 2, false)).toThrow(new ArgumentOutOfRangeException("line", state.lineMax + 1, `The block parser has no line ${state.lineMax + 1}.`));
   });
 });

@@ -7,7 +7,6 @@
  */
 
 import type { Signal } from "@angular/core";
-import { TestBed } from "@angular/core/testing";
 import type { MarkdownIt } from "markdown-it";
 
 import { MarkdownNodeKind } from "../../../src/app/enums/markdown-node-kind";
@@ -16,9 +15,11 @@ import type { LinkReference } from "../../../src/app/models/link-reference";
 import { LinkReferenceMatch } from "../../../src/app/models/link-reference-match";
 import type { MarkdownNode } from "../../../src/app/models/markdown.node";
 import { MarkdownTextReferences } from "../../../src/app/models/markdown-text-references";
+import { MarkdownTextReferencesResources } from "../../../src/app/models/markdown-text-references.resources";
 import { MarkdownTree } from "../../../src/app/models/markdown-tree";
-import { MarkdownParser } from "../../../src/app/services/markdown.parser";
 import { Resources } from "../../../src/resources";
+import { LoadedMarkdownParser } from "../../fixtures/loaded-markdown-parser.fixture";
+import { TextScanFixture } from "../../fixtures/text-scan.fixture";
 
 class TestTextReferences implements ILinkReferenceSource {
   public readonly asked: string[] = [];
@@ -54,7 +55,7 @@ describe("MarkdownTextReferences", () => {
   let parser: MarkdownIt;
 
   beforeEach(async () => {
-    parser = await TestBed.inject(MarkdownParser).parserAsync() as MarkdownIt;
+    parser = await LoadedMarkdownParser.ofAsync();
   });
 
   const shapeOf = (node: MarkdownNode): unknown[] =>
@@ -147,5 +148,44 @@ describe("MarkdownTextReferences", () => {
 
     expect([MarkdownTextReferences.of(null), MarkdownTextReferences.of(plain), treeOf("See #12", null), treeOf("See #12", plain)]).toEqual([null, null, before, before]);
     expect(JSON.stringify(before)).not.toContain(MarkdownNodeKind.Link);
+  });
+
+  it("never asks about a comment, an instruction, a declaration or character data that closes, and asks about one that never does, or a < that opens nothing, as text", () => {
+    const references = new TestTextReferences();
+    const source = "#1 <!--> #2 <!---> #3 <!-- a #4 --> #5 <? b #6 ?> #7 <!DOCTYPE #8> #9 <![CDATA[ #10 ]]> #11 <? #12\n\na <!-- #13\n\n#14 < 2 <3 #15";
+
+    const tree = treeOf(source, references);
+
+    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/1", "issues/2", "issues/3", "issues/5", "issues/7", "issues/9", "issues/11", "issues/12", "issues/13", "issues/14", "issues/15"]);
+    expect(references.asked).toEqual(["#1 ", " #2 ", " #3 ", " #5 ", " #7 ", " #9 ", " #11 <? #12", "a <!-- #13", "#14 < 2 <3 #15"]);
+  });
+
+  it("closes a tag's innermost open namesake, with the tags opened after it, and covers every run between an open tag and its closing tag", () => {
+    const references = new TestTextReferences();
+    const source = "<b><b>#1</b>#2</b>#3 <i><u>#4</i>#5</u>#6 </b>#7\n\na <u>b **#8** c **#9** d</u> #10";
+
+    const tree = treeOf(source, references);
+
+    expect(JSON.stringify(tree).match(/issues\/\d+/gu)).toEqual(["issues/3", "issues/5", "issues/6", "issues/7", "issues/10"]);
+    expect(references.asked).toEqual(["#3 ", "#5", "#6 ", "#7", "a ", " #10"]);
+  });
+
+  const paragraphOf = (unit: string, length: number): string => `a ${unit.repeat(Math.floor(length / unit.length))}`;
+  const readPerCharacterOf = (source: string, references: TestTextReferences): number => TextScanFixture.scannedBy(() => treeOf(source, references)) / source.length;
+  const searchesIn = (source: string): readonly string[] => TextScanFixture.searchesOver(source.length / 2, TextScanFixture.patternsOf(MarkdownTextReferencesResources),
+    () => treeOf(source, new TestTextReferences()));
+
+  for (const unit of ["<?", "<!--", "<!a"])
+    it(`reads a paragraph of unclosed ${unit} a few times per character, searches it only where a tag starts, and asks about all of it`, () => {
+      const references = new TestTextReferences();
+      const source = paragraphOf(unit, 100_000);
+
+      expect([readPerCharacterOf(source, references) < 4, searchesIn(source), [...new Set(references.asked)]]).toEqual([true, [], [source]]);
+    });
+
+  it("reads a paragraph of opening tags and unmatched closing tags a few times per character, and searches it only where a tag starts", () => {
+    const source = `${paragraphOf("<a>", 50_000)} ${paragraphOf("</b>", 50_000)}`;
+
+    expect([readPerCharacterOf(source, new TestTextReferences()) < 4, searchesIn(source)]).toEqual([true, []]);
   });
 });
