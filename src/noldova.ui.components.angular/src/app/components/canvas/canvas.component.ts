@@ -44,6 +44,9 @@ import { CanvasResources } from "./canvas.resources.js";
     "[class.nol-canvas-floating]": "isFloating()",
     "[class.nol-canvas-flush]": "isFlush()",
     "[style.background-position]": "gridPosition()",
+    "[style.--nol-canvas-dot-size]": "dotSize()",
+    "[style.--nol-canvas-dot-gap]": "dotGap()",
+    "[style.--nol-canvas-dot-color]": "dotColor()",
     "(pointerdown)": "onPointerDown($event)",
     "(pointermove)": "onPointerMove($event)",
     "(pointerup)": "onPointerEnd($event)",
@@ -87,6 +90,9 @@ export class CanvasComponent {
   public readonly label = input.required<string>();
   public readonly mapShown = model<boolean>(true);
   public readonly fitAlignment = input<CanvasFitAlignment>(CanvasFitAlignment.Centre);
+  public readonly dotSize = input<string>(CanvasResources.canvasDotSize);
+  public readonly dotGap = input<string>(CanvasResources.canvasDotGap);
+  public readonly dotColor = input<string>(CanvasResources.canvasDotColor);
   public readonly controlsPlacement = input<CanvasControlsPlacement>(CanvasControlsPlacement.Edges);
   public readonly isFlush = input<boolean>(false);
   public readonly view: Signal<CanvasView> = this.shown.asReadonly();
