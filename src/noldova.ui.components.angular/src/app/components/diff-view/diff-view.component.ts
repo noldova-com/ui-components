@@ -90,7 +90,7 @@ export class DiffViewComponent {
   private readonly compared: WeakSet<DiffHunk> = new WeakSet();
   private readonly lineChanges: WeakMap<DiffLine, readonly DiffChange[]> = new WeakMap();
   private readonly requested: Set<string> = new Set();
-  private readonly actedOn: Set<string> = new Set();
+  private readonly actedOn: Map<string, string> = new Map();
   private readonly changeMoves: ReadonlyMap<string, () => void> = new Map([
     [Resources.arrowDownKey, () => this.nextChange()],
     [Resources.arrowUpKey, () => this.previousChange()]
@@ -100,7 +100,7 @@ export class DiffViewComponent {
     [Resources.arrowUpKey, () => this.previousFile()]
   ]);
   private reviewTexts: ReadonlyMap<string, string> | null = null;
-  private answered: ReadonlyMap<string, DiffFileReview> | null = null;
+  private nextRequest: number = 0;
 
   protected readonly id: string = `${DiffViewResources.diffIdPrefix}${DiffViewComponent.nextId++}`;
   protected readonly resources: typeof Resources = Resources;
@@ -122,6 +122,7 @@ export class DiffViewComponent {
   public readonly readOnly = input<boolean>(false);
   public readonly canOpenFiles = input<boolean>(true);
   public readonly reviews = input<ReadonlyMap<string, DiffFileReview>>(new Map());
+  public readonly answeredRequests = input<ReadonlySet<string>>(new Set());
   public readonly collapsed = model<ReadonlySet<string>>(new Set());
   public readonly revealed = model<ReadonlySet<string>>(new Set());
   public readonly collapseLimit = input<DiffCollapseLimit>(DiffCollapseLimit.standard);
@@ -173,7 +174,7 @@ export class DiffViewComponent {
         this.fileExpanded.emit(file.id);
       }
     });
-    effect(() => this.announceReviews(this.files(), this.reviews()));
+    effect(() => this.announceReviews(this.files(), this.reviews(), this.answeredRequests()));
     afterRenderEffect(() => {
       this.files();
       this.layout();
@@ -258,8 +259,9 @@ export class DiffViewComponent {
   }
 
   protected review(file: DiffFile, hunk: DiffHunk | null, state: DiffReviewState): void {
-    this.actedOn.add(file.id);
-    this.reviewRequested.emit(new DiffReviewRequest(file.id, hunk?.id ?? null, state));
+    const id = `${this.id}${DiffViewResources.diffReviewIdInfix}${this.nextRequest++}`;
+    this.actedOn.set(id, file.id);
+    this.reviewRequested.emit(new DiffReviewRequest(id, file.id, hunk?.id ?? null, state));
   }
 
   protected toggleFile(file: DiffFile): void {
@@ -397,11 +399,17 @@ export class DiffViewComponent {
     this.tokenVersion.update(t => t + 1);
   }
 
-  private announceReviews(files: readonly DiffFile[], reviews: ReadonlyMap<string, DiffFileReview>): void {
+  private announceReviews(files: readonly DiffFile[], reviews: ReadonlyMap<string, DiffFileReview>, answeredRequests: ReadonlySet<string>): void {
     const texts = new Map<string, string>();
     const changes: string[] = [];
-    const isAnswer = reviews !== this.answered;
-    this.answered = reviews;
+    const answeredFiles = new Set<string>();
+    for (const id of answeredRequests) {
+      const fileId = this.actedOn.get(id);
+      if (!Object.isUndefined(fileId)) {
+        this.actedOn.delete(id);
+        answeredFiles.add(fileId);
+      }
+    }
     for (const file of files) {
       const review = reviews.get(file.id) ?? DiffFileReview.undecided;
       const fileText = DiffViewResources.formatDiffReviewText(review.stateOf(file.content.hunks.map(t => t.id)));
@@ -415,7 +423,7 @@ export class DiffViewComponent {
           hunkChanges.push(DiffViewResources.formatDiffReviewChange(DiffViewResources.formatDiffHunkSubject(DiffViewResources.formatDiffHunkLabel(index + 1, file.content.hunks.length), file.path), text));
       });
       const fileChanges = DiffViewComponent.hasChanged(this.reviewTexts, file.id, fileText) ? [DiffViewResources.formatDiffReviewChange(file.path, fileText)] : hunkChanges;
-      if (isAnswer && this.actedOn.delete(file.id))
+      if (answeredFiles.has(file.id))
         changes.push(...fileChanges);
     }
     this.reviewTexts = texts;

@@ -9,11 +9,13 @@
 import type { DiffReviewState } from "../enums/diff-review-state.js";
 
 export class DiffReviewRequest {
+  public readonly id: string;
   public readonly fileId: string;
   public readonly hunkId: string | null;
   public readonly state: DiffReviewState;
 
-  public constructor(fileId: string, hunkId: string | null, state: DiffReviewState) {
+  public constructor(id: string, fileId: string, hunkId: string | null, state: DiffReviewState) {
+    this.id = id;
     this.fileId = fileId;
     this.hunkId = hunkId;
     this.state = state;

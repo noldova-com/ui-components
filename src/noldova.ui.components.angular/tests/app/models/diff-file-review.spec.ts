@@ -48,7 +48,7 @@ describe("DiffFileReview", () => {
   it("applies a file's request to every hunk and to the file's own state", () => {
     const review = new DiffFileReview(new Map([["h1", DiffReviewState.Rejected]]));
 
-    const applied = review.applied(new DiffReviewRequest("notes", null, DiffReviewState.Accepted), notes());
+    const applied = review.applied(new DiffReviewRequest("r1", "notes", null, DiffReviewState.Accepted), notes());
 
     expect([applied.hunkStates, applied.state]).toEqual([new Map([["h1", DiffReviewState.Accepted], ["h2", DiffReviewState.Accepted]]), DiffReviewState.Accepted]);
     expect(applied.stateOf(["h1", "h2"])).toBe(DiffReviewState.Accepted);
@@ -57,7 +57,7 @@ describe("DiffFileReview", () => {
   it("applies a file's request to the file's own state when it has no hunks", () => {
     const binary = new DiffFile("logo", "logo.png", null, DiffFileStatus.Added, 0, 0, null, new DiffBinary());
 
-    const applied = DiffFileReview.undecided.applied(new DiffReviewRequest("logo", null, DiffReviewState.Rejected), binary);
+    const applied = DiffFileReview.undecided.applied(new DiffReviewRequest("r1", "logo", null, DiffReviewState.Rejected), binary);
 
     expect([applied.hunkStates, applied.stateOf([])]).toEqual([new Map(), DiffReviewState.Rejected]);
   });
@@ -65,16 +65,16 @@ describe("DiffFileReview", () => {
   it("applies a hunk's request to that hunk only, keeping the others and the file's own state", () => {
     const review = new DiffFileReview(new Map([["h1", DiffReviewState.Rejected]]), DiffReviewState.Rejected);
 
-    const applied = review.applied(new DiffReviewRequest("notes", "h2", DiffReviewState.Accepted), notes());
+    const applied = review.applied(new DiffReviewRequest("r1", "notes", "h2", DiffReviewState.Accepted), notes());
 
     expect([applied.hunkStates, applied.state]).toEqual([new Map([["h1", DiffReviewState.Rejected], ["h2", DiffReviewState.Accepted]]), DiffReviewState.Rejected]);
     expect(review.hunkState("h2")).toBe(DiffReviewState.Undecided);
   });
 
   it("refuses a request for another file or for a hunk the file doesn't have", () => {
-    expect(() => DiffFileReview.undecided.applied(new DiffReviewRequest("readme", null, DiffReviewState.Accepted), notes()))
+    expect(() => DiffFileReview.undecided.applied(new DiffReviewRequest("r1", "readme", null, DiffReviewState.Accepted), notes()))
       .toThrow(new DiffException("The review request is for the file \"readme\", not \"notes\"."));
-    expect(() => DiffFileReview.undecided.applied(new DiffReviewRequest("notes", "h3", DiffReviewState.Accepted), notes()))
+    expect(() => DiffFileReview.undecided.applied(new DiffReviewRequest("r1", "notes", "h3", DiffReviewState.Accepted), notes()))
       .toThrow(new DiffException("The file \"notes\" has no hunk \"h3\"."));
   });
 });
