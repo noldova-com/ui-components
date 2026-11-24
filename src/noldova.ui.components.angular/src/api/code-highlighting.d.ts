@@ -82,7 +82,9 @@ export interface ICodeHighlightingOptions {
  * an app's build bundles a worker only from there. The worker holds every
  * grammar the kit knows, about 1.8 MB before compression, and the highlighter
  * starts it when a block first needs highlighting, or once the page is idle
- * when languages are preloaded; one worker serves the whole window.
+ * when languages are preloaded; one worker serves the whole window. On the
+ * server, as when a page is prerendered, it never starts, and a block's code
+ * is tokenized as without a worker.
  *
  * When the worker can't start, fails before it is ready, says nothing for 10
  * seconds after its start, or fails later, the highlighter reports a

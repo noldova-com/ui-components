@@ -80,5 +80,13 @@ describe("provideCodeHighlighting", () => {
 
       expect([asked, starts.started.length, handleError.mock.calls]).toEqual([0, 0, []]);
     });
+
+    it("tokenizes a block's code on the page rather than in the highlighting worker, starting none and reporting no failure", async () => {
+      const highlighter = serve(true);
+
+      const tokens = await highlighter.tokensAsync("let a;", CodeHighlighterFixture.typescript, CodeHighlighterFixture.signal);
+
+      expect([tokens.map(t => t.text), starts.started.length, handleError.mock.calls]).toEqual([["let", "a"], 0, []]);
+    });
   });
 });

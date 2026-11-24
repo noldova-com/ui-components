@@ -163,7 +163,7 @@ export class CodeHighlighter implements ICodeHighlighter {
   }
 
   private usableWorker(): CodeWorkerClient | null {
-    if (Object.isNull(this.startWorker) || this.isDisposed)
+    if (!this.isInBrowser || Object.isNull(this.startWorker) || this.isDisposed)
       return null;
     this.worker ??= new CodeWorkerClient(this.startWorker, this.timeSource, error => this.reportFailure(error));
     return this.worker.isUsable ? this.worker : null;
