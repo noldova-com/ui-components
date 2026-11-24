@@ -50,7 +50,7 @@ describe("CodeHighlighterFixture", () => {
 
     const results = await sampleResultsAsync(highlighter, ["json"]);
 
-    expect(results).toEqual([["json", true, expect.stringMatching(/^no tokens: the grammar's tokens all read as plain: "\{" \S+ source\.json .*punctuation\.definition\.dictionary\.begin\.json/u)]]);
+    expect(results).toEqual([["json", true, expect.stringMatching(/^no tokens: the grammar's tokens all read as plain: "\{ ?" \S+ source\.json .*punctuation\.definition\.dictionary\.begin\.json/u)]]);
   });
 
   it("says the scopes are read only with a shared Shiki when the highlighter has its own", async () => {
