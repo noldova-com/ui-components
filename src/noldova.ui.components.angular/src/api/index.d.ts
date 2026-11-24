@@ -11968,8 +11968,9 @@ export declare class ShellRunOutputDirective {
  * line under it, a column of links for each {@link SiteLinkGroup}, and a
  * bottom row with a notice and any content projected into it. It draws on
  * the panel color with no border, and its content keeps to the site's
- * content width, a wider one for a documentation site. Under 48rem the
- * groups fall into two columns under the wordmark.
+ * content width, a wider one for a documentation site. When the footer is
+ * narrower than 48rem, as on a phone, the groups fall into two columns under
+ * the wordmark.
  *
  * @example
  * ```ts
@@ -12039,10 +12040,13 @@ export declare class SiteFooterComponent {
  * `localStorage` under `noldova-theme` as `light`, `dark` or `system`, and
  * sets `data-nol-theme-mode` on the root element, or removes it for System;
  * with nothing saved it follows the system. It applies the saved choice
- * once it renders; a prerendered site sets the same attribute from the same
- * key in a script in its head, so the page never flashes the other theme.
+ * once it renders. The package ships no head script: each site sets
+ * `data-nol-theme-mode` from `noldova-theme` the same way in a script in its
+ * own head, which runs before the page renders, so the page never flashes
+ * the other theme.
  *
- * Under 48rem the bar keeps the wordmark, Download and a menu button; the
+ * When the header is narrower than 48rem, as on a phone, the bar keeps the
+ * wordmark, Download and a menu button; the
  * button opens the links, search, social links and theme switch below it,
  * with Download among them on a wide site, and Escape closes them and
  * returns the focus to it.
@@ -12132,7 +12136,8 @@ export declare class SiteHeaderComponent {
    * Whether the phone menu is open; false, the default. The menu button,
    * Escape and following a link in the menu change it, and a site sets it
    * false to close the menu, such as when its router moves to another page.
-   * It has no effect from 48rem wide, where the header shows no menu.
+   * It has no effect while the header is at least 48rem wide, where it shows
+   * no menu.
    */
   public readonly menuOpen: ModelSignal<boolean>;
 }

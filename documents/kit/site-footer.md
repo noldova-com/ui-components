@@ -9,7 +9,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 The content keeps to the [site header's](site-header.md) width and insets, 3rem below the footer's top (`--nol-site-footer-padding-top`).
 The lockup, with an optional line 0.5rem under it, takes the row's start, and the link groups follow it in a row, 2.5rem apart (`--nol-site-footer-bottom-gap`), the last at the content's end; each group's links are 0.25rem apart under its title, 0.5rem below it, and each is at least the pointer target high.
 The bottom row is 2.5rem under the groups and 3rem high (`--nol-site-footer-notice-height`), with the notice at its start and any content the site projects at its end.
-Under 48rem the content takes the phone insets, the lockup takes its own row, and the groups fall into two columns 1rem apart, 1.5rem under it.
+When the footer is narrower than 48rem, as on a phone, the content takes the phone insets, the lockup takes its own row, and the groups fall into two columns 1rem apart, 1.5rem under it.
 
 ## Text roles
 

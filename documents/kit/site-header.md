@@ -31,11 +31,11 @@ Under forced colors the wordmark, the product's name and the social icons are `L
 Icon-only [choice pills](choice-pills.md) named Theme, offering Light, Dark and System in that order, on the window color with a 0.125rem inset and the medium radius.
 A choice sets `data-nol-theme-mode` to `Light` or `Dark` on the root element, or removes it for System, and is saved in `localStorage` under `noldova-theme` as `light`, `dark` or `system`; with nothing saved, or a value it doesn't know, it follows the system.
 It applies the saved choice once it renders, and a choice the browser refuses to save still applies to the page.
-A prerendered site sets the same attribute from the same key in a script in its head, so the page never shows the other theme first.
+The component doesn't ship a head script: each site sets `data-nol-theme-mode` from `noldova-theme` the same way in a script in its own head, which runs before the page renders, so the page never shows the other theme first.
 
 ## Phone menu
 
-Under 48rem the content takes 1rem insets (`--nol-site-padding-inline-phone`) and the bar keeps the lockup, the Download button and a menu button at the end, 0.5rem apart; on a documentation site the Download button moves into the menu.
+When the header is narrower than 48rem, as on a phone, the content takes 1rem insets (`--nol-site-padding-inline-phone`) and the bar keeps the lockup, the Download button and a menu button at the end, 0.5rem apart; on a documentation site the Download button moves into the menu.
 The menu button is named Menu and says whether the menu is open and which element it controls; it shows a close glyph while the menu is open.
 The open menu shows, under the bar and across its width: the search, the links as rows 2.75rem high (`--nol-site-menu-row`), the social links with the theme switch at the end, and on a documentation site the Download button.
 Escape closes the menu and returns the focus to its button; following a link in it closes it.
