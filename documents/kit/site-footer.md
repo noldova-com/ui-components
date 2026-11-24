@@ -6,16 +6,19 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 ## Default geometry
 
-The content keeps to the [site header's](site-header.md) width and insets, 3rem below the footer's top (`--nol-site-footer-padding-top`).
-The lockup, with an optional line 0.5rem under it, takes the row's start, and the link groups follow it in a row, 2.5rem apart (`--nol-site-footer-bottom-gap`), the last at the content's end; each group's links are 0.25rem apart under its title, 0.5rem below it, and each is at least the pointer target high.
-The bottom row is 2.5rem under the groups and 3rem high (`--nol-site-footer-notice-height`), with the notice at its start and any content the site projects at its end.
-When the footer is narrower than 48rem, as on a phone, the content takes the phone insets, the lockup takes its own row, and the groups fall into two columns 1rem apart, 1.5rem under it.
+The content keeps to the [site header's](site-header.md) width and insets, 3rem from the footer's top and bottom (`--nol-site-footer-padding-block`).
+The lockup, with an optional line 0.75rem under it, takes two fifths of the row, and the link groups share the other three fifths as equal columns; the parts are 2rem apart (`--nol-site-footer-gap`), the last column ending at the content's end.
+Each group's links are 0.25rem apart, 0.75rem under its title, and each is at least the pointer target high.
+The bottom row is the same 2rem under the groups, with the notice at its start and any content the site projects at its end.
+When the footer is narrower than 48rem, as on a phone, the content takes the phone insets and is 2rem from the top and bottom (`--nol-site-footer-padding-block-phone`); the lockup takes its own row, the groups fall into two columns 1rem apart, and the rows, the bottom row included, are 1.5rem apart (`--nol-site-footer-gap-phone`).
+There each link is a row 2.75rem high (`--nol-site-menu-row`), with no space between, 0.25rem under its title.
 
 ## Text roles
 
 The product's name: title, at the emphasis weight, in `text-strong`.
-The line and the links: panel, in `text-muted`.
-Group titles: label, at the emphasis weight, in `text-strong`.
+The line: panel, in `text-muted`.
+The links: panel, in `text`.
+Group titles: small, at the emphasis weight, in capitals spaced by `--nol-letter-spacing-caps`, in `text-muted`.
 The notice: small, in `text-muted`.
 
 ## Surface and behavior
@@ -24,6 +27,6 @@ The page's `contentinfo` landmark, on the panel color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
 The lockup is the site header's: one link home named `Noldova` and the product's name, its wordmark the file the site passes, drawn as a mask.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
-A hovered link is underlined in `text-strong`, and keyboard focus is an accent outline outside it.
-The notice is `© <year> Noldova` unless the site gives its own.
+The notice is `© <year> Noldova`, with `Noldova` linking to https://noldova.com in the notice's color, unless the site gives its own as plain text.
+A hovered link, the notice's included, is underlined in `text-strong`, and keyboard focus is an accent outline outside it.
 Under forced colors the wordmark and the product's name are `LinkText`, and keyboard focus is a 2px `Highlight` outline.

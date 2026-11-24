@@ -8,9 +8,10 @@
 
 export class SiteFooterResources {
   public static readonly owner: string = "Noldova";
+  public static readonly ownerHref: string = "https://noldova.com";
   public static readonly currentPage: string = "page";
 
-  public static formatNotice(year: number): string {
-    return `© ${year} ${SiteFooterResources.owner}`;
+  public static formatCopyright(year: number): string {
+    return `© ${year} `;
   }
 }

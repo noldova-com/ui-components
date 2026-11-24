@@ -30,8 +30,9 @@ export class SiteFooterComponent {
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
   public readonly line = input<string | null>(null);
   public readonly groups = input<readonly SiteLinkGroup[]>([]);
-  public readonly notice = input<string>(SiteFooterResources.formatNotice(new Date().getFullYear()));
+  public readonly notice = input<string | null>(null);
   public readonly wide = input<boolean>(false);
 
   protected readonly partResources: typeof SiteFooterResources = SiteFooterResources;
+  protected readonly year: number = new Date().getFullYear();
 }

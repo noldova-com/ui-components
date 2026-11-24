@@ -11965,8 +11965,9 @@ export declare class ShellRunOutputDirective {
 /**
  * A website's footer, `nol-site-footer`, the page's `contentinfo` landmark: the
  * Noldova wordmark, with a product's name after it, linking home, an optional
- * line under it, a column of links for each {@link SiteLinkGroup}, and a
- * bottom row with a notice and any content projected into it. It draws on
+ * line under it, a column of links for each {@link SiteLinkGroup}, the
+ * columns sharing the row after the wordmark, and under them a notice and
+ * any content projected after it. It draws on
  * the panel color with no border, and takes its width from the block it is
  * in, such as the page's body. Its content keeps to the site's
  * content width, a wider one for a documentation site. When the footer is
@@ -12019,9 +12020,10 @@ export declare class SiteFooterComponent {
   public readonly groups: InputSignal<readonly SiteLinkGroup[]>;
 
   /**
-   * The notice at the bottom; `© <year> Noldova` when not bound.
+   * The notice at the bottom, as plain text; null, the default, says
+   * `© <year> Noldova` with `Noldova` linking to https://noldova.com.
    */
-  public readonly notice: InputSignal<string>;
+  public readonly notice: InputSignal<string | null>;
 
   /**
    * Whether the content keeps to the wider width of a documentation site;

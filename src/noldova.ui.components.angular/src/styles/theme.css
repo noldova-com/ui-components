@@ -257,9 +257,10 @@
   --nol-site-padding-inline-phone: 1rem;
   --nol-site-wordmark: 0.8125rem;
   --nol-site-search-width: 16rem;
-  --nol-site-footer-padding-top: 3rem;
-  --nol-site-footer-bottom-gap: 2.5rem;
-  --nol-site-footer-notice-height: 3rem;
+  --nol-site-footer-padding-block: 3rem;
+  --nol-site-footer-padding-block-phone: 2rem;
+  --nol-site-footer-gap: 2rem;
+  --nol-site-footer-gap-phone: 1.5rem;
   --nol-site-menu-row: 2.75rem;
   --nol-menu-padding: 0.25rem;
   --nol-menu-label-padding: 0.5rem 0.75rem 0.25rem;
