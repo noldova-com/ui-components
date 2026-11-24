@@ -30,16 +30,16 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
-// A canvas size a spec sets in pixels, and whether its map stands upright inside it, its top too.
+// A canvas size a spec sets in pixels, and whether the canvas has room for its map, which then stands inside it; without room, the map hides.
 class CanvasSize {
   public readonly width: number;
   public readonly height: number;
-  public readonly upright: boolean;
+  public readonly hasMapRoom: boolean;
 
-  public constructor(width: number, height: number, upright: boolean) {
+  public constructor(width: number, height: number, hasMapRoom: boolean) {
     this.width = width;
     this.height = height;
-    this.upright = upright;
+    this.hasMapRoom = hasMapRoom;
   }
 }
 
@@ -342,7 +342,7 @@ describe("CanvasComponent", () => {
   for (const placement of [CanvasControlsPlacement.Floating, CanvasControlsPlacement.Edges])
     for (const mode of AppearanceFixture.modes)
       for (const theme of AppearanceFixture.themes)
-        it(`narrows its ${placement} map in the content's proportions to keep it inside the canvas at 13.75rem wide and down to its widest control, at its 12rem minimum height and on a taller one, from the ${theme.id} theme in ${mode} mode`, async () => {
+        it(`narrows its ${placement} map in the content's proportions to keep it inside the canvas at 13.75rem wide and down to its widest control, at its 12rem minimum height and on a taller one, hiding it where it has no room, from the ${theme.id} theme in ${mode} mode`, async () => {
           AppearanceFixture.apply(theme, mode);
           host.placement.set(placement);
           host.cards.set([1, 2, 3]);
@@ -360,14 +360,15 @@ describe("CanvasComponent", () => {
             new CanvasSize(narrowest, AppearanceFixture.toPixels(18), true)
           ];
 
-          for (const { width, height, upright } of sizes) {
+          for (const { width, height, hasMapRoom } of sizes) {
             canvas().style.width = `${String(width)}px`;
             canvas().style.height = `${String(height)}px`;
+            await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe(hasMapRoom ? "visible" : "hidden"));
             const frame = canvas().getBoundingClientRect();
             const overview = map().getBoundingClientRect();
 
-            expect([full.width > width - 2 * inset, upright ? overview.top >= frame.top + inset - 0.5 : true, overview.bottom <= frame.bottom - inset + 0.5])
-              .toEqual([true, true, true]);
+            expect([full.width > width - 2 * inset, overview.top >= frame.top + inset - 0.5, overview.bottom <= frame.bottom - inset + 0.5])
+              .toEqual([true, hasMapRoom, true]);
             AppearanceFixture.expectPixels(overview.left - frame.left, inset);
             AppearanceFixture.expectPixels(frame.right - overview.right, inset);
             AppearanceFixture.expectPixels(overview.height - 2 * border, (overview.width - 2 * border) * drawing.height / drawing.width);

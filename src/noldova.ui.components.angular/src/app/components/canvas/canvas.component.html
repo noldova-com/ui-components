@@ -20,7 +20,7 @@ LICENSE file in the root directory of this source tree.
   </div>
   <span class="nol-canvas-hint">{{ partResources.canvasHint }}</span>
   @if (isFloating() && mapShown()) {
-    <nol-canvas-map class="nol-canvas-map" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" (fit)="fit()" />
+    <nol-canvas-map class="nol-canvas-map" [class.nol-canvas-map-roomless]="!hasMapRoom()" [content]="contentBox()" [boxes]="itemBoxes()" [visible]="visibleBox()" (centre)="centreOn($event)" (move)="moveBy($event)" (fit)="fit()" />
   }
 </div>
 @if (!isFloating() && mapShown()) {

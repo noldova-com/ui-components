@@ -130,6 +130,10 @@
   pointer-events: auto;
 }
 
+.nol-canvas-map-roomless {
+  visibility: hidden;
+}
+
 @media (forced-colors: active) {
   :host {
     border-color: CanvasText;
