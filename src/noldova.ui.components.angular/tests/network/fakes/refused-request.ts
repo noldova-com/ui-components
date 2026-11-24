@@ -10,17 +10,19 @@ import type { IBrowserRequest } from "../interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "../interfaces/i-browser-response.ts";
 import type { IFailedRequest } from "../interfaces/i-failed-request.ts";
 
-// A module request whose connection the browser reports refused. It never got a response, so it reads as one with no status and no headers that
-// is its own request, which lets RecordedPage take the page's listeners for either event.
+// A module request whose connection the browser reports refused, or failed with the network error given. It never got a response, so it reads as
+// one with no status and no headers that is its own request, which lets RecordedPage take the page's listeners for either event.
 export class RefusedRequest implements IBrowserRequest, IBrowserResponse {
   private static readonly MODULE: string = "script";
-  private static readonly REFUSED: IFailedRequest = { errorText: "net::ERR_CONNECTION_REFUSED" };
+  private static readonly REFUSED: string = "net::ERR_CONNECTION_REFUSED";
   private static readonly NO_STATUS: number = 0;
 
   private readonly address: string;
+  private readonly failed: IFailedRequest;
 
-  public constructor(address: string) {
+  public constructor(address: string, errorText: string = RefusedRequest.REFUSED) {
     this.address = address;
+    this.failed = { errorText };
   }
 
   public url(): string {
@@ -32,7 +34,7 @@ export class RefusedRequest implements IBrowserRequest, IBrowserResponse {
   }
 
   public failure(): IFailedRequest {
-    return RefusedRequest.REFUSED;
+    return this.failed;
   }
 
   public status(): number {

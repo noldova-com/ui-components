@@ -13,7 +13,9 @@ import type { IBrowserRequest } from "./interfaces/i-browser-request.ts";
 import type { IBrowserResponse } from "./interfaces/i-browser-response.ts";
 import type { IConsoleMessage } from "./interfaces/i-console-message.ts";
 import type { IConnectionProbe } from "./interfaces/i-connection-probe.ts";
+import type { ISocketCensus } from "./interfaces/i-socket-census.ts";
 import { ConnectionProbe } from "./connection-probe.ts";
+import { SocketCensus } from "./socket-census.ts";
 
 // Prints each module request the browser fails, so a spec file that fails to import names why: one that ends in a network error, with the error, and
 // one answered with an error status or with a type the browser won't run as a module, with the status and the type. A request whose connection
@@ -24,6 +26,8 @@ import { ConnectionProbe } from "./connection-probe.ts";
 // too, so a face whose load the kit stylesheet setup reports rejected names which of the two it was. Every spec file runs in one shared page, whose
 // module map keeps a failed module, so each later file that imports it fails to import too with no request of its own: once the run closes, the
 // failed modules are printed again together, beside the failed files they took with them, leaving out those a spec marked as failing on purpose.
+// The first request of any type the browser fails for lack of resources prints the machine's socket census too, from SocketCensus, so a run short
+// of ports or socket buffers names what held them.
 export class FailedModuleRequests {
   private static readonly MODULE: string = "script";
   private static readonly FONT: string = "font";
@@ -31,6 +35,8 @@ export class FailedModuleRequests {
   private static readonly FONT_DECODE_WARNINGS: readonly string[] = ["Failed to decode downloaded font", "OTS parsing error"];
   private static readonly NO_ERROR: string = "no network error given";
   private static readonly CONNECTION_ERROR: string = "net::ERR_CONNECTION_";
+  // Chromium's network errors for a request the machine had no resources for: on Windows, a connect's WSAENOBUFS gives the first.
+  private static readonly RESOURCE_ERRORS: ReadonlySet<string> = new Set(["net::ERR_NO_BUFFER_SPACE", "net::ERR_INSUFFICIENT_RESOURCES"]);
   private static readonly CONTENT_TYPE: string = "content-type";
   private static readonly NO_TYPE: string = "no content type";
   private static readonly PARAMETERS: RegExp = /;.*$/su;
@@ -57,7 +63,9 @@ export class FailedModuleRequests {
   private readonly printedResponses: WeakSet<IBrowserRequest> = new WeakSet();
   private readonly lines: string[] = [];
   private readonly probe: IConnectionProbe;
-  // Probes still running: the run's close waits for them, so a refusal in the run's last spec file still prints what its port held.
+  private readonly census: ISocketCensus;
+  private isCensusTaken: boolean = false;
+  // Probes and the census still running: the run's close waits for them, so a refusal in the run's last spec file still prints what its port held.
   private readonly probing: Set<Promise<void>> = new Set();
   private isWaitedForOnClose: boolean = false;
   private readonly openRequests: Map<IBrowserRequest, number> = new Map();
@@ -80,8 +88,11 @@ export class FailedModuleRequests {
 
   // The probe is ConnectionProbe unless given, as tests/network/scripted-refusal.ts gives one that fails.
   // The stall limit and check period are tests/network/scripted-stall.ts's to shorten.
-  public constructor(probe: IConnectionProbe = new ConnectionProbe(), stallLimit: number = FailedModuleRequests.STALL_LIMIT, stallCheck: number = FailedModuleRequests.STALL_CHECK) {
+  // The census is SocketCensus unless given, as tests/network/scripted-resource-error.ts gives others.
+  public constructor(probe: IConnectionProbe = new ConnectionProbe(), stallLimit: number = FailedModuleRequests.STALL_LIMIT, stallCheck: number = FailedModuleRequests.STALL_CHECK,
+    census: ISocketCensus = new SocketCensus()) {
     this.probe = probe;
+    this.census = census;
     this.stallLimit = stallLimit;
     this.stallCheck = stallCheck;
   }
@@ -110,6 +121,10 @@ export class FailedModuleRequests {
 
   private recordRequest(request: IBrowserRequest, run: IVitestRun): void {
     this.endRequest(request, `failed, ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR}`, run);
+    if (!this.isCensusTaken && FailedModuleRequests.RESOURCE_ERRORS.has(request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR)) {
+      this.isCensusTaken = true;
+      this.waitOnClose(this.printCensusAsync(run));
+    }
     if (request.resourceType() === FailedModuleRequests.FONT) {
       this.print(`Failed font request at ${new Date().toISOString()}: ${request.failure()?.errorText ?? FailedModuleRequests.NO_ERROR} ${request.url()}`, run);
       return;
@@ -121,14 +136,17 @@ export class FailedModuleRequests {
     this.failedModules.push([request.url(), `${error} at ${at}`]);
     this.print(`Failed module request at ${at}: ${error} ${request.url()}`, run);
     const port = new URL(request.url()).port;
-    if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "") {
-      const printing = this.printServerAsync(Number(port), request.url(), run);
-      this.probing.add(printing);
-      void printing.finally(() => this.probing.delete(printing));
-    }
+    if (error.startsWith(FailedModuleRequests.CONNECTION_ERROR) && port !== "")
+      this.waitOnClose(this.printServerAsync(Number(port), request.url(), run));
   }
 
-  // Each probe ends within ConnectionProbe's connect and listing limits, so the close waits a few seconds at most, within Vitest's teardown limit.
+  private waitOnClose(printing: Promise<void>): void {
+    this.probing.add(printing);
+    void printing.finally(() => this.probing.delete(printing));
+  }
+
+  // Each probe ends within ConnectionProbe's connect and listing limits, and the census within SocketCensus's, so the close waits seconds at most,
+  // within Vitest's teardown limit.
   private async probedAsync(): Promise<void> {
     await Promise.all(this.probing);
   }
@@ -138,6 +156,13 @@ export class FailedModuleRequests {
     const at = new Date().toISOString();
     const found = await this.probe.probeAsync(port).catch((error: unknown) => `the port couldn't be probed: ${error instanceof Error ? error.message : String(error)}`);
     this.print(`Failed module request's server at ${at}, port ${port}: ${found} ${url}`, run);
+  }
+
+  // Taken once per run: the first such failure is when the machine ran short, and each later one would list the same.
+  private async printCensusAsync(run: IVitestRun): Promise<void> {
+    const at = new Date().toISOString();
+    const census = await this.census.takeAsync().catch((error: unknown) => `the census couldn't be taken: ${error instanceof Error ? error.message : String(error)}`);
+    this.print(`Machine's sockets at ${at}, after a request failed for lack of resources: ${census}`, run);
   }
 
   private recordConsole(message: IConsoleMessage, run: IVitestRun): void {
