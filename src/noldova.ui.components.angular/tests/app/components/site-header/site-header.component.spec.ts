@@ -111,14 +111,14 @@ describe("SiteHeaderComponent", () => {
       .toEqual(["banner", "sticky", "0px", "0px", "0px", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "panel")]);
   });
 
-  it("links the lockup home, named for Noldova and the product, its wordmark a mask at the wordmark height and the wordmark's proportions", async () => {
+  it("links the lockup home, named for the product's home, its wordmark a mask at the wordmark height and the wordmark's proportions", async () => {
     await renderAsync();
     const link = DomFixture.oneOf(header(), ".nol-site-lockup-link", HTMLAnchorElement);
     const mark = part(".nol-site-wordmark");
     const size = mark.getBoundingClientRect();
 
     expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-lockup-name").textContent?.trim(), getComputedStyle(mark).maskImage.includes("data:image/svg+xml")])
-      .toEqual(["/", "Noldova TeamRun", "TeamRun", true]);
+      .toEqual(["/", "TeamRun home", "TeamRun", true]);
     AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
     expect(size.width / size.height).toBeCloseTo(1333.817 / 201.396, 1);
   });
@@ -134,11 +134,18 @@ describe("SiteHeaderComponent", () => {
     });
 
   for (const name of [null, " "])
-    it(`names the lockup Noldova alone when the product name is ${JSON.stringify(name)}`, async () => {
+    it(`names the lockup Noldova home when the product name is ${JSON.stringify(name)}`, async () => {
       await renderAsync(t => t.name.set(name));
 
-      expect(part(".nol-site-lockup-link").getAttribute("aria-label")).toBe("Noldova");
+      expect(part(".nol-site-lockup-link").getAttribute("aria-label")).toBe("Noldova home");
     });
+
+  it("names the lockup link by the product it is given, such as Commitline home, as its accessible name", async () => {
+    await renderAsync(t => t.name.set("Commitline"));
+    const link = DomFixture.oneOf(header(), ".nol-site-lockup-link", HTMLAnchorElement);
+
+    expect([link.getAttribute("aria-label"), page.getByRole("link", { name: "Commitline home", exact: true }).elements().includes(link)]).toEqual(["Commitline home", true]);
+  });
 
   it("draws no product name without one", async () => {
     await renderAsync(t => t.name.set(null));

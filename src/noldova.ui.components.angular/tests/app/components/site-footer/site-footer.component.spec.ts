@@ -76,11 +76,11 @@ describe("SiteFooterComponent", () => {
     expect([footer().getAttribute("role"), style.backgroundColor, style.borderTopWidth]).toEqual(["contentinfo", color("panel"), "0px"]);
   });
 
-  it("links the lockup home, named for Noldova and the product, with the line under it", async () => {
+  it("links the lockup home, named for the product's home, with the line under it", async () => {
     await renderAsync();
     const link = part(".nol-site-lockup-link");
 
-    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "Noldova TeamRun", "Run a team of agents."]);
+    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "TeamRun home", "Run a team of agents."]);
     AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("space-3"));
     expect(getComputedStyle(part(".nol-site-footer-line")).color).toBe(color("text-muted"));
   });

@@ -25,7 +25,7 @@ The notice: small, in `text-muted`.
 
 The page's `contentinfo` landmark, on the panel color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is the site header's: one link home named `Noldova` and the product's name, its wordmark the file the site passes, drawn as a mask.
+The lockup is the site header's: one link home named for the product's home, such as `TeamRun home`, its wordmark the file the site passes, drawn as a mask.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
 The notice is `© <year> Noldova`, with `Noldova` linking to https://noldova.com in the notice's color, unless the site gives its own as plain text.
 A hovered link, the notice's included, is underlined in `text-strong`, and keyboard focus is an accent outline outside it.

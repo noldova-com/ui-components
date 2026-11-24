@@ -23,7 +23,7 @@ The version: small, in `text-muted`.
 
 The page's `banner` landmark, on the panel color, with no border or line; it stays at the top of the page as it scrolls.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is one link home named `Noldova` and the product's name, such as `Noldova TeamRun`; the site passes the wordmark's file, which is drawn as a mask in the text color, so the package ships no wordmark.
+The lockup is one link home named for the product's home, such as `TeamRun home`, or `Noldova home` without a product's name; the site passes the wordmark's file, which is drawn as a mask in the text color, so the package ships no wordmark.
 The current page's link is marked `aria-current="page"`; a hovered link takes the toolbar hover fill and `text-strong`, and keyboard focus is an accent outline inside it.
 Each social link is named and tooltipped by its label, and the site passes its icon's file, drawn as a mask, so the package ships no third-party logo.
 With the content's id, a skip link to it comes first, shown at the header's start only while it has the focus.

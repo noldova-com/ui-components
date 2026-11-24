@@ -11997,8 +11997,9 @@ export declare class SiteFooterComponent {
   public readonly wordmark: InputSignal<string>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`; null,
-   * the default, draws the wordmark alone.
+   * The product's name, drawn after the wordmark, such as `TeamRun`, which
+   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
 
@@ -12082,8 +12083,9 @@ export declare class SiteHeaderComponent {
   public readonly wordmark: InputSignal<string>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`; null,
-   * the default, draws the wordmark alone.
+   * The product's name, drawn after the wordmark, such as `TeamRun`, which
+   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
 

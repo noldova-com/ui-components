@@ -17,6 +17,6 @@ export class SiteLockupResources {
   }
 
   public static formatName(name: string | null): string {
-    return String.isNullOrWhitespace(name) ? SiteLockupResources.company : `${SiteLockupResources.company} ${name}`;
+    return `${String.isNullOrWhitespace(name) ? SiteLockupResources.company : name} home`;
   }
 }
