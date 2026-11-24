@@ -100,6 +100,29 @@ describe("CanvasComponent", () => {
     await DomChangeFixture.untilAsync(() => expect(DomFixture.allOf(map(), ".nol-canvas-map-box", SVGRectElement)).toHaveLength(count));
   };
 
+  // Sets the canvas's size, then waits for the free area it reports once it has measured that size, as wide as the canvas less its insets,
+  // and for the frame that draws the state measured there.
+  const resizedAsync = async (width: number, height: number): Promise<void> => {
+    const inner = (): DOMRect => {
+      const frame = canvas().getBoundingClientRect();
+      return new DOMRect(frame.left + canvas().clientLeft, frame.top + canvas().clientTop, canvas().clientWidth, canvas().clientHeight);
+    };
+    const measured = new Promise<void>(resolve => {
+      const onMoved = (event: Event): void => {
+        const at = inner();
+        if (!(event instanceof ContentMovedEvent) || Math.abs(2 * (event.area.left - at.left) + event.area.width - at.width) > 0.5)
+          return;
+        canvas().removeEventListener("nol-content-moved", onMoved);
+        resolve();
+      };
+      canvas().addEventListener("nol-content-moved", onMoved);
+    });
+    canvas().style.width = `${String(width)}px`;
+    canvas().style.height = `${String(height)}px`;
+    await measured;
+    await RenderedFrameFixture.nextAsync();
+  };
+
   const changedAsync = async (before: string): Promise<void> => {
     await DomChangeFixture.untilAsync(() => expect(plane().style.transform).not.toBe(before));
   };
@@ -362,13 +385,11 @@ describe("CanvasComponent", () => {
           ];
 
           for (const { width, height, hasMapRoom } of sizes) {
-            canvas().style.width = `${String(width)}px`;
-            canvas().style.height = `${String(height)}px`;
-            await RenderedFrameFixture.nextAsync();
-            await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe(hasMapRoom ? "visible" : "hidden"));
+            await resizedAsync(width, height);
             const frame = canvas().getBoundingClientRect();
             const overview = map().getBoundingClientRect();
 
+            expect(getComputedStyle(map()).visibility).toBe(hasMapRoom ? "visible" : "hidden");
             expect([full.width > width - 2 * inset, overview.top >= frame.top + inset - 0.5, overview.bottom <= frame.bottom - inset + 0.5])
               .toEqual([true, hasMapRoom, true]);
             AppearanceFixture.expectPixels(overview.left - frame.left, inset);
@@ -381,10 +402,8 @@ describe("CanvasComponent", () => {
     const shrinkAsync = async (): Promise<void> => {
       const border = AppearanceFixture.measureLook("border-width");
       const widest = Math.max(...DomFixture.all(tools(), "button, .nol-canvas-zoom").map(t => t.getBoundingClientRect().width));
-      canvas().style.width = `${String(widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * (AppearanceFixture.measureLook("space-3") + border))}px`;
-      canvas().style.height = `${String(AppearanceFixture.toPixels(12))}px`;
-      await RenderedFrameFixture.nextAsync();
-      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe("hidden"));
+      await resizedAsync(widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * (AppearanceFixture.measureLook("space-3") + border), AppearanceFixture.toPixels(12));
+      expect(getComputedStyle(map()).visibility).toBe("hidden");
     };
 
     beforeEach(async () => {
@@ -399,10 +418,8 @@ describe("CanvasComponent", () => {
       const before = document.activeElement === map();
       await shrinkAsync();
       const moved = document.activeElement === button("map-toggle");
-      canvas().style.width = "800px";
-      canvas().style.height = "500px";
-      await RenderedFrameFixture.nextAsync();
-      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe("visible"));
+      await resizedAsync(800, 500);
+      expect(getComputedStyle(map()).visibility).toBe("visible");
       canvas().focus();
       await shrinkAsync();
 
