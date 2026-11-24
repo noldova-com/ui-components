@@ -12,6 +12,8 @@ import { page, userEvent } from "vitest/browser";
 
 import { SiteHeaderComponent } from "../../../../src/app/components/site-header/site-header.component";
 import { SiteSearchDirective } from "../../../../src/app/components/site-header/site-search.directive";
+import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteSocialLink } from "../../../../src/app/models/site-social-link";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -98,7 +100,7 @@ describe("SiteHeaderComponent", () => {
     const style = getComputedStyle(header());
 
     expect([header().getAttribute("role"), style.position, style.top, style.borderBottomWidth, getComputedStyle(bar()).borderBottomWidth, style.backgroundColor])
-      .toEqual(["banner", "sticky", "0px", "0px", "0px", AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], "window")]);
+      .toEqual(["banner", "sticky", "0px", "0px", "0px", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "window")]);
   });
 
   it("links the lockup home, named for Noldova and the product, its wordmark a mask at the wordmark height and the wordmark's proportions", async () => {
@@ -142,8 +144,8 @@ describe("SiteHeaderComponent", () => {
     await renderAsync(t => t.version.set("v0.0.9"));
     const style = getComputedStyle(part(".nol-site-version"));
 
-    expect(style.color).toBe(AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], "text-muted"));
-    AppearanceFixture.expectLook(style.fontSize, AppearanceFixture.themes[0], "text-small", "font-size");
+    expect(style.color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "text-muted"));
+    AppearanceFixture.expectLook(style.fontSize, DefaultTheme.theme, "text-small", "font-size");
     AppearanceFixture.expectPixels(box(".nol-site-version").left - box("nol-site-lockup").right, AppearanceFixture.measureLook("space-2"));
   });
 
@@ -165,7 +167,7 @@ describe("SiteHeaderComponent", () => {
   it("draws the current link strong and the others muted, each at least a pointer target high", async () => {
     await renderAsync();
     const [current, other] = all(".nol-site-nav-link").map(t => getComputedStyle(t));
-    const colors = (key: string): string => AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], key);
+    const colors = (key: string): string => AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, key);
 
     expect([current?.color, current?.fontWeight, other?.color]).toEqual([colors("text-strong"), "600", colors("text-muted")]);
     for (const link of all(".nol-site-nav-link"))
@@ -178,7 +180,7 @@ describe("SiteHeaderComponent", () => {
     link.setAttribute("data-nol-state", "Hover");
 
     expect(getComputedStyle(link).backgroundColor).not.toBe(getComputedStyle(DomFixture.at(all(".nol-site-nav-link"), 2)).backgroundColor);
-    expect(getComputedStyle(link).color).toBe(AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], "text-strong"));
+    expect(getComputedStyle(link).color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "text-strong"));
   });
 
   it("outlines a focused link in the accent color inside its edge", async () => {
@@ -187,7 +189,7 @@ describe("SiteHeaderComponent", () => {
     link.setAttribute("data-nol-state", "Focus");
     const style = getComputedStyle(link);
 
-    expect([style.outlineStyle, style.outlineColor]).toEqual(["solid", AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], "accent")]);
+    expect([style.outlineStyle, style.outlineColor]).toEqual(["solid", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "accent")]);
     AppearanceFixture.expectPixels(Number.parseFloat(style.outlineOffset), -AppearanceFixture.measureLook("border-width"));
   });
 

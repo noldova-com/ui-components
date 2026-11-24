@@ -11,6 +11,8 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page } from "vitest/browser";
 
 import { SiteFooterComponent } from "../../../../src/app/components/site-footer/site-footer.component";
+import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteLinkGroup } from "../../../../src/app/models/site-link-group";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -59,7 +61,7 @@ describe("SiteFooterComponent", () => {
   const all = (selector: string): HTMLElement[] => DomFixture.all(footer(), selector);
   const box = (selector: string): DOMRect => part(selector).getBoundingClientRect();
   const edges = (): DOMRect => footer().getBoundingClientRect();
-  const color = (key: string): string => AppearanceFixture.readColor(AppearanceFixture.themes[0], AppearanceFixture.modes[0], key);
+  const color = (key: string): string => AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, key);
 
   afterEach(async () => {
     AppearanceFixture.reset();
