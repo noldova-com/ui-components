@@ -86,8 +86,12 @@ export interface ICodeHighlightingOptions {
  * When the worker can't start, fails before it is ready, says nothing for 10
  * seconds after its start, or fails later, the highlighter reports a
  * {@link CodeHighlightingException} to the app's `ErrorHandler` once, and
- * tokenizes on the page from then on, as without a worker. A grammar that
- * fails to load in the worker is reported and held as on the page.
+ * tokenizes on the page from then on, as without a worker. Once it is ready,
+ * a worker that says nothing for 10 seconds while a request waits is given
+ * up the same way, but the code it was asked shows plain rather than being
+ * tokenized on the page, where the same code could hold up the page. A
+ * grammar that fails to load in the worker is reported and held as on the
+ * page.
  *
  * @param start Starts the worker; called at most once.
  * @returns The providers of the highlighting worker, for

@@ -6,6 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { CodeTokenKind } from "../../../src/app/enums/code-token-kind";
+import { CodeWorkerMessageKind } from "../../../src/app/enums/code-worker-message-kind";
+import type { ICodeWorkerAnswer } from "../../../src/app/interfaces/i-code-worker-answer";
 import { Resources } from "../../../src/resources";
 import { CodeHighlighterWorkerFixture } from "../../fixtures/code-highlighter-worker.fixture";
 import { type CodeWorkerFixture, CodeWorkerStartFixture } from "../../fixtures/code-worker.fixture";
@@ -62,6 +65,83 @@ describe("CodeHighlighter with a highlighting worker", () => {
 
       expect([tokens.every(t => t.length > 0), tries, bed.loadedOnPage(highlighter)]).toEqual([true, 1, true]);
       expect(bed.messages()).toEqual([offFailure]);
+    });
+  });
+
+  describe("ends a worker that says nothing for 10 seconds after it is ready while a request waits", () => {
+    const ready: ICodeWorkerAnswer = { kind: CodeWorkerMessageKind.Ready, id: -1, tokens: [], error: null };
+    const hung: readonly unknown[] = [Resources.formatCodeWorkerFailure(Resources.codeWorkerHung), undefined];
+
+    it("giving it up for good and reporting it once, showing the code it waited on plain rather than tokenizing it on the page, and later code on the page", async () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const tokens = highlighter.tokensAsync("{ \"a\": 1 }", json, signal);
+      starts.started[0]?.answer(ready);
+      bed.source.advance(Resources.codeWorkerAnswerLimit - 1);
+      const before = starts.started[0]?.isTerminated;
+      bed.source.advance(1);
+      const plain = await tokens;
+      const onPage = bed.loadedOnPage(highlighter);
+      const later = await highlighter.tokensAsync("2", json, signal);
+
+      expect([before, starts.started[0]?.isTerminated, plain, onPage, later.length > 0, starts.started.length, bed.loadedOnPage(highlighter)])
+        .toEqual([false, true, [], false, true, 1, true]);
+      expect(bed.messages()).toEqual([hung]);
+    });
+
+    it("counting the 10 seconds from its last answer, not from the request", async () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const first = highlighter.tokensAsync("1", json, signal);
+      const second = highlighter.tokensAsync("2", json, signal);
+      starts.started[0]?.answer(ready);
+      bed.source.advance(Resources.codeWorkerAnswerLimit - 1);
+      starts.started[0]?.answer({ kind: CodeWorkerMessageKind.Tokens, id: 0, tokens: [[0, 1, CodeTokenKind.Number]], error: null });
+      const answered = await first;
+      bed.source.advance(Resources.codeWorkerAnswerLimit - 1);
+      const before = starts.started[0]?.isTerminated;
+      bed.source.advance(1);
+
+      expect([answered.map(t => t.text), before, starts.started[0]?.isTerminated, await second]).toEqual([["1"], false, true, []]);
+      expect(bed.messages()).toEqual([hung]);
+    });
+
+    it("ending the limit when the only request that waited is aborted", () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const controller = new AbortController();
+      void highlighter.tokensAsync("1", json, controller.signal);
+      starts.started[0]?.answer(ready);
+      controller.abort();
+      bed.source.advance(Resources.codeWorkerAnswerLimit * 2);
+
+      expect([starts.started[0]?.isTerminated, bed.messages()]).toEqual([false, []]);
+    });
+
+    it("still counting from its last answer when one of the requests that wait is aborted", async () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const controller = new AbortController();
+      const waiting = highlighter.tokensAsync("1", json, signal);
+      void highlighter.tokensAsync("2", json, controller.signal);
+      starts.started[0]?.answer(ready);
+      bed.source.advance(Resources.codeWorkerAnswerLimit - 1);
+      controller.abort();
+      bed.source.advance(1);
+
+      expect([starts.started[0]?.isTerminated, await waiting]).toEqual([true, []]);
+      expect(bed.messages()).toEqual([hung]);
+    });
+
+    it("leaving a ready worker with nothing to answer alone", () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      void highlighter.tokensAsync("1", json, signal);
+      starts.started[0]?.answer(ready);
+      starts.started[0]?.answer({ kind: CodeWorkerMessageKind.Tokens, id: 0, tokens: [], error: null });
+      bed.source.advance(Resources.codeWorkerAnswerLimit * 2);
+
+      expect([starts.started[0]?.isTerminated, bed.messages()]).toEqual([false, []]);
     });
   });
 });
