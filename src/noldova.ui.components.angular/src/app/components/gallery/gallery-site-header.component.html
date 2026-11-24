@@ -30,6 +30,13 @@ LICENSE file in the root directory of this source tree.
       </nol-site-header>
     </div>
   </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sitePhoneSearch">
+    <div class="nol-gallery-site nol-gallery-site-phone">
+      <nol-site-header [wordmark]="wordmark" [name]="text.siteDocsName" [links]="links" [social]="social" [downloadHref]="href" [wide]="true" [searchOpen]="true">
+        <input nol-text-field nolSiteSearch type="search" [attr.aria-label]="text.siteSearch" [placeholder]="text.siteSearch" />
+      </nol-site-header>
+    </div>
+  </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hover">
     <nol-site-header class="nol-gallery-site" [nolGalleryHover]="hoveredLink" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" />
   </nol-gallery-cell>

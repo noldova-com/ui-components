@@ -12051,10 +12051,12 @@ export declare class SiteFooterComponent {
  * the other theme.
  *
  * When the header is narrower than 48rem, as on a phone, the bar keeps the
- * wordmark, Download and a menu button; the
- * button opens the links, search, social links and theme switch below it,
- * with Download among them on a wide site, and Escape closes them and
- * returns the focus to it.
+ * wordmark, Download, a search button when the site projects a search, and
+ * a menu button. The search button opens the search below the bar, focused
+ * on its field; the menu button opens the links, social links and theme
+ * switch below it, with Download among them on a wide site. Opening one
+ * closes the other, and Escape closes either and returns the focus to its
+ * button, as a tap outside the search does.
  *
  * @example
  * ```ts
@@ -12145,6 +12147,16 @@ export declare class SiteHeaderComponent {
    * no menu.
    */
   public readonly menuOpen: ModelSignal<boolean>;
+
+  /**
+   * Whether the phone search is open under the bar; false, the default. The
+   * search button and Escape change it, and so does a tap outside a search
+   * the search button opened; a search the site opens stays open until the
+   * button or Escape closes it. Opening the menu closes it. It has no effect
+   * while the header is at least 48rem wide, where the search shows in the
+   * bar.
+   */
+  public readonly searchOpen: ModelSignal<boolean>;
 }
 
 /**
@@ -12202,8 +12214,8 @@ export declare class SiteLinkGroup {
 
 /**
  * Marks the search field projected into a {@link SiteHeaderComponent}, which
- * draws it before the social links, or under the bar while the phone menu is
- * open.
+ * draws it before the social links, or under the bar while the phone search
+ * is open, focusing it as the search opens.
  *
  * @example
  * ```ts
@@ -12220,6 +12232,10 @@ export declare class SiteLinkGroup {
  * ```
  */
 export declare class SiteSearchDirective {
+  /**
+   * Moves the focus to the marked field.
+   */
+  public focus(): void;
 }
 
 /**

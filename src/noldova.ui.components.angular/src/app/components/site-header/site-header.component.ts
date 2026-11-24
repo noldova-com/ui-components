@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, ElementRef, type Signal, computed, contentChildren, input, model, viewChild } from "@angular/core";
+import { Component, ElementRef, Injector, type Signal, afterNextRender, computed, contentChildren, inject, input, model, viewChild } from "@angular/core";
 
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
@@ -29,8 +29,10 @@ import { SiteSearchDirective } from "./site-search.directive.js";
     "role": "banner",
     "[class.nol-site-header-wide]": "wide()",
     "[class.nol-site-header-open]": "menuOpen()",
+    "[class.nol-site-header-searching]": "searchOpen()",
     "[class.nol-site-header-with-search]": "hasSearch()",
-    "(keydown.escape)": "closeMenu()"
+    "(keydown.escape)": "closeLayers()",
+    "(document:click)": "closeOutside($event)"
   }
 })
 export class SiteHeaderComponent {
@@ -48,12 +50,19 @@ export class SiteHeaderComponent {
   public readonly wide = input<boolean>(false);
   public readonly contentId = input<string | null>(null);
   public readonly menuOpen = model<boolean>(false);
+  public readonly searchOpen = model<boolean>(false);
 
   protected readonly partResources: typeof SiteHeaderResources = SiteHeaderResources;
-  protected readonly menuId: string = `${SiteHeaderResources.menuIdPrefix}${SiteHeaderComponent.nextId++}`;
+  private readonly headerId: number = SiteHeaderComponent.nextId++;
+  protected readonly menuId: string = `${SiteHeaderResources.menuIdPrefix}${this.headerId}`;
+  protected readonly searchId: string = `${SiteHeaderResources.searchIdPrefix}${this.headerId}`;
+  private readonly injector: Injector = inject(Injector);
+  private isSearchFromButton: boolean = false;
   private readonly searches: Signal<readonly SiteSearchDirective[]> = contentChildren(SiteSearchDirective);
   protected readonly hasSearch: Signal<boolean> = computed(() => this.searches().length > 0);
   private readonly menuButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("menuButton", { read: ElementRef });
+  private readonly searchButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("searchButton", { read: ElementRef });
+  private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });
 
   protected maskOf(link: SiteSocialLink): string {
     return SiteLockupResources.formatMask(link.icon);
@@ -61,9 +70,44 @@ export class SiteHeaderComponent {
 
   protected toggleMenu(): void {
     this.menuOpen.set(!this.menuOpen());
+    this.searchOpen.set(false);
   }
 
-  protected closeMenu(): void {
+  protected toggleSearch(): void {
+    if (this.searchOpen()) {
+      this.closeSearch();
+      return;
+    }
+    this.searchOpen.set(true);
+    this.isSearchFromButton = true;
+    this.menuOpen.set(false);
+    afterNextRender(() => {
+      for (const search of this.searches())
+        search.focus();
+    }, { injector: this.injector });
+  }
+
+  protected closeLayers(): void {
+    this.closeSearch();
+    this.closeMenu();
+  }
+
+  protected closeOutside(event: MouseEvent): void {
+    const path = event.composedPath();
+    if (!this.isSearchFromButton || path.includes(this.searchPanel().nativeElement) || path.includes(this.searchButton().nativeElement))
+      return;
+    this.closeSearch();
+  }
+
+  private closeSearch(): void {
+    if (!this.searchOpen())
+      return;
+    this.searchOpen.set(false);
+    this.isSearchFromButton = false;
+    this.searchButton().nativeElement.focus();
+  }
+
+  private closeMenu(): void {
     if (!this.menuOpen())
       return;
     this.menuOpen.set(false);

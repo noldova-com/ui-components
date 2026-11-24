@@ -27,7 +27,7 @@ const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
   imports: [SiteHeaderComponent, SiteSearchDirective],
   template: `
     <nol-site-header [wordmark]="wordmark" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
-      [downloadHref]="downloadHref()" [downloadLabel]="downloadLabel()" [wide]="wide()" [contentId]="contentId()" [(menuOpen)]="menuOpen">
+      [downloadHref]="downloadHref()" [downloadLabel]="downloadLabel()" [wide]="wide()" [contentId]="contentId()" [(menuOpen)]="menuOpen" [(searchOpen)]="searchOpen">
       @if (hasSearch()) {
         <input nolSiteSearch type="search" aria-label="Search" />
       }
@@ -48,6 +48,7 @@ class SiteHeaderHostComponent {
   public readonly contentId = signal<string | null>(null);
   public readonly hasSearch = signal(false);
   public readonly menuOpen = signal(false);
+  public readonly searchOpen = signal(false);
 }
 
 describe("SiteHeaderComponent", () => {
@@ -80,6 +81,13 @@ describe("SiteHeaderComponent", () => {
   const all = (selector: string): HTMLElement[] => DomFixture.all(header(), selector);
   const box = (selector: string): DOMRect => part(selector).getBoundingClientRect();
   const menuButton = (): HTMLButtonElement => DomFixture.oneOf(header(), ".nol-site-menu-button", HTMLButtonElement);
+  const searchButton = (): HTMLButtonElement => DomFixture.oneOf(header(), ".nol-site-search-button", HTMLButtonElement);
+  const field = (): HTMLInputElement => DomFixture.oneOf(header(), "input[nolSiteSearch]", HTMLInputElement);
+
+  async function searchAsync(): Promise<void> {
+    await userEvent.click(searchButton());
+    await fixture.whenStable();
+  }
   const shown = (selector: string): boolean => getComputedStyle(part(selector)).display !== "none";
   const edges = (): DOMRect => header().getBoundingClientRect();
   const content = (): { left: number; right: number } => {
@@ -333,13 +341,14 @@ describe("SiteHeaderComponent", () => {
       AppearanceFixture.expectPixels(DomFixture.one(menuButton(), ".nol-icon-button-glyph").getBoundingClientRect().width, glyph);
       AppearanceFixture.expectPixels(box(".nol-site-menu-button").right, edges().right - inset + (row - glyph) / 2);
       AppearanceFixture.expectPixels(box(".nol-site-header-brand").left, edges().left + inset);
-      AppearanceFixture.expectPixels(box(".nol-site-menu-button").left - box(".nol-site-download").right, AppearanceFixture.measureLook("space-2"));
+      AppearanceFixture.expectPixels(box(".nol-site-search-button").left - box(".nol-site-download").right, AppearanceFixture.measureLook("space-2"));
+      AppearanceFixture.expectPixels(box(".nol-site-menu-button").left - box(".nol-site-search-button").right, AppearanceFixture.measureLook("space-2"));
       AppearanceFixture.expectPixels(download.getBoundingClientRect().height, row);
       AppearanceFixture.expectPixels(icon.width, AppearanceFixture.measureLook("site-download-glyph-phone"));
       AppearanceFixture.expectPixels(icon.left - download.getBoundingClientRect().left, AppearanceFixture.measureLook("space-3") - AppearanceFixture.measureLook("space-half"));
     });
 
-  it("opens the search, the links in rows and the tools under the bar on a phone, the theme switch at the end", async () => {
+  it("opens the links in rows and the tools under the bar on a phone, the theme switch at the end, without the search", async () => {
     await phoneAsync();
     await renderAsync(t => t.hasSearch.set(true));
     await openAsync();
@@ -354,7 +363,8 @@ describe("SiteHeaderComponent", () => {
     expect([menuButton().getAttribute("aria-expanded"), menuButton().textContent?.trim()]).toEqual(["true", "close"]);
     expect([getComputedStyle(menuButton(), "::before").backgroundColor, current?.color, other?.color]).toEqual([colors("selected"), colors("text-strong"), colors("text")]);
     AppearanceFixture.expectPixels(Number.parseFloat(other?.fontSize ?? String.empty), AppearanceFixture.measureLook("site-menu-text"));
-    AppearanceFixture.expectPixels(DomFixture.at(rows, 0).top - box(".nol-site-header-search").bottom, AppearanceFixture.measureLook("space-1"));
+    expect(shown(".nol-site-header-search")).toBe(false);
+    AppearanceFixture.expectPixels(DomFixture.at(rows, 0).top - bar().getBoundingClientRect().top - AppearanceFixture.measureLook("site-header-height"), AppearanceFixture.measureLook("space-1"));
     AppearanceFixture.expectPixels(box(".nol-site-header-tools").top - DomFixture.at(rows, rows.length - 1).bottom, AppearanceFixture.measureLook("space-3"));
     AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-header-tools").bottom, AppearanceFixture.measureLook("space-4"));
     for (const target of [...all(".nol-site-social").map(t => t.getBoundingClientRect()), ...pills]) {
@@ -362,8 +372,6 @@ describe("SiteHeaderComponent", () => {
       AppearanceFixture.expectPixels(target.height, rowHeight);
     }
     AppearanceFixture.expectPixels(box(".nol-site-social-icon").width, AppearanceFixture.measureLook("site-menu-icon"));
-    AppearanceFixture.expectPixels(box(".nol-site-header-search").top, bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height"));
-    AppearanceFixture.expectPixels(box(".nol-site-header-search").width, edges().width - inset * 2);
     for (const [index, row] of rows.entries()) {
       AppearanceFixture.expectPixels(row.height, rowHeight);
       AppearanceFixture.expectPixels(row.width, edges().width - inset * 2);
@@ -371,6 +379,133 @@ describe("SiteHeaderComponent", () => {
     }
     AppearanceFixture.expectPixels(box(".nol-site-social").left, edges().left + inset);
     AppearanceFixture.expectPixels(box("nol-site-theme-switch").right, edges().right - inset);
+  });
+
+  it("hides the search button on a desktop window and on a phone without a search", async () => {
+    await renderAsync(t => t.hasSearch.set(true));
+    const desktop = shown(".nol-site-search-button");
+    await phoneAsync();
+    host.hasSearch.set(false);
+    fixture.detectChanges();
+
+    expect([desktop, shown(".nol-site-search-button")]).toEqual([false, false]);
+    AppearanceFixture.expectPixels(box(".nol-site-menu-button").left - box(".nol-site-download").right, AppearanceFixture.measureLook("space-2"));
+  });
+
+  for (const theme of AppearanceFixture.themes)
+    it(`puts a search button a menu row square before the menu button on a phone for a documentation site, with the ${theme.id} theme`, async () => {
+      await phoneAsync();
+      await renderAsync(t => {
+        t.hasSearch.set(true);
+        t.wide.set(true);
+      }, theme);
+      const row = AppearanceFixture.measureLook("site-menu-row");
+      const button = box(".nol-site-search-button");
+
+      expect([searchButton().getAttribute("aria-label"), searchButton().getAttribute("aria-expanded"), searchButton().getAttribute("aria-controls"), searchButton().textContent?.trim()])
+        .toEqual(["Search", "false", part(".nol-site-header-search").id, "search"]);
+      expect([shown(".nol-site-header-search"), shown(".nol-site-download")]).toEqual([false, false]);
+      AppearanceFixture.expectPixels(button.width, row);
+      AppearanceFixture.expectPixels(button.height, row);
+      AppearanceFixture.expectPixels(DomFixture.one(searchButton(), ".nol-icon-button-glyph").getBoundingClientRect().width, AppearanceFixture.measureLook("site-menu-glyph"));
+      AppearanceFixture.expectPixels(button.top, bar().getBoundingClientRect().top + (AppearanceFixture.measureLook("site-header-height") - row) / 2);
+      AppearanceFixture.expectPixels(box(".nol-site-menu-button").left - button.right, AppearanceFixture.measureLook("space-2"));
+    });
+
+  it("opens the search under the bar on a phone with its button, across the content, focused on its field, and closes the menu", async () => {
+    await phoneAsync();
+    await renderAsync(t => {
+      t.hasSearch.set(true);
+      t.wide.set(true);
+    });
+    await openAsync();
+
+    await searchAsync();
+    await userEvent.hover(part(".nol-site-header-brand"));
+    const inset = AppearanceFixture.measureLook("site-padding-inline-phone");
+    const search = box(".nol-site-header-search");
+
+    expect([searchButton().getAttribute("aria-expanded"), host.searchOpen(), host.menuOpen(), shown(".nol-site-header-nav"), document.activeElement === field()])
+      .toEqual(["true", true, false, false, true]);
+    expect(getComputedStyle(searchButton(), "::before").backgroundColor).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "selected"));
+    AppearanceFixture.expectPixels(search.top, bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height"));
+    AppearanceFixture.expectPixels(search.left, edges().left + inset);
+    AppearanceFixture.expectPixels(search.width, edges().width - inset * 2);
+    AppearanceFixture.expectPixels(edges().bottom - search.bottom, AppearanceFixture.measureLook("space-4"));
+  });
+
+  it("closes the search when the menu opens", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.hasSearch.set(true));
+    await searchAsync();
+
+    await openAsync();
+
+    expect([host.searchOpen(), shown(".nol-site-header-search"), host.menuOpen()]).toEqual([false, false, true]);
+  });
+
+  it("closes the search with its button", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.hasSearch.set(true));
+    await searchAsync();
+
+    await searchAsync();
+
+    expect([searchButton().getAttribute("aria-expanded"), shown(".nol-site-header-search")]).toEqual(["false", false]);
+  });
+
+  it("closes the search with Escape and returns the focus to its button", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.hasSearch.set(true));
+    await searchAsync();
+
+    await userEvent.keyboard("{Escape}");
+    await fixture.whenStable();
+
+    expect([host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === searchButton()]).toEqual([false, false, true]);
+  });
+
+  it("keeps the search open on a tap in it, and closes it on a tap outside, returning the focus to its button", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.hasSearch.set(true));
+    await searchAsync();
+
+    await userEvent.click(field());
+    await fixture.whenStable();
+    const inside = [host.searchOpen(), document.activeElement === field()];
+    await userEvent.click(DomFixture.one(document, "main"));
+    await fixture.whenStable();
+
+    expect([inside, host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === searchButton()]).toEqual([[true, true], false, false, true]);
+  });
+
+  it("keeps a search its owner opened open on a tap outside, and closes it with Escape", async () => {
+    await phoneAsync();
+    await renderAsync(t => {
+      t.hasSearch.set(true);
+      t.searchOpen.set(true);
+    });
+    const opened = shown(".nol-site-header-search");
+
+    await userEvent.click(DomFixture.one(document, "main"));
+    await fixture.whenStable();
+    const tapped = [host.searchOpen(), document.activeElement === searchButton()];
+    field().focus();
+    await userEvent.keyboard("{Escape}");
+    await fixture.whenStable();
+
+    expect([opened, tapped, host.searchOpen(), document.activeElement === searchButton()]).toEqual([true, [true, false], false, true]);
+  });
+
+  it("leaves the focus alone on a tap once its search is closed", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.hasSearch.set(true));
+    await searchAsync();
+    await searchAsync();
+
+    await userEvent.click(DomFixture.one(document, "main"));
+
+    expect([host.searchOpen(), document.activeElement === searchButton()]).toEqual([false, false]);
   });
 
   it("closes the menu with Escape and returns the focus to its button, and leaves the focus alone on Escape while closed", async () => {

@@ -554,6 +554,7 @@ export class GalleryResources {
     siteDocs: "Documentation",
     sitePhone: "Phone",
     sitePhoneOpen: "Phone, menu open",
+    sitePhoneSearch: "Phone, search open",
     siteProductName: "TeamRun",
     siteDocsName: "UI components",
     siteVersion: "v0.0.9",

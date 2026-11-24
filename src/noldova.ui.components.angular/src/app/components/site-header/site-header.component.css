@@ -208,16 +208,21 @@ nol-site-theme-switch {
   margin-inline-start: calc(-1 * var(--nol-space-half));
 }
 
+.nol-site-search-button,
 .nol-site-menu-button {
   --nol-icon: var(--nol-site-menu-glyph);
   --nol-icon-button: var(--nol-site-menu-row);
   --nol-icon-button-face-radius: var(--nol-radius-medium);
 
   display: none;
+}
+
+.nol-site-menu-button {
   margin-inline-end: calc((var(--nol-site-menu-glyph) - var(--nol-site-menu-row)) / 2);
 }
 
-:host(.nol-site-header-open) .nol-site-menu-button:not(:hover, [data-nol-state="Hover"])::before {
+:host(.nol-site-header-open) .nol-site-menu-button:not(:hover, [data-nol-state="Hover"])::before,
+:host(.nol-site-header-searching) .nol-site-search-button:not(:hover, [data-nol-state="Hover"])::before {
   background-color: var(--nol-selected);
 }
 
@@ -225,14 +230,14 @@ nol-site-theme-switch {
   .nol-site-header-bar {
     display: grid;
     grid-template-areas:
-      "brand download menu"
-      "search search search"
-      "nav nav nav"
-      "tools tools tools"
-      "action action action";
-    grid-template-columns: minmax(0, 1fr) auto auto;
+      "brand download find menu"
+      "search search search search"
+      "nav nav nav nav"
+      "tools tools tools tools"
+      "action action action action";
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
     grid-template-rows: var(--nol-site-header-height);
-    column-gap: var(--nol-space-2);
+    column-gap: 0;
     row-gap: 0;
     min-height: 0;
     padding-inline: var(--nol-site-padding-inline-phone);
@@ -248,12 +253,18 @@ nol-site-theme-switch {
 
     grid-area: download;
     min-height: var(--nol-site-menu-row);
-    margin-inline-start: 0;
   }
 
   .nol-site-menu-button {
     display: inline-grid;
     grid-area: menu;
+    margin-inline-start: var(--nol-space-2);
+  }
+
+  :host(.nol-site-header-with-search) .nol-site-search-button {
+    display: inline-grid;
+    grid-area: find;
+    margin-inline-start: var(--nol-space-2);
   }
 
   :host(.nol-site-header-with-search) .nol-site-header-search,
@@ -267,15 +278,14 @@ nol-site-theme-switch {
     grid-area: action;
   }
 
-  :host(.nol-site-header-open.nol-site-header-with-search) .nol-site-header-search {
+  :host(.nol-site-header-searching.nol-site-header-with-search) .nol-site-header-search {
     display: block;
     grid-area: search;
     width: auto;
     margin-inline: 0;
-    padding-block-end: var(--nol-space-2);
   }
 
-  :host(.nol-site-header-open) .nol-site-header-bar {
+  :host(:is(.nol-site-header-open, .nol-site-header-searching)) .nol-site-header-bar {
     padding-block-end: var(--nol-space-4);
   }
 
@@ -325,6 +335,7 @@ nol-site-theme-switch {
     display: inline-flex;
     justify-self: stretch;
     margin-block-start: var(--nol-space-3);
+    margin-inline-start: 0;
     font-size: var(--nol-site-menu-download-text);
   }
 }

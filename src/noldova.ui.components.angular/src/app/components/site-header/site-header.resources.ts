@@ -8,6 +8,9 @@
 
 export class SiteHeaderResources {
   public static readonly menuIdPrefix: string = "nol-site-header-menu-";
+  public static readonly searchIdPrefix: string = "nol-site-header-search-";
+  public static readonly searchLabel: string = "Search";
+  public static readonly searchGlyph: string = "search";
   public static readonly navLabel: string = "Site";
   public static readonly menuLabel: string = "Menu";
   public static readonly menuGlyph: string = "menu";

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Directive } from "@angular/core";
+import { Directive, ElementRef, inject } from "@angular/core";
 
 @Directive({
   selector: "[nolSiteSearch]",
@@ -14,4 +14,10 @@ import { Directive } from "@angular/core";
     "class": "nol-site-search"
   }
 })
-export class SiteSearchDirective {}
+export class SiteSearchDirective {
+  private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  public focus(): void {
+    this.element.nativeElement.focus();
+  }
+}
