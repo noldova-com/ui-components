@@ -271,7 +271,7 @@ nol-site-theme-switch {
     display: block;
     grid-area: search;
     width: auto;
-    margin-inline-start: 0;
+    margin-inline: 0;
     padding-block-end: var(--nol-space-2);
   }
 
