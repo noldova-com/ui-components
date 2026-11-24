@@ -8,6 +8,8 @@
 
 import ts from "typescript";
 
+import "@noldova/context.core";
+
 import type { ApiProgram } from "./api-program.ts";
 import { ApiSurface } from "./api-surface.ts";
 import { ApiValue } from "./api-value.ts";
@@ -92,7 +94,7 @@ export class ApiSurfaceReader {
       return `: ${this.print(checker.getTypeOfSymbol(symbol))}`;
     if ((symbol.flags & ts.SymbolFlags.EnumMember) !== 0) {
       const member = declarations.find(ts.isEnumMember);
-      return `= ${JSON.stringify(member === undefined ? undefined : checker.getConstantValue(member))}`;
+      return `= ${JSON.stringify(Object.isUndefined(member) ? undefined : checker.getConstantValue(member))}`;
     }
     if ((symbol.flags & ApiSurfaceReader.CALLABLE_KINDS) !== 0)
       return "";
@@ -114,14 +116,14 @@ export class ApiSurfaceReader {
 
   private describeSignature(signature: ts.Signature, prefix: string): string {
     const declaration = signature.declaration;
-    if (declaration === undefined || ts.isJSDocSignature(declaration))
+    if (Object.isUndefined(declaration) || ts.isJSDocSignature(declaration))
       return `${prefix}${ApiSurfaceReader.IMPLICIT_CONSTRUCTOR}`;
     const flags = ApiValue.readModifierFlags(declaration);
     if ((flags & ts.ModifierFlags.Private) !== 0)
       return `private ${prefix}${ApiSurfaceReader.IMPLICIT_CONSTRUCTOR}`;
     const visibility = (flags & ts.ModifierFlags.Protected) === 0 ? "" : "protected ";
     const parameters = declaration.parameters.map(t => this.describeParameter(t));
-    const returned = declaration.type !== undefined && ts.isTypePredicateNode(declaration.type)
+    const returned = !Object.isUndefined(declaration.type) && ts.isTypePredicateNode(declaration.type)
       ? this.api.print(declaration.type)
       : this.print(this.api.checker.getReturnTypeOfSignature(signature));
     return `${visibility}${prefix}${this.describeTypeParameters(declaration.typeParameters ?? [])}(${parameters.join(", ")}): ${returned}`;
@@ -129,10 +131,10 @@ export class ApiSurfaceReader {
 
   private describeParameter(parameter: ts.ParameterDeclaration): string {
     const checker = this.api.checker;
-    const type = parameter.type === undefined ? checker.getTypeAtLocation(parameter) : checker.getTypeFromTypeNode(parameter.type);
-    const isOptional = parameter.questionToken !== undefined || parameter.initializer !== undefined;
+    const type = Object.isUndefined(parameter.type) ? checker.getTypeAtLocation(parameter) : checker.getTypeFromTypeNode(parameter.type);
+    const isOptional = !Object.isUndefined(parameter.questionToken) || !Object.isUndefined(parameter.initializer);
     return [
-      parameter.dotDotDotToken === undefined ? "" : "...",
+      Object.isUndefined(parameter.dotDotDotToken) ? "" : "...",
       this.api.print(parameter.name),
       isOptional ? "?" : "",
       `: ${this.print(type)}`
@@ -141,8 +143,8 @@ export class ApiSurfaceReader {
 
   private describeTypeParameters(parameters: readonly ts.TypeParameterDeclaration[]): string {
     const descriptions = parameters.map(parameter => {
-      const constraint = parameter.constraint === undefined ? "" : ` extends ${this.printNodeType(parameter.constraint)}`;
-      const fallback = parameter.default === undefined ? "" : ` = ${this.printNodeType(parameter.default)}`;
+      const constraint = Object.isUndefined(parameter.constraint) ? "" : ` extends ${this.printNodeType(parameter.constraint)}`;
+      const fallback = Object.isUndefined(parameter.default) ? "" : ` = ${this.printNodeType(parameter.default)}`;
       return `${parameter.name.text}${constraint}${fallback}`;
     });
     return descriptions.length === 0 ? "" : `<${descriptions.join(", ")}>`;

@@ -10,6 +10,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import CommandFailedException from "../command-failed.exception.ts";
 import Config from "../config.ts";
 import type PackageInfo from "../package-info.ts";
@@ -66,7 +68,7 @@ export class KitManifestCheck implements ICheck {
     const text = await readFile(path.join(this.root, relative), "utf8");
     const findings: string[] = [];
     const accepted = await KitManifestCheck.refusalAsync(this.root, kit);
-    if (accepted !== null)
+    if (!Object.isNull(accepted))
       findings.push(`The kit's own manifest must pass the build's check: ${accepted}`);
     const folder = await this.folders.createAsync(process.platform, KitManifestCheck.TEMPORARY_PREFIX);
     try {
@@ -76,26 +78,26 @@ export class KitManifestCheck implements ICheck {
         manifest.peerDependencies[KitManifestCheck.PEER] = version;
         await writeFile(path.join(folder, relative), JSON.stringify(manifest));
         const refusal = await KitManifestCheck.refusalAsync(folder, kit);
-        if (refusal === null || !refusal.includes(KitManifestCheck.PEER))
-          findings.push(`The build must refuse ${KitManifestCheck.PEER} as a peer at "${version}", naming it; it ${refusal === null ? "accepted it" : `said: ${refusal}`}.`);
+        if (Object.isNull(refusal) || !refusal.includes(KitManifestCheck.PEER))
+          findings.push(`The build must refuse ${KitManifestCheck.PEER} as a peer at "${version}", naming it; it ${Object.isNull(refusal) ? "accepted it" : `said: ${refusal}`}.`);
       }
       for (const pin of KitManifestCheck.REFUSED_PINS) {
         const manifest = JSON.parse(text) as { devDependencies: Record<string, string> };
         const others = Object.entries(manifest.devDependencies).filter(([name]) => name !== KitManifestCheck.PEER);
-        manifest.devDependencies = Object.fromEntries(pin === null ? others : [...others, [KitManifestCheck.PEER, pin]]);
+        manifest.devDependencies = Object.fromEntries(Object.isNull(pin) ? others : [...others, [KitManifestCheck.PEER, pin]]);
         await writeFile(path.join(folder, relative), JSON.stringify(manifest));
         const refusal = await KitManifestCheck.refusalAsync(folder, kit);
-        const pinned = pin === null ? "with no development pin" : `with the development pin "${pin}"`;
-        if (refusal === null || !refusal.includes(KitManifestCheck.PEER))
-          findings.push(`The build must refuse ${KitManifestCheck.PEER} as a peer ${pinned}, naming it; it ${refusal === null ? "accepted it" : `said: ${refusal}`}.`);
+        const pinned = Object.isNull(pin) ? "with no development pin" : `with the development pin "${pin}"`;
+        if (Object.isNull(refusal) || !refusal.includes(KitManifestCheck.PEER))
+          findings.push(`The build must refuse ${KitManifestCheck.PEER} as a peer ${pinned}, naming it; it ${Object.isNull(refusal) ? "accepted it" : `said: ${refusal}`}.`);
       }
       for (const list of KitManifestCheck.REFUSED_DEVELOPMENT_LISTS) {
         const manifest = JSON.parse(text) as { devDependencies: unknown };
         manifest.devDependencies = list;
         await writeFile(path.join(folder, relative), JSON.stringify(manifest));
         const refusal = await KitManifestCheck.refusalAsync(folder, kit);
-        if (refusal === null || !refusal.includes(KitManifestCheck.DEVELOPMENT_LIST_REFUSAL))
-          findings.push(`The build must refuse devDependencies given as ${JSON.stringify(list)}, saying it ${KitManifestCheck.DEVELOPMENT_LIST_REFUSAL}; it ${refusal === null ? "accepted it" : `said: ${refusal}`}.`);
+        if (Object.isNull(refusal) || !refusal.includes(KitManifestCheck.DEVELOPMENT_LIST_REFUSAL))
+          findings.push(`The build must refuse devDependencies given as ${JSON.stringify(list)}, saying it ${KitManifestCheck.DEVELOPMENT_LIST_REFUSAL}; it ${Object.isNull(refusal) ? "accepted it" : `said: ${refusal}`}.`);
       }
     }
     finally {

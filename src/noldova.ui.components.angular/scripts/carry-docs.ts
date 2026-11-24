@@ -10,6 +10,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import { ApiDocMerger } from "./api/api-doc-merger.ts";
 import { ApiProgram } from "./api/api-program.ts";
 import { ApiProject } from "./api/api-project.ts";
@@ -35,7 +37,7 @@ export class CarryDocs {
 
   public async runAsync(args: readonly string[]): Promise<number> {
     const [projectFile, output, ...entries] = args;
-    if (projectFile === undefined || output === undefined || entries.length === 0) {
+    if (Object.isUndefined(projectFile) || Object.isUndefined(output) || entries.length === 0) {
       this.output.write(CarryDocs.USAGE);
       return CarryDocs.USAGE_EXIT_CODE;
     }

@@ -11,6 +11,8 @@ import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import type { ICheck } from "./interfaces/i-check.ts";
 import type { ProcessResult } from "../process-result.ts";
 import type { ProcessRunner } from "../processes/process-runner.ts";
@@ -70,9 +72,9 @@ export class FailureScreenshotCheck implements ICheck {
     const logged = FailureScreenshotCheck.LOGGED.exec(result.text)?.groups;
     const file = files.length === 1 ? files[0] : undefined;
     const findings: string[] = [];
-    if (file === undefined || !FailureScreenshotCheck.SHORT_NAME.test(file))
+    if (Object.isUndefined(file) || !FailureScreenshotCheck.SHORT_NAME.test(file))
       findings.push(`The failed test should leave one screenshot named with 16 hexadecimal digits, but left ${JSON.stringify(files)}:\n${result.text}`);
-    if (logged?.["name"] === undefined || Buffer.byteLength(logged["name"]) <= FailureScreenshotCheck.NAME_LIMIT || path.basename(logged["path"] ?? "") !== file)
+    if (Object.isUndefined(logged) || Object.isUndefined(logged["name"]) || Buffer.byteLength(logged["name"]) <= FailureScreenshotCheck.NAME_LIMIT || path.basename(logged["path"] ?? "") !== file)
       findings.push(`The run should print "Screenshot of" the test's name, past ${FailureScreenshotCheck.NAME_LIMIT} bytes, beside the saved screenshot's path:\n${result.text}`);
     return findings;
   }

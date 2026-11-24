@@ -8,6 +8,8 @@
 
 import ts from "typescript";
 
+import "@noldova/context.core";
+
 import type { ApiProgram } from "./api-program.ts";
 import { ApiReach } from "./api-reach.ts";
 import { ApiValue } from "./api-value.ts";
@@ -41,7 +43,7 @@ export class ApiSymbolWalker {
 
   private static nameMember(path: string, name: string): string {
     const special = ApiSymbolWalker.MEMBER_NAMES.get(name);
-    return special === undefined ? `${path}#${name}` : `${path}${special}`;
+    return Object.isUndefined(special) ? `${path}#${name}` : `${path}${special}`;
   }
 
   private visit(path: string, exported: ts.Symbol, fileName: string | null, visit: IApiSymbolVisitor): void {
@@ -49,7 +51,7 @@ export class ApiSymbolWalker {
     if ((symbol.flags & ts.SymbolFlags.TypeParameter) !== 0)
       return;
     const declarations = symbol.declarations ?? [];
-    const owned = fileName === null ? declarations : declarations.filter(t => t.getSourceFile().fileName === fileName);
+    const owned = Object.isNull(fileName) ? declarations : declarations.filter(t => t.getSourceFile().fileName === fileName);
     if (owned.length === 0 || owned.some(t => (ApiValue.readModifierFlags(t) & ApiSymbolWalker.HIDDEN) !== 0))
       return;
     visit(path, symbol, owned);

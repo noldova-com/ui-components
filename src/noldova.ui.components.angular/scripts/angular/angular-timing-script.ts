@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import CommandFailedException from "../command-failed.exception.ts";
 import { LayoutTraceSuite } from "../../tests/fixtures/layout-trace-suite.ts";
 import Config from "../config.ts";
@@ -294,7 +296,7 @@ export abstract class AngularTimingScript extends Script {
       try {
         for (const [index, tests] of check.runs.entries()) {
           const report = path.join(folder, `run-${index + 1}.json`);
-          if (tests !== null)
+          if (!Object.isNull(tests))
             await fs.writeFile(report, AngularTimingScript.report(folder, tests), AngularTimingScript.ENCODING);
           await timing.readAsync(report);
         }
