@@ -117,6 +117,7 @@ export class MessageComponent {
   private readonly shellRunOutput: Signal<ShellRunOutputDirective | undefined> = contentChild(ShellRunOutputDirective, { descendants: false });
   private readonly copyState: WritableSignal<CopyState> = signal(CopyState.Ready);
   private cancelCopy: (() => void) | null = null;
+  private isDestroyed: boolean = false;
   private shownStatus: MessageStatus | null = null;
   private isMenuKeyed: boolean = false;
   private keyedLinkMenu: MouseEvent | null = null;
@@ -205,7 +206,10 @@ export class MessageComponent {
   public constructor() {
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(this.clock.watch());
-    destroyRef.onDestroy(() => this.clearCopyTimer());
+    destroyRef.onDestroy(() => {
+      this.isDestroyed = true;
+      this.clearCopyTimer();
+    });
     inject(MarkdownViewTokens.images, { self: true }).take(computed(() => this.image()?.template ?? null));
     inject(ShellRunBlocks).take(this.shellRunStates, this.shellRunOutputs, computed(() => this.shellRunOutput()?.template ?? null));
     const filePaths = inject(MarkdownFilePaths);
@@ -258,7 +262,7 @@ export class MessageComponent {
     this.clipboard.writeTextAsync(text).then(
       isWritten => {
         this.showCopy(isWritten ? CopyState.Copied : CopyState.Failed);
-        if (isWritten)
+        if (isWritten && !this.isDestroyed)
           this.copied.emit(text);
       },
       (error: unknown) => {
@@ -391,7 +395,10 @@ export class MessageComponent {
       Object.isNull(key) ? undefined : { key: MessageResources.formatMessageAnnouncementKey(key, status) });
   }
 
+  // A copy that settles once the message is gone shows and announces nothing, and sets no timer.
   private showCopy(state: CopyState): void {
+    if (this.isDestroyed)
+      return;
     this.clearCopyTimer();
     this.copyState.set(state);
     this.announcer.announce(MessageResources.messageCopyLabels[state], AnnouncementPoliteness.Polite);

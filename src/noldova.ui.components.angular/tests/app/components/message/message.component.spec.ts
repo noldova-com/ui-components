@@ -970,6 +970,40 @@ describe("MessageComponent", () => {
     expect([clipboard.texts, host.events, find(".nol-message-copy").getAttribute("aria-label"), announcements]).toEqual([[copied], [["copied", copied]], "Copied", ["Copied"]]);
   });
 
+  it("shows and announces nothing, sets no feedback timer and emits nothing when a copy settles after it is removed, and still reports a failed write", async () => {
+    const errors: unknown[] = [];
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    const source = provideTimeSource();
+    await renderAsync();
+    const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
+    const failure = new Error("Denied.");
+    let settle: (isWritten: boolean) => void = () => undefined;
+    let fail: (error: Error) => void = () => undefined;
+    clipboard.answer = (): Promise<boolean> => new Promise(resolve => {
+      settle = resolve;
+    });
+    find(".nol-message-copy").click();
+    clipboard.answer = (): Promise<boolean> => new Promise((_resolve, reject) => {
+      fail = reject;
+    });
+    find(".nol-message-copy").click();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    let warnings: string[] = [];
+    try {
+      fixture.destroy();
+      settle(true);
+      fail(failure);
+      await Promise.resolve();
+      await Promise.resolve();
+      warnings = warn.mock.calls.flat().map(String);
+    } finally {
+      warn.mockRestore();
+    }
+
+    // Angular warns of an emit on a destroyed component's output, so none means the copy told the app nothing.
+    expect([announcements, source.timerCount, warnings, errors]).toEqual([[], 0, [], [failure]]);
+  });
+
   it("copies each formula KaTeX drew as its source, delimiters included", async () => {
     const source = "Area $x^2$ and \\(y\\)\n\n$$\n\\frac{a}{b}\n$$";
     await renderAsync(t => t.blocks.set([new MessageText(source)]));
