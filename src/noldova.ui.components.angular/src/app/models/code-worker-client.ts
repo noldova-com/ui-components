@@ -91,7 +91,8 @@ export class CodeWorkerClient {
     return new Promise(resolve => {
       const abort = (): void => {
         this.pending.delete(request.id);
-        this.watchAnswers();
+        if (this.pending.size === 0)
+          this.watchAnswers();
         const cancel: ICodeWorkerRequest = { kind: CodeWorkerMessageKind.Cancel, id: request.id, languageId, code: String.empty, timeLimit: Resources.codeNoTokenizeTimeLimit };
         worker.postMessage(cancel);
         resolve(aborted);
@@ -145,7 +146,8 @@ export class CodeWorkerClient {
       this.report(CodeWorkerClient.failureOf(answer.error));
   }
 
-  // Once the worker is ready, it must say something within the answer limit while a request waits: a worker silent past it is taken as hung,
+  // Once the worker is ready, it must say something within the answer limit while a request waits, counted from its last answer, so an aborted
+  // request ends the limit only once nothing waits: a worker silent past it is taken as hung,
   // as on a pattern that backtracks without end, and given up. What waited on it is answered as cancelled, so that code shows plain rather than
   // being tokenized on the page, where the same pattern would hang the page. The start limit covers the worker before it is ready.
   private watchAnswers(): void {

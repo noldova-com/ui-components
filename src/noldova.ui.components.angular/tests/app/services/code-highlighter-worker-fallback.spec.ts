@@ -106,6 +106,33 @@ describe("CodeHighlighter with a highlighting worker", () => {
       expect(bed.messages()).toEqual([hung]);
     });
 
+    it("ending the limit when the only request that waited is aborted", () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const controller = new AbortController();
+      void highlighter.tokensAsync("1", json, controller.signal);
+      starts.started[0]?.answer(ready);
+      controller.abort();
+      bed.source.advance(Resources.codeWorkerAnswerLimit * 2);
+
+      expect([starts.started[0]?.isTerminated, bed.messages()]).toEqual([false, []]);
+    });
+
+    it("still counting from its last answer when one of the requests that wait is aborted", async () => {
+      const starts = new CodeWorkerStartFixture(false);
+      const highlighter = bed.serve(starts.start);
+      const controller = new AbortController();
+      const waiting = highlighter.tokensAsync("1", json, signal);
+      void highlighter.tokensAsync("2", json, controller.signal);
+      starts.started[0]?.answer(ready);
+      bed.source.advance(Resources.codeWorkerAnswerLimit - 1);
+      controller.abort();
+      bed.source.advance(1);
+
+      expect([starts.started[0]?.isTerminated, await waiting]).toEqual([true, []]);
+      expect(bed.messages()).toEqual([hung]);
+    });
+
     it("leaving a ready worker with nothing to answer alone", () => {
       const starts = new CodeWorkerStartFixture(false);
       const highlighter = bed.serve(starts.start);
