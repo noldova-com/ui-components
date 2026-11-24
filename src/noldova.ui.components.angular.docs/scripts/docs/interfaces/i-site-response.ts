@@ -8,4 +8,5 @@
 
 export interface ISiteResponse {
   status(): number;
+  text(): Promise<string>;
 }

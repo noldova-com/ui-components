@@ -30,8 +30,12 @@ export class CodeLines {
     this.highlights = highlights;
   }
 
+  public static split(code: string): readonly string[] {
+    return code.split(CodeLines.LINE_ENDS);
+  }
+
   public show(element: HTMLElement, code: string, tokens: readonly CodeToken[] | undefined, isSettled: boolean): void {
-    const lines = code.split(CodeLines.LINE_ENDS);
+    const lines = CodeLines.split(code);
     const pending = (tokens ?? [])[Symbol.iterator]();
     let next = pending.next();
     let carried: CodeToken[] = [];

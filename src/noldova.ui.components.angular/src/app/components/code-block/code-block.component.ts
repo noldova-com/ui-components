@@ -6,7 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DOCUMENT, DestroyRef, ElementRef, ErrorHandler, type ResourceRef, type Signal, ViewEncapsulation, type WritableSignal,
+import { isPlatformBrowser } from "@angular/common";
+import { Component, DOCUMENT, DestroyRef, ElementRef, ErrorHandler, PLATFORM_ID, type ResourceRef, type Signal, ViewEncapsulation, type WritableSignal,
   afterNextRender, afterRenderEffect, computed, effect, inject, input, linkedSignal, model, output, resource, signal, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
@@ -44,6 +45,7 @@ import { TooltipDirective } from "../tooltip/tooltip.directive.js";
   encapsulation: ViewEncapsulation.None,
   host: {
     "class": "nol-code-block",
+    "ngSkipHydration": "true",
     "[class.nol-code-block-wrapped]": "wrapped()",
     "[style.--nol-code-advance-ratio]": "advanceRatio()"
   }
@@ -78,6 +80,9 @@ export class CodeBlockComponent {
   private isDestroyed: boolean = false;
   private grewStreaming: boolean = false;
   private readonly follower: ScrollEndFollower = new ScrollEndFollower(CodeBlockResources.codeBlockFollowDistance);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  protected readonly isInBrowser: boolean = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly resources: typeof Resources = Resources;
   protected readonly partResources: typeof CodeBlockResources = CodeBlockResources;
@@ -90,6 +95,7 @@ export class CodeBlockComponent {
     const language = this.language()?.trim() ?? null;
     return this.runnable() && !Object.isNull(language) && CodeBlockResources.shellLanguages.has(language.toLowerCase()) ? language : null;
   });
+  protected readonly serverLines: Signal<readonly string[]> = computed(() => CodeLines.split(this.code()));
   protected readonly shownRunState: Signal<ShellRunState> = computed(() => Object.isNull(this.blocks) ? this.runState() : this.blocks.stateOf(this.block()));
 
   public readonly code = input.required<string>();
@@ -112,7 +118,7 @@ export class CodeBlockComponent {
   });
 
   public constructor() {
-    inject(DestroyRef).onDestroy(() => {
+    this.destroyRef.onDestroy(() => {
       this.isDestroyed = true;
       this.clearCopyTimer();
       this.lines.clear();
@@ -130,12 +136,12 @@ export class CodeBlockComponent {
       this.lines.show(this.text().nativeElement, this.code(), tokens, !isStreaming);
       this.grewStreaming ||= isStreaming;
     });
-    const measureAfterLayout = new ResizeObserver(() => {
-      this.measureAdvance();
-      this.followEnd();
-    });
-    inject(DestroyRef).onDestroy(() => measureAfterLayout.disconnect());
     afterNextRender(() => {
+      const measureAfterLayout = new ResizeObserver(() => {
+        this.measureAdvance();
+        this.followEnd();
+      });
+      this.destroyRef.onDestroy(() => measureAfterLayout.disconnect());
       for (const element of [this.text(), this.advanceOne(), this.advanceRun()])
         measureAfterLayout.observe(element.nativeElement);
     });

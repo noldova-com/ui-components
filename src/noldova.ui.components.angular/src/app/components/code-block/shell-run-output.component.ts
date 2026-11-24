@@ -47,9 +47,10 @@ export class ShellRunOutputComponent {
   public readonly area = input.required<HTMLElement>();
 
   public constructor() {
-    const sizes = new ResizeObserver(() => this.measure());
-    inject(DestroyRef).onDestroy(() => sizes.disconnect());
+    const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
+      const sizes = new ResizeObserver(() => this.measure());
+      destroyRef.onDestroy(() => sizes.disconnect());
       sizes.observe(this.area());
       sizes.observe(this.host);
     });
