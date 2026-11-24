@@ -66,7 +66,7 @@ const lazy = (content: DiffContent): DiffFile => new DiffFile("f4", "src/lazy.ts
 @Component({
   imports: [DiffViewComponent],
   template: `
-    <nol-diff-view [files]="files()" label="Changes" [(layout)]="layout" [(wrapped)]="wrapped" [readOnly]="readOnly()" [reviews]="reviews()"
+    <nol-diff-view [files]="files()" label="Changes" [(layout)]="layout" [(wrapped)]="wrapped" [readOnly]="readOnly()" [reviews]="reviews()" [answeredRequests]="answered()"
       [(collapsed)]="collapsed" [(revealed)]="revealed" [collapseLimit]="collapseLimit()"
       [hasShortcuts]="hasShortcuts()" [canOpenFiles]="canOpenFiles()" (reviewRequested)="requests.push($event)" (fileOpenRequested)="opened.push($event)" (contextRequested)="contexts.push($event)"
       (fileExpanded)="expanded.push($event)" (lineCommentRequested)="comments.push($event)" />
@@ -78,6 +78,7 @@ class DiffViewHostComponent {
   public readonly wrapped: WritableSignal<boolean> = signal(false);
   public readonly readOnly: WritableSignal<boolean> = signal(false);
   public readonly reviews: WritableSignal<ReadonlyMap<string, DiffFileReview>> = signal(new Map());
+  public readonly answered: WritableSignal<ReadonlySet<string>> = signal(new Set());
   public readonly collapsed: WritableSignal<ReadonlySet<string>> = signal(new Set());
   public readonly revealed: WritableSignal<ReadonlySet<string>> = signal(new Set());
   public readonly collapseLimit: WritableSignal<DiffCollapseLimit> = signal(DiffCollapseLimit.standard);
@@ -137,6 +138,13 @@ describe("DiffViewComponent", () => {
   async function changeAsync(change: () => void): Promise<void> {
     change();
     await fixture.whenStable();
+  }
+
+  async function answerAsync(reviews: ReadonlyMap<string, DiffFileReview> = host.reviews()): Promise<void> {
+    await changeAsync(() => {
+      host.reviews.set(reviews);
+      host.answered.set(new Set(host.requests.map(t => t.id)));
+    });
   }
 
   const view = (): DiffViewComponent => fixture.debugElement.children[0]?.componentInstance as DiffViewComponent;
@@ -464,6 +472,8 @@ describe("DiffViewComponent", () => {
     await fixture.whenStable();
 
     expect(host.requests.map(t => [t.fileId, t.hunkId, t.state])).toEqual([["f1", null, DiffReviewState.Accepted], ["f1", "h2", DiffReviewState.Rejected]]);
+    expect(host.requests.map(t => /^nol-diff-view-\d+-review-\d+$/u.test(t.id))).toEqual([true, true]);
+    expect(new Set(host.requests.map(t => t.id)).size).toBe(2);
     expect(all(".nol-diff-review")).toEqual([]);
   });
 
@@ -522,11 +532,11 @@ describe("DiffViewComponent", () => {
     const review = (states: readonly (readonly [string, DiffReviewState])[]): Map<string, DiffFileReview> => new Map([["f1", new DiffFileReview(new Map(states))]]);
 
     find(".nol-diff-hunk .nol-diff-action").click();
-    await changeAsync(() => host.reviews.set(review([["h1", DiffReviewState.Rejected]])));
+    await answerAsync(review([["h1", DiffReviewState.Rejected]]));
     find(".nol-diff-hunk .nol-diff-action").click();
-    await changeAsync(() => host.reviews.set(review([["h1", DiffReviewState.Accepted]])));
+    await answerAsync(review([["h1", DiffReviewState.Accepted]]));
     find(".nol-diff-file-header .nol-diff-action").click();
-    await changeAsync(() => host.reviews.set(new Map([...review([["h1", DiffReviewState.Accepted], ["h2", DiffReviewState.Accepted]]), ["f2", new DiffFileReview(new Map(), DiffReviewState.Accepted)]])));
+    await answerAsync(new Map([...review([["h1", DiffReviewState.Accepted], ["h2", DiffReviewState.Accepted]]), ["f2", new DiffFileReview(new Map(), DiffReviewState.Accepted)]]));
 
     expect(announcements).toEqual(["src/app.ts: Partly reviewed", "Change 1 of 2 in src/app.ts: Accepted", "src/app.ts: Accepted"]);
   });
@@ -543,14 +553,27 @@ describe("DiffViewComponent", () => {
     expect([announcements, text(find(".nol-diff-file-header .nol-diff-review"))]).toEqual([[], "Partly reviewed"]);
   });
 
-  it("stays silent about a later change the person didn't make once the owner has answered an action here, even with an unchanged state", async () => {
+  it("ends the person's wait silently when the owner refuses their request, answering it with an unchanged review, and stays silent about a later change they didn't make", async () => {
     await renderAsync();
     find(".nol-diff-file-header .nol-diff-action").click();
 
-    await changeAsync(() => host.reviews.set(new Map()));
+    await answerAsync();
     await changeAsync(() => host.reviews.set(new Map([["f1", new DiffFileReview(new Map([["h1", DiffReviewState.Accepted], ["h2", DiffReviewState.Accepted]]))]])));
 
     expect([host.requests.length, announcements]).toEqual([1, []]);
+  });
+
+  it("keeps waiting through an update that answers none of the person's requests, such as another file's, and announces their own answer when it comes", async () => {
+    await renderAsync();
+    const accepted = new DiffFileReview(new Map([["h1", DiffReviewState.Accepted], ["h2", DiffReviewState.Accepted]]));
+    find(".nol-diff-file-header .nol-diff-action").click();
+
+    await changeAsync(() => host.reviews.set(new Map([["f2", new DiffFileReview(new Map(), DiffReviewState.Rejected)]])));
+    await changeAsync(() => host.answered.set(new Set(["nol-diff-view-elsewhere-review-0"])));
+    const before = [...announcements];
+    await answerAsync(new Map([...host.reviews(), ["f1", accepted]]));
+
+    expect([before, announcements]).toEqual([[], ["src/app.ts: Accepted"]]);
   });
 
   it("requests opening a file at its first line, or at its line 1 when it has no lines, and at a line whose number is clicked", async () => {

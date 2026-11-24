@@ -5092,7 +5092,7 @@ export declare class DiffFileReview {
    * const notes: DiffFile = new DiffFile("notes", "notes.md", null, DiffFileStatus.Added, 1, 0, null,
    *   new DiffHunks([new DiffHunk("h1", 0, 0, 1, 1, [new DiffAddedLine(1, "# Notes")])]));
    *
-   * export const kept: DiffFileReview = DiffFileReview.undecided.applied(new DiffReviewRequest("notes", null, DiffReviewState.Accepted), notes);
+   * export const kept: DiffFileReview = DiffFileReview.undecided.applied(new DiffReviewRequest("r1", "notes", null, DiffReviewState.Accepted), notes);
    * ```
    */
   public applied(request: DiffReviewRequest, file: DiffFile): DiffFileReview;
@@ -5405,6 +5405,13 @@ export declare class DiffRemovedLine extends DiffLine {
  */
 export declare class DiffReviewRequest {
   /**
+   * The request's id, which {@link DiffViewComponent} makes unique among its
+   * requests; the owner hands it back in
+   * {@link DiffViewComponent.answeredRequests} once it answers the request.
+   */
+  public readonly id: string;
+
+  /**
    * The file's id.
    */
   public readonly fileId: string;
@@ -5423,6 +5430,7 @@ export declare class DiffReviewRequest {
   /**
    * Creates the request.
    *
+   * @param id The request's id.
    * @param fileId The file's id.
    * @param hunkId The hunk's id, or null for the whole file.
    * @param state The state asked for.
@@ -5430,10 +5438,10 @@ export declare class DiffReviewRequest {
    * ```ts
    * import { DiffReviewRequest, DiffReviewState } from "@noldova/ui.components.angular";
    *
-   * export const acceptFile: DiffReviewRequest = new DiffReviewRequest("src/app.ts", null, DiffReviewState.Accepted);
+   * export const acceptFile: DiffReviewRequest = new DiffReviewRequest("r1", "src/app.ts", null, DiffReviewState.Accepted);
    * ```
    */
-  public constructor(fileId: string, hunkId: string | null, state: DiffReviewState);
+  public constructor(id: string, fileId: string, hunkId: string | null, state: DiffReviewState);
 }
 
 /**
@@ -5501,10 +5509,13 @@ export declare class DiffShortcut {
  * or previous file; {@link DiffViewComponent.shortcuts} lists them for an
  * app's list of shortcuts. A file over the view's collapse limit waits
  * behind Load diff, which, when it has the focus, passes it to the file's
- * first line once its lines show. A review state that changes after the person acts on a
- * file in the view is announced politely: the file's when its own state
- * changes, otherwise each hunk's. A change the person didn't make here, such
- * as an agent's edit, is not announced.
+ * first line once its lines show. When the owner answers a request the
+ * person made in the view, naming its id in `answeredRequests`, the file's
+ * new review state is announced politely: the file's when its own state
+ * changes, otherwise each hunk's. An answer that leaves the state as it was,
+ * as a refusal does, announces nothing; a change the owner makes without
+ * answering one of the person's requests, such as an agent's edit or
+ * another file's update, is not announced.
  *
  * @example
  * ```ts
@@ -5514,17 +5525,19 @@ export declare class DiffShortcut {
  * @Component({
  *   selector: "nol-change-review",
  *   imports: [DiffViewComponent],
- *   template: "<nol-diff-view label=\"Changes\" [files]=\"files\" [reviews]=\"reviews()\" (reviewRequested)=\"review($event)\" />"
+ *   template: "<nol-diff-view label=\"Changes\" [files]=\"files\" [reviews]=\"reviews()\" [answeredRequests]=\"answered()\" (reviewRequested)=\"review($event)\" />"
  * })
  * export class ChangeReviewComponent {
  *   protected readonly files: readonly DiffFile[] = [new DiffFile("notes", "notes.md", null, DiffFileStatus.Added, 1, 0, "Markdown",
  *     new DiffHunks([new DiffHunk("h1", 0, 0, 1, 1, [new DiffAddedLine(1, "# Notes")])]))];
  *   protected readonly reviews: WritableSignal<ReadonlyMap<string, DiffFileReview>> = signal(new Map());
+ *   protected readonly answered: WritableSignal<ReadonlySet<string>> = signal(new Set());
  *
  *   protected review(request: DiffReviewRequest): void {
  *     const file = this.files.find(t => t.id === request.fileId);
  *     if (file !== undefined)
  *       this.reviews.update(t => new Map([...t, [file.id, (t.get(file.id) ?? DiffFileReview.undecided).applied(request, file)]]));
+ *     this.answered.set(new Set([request.id]));
  *   }
  * }
  * ```
@@ -5580,6 +5593,16 @@ export declare class DiffViewComponent {
   public readonly reviews: InputSignal<ReadonlyMap<string, DiffFileReview>>;
 
   /**
+   * The ids of the person's requests that the bound `reviews` answers,
+   * applied or refused, which the owner sets with each `reviews` value it
+   * gives in answer. The view announces a file's new review state only once
+   * one of the person's requests on it is answered, and ends that wait
+   * whether or not the state changed; an id it didn't make, or already saw
+   * answered, does nothing. Empty when not bound, so nothing is announced.
+   */
+  public readonly answeredRequests: InputSignal<ReadonlySet<string>>;
+
+  /**
    * The ids of the collapsed files, which each file's header toggles; empty,
    * so every file is expanded, until one is collapsed or it is bound.
    */
@@ -5605,8 +5628,9 @@ export declare class DiffViewComponent {
 
   /**
    * Emits the review the person asked for, Accept or Reject, on a file or a
-   * hunk. The view doesn't change its review states itself: the owner
-   * applies the request to the `reviews` it binds.
+   * hunk, with an id of the view's own. The view doesn't change its review
+   * states itself: the owner applies the request to the `reviews` it binds,
+   * or refuses it, and names its id in `answeredRequests`.
    */
   public readonly reviewRequested: OutputEmitterRef<DiffReviewRequest>;
 

@@ -32,6 +32,7 @@ export class DiffViewResources {
   public static readonly diffLineKeys: string = "Enter Shift+Enter";
   public static readonly diffCommentKeys: string = "Shift+Enter";
   public static readonly diffIdPrefix: string = "nol-diff-view-";
+  public static readonly diffReviewIdInfix: string = "-review-";
   public static readonly diffHunkLinesSelector: string = ".nol-diff-hunk-lines";
   public static readonly diffCellSelector: string = ".nol-diff-cell";
   public static readonly diffChangedCellSelector: string = ".nol-diff-cell-changed";
