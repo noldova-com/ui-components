@@ -132,8 +132,8 @@ describe("ChoicePillsComponent", () => {
   });
 
   it("moves to the next pill with ArrowLeft and to the one before with ArrowRight right to left", async () => {
-    fixture.nativeElement.dir = "rtl";
     render();
+    fixture.nativeElement.dir = "rtl";
     pills()[1]?.focus();
 
     await userEvent.keyboard("{ArrowLeft}");

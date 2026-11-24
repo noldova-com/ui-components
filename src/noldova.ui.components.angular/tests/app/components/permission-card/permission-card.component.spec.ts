@@ -290,7 +290,8 @@ describe("PermissionCardComponent", () => {
     await rebound.whenStable();
     const shown = DomFixture.host(rebound);
     option("Always allow", shown).focus();
-    await clickAsync(option("Always allow", shown));
+    option("Always allow", shown).click();
+    await rebound.whenStable();
     const confirming = document.activeElement === find(".nol-permission-card-cancel", shown);
 
     rebound.componentRef.setInput("request", requestOf(PermissionRisk.High, {}, "request-2"));
