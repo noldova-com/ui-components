@@ -22,6 +22,8 @@ import { LinkReferenceState } from "../../models/link-reference-state.js";
 import { LinkReferenceStatus } from "../../models/link-reference-status.js";
 import { LinkReferenceTone } from "../../models/link-reference-tone.js";
 import { LinkReferenceWorkItemState } from "../../models/link-reference-work-item-state.js";
+import type { GalleryReferenceItem } from "./gallery-reference-item.js";
+import type { GalleryReferenceOptions } from "./gallery-reference-options.js";
 import { GalleryResources } from "./gallery-resources.js";
 
 export class GalleryReferences implements ILinkReferenceSource {
@@ -109,12 +111,7 @@ export class GalleryReferences implements ILinkReferenceSource {
     return new LinkReferenceColor(color, GalleryResources.formatReferenceBackground(color, percent));
   }
 
-  private static itemOf(item: { readonly reference: string; readonly title: string; readonly location: string; readonly kind: "referencePullKind" | "referenceIssueKind" | "referenceRunKind" | "referenceJobKind"
-    | "referenceMergeKind" | "referenceWorkItemKind" | "referenceCommitKind" }, icon: string,
-    state: LinkReferenceState,
-    options: { readonly diff?: LinkReferenceDiff; readonly comments?: number; readonly mark?: LinkReferenceImage; readonly isMarkPending?: boolean; readonly duration?: number;
-      readonly action?: LinkReferenceAction; readonly statuses?: readonly LinkReferenceStatus[]; readonly footnote?: string; readonly details?: readonly LinkReferenceDetail[];
-      readonly workItemState?: LinkReferenceWorkItemState } = {}): LinkReference {
+  private static itemOf(item: GalleryReferenceItem, icon: string, state: LinkReferenceState, options: GalleryReferenceOptions = {}): LinkReference {
     return new LinkReference(item.reference, GalleryReferences.text[item.kind], new LinkReferenceImage(icon), {
       state, title: item.title, location: item.location, author: GalleryReferences.author, time: GalleryResources.referenceTime, ...options
     });
