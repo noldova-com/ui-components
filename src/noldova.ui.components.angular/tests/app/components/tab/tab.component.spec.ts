@@ -58,6 +58,56 @@ class TabHostComponent {
   public readonly kept: string[] = [];
 }
 
+class TooltipRevealCase {
+  public readonly name: string;
+  public readonly showAsync: () => Promise<void>;
+
+  public constructor(name: string, showAsync: () => Promise<void>) {
+    this.name = name;
+    this.showAsync = showAsync;
+  }
+}
+
+class StateMarkCase {
+  public readonly state: "working" | "waiting";
+  public readonly mark: string;
+
+  public constructor(state: "working" | "waiting", mark: string) {
+    this.state = state;
+    this.mark = mark;
+  }
+}
+
+class PixelPair {
+  public readonly actual: number;
+  public readonly expected: number;
+
+  public constructor(actual: number, expected: number) {
+    this.actual = actual;
+    this.expected = expected;
+  }
+}
+
+class TabParts {
+  public readonly textStart: number;
+  public readonly boxes: readonly DOMRect[];
+
+  public constructor(textStart: number, boxes: readonly DOMRect[]) {
+    this.textStart = textStart;
+    this.boxes = boxes;
+  }
+}
+
+class ListenerCall {
+  public readonly kind: string;
+  public readonly listener: unknown;
+
+  public constructor(kind: string, listener: unknown) {
+    this.kind = kind;
+    this.listener = listener;
+  }
+}
+
 describe("TabComponent", () => {
   let fixture: ComponentFixture<TabHostComponent>;
   let host: TabHostComponent;
@@ -137,10 +187,10 @@ describe("TabComponent", () => {
       () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
   }
 
-  for (const [name, showAsync] of [
-    ["hover", (): Promise<void> => userEvent.hover(tab())],
-    ["keyboard focus", (): Promise<void> => userEvent.keyboard("{Tab}")]
-  ] as const)
+  for (const { name, showAsync } of [
+    new TooltipRevealCase("hover", () => userEvent.hover(tab())),
+    new TooltipRevealCase("keyboard focus", () => userEvent.keyboard("{Tab}"))
+  ])
     it(`shows its full title in a tooltip a gap below it on ${name} while its label is cut short, without describing itself`, async () => {
       const title = "Shell architecture review: the module contract, runtime boundaries and what the window may cache between restarts";
       update(() => {
@@ -295,7 +345,7 @@ describe("TabComponent", () => {
       expect([before, look(), reveal === "hover" || document.activeElement === tab()]).toEqual([["visible", "hidden"], ["hidden", "visible"], true]);
     });
 
-  for (const [state, mark] of [["working", ".nol-tab-spinner"], ["waiting", ".nol-tab-waiting-glyph"]] as const)
+  for (const { state, mark } of [new StateMarkCase("working", ".nol-tab-spinner"), new StateMarkCase("waiting", ".nol-tab-waiting-glyph")])
     for (const reveal of ["hover", "focus"])
       it(`keeps its ${state} mark on ${reveal} when it cannot close, since no close action takes its place`, async () => {
         update(() => {
@@ -317,8 +367,8 @@ describe("TabComponent", () => {
     const spinner = (part(".nol-tab-spinner") ?? tab()).getBoundingClientRect();
     const ring = part(".nol-tab-spinner .nol-spinner-ring") ?? tab();
     const circle = ring.getBoundingClientRect();
-    for (const [actual, expected] of [[Number.parseFloat(getComputedStyle(ring).width), AppearanceFixture.measureLook("spinner-ring")],
-      [circle.left + circle.width / 2, spinner.left + spinner.width / 2], [circle.top + circle.height / 2, spinner.top + spinner.height / 2]] as const)
+    for (const { actual, expected } of [new PixelPair(Number.parseFloat(getComputedStyle(ring).width), AppearanceFixture.measureLook("spinner-ring")),
+      new PixelPair(circle.left + circle.width / 2, spinner.left + spinner.width / 2), new PixelPair(circle.top + circle.height / 2, spinner.top + spinner.height / 2)])
       AppearanceFixture.expectPixels(actual, expected);
     update(() => host.waiting.set(true));
     const glyph = part(".nol-tab-waiting-glyph") ?? tab();
@@ -326,8 +376,9 @@ describe("TabComponent", () => {
     const slot = (part(".nol-tab-action") ?? tab()).getBoundingClientRect();
     const icon = AppearanceFixture.measureLook("icon");
 
-    for (const [actual, expected] of [[hand.left, spinner.left], [hand.top, spinner.top], [hand.width, spinner.width], [hand.height, spinner.height], [hand.width, icon], [hand.height, icon],
-      [hand.left + hand.width / 2, slot.left + slot.width / 2], [hand.top + hand.height / 2, slot.top + slot.height / 2]] as const)
+    for (const { actual, expected } of [new PixelPair(hand.left, spinner.left), new PixelPair(hand.top, spinner.top), new PixelPair(hand.width, spinner.width),
+      new PixelPair(hand.height, spinner.height), new PixelPair(hand.width, icon), new PixelPair(hand.height, icon),
+      new PixelPair(hand.left + hand.width / 2, slot.left + slot.width / 2), new PixelPair(hand.top + hand.height / 2, slot.top + slot.height / 2)])
       AppearanceFixture.expectPixels(actual, expected);
     expect([getComputedStyle(glyph).visibility, getComputedStyle(glyph).color]).toEqual(["visible", getComputedStyle(tab()).color]);
   }
@@ -459,14 +510,13 @@ describe("TabComponent", () => {
     update(() => host.editing.set(false));
   }
 
-  function measureParts(): { readonly textStart: number; readonly boxes: readonly DOMRect[] } {
+  function measureParts(): TabParts {
     const label = part(".nol-tab-label") ?? tab();
     const text = document.createRange();
     text.setStart(label.firstChild ?? label, 0);
     text.setEnd(label.firstChild ?? label, 1);
-    return { textStart: text.getBoundingClientRect().left,
-      boxes: [tab(), part(".nol-tab-pill") ?? tab(), label, part(".nol-tab-icon") ?? tab(), part("nol-view-badge") ?? tab(), part(".nol-tab-close") ?? tab()]
-        .map(t => t.getBoundingClientRect()) };
+    return new TabParts(text.getBoundingClientRect().left,
+      [tab(), part(".nol-tab-pill") ?? tab(), label, part(".nol-tab-icon") ?? tab(), part("nol-view-badge") ?? tab(), part(".nol-tab-close") ?? tab()].map(t => t.getBoundingClientRect()));
   }
 
   async function expectFieldOnTheLabelAsync(): Promise<void> {
@@ -485,7 +535,8 @@ describe("TabComponent", () => {
     const label = after.boxes[2] ?? box;
 
     AppearanceFixture.expectPixels(box.left + Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.paddingLeft), before.textStart);
-    for (const [actual, expected] of [[box.left, label.left], [box.top, label.top], [box.width, label.width], [box.height, label.height]] as const)
+    for (const { actual, expected } of [new PixelPair(box.left, label.left), new PixelPair(box.top, label.top), new PixelPair(box.width, label.width),
+      new PixelPair(box.height, label.height)])
       AppearanceFixture.expectPixels(actual, expected);
     for (const [index, rect] of after.boxes.entries()) {
       const earlier = before.boxes[index] ?? rect;
@@ -505,7 +556,7 @@ describe("TabComponent", () => {
 
   for (const shape of [null, "pill"])
     it(`keeps room between its label and both edges of the selected Highlight fill under forced colors, at the same size and label place, with the ${shape ?? "default"} shape`, async () => {
-      if (shape === null)
+      if (Object.isNull(shape))
         document.documentElement.removeAttribute("data-nol-tab-shape");
       else
         document.documentElement.setAttribute("data-nol-tab-shape", shape);
@@ -518,7 +569,7 @@ describe("TabComponent", () => {
       const pill = part(".nol-tab-pill") ?? tab();
       const fill = pill.getBoundingClientRect();
       const label = (part(".nol-tab-label") ?? tab()).getBoundingClientRect();
-      const room = AppearanceFixture.measureLook(shape === null ? "tab-inset" : "pill-padding");
+      const room = AppearanceFixture.measureLook(Object.isNull(shape) ? "tab-inset" : "pill-padding");
 
       expect(getComputedStyle(pill).backgroundColor).toBe(ForcedColorsFixture.resolve("Highlight"));
       AppearanceFixture.expectPixels(label.left - fill.left, room);
@@ -749,24 +800,24 @@ describe("TabComponent", () => {
   });
 
   function watchFocusListeners(): () => readonly string[] {
-    const calls: [string, unknown][] = [];
+    const calls: ListenerCall[] = [];
     let listener: unknown = null;
     const added = vi.spyOn(document, "addEventListener");
     const removed = vi.spyOn(document, "removeEventListener");
     added.mockImplementation(function (this: Document, ...call: Parameters<Document["addEventListener"]>) {
       if (call[0] === "focusin") {
         listener ??= call[1];
-        calls.push(["added", call[1]]);
+        calls.push(new ListenerCall("added", call[1]));
       }
       EventTarget.prototype.addEventListener.apply(this, call);
     });
     removed.mockImplementation(function (this: Document, ...call: Parameters<Document["removeEventListener"]>) {
       if (call[0] === "focusin")
-        calls.push(["removed", call[1]]);
+        calls.push(new ListenerCall("removed", call[1]));
       EventTarget.prototype.removeEventListener.apply(this, call);
     });
     return () => {
-      const result = calls.map(([kind, fn]) => `${kind}${fn === listener ? String.empty : " another"}`);
+      const result = calls.map(t => `${t.kind}${t.listener === listener ? String.empty : " another"}`);
       calls.length = 0;
       return result;
     };
