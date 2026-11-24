@@ -13,6 +13,7 @@ import { CodeBlockComponent } from "../../../../src/app/components/code-block/co
 import { ShellRunOutputComponent } from "../../../../src/app/components/code-block/shell-run-output.component";
 import { Resources } from "../../../../src/resources";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { DomFixture } from "../../../fixtures/dom.fixture";
 
 const CODE = "npm install\n\nnpm test\n";
 
@@ -47,11 +48,11 @@ describe("CodeBlockComponent on the server", () => {
   it("renders its code as lines in the HTML and observes no sizes when it is prerendered", async () => {
     const fixture = TestBed.createComponent(CodeBlockServerHostComponent);
     await fixture.whenStable();
-    const element: HTMLElement = fixture.nativeElement;
-    const lines = [...element.querySelectorAll(`nol-code-block code > .${Resources.codeLineClass}`)].map(t => t.textContent);
-    const html = element.querySelector("nol-code-block")?.outerHTML;
+    const block = DomFixture.one(DomFixture.host(fixture), "nol-code-block");
+    const lines = DomFixture.all(block, `code > .${Resources.codeLineClass}`).map(t => t.textContent);
+    const html = block.outerHTML;
     fixture.destroy();
 
-    expect([lines, html?.includes("npm install"), html?.includes("ngskiphydration")]).toEqual([["npm install\n", "\n", "npm test\n"], true, true]);
+    expect([lines, html.includes("npm install"), html.includes("ngskiphydration")]).toEqual([["npm install\n", "\n", "npm test\n"], true, true]);
   });
 });
