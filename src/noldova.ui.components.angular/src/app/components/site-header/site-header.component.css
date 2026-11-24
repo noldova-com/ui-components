@@ -252,7 +252,7 @@ nol-site-theme-switch {
   }
 
   .nol-site-menu-button {
-    display: inline-flex;
+    display: inline-grid;
     grid-area: menu;
   }
 

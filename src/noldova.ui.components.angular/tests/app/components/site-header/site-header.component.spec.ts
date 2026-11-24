@@ -343,6 +343,7 @@ describe("SiteHeaderComponent", () => {
     await phoneAsync();
     await renderAsync(t => t.hasSearch.set(true));
     await openAsync();
+    await userEvent.hover(part(".nol-site-header-brand"));
     const inset = AppearanceFixture.measureLook("site-padding-inline-phone");
     const rows = all(".nol-site-nav-link").map(t => t.getBoundingClientRect());
     const rowHeight = AppearanceFixture.measureLook("site-menu-row");
