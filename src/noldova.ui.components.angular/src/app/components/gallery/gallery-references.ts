@@ -32,6 +32,10 @@ export class GalleryReferences implements ILinkReferenceSource {
   public static readonly merged: LinkReferenceState = new LinkReferenceState(GalleryReferences.text.referenceMerged,
     GalleryReferences.colorOf(GalleryResources.referenceMergedLightColor, GalleryResources.referenceMergedLightFillPercent),
     GalleryReferences.colorOf(GalleryResources.referenceMergedDarkColor, GalleryResources.referenceMergedDarkFillPercent));
+  public static readonly done: LinkReferenceState = new LinkReferenceState(GalleryReferences.text.referenceDone,
+    GalleryReferences.colorOf(GalleryResources.referenceMergedLightColor, GalleryResources.referenceMergedLightFillPercent),
+    GalleryReferences.colorOf(GalleryResources.referenceMergedDarkColor, GalleryResources.referenceMergedDarkFillPercent));
+  public static readonly notPlanned: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceNotPlanned, GalleryResources.referenceDraftColor);
   public static readonly closed: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceClosed, GalleryResources.referenceClosedColor,
     GalleryResources.referenceClosedFillPercent);
   public static readonly failed: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceFailed, GalleryResources.referenceClosedColor);
@@ -73,8 +77,8 @@ export class GalleryReferences implements ILinkReferenceSource {
     [GalleryResources.referenceMergedPull.url, signal(GalleryReferences.itemOf(GalleryResources.referenceMergedPull, GalleryReferences.icons.merged, GalleryReferences.merged))],
     [GalleryResources.referenceClosedPull.url, signal(GalleryReferences.itemOf(GalleryResources.referenceClosedPull, GalleryReferences.icons.closed, GalleryReferences.closed))],
     [GalleryResources.referenceIssue.url, signal(GalleryReferences.issue)],
-    [GalleryResources.referenceDoneIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceDoneIssue, GalleryReferences.icons.done, GalleryReferences.merged))],
-    [GalleryResources.referenceSkippedIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceSkippedIssue, GalleryReferences.icons.skipped, GalleryReferences.draft))],
+    [GalleryResources.referenceDoneIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceDoneIssue, GalleryReferences.icons.done, GalleryReferences.done))],
+    [GalleryResources.referenceSkippedIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceSkippedIssue, GalleryReferences.icons.skipped, GalleryReferences.notPlanned))],
     [GalleryResources.referenceMarked.url, signal(GalleryReferences.itemOf(GalleryResources.referenceMarked, GalleryReferences.icons.pull, GalleryReferences.open, { mark: GalleryReferences.mark }))],
     [GalleryResources.referenceColorMarked.url, signal(GalleryReferences.itemOf(GalleryResources.referenceColorMarked, GalleryReferences.icons.pull, GalleryReferences.open, { mark: GalleryReferences.colorMark }))],
     [GalleryResources.referenceFailedRun.url, signal(GalleryReferences.itemOf(GalleryResources.referenceFailedRun, GalleryReferences.icons.failed, GalleryReferences.failed, {

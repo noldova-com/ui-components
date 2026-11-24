@@ -512,6 +512,8 @@ export class GalleryResources {
     referenceDraft: "Draft",
     referenceMerged: "Merged",
     referenceClosed: "Closed",
+    referenceDone: "Done",
+    referenceNotPlanned: "Not planned",
     referenceFailed: "Failed",
     referenceRunning: "In progress",
     referencePassed: "Passed",
