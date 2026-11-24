@@ -17,6 +17,15 @@
   gap: var(--nol-space-1);
 }
 
+.nol-gallery-site {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.nol-gallery-site-phone {
+  max-width: 23.4375rem;
+}
+
 .nol-gallery-narrow {
   max-width: 12rem;
 }

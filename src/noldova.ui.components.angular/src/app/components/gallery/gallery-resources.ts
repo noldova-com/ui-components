@@ -74,6 +74,13 @@ export class GalleryResources {
   public static readonly avatarColor: number = 6;
   public static readonly avatarImage: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Crect width='2' height='2' fill='%23808080'/%3E%3Crect width='1' height='1' fill='%23B0B0B0'/%3E%3C/svg%3E";
   public static readonly messageParagraphBreak: string = "\n\n";
+  public static readonly siteWordmark: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1333.817 201.396'%3E%3Ctext x='0' y='196' font-family='sans-serif' font-weight='700' font-size='270' textLength='1333' lengthAdjust='spacingAndGlyphs'%3ENOLDOVA%3C/text%3E%3C/svg%3E";
+  public static readonly siteSocialIcon: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7'/%3E%3C/svg%3E";
+  public static readonly siteHref: string = "#";
+  public static readonly hoveredSiteLink: string = ".nol-site-nav-link:not(.nol-site-nav-link-current)";
+  public static readonly focusedSiteLink: string = ".nol-site-nav-link-current";
+  public static readonly hoveredFooterLink: string = ".nol-site-footer-link";
+  public static readonly focusedFooterLink: string = ".nol-site-footer-link[aria-current]";
   public static readonly messageActionsTop: string = "var(--nol-space-2)";
   public static readonly messageActionsEnd: string = "var(--nol-space-4)";
   public static readonly referenceIcons = {
@@ -540,6 +547,24 @@ export class GalleryResources {
     messageLong: "This paragraph is one of many in a message tall enough to collapse behind Show more.",
     feedWords: ["the", "build", "finished", "on", "every", "system", "and", "the", "list", "kept", "its", "place", "while", "older", "messages", "loaded", "above", "it", "so", "nothing", "in", "view", "moved"],
     sectionHeader: "Section header",
+    siteHeader: "Site header",
+    siteFooter: "Site footer",
+    siteProduct: "Product",
+    siteCompany: "Company",
+    siteDocs: "Documentation",
+    sitePhone: "Phone",
+    sitePhoneOpen: "Phone, menu open",
+    sitePhoneSearch: "Phone, search open",
+    siteProductName: "TeamRun",
+    siteDocsName: "UI components",
+    siteVersion: "v0.0.9",
+    siteSearch: "Search",
+    siteLinks: ["Features", "Docs", "Releases"],
+    siteSocial: ["GitHub", "X"],
+    siteLine: "Run a team of agents on your own machine.",
+    siteGroups: [["Product", ["Download", "Releases", "Docs"]], ["Company", ["About", "Contact"]], ["Legal", ["Privacy", "Terms"]]],
+    siteLongName: "A product whose name is far too long for the header",
+    siteLongLine: "A line under the wordmark that is far too long to fit on one line of a narrow footer",
     sectionRecent: "Recent",
     sectionOlder: "Older",
     sectionRowNotes: "Meeting notes",

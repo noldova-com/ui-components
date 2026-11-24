@@ -14,12 +14,14 @@ import "@noldova/context.core";
 import { Resources } from "../../../resources.js";
 import type { SelectOption } from "../../models/select-option.js";
 import { ElementDirectionality } from "../../services/element-directionality.js";
+import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { ChoicePillsResources } from "./choice-pills.resources.js";
 
 @Component({
   selector: "nol-choice-pills",
   templateUrl: "./choice-pills.component.html",
   styleUrl: "./choice-pills.component.css",
+  imports: [TooltipDirective],
   providers: [ElementDirectionality.provide()],
   host: {
     "class": "nol-choice-pills"
@@ -30,6 +32,7 @@ export class ChoicePillsComponent {
   public readonly value = input.required<string>();
   public readonly label = input.required<string>();
   public readonly describedBy = input<string | null>(null);
+  public readonly iconOnly = input<boolean>(false);
   public readonly valueChange = output<string>();
 
   protected readonly resources: typeof Resources = Resources;

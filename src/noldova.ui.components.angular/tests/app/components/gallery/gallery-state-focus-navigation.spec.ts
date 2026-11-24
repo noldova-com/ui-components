@@ -12,6 +12,8 @@ import { GalleryGroupHeaderComponent } from "../../../../src/app/components/gall
 import { GalleryNavigationComponent } from "../../../../src/app/components/gallery/gallery-navigation.component";
 import { GallerySashComponent } from "../../../../src/app/components/gallery/gallery-sash.component";
 import { GallerySectionHeaderComponent } from "../../../../src/app/components/gallery/gallery-section-header.component";
+import { GallerySiteFooterComponent } from "../../../../src/app/components/gallery/gallery-site-footer.component";
+import { GallerySiteHeaderComponent } from "../../../../src/app/components/gallery/gallery-site-header.component";
 import { GalleryTabComponent } from "../../../../src/app/components/gallery/gallery-tab.component";
 import { GalleryToolbarButtonComponent } from "../../../../src/app/components/gallery/gallery-toolbar-button.component";
 import { GalleryToolbarComponent } from "../../../../src/app/components/gallery/gallery-toolbar.component";
@@ -21,7 +23,7 @@ import { GalleryState } from "../../../../src/app/enums/gallery-state";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Focus cells of the navigation section", () => {
-  const specimens = [GalleryCanvasComponent, GalleryFeedComponent, GalleryGroupHeaderComponent, GallerySashComponent, GallerySectionHeaderComponent, GalleryTabComponent, GalleryToolbarComponent, GalleryToolbarButtonComponent, GalleryTreeComponent, GalleryVirtualListComponent];
+  const specimens = [GalleryCanvasComponent, GalleryFeedComponent, GalleryGroupHeaderComponent, GallerySashComponent, GallerySectionHeaderComponent, GallerySiteFooterComponent, GallerySiteHeaderComponent, GalleryTabComponent, GalleryToolbarComponent, GalleryToolbarButtonComponent, GalleryTreeComponent, GalleryVirtualListComponent];
 
   it.each(GalleryStateFixture.specimens(specimens))("shows in each of the Focus cells of $name the look its control has when it really holds the keyboard focus", async ({ specimen }) => {
     await GalleryStateFixture.expectFocusCellsShowTheirLookAsync(specimen);

@@ -14,6 +14,8 @@ import { GalleryGroupHeaderComponent } from "./gallery-group-header.component.js
 import { GalleryPanelCardComponent } from "./gallery-panel-card.component.js";
 import { GallerySashComponent } from "./gallery-sash.component.js";
 import { GallerySectionHeaderComponent } from "./gallery-section-header.component.js";
+import { GallerySiteFooterComponent } from "./gallery-site-footer.component.js";
+import { GallerySiteHeaderComponent } from "./gallery-site-header.component.js";
 import { GalleryTabComponent } from "./gallery-tab.component.js";
 import { GalleryToolbarButtonComponent } from "./gallery-toolbar-button.component.js";
 import { GalleryToolbarComponent } from "./gallery-toolbar.component.js";
@@ -23,8 +25,8 @@ import { GalleryVirtualListComponent } from "./gallery-virtual-list.component.js
 
 @Component({
   selector: "nol-gallery-navigation",
-  imports: [GalleryCanvasComponent, GalleryFeedComponent, GalleryGroupHeaderComponent, GalleryPanelCardComponent, GallerySashComponent, GallerySectionHeaderComponent, GalleryTabComponent, GalleryToolbarButtonComponent,
-    GalleryToolbarComponent, GalleryTreeComponent, GalleryViewBadgeComponent, GalleryVirtualListComponent],
+  imports: [GalleryCanvasComponent, GalleryFeedComponent, GalleryGroupHeaderComponent, GalleryPanelCardComponent, GallerySashComponent, GallerySectionHeaderComponent, GallerySiteFooterComponent,
+    GallerySiteHeaderComponent, GalleryTabComponent, GalleryToolbarButtonComponent, GalleryToolbarComponent, GalleryTreeComponent, GalleryViewBadgeComponent, GalleryVirtualListComponent],
   templateUrl: "./gallery-navigation.component.html",
   styleUrl: "./gallery-navigation.component.css"
 })

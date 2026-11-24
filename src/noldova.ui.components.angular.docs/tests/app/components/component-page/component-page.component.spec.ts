@@ -137,7 +137,7 @@ describe("ComponentPageComponent", () => {
       roles: ["[role=\"radiogroup\"][aria-label=\"Effort\"]", "button.nol-choice-pill[role=\"radio\"][aria-checked=\"true\"][tabindex=\"0\"]",
         "button.nol-choice-pill[role=\"radio\"][aria-checked=\"false\"][tabindex=\"-1\"]", "[role=\"radiogroup\"][aria-describedby=\"nol-docs-choice-pills-note\"]"],
       keys: ["Tab", "Arrow Right", "Arrow Left", "Home", "End"],
-      inputs: ["options", "value", "label", "describedBy"],
+      inputs: ["options", "value", "label", "describedBy", "iconOnly"],
       outputs: ["valueChange"]
     },
     ColorChooserComponent: {

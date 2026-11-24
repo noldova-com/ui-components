@@ -84,7 +84,7 @@ const kitSectionControls: readonly KitSectionControls[] = [
   new KitSectionControls(GalleryNavigationComponent, ["AvatarComponent", "CanvasComponent", "CanvasItemDirective", "CanvasMapComponent", "CodeBlockComponent", "FileBadgeComponent", "GroupHeaderComponent", "InlineCodeComponent", "LinkReferenceChipComponent",
     "LinkReferenceWorkItemStateComponent", "MessageActionDirective",
     "MessageComponent", "MessageFooterEndDirective", "MessageImageDirective", "MessageSlotDirective", "PanelCardComponent", "SashComponent",
-    "SectionHeaderActionDirective", "SectionHeaderComponent", "TabComponent", "ToolbarButtonComponent", "ToolbarDirective", "ToolbarItemDirective", "TreeComponent", "ViewBadgeComponent",
+    "SectionHeaderActionDirective", "SectionHeaderComponent", "SiteFooterComponent", "SiteHeaderComponent", "SiteSearchDirective", "TabComponent", "ToolbarButtonComponent", "ToolbarDirective", "ToolbarItemDirective", "TreeComponent", "ViewBadgeComponent",
     "VirtualListComponent", "VirtualRowDirective"]),
   new KitSectionControls(GalleryOverlaysComponent, ["CompletionListComponent", "ContextMenuTriggerDirective", "DialogComponent", "DialogDescriptionDirective", "DockingGuideComponent", "DockingPlateComponent",
     "KeptOpenMenuItemDirective", "MentionFieldDirective", "MenuBarComponent", "MenuBarItemComponent", "MenuComponent", "MenuGroupActionDirective",

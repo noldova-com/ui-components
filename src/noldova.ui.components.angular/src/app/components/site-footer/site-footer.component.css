@@ -1,0 +1,180 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  container-type: inline-size;
+  background-color: var(--nol-panel);
+  color: var(--nol-text);
+}
+
+.nol-site-footer-inner {
+  box-sizing: border-box;
+  max-width: var(--nol-site-content-width);
+  margin-inline: auto;
+  padding: var(--nol-site-footer-padding-block) var(--nol-site-padding-inline);
+}
+
+:host(.nol-site-footer-wide) .nol-site-footer-inner {
+  max-width: var(--nol-site-content-width-wide);
+}
+
+.nol-site-footer-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nol-site-footer-gap);
+}
+
+.nol-site-footer-brand {
+  display: flex;
+  flex: 2 1 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--nol-space-3);
+  min-width: 0;
+}
+
+.nol-site-footer-groups {
+  display: grid;
+  flex: 3 1 0;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--nol-site-footer-gap);
+  min-width: 0;
+}
+
+.nol-site-footer-line,
+.nol-site-footer-title,
+.nol-site-footer-notice {
+  margin: 0;
+}
+
+.nol-site-footer-line {
+  max-width: var(--nol-site-footer-line-width);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-site-footer-group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--nol-space-2) + var(--nol-space-half));
+  min-width: 0;
+}
+
+.nol-site-footer-title {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  font-weight: var(--nol-weight-emphasis);
+  letter-spacing: var(--nol-letter-spacing-caps);
+  line-height: var(--nol-line-small);
+  text-transform: uppercase;
+}
+
+.nol-site-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nol-site-footer-item {
+  display: flex;
+}
+
+.nol-site-footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nol-pointer-target);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  text-decoration: none;
+}
+
+.nol-site-footer-owner {
+  border-radius: var(--nol-radius-small);
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(.nol-site-footer-link, .nol-site-footer-owner):is(:hover, [data-nol-state="Hover"]) {
+  color: var(--nol-text-strong);
+  text-decoration: underline;
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
+:is(.nol-site-footer-link, .nol-site-footer-owner):is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nol-space-4);
+  margin-block-start: var(--nol-site-footer-gap);
+}
+
+.nol-site-footer-notice {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  line-height: var(--nol-line-small);
+}
+
+@container (width < 48rem) {
+  .nol-site-footer-inner {
+    padding: var(--nol-site-footer-padding-block-phone) var(--nol-site-padding-inline-phone);
+  }
+
+  .nol-site-footer-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--nol-site-footer-gap-phone);
+  }
+
+  .nol-site-footer-brand,
+  .nol-site-footer-groups {
+    flex: none;
+  }
+
+  .nol-site-footer-groups {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--nol-site-footer-gap-phone) var(--nol-space-4);
+  }
+
+  .nol-site-footer-group {
+    gap: var(--nol-space-1);
+  }
+
+  .nol-site-footer-links {
+    gap: 0;
+  }
+
+  .nol-site-footer-link {
+    min-height: var(--nol-site-menu-row);
+  }
+
+  .nol-site-footer-bottom {
+    margin-block-start: var(--nol-site-footer-gap-phone);
+  }
+}
