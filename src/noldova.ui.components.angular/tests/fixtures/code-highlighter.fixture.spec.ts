@@ -20,6 +20,8 @@ describe("CodeHighlighterFixture", () => {
 
   beforeEach(() => TestBed.configureTestingModule({ providers: [{ provide: CodeHighlighterTokens.tokenizeTimeLimit, useValue: 0 }, CodeHighlightingFixture.sharedShiki] }));
 
+  afterEach(() => vi.restoreAllMocks());
+
   it("gives true for a sample that has tokens, each at its place", async () => {
     expect(await sampleResultsAsync(TestBed.inject(CodeHighlighter), ["json"])).toEqual([["json", true, true]]);
   });
@@ -35,10 +37,9 @@ describe("CodeHighlighterFixture", () => {
   it("says the grammar's load failed, with what the highlighter reported", async () => {
     TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (): void => undefined } });
     const failing: CodeLanguage = { id: "json", aliases: [], load: () => Promise.reject(new Error("The grammar's chunk did not load.")) };
-    const named = vi.spyOn(CodeLanguage, "named").mockReturnValue(failing);
+    vi.spyOn(CodeLanguage, "named").mockReturnValue(failing);
 
     const results = await sampleResultsAsync(TestBed.inject(CodeHighlighter), ["json"]);
-    named.mockRestore();
 
     expect(results).toEqual([["json", true, "no tokens: the grammar's load failed, reporting The grammar's chunk did not load."]]);
   });
