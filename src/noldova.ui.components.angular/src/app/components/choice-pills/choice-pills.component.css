@@ -37,6 +37,20 @@
   cursor: pointer;
 }
 
+.nol-choice-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--nol-choice-pill);
+  height: var(--nol-choice-pill);
+  padding: 0;
+}
+
+.nol-choice-pill-glyph {
+  font-size: var(--nol-icon);
+  color: var(--nol-icon-color);
+}
+
 .nol-choice-pill:where(:not([aria-disabled="true"])):is(:hover, [data-nol-state="Hover"]) {
   background-color: var(--nol-toolbar-hover);
 

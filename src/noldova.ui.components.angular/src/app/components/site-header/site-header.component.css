@@ -1,0 +1,275 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--nol-window);
+  color: var(--nol-text);
+}
+
+.nol-site-skip {
+  position: absolute;
+  top: var(--nol-space-2);
+  inset-inline-start: var(--nol-space-4);
+  z-index: 1;
+  padding: var(--nol-space-2) var(--nol-space-3);
+  border-radius: var(--nol-radius-small);
+  background-color: var(--nol-panel);
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  transform: translateY(-200%);
+}
+
+.nol-site-skip:is(:focus, [data-nol-state="Focus"]) {
+  transform: none;
+  outline: var(--nol-border-width) solid var(--nol-accent);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-header-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--nol-space-6);
+  box-sizing: border-box;
+  max-width: var(--nol-site-content-width);
+  min-height: var(--nol-site-header-height);
+  margin-inline: auto;
+  padding-inline: var(--nol-site-padding-inline);
+}
+
+:host(.nol-site-header-wide) .nol-site-header-bar {
+  max-width: var(--nol-site-content-width-wide);
+}
+
+.nol-site-header-brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-site-version {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  line-height: var(--nol-line-small);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.nol-site-version:hover {
+  color: var(--nol-text-strong);
+}
+
+a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
+  border-radius: var(--nol-radius-small);
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-header-panel {
+  display: contents;
+}
+
+.nol-site-header-nav {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--nol-space-1);
+  min-width: 0;
+  order: 1;
+}
+
+.nol-site-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nol-pointer-target);
+  padding-inline: var(--nol-space-2);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nol-site-nav-link:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-toolbar-hover);
+  color: var(--nol-text-strong);
+}
+
+.nol-site-nav-link-current {
+  color: var(--nol-text-strong);
+  font-weight: var(--nol-weight-emphasis);
+
+  @media (forced-colors: active) {
+    text-decoration: underline;
+  }
+}
+
+.nol-site-nav-link:is(:focus-visible, [data-nol-state="Focus"]),
+.nol-site-social:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: calc(var(--nol-border-width) * -1);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-header-search {
+  display: none;
+  order: 2;
+}
+
+:host(.nol-site-header-with-search) .nol-site-header-search {
+  display: block;
+  flex: none;
+  width: var(--nol-site-search-width);
+  margin-inline-start: auto;
+}
+
+.nol-site-header-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-space-2);
+  order: 3;
+}
+
+:host(:not(.nol-site-header-with-search)) .nol-site-header-tools {
+  margin-inline-start: auto;
+}
+
+.nol-site-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--nol-icon-button-target);
+  height: var(--nol-icon-button-target);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text-muted);
+}
+
+.nol-site-social:is(:hover, [data-nol-state="Hover"]) {
+  background-color: var(--nol-toolbar-hover);
+  color: var(--nol-text-strong);
+}
+
+.nol-site-social-icon {
+  width: var(--nol-icon);
+  height: var(--nol-icon);
+  background-color: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: LinkText;
+  }
+}
+
+.nol-site-download {
+  flex: none;
+  order: 4;
+}
+
+.nol-site-menu-button {
+  display: none;
+}
+
+@media (width < 48rem) {
+  .nol-site-header-bar {
+    display: grid;
+    grid-template-areas:
+      "brand download menu"
+      "search search search"
+      "nav nav nav"
+      "tools tools tools"
+      "action action action";
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: var(--nol-site-header-height);
+    column-gap: var(--nol-space-2);
+    row-gap: 0;
+    min-height: 0;
+    padding-inline: var(--nol-site-padding-inline-phone);
+  }
+
+  .nol-site-header-brand {
+    grid-area: brand;
+  }
+
+  .nol-site-download {
+    grid-area: download;
+  }
+
+  .nol-site-menu-button {
+    display: inline-flex;
+    grid-area: menu;
+  }
+
+  :host(.nol-site-header-with-search) .nol-site-header-search,
+  .nol-site-header-nav,
+  .nol-site-header-tools {
+    display: none;
+  }
+
+  :host(.nol-site-header-wide) .nol-site-download {
+    display: none;
+    grid-area: action;
+    justify-self: start;
+  }
+
+  :host(.nol-site-header-open.nol-site-header-with-search) .nol-site-header-search {
+    display: block;
+    grid-area: search;
+    width: auto;
+    margin-inline-start: 0;
+    padding-block-end: var(--nol-space-2);
+  }
+
+  :host(.nol-site-header-open) .nol-site-header-nav {
+    display: flex;
+    grid-area: nav;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  :host(.nol-site-header-open) .nol-site-nav-link {
+    min-height: var(--nol-site-menu-row);
+  }
+
+  :host(.nol-site-header-open) .nol-site-header-tools {
+    display: flex;
+    grid-area: tools;
+    min-height: var(--nol-site-menu-row);
+    margin-inline-start: 0;
+  }
+
+  :host(.nol-site-header-open) nol-site-theme-switch {
+    margin-inline-start: auto;
+  }
+
+  :host(.nol-site-header-open.nol-site-header-wide) .nol-site-download {
+    display: inline-flex;
+    margin-block: var(--nol-space-2) var(--nol-space-4);
+  }
+}

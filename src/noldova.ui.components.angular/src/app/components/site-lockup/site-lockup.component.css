@@ -1,0 +1,59 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  flex: none;
+  min-width: 0;
+}
+
+.nol-site-lockup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  min-width: 0;
+  min-height: var(--nol-pointer-target);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text-strong);
+  text-decoration: none;
+}
+
+.nol-site-lockup-link:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-wordmark {
+  flex: none;
+  height: var(--nol-site-wordmark);
+  aspect-ratio: 1333.817 / 201.396;
+  background-color: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: LinkText;
+  }
+}
+
+.nol-site-lockup-name {
+  font-size: var(--nol-text-title);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-title);
+  white-space: nowrap;
+
+  @media (forced-colors: active) {
+    color: LinkText;
+  }
+}

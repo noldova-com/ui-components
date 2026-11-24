@@ -1,0 +1,52 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (contentId(); as target) {
+  <a class="nol-site-skip" [href]="partResources.formatTarget(target)">{{ partResources.skipLabel }}</a>
+}
+<div class="nol-site-header-bar">
+  <div class="nol-site-header-brand">
+    <nol-site-lockup [wordmark]="wordmark()" [name]="name()" [href]="homeHref()" />
+    @if (version(); as versionText) {
+      @if (versionHref(); as versionLink) {
+        <a class="nol-site-version" [href]="versionLink">{{ versionText }}</a>
+      } @else {
+        <span class="nol-site-version">{{ versionText }}</span>
+      }
+    }
+  </div>
+  <div class="nol-site-header-search">
+    <ng-content select="[nolSiteSearch]" />
+  </div>
+  <div class="nol-site-header-panel" [id]="menuId">
+    @if (links().length > 0) {
+      <nav class="nol-site-header-nav" [attr.aria-label]="partResources.navLabel">
+        @for (link of links(); track link.href) {
+          <a class="nol-site-nav-link" [class.nol-site-nav-link-current]="link.isCurrent" [href]="link.href"
+            [attr.aria-current]="link.isCurrent ? partResources.currentPage : null" (click)="leaveMenu()">{{ link.label }}</a>
+        }
+      </nav>
+    }
+    <div class="nol-site-header-tools">
+      @for (link of social(); track link.href) {
+        <a class="nol-site-social" [href]="link.href" [attr.aria-label]="link.label" [nolTooltip]="link.label"
+          ><span class="nol-site-social-icon" aria-hidden="true" [style.mask-image]="maskOf(link)"></span
+        ></a>
+      }
+      <nol-site-theme-switch />
+    </div>
+  </div>
+  @if (downloadHref(); as download) {
+    <a nol-button class="nol-site-download" [href]="download"
+      ><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ partResources.downloadGlyph }}</span>{{ downloadLabel() }}</a
+    >
+  }
+  <button #menuButton type="button" nol-icon-button class="nol-site-menu-button"
+    [icon]="menuOpen() ? partResources.closeGlyph : partResources.menuGlyph" [label]="partResources.menuLabel"
+    [attr.aria-expanded]="menuOpen()" [attr.aria-controls]="menuId" (click)="toggleMenu()"></button>
+</div>

@@ -1,0 +1,14 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: inline-flex;
+  padding: var(--nol-space-half);
+  border-radius: var(--nol-radius-medium);
+  background-color: var(--nol-window);
+}

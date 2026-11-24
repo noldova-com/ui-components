@@ -1,0 +1,132 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  background-color: var(--nol-panel);
+  color: var(--nol-text);
+}
+
+.nol-site-footer-inner {
+  box-sizing: border-box;
+  max-width: var(--nol-site-content-width);
+  margin-inline: auto;
+  padding-block-start: var(--nol-site-footer-padding-top);
+  padding-inline: var(--nol-site-padding-inline);
+}
+
+:host(.nol-site-footer-wide) .nol-site-footer-inner {
+  max-width: var(--nol-site-content-width-wide);
+}
+
+.nol-site-footer-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--nol-site-footer-bottom-gap);
+}
+
+.nol-site-footer-brand {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-site-footer-line,
+.nol-site-footer-title,
+.nol-site-footer-notice {
+  margin: 0;
+}
+
+.nol-site-footer-line {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+}
+
+.nol-site-footer-group {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--nol-space-2);
+  min-width: 0;
+}
+
+.nol-site-footer-title {
+  color: var(--nol-text-strong);
+  font-size: var(--nol-text-label);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-label);
+}
+
+.nol-site-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nol-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nol-site-footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nol-pointer-target);
+  border-radius: var(--nol-radius-small);
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-panel);
+  line-height: var(--nol-line-panel);
+  text-decoration: none;
+}
+
+.nol-site-footer-link:is(:hover, [data-nol-state="Hover"]) {
+  color: var(--nol-text-strong);
+  text-decoration: underline;
+}
+
+.nol-site-footer-link:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nol-space-4);
+  min-height: var(--nol-site-footer-notice-height);
+  margin-block-start: var(--nol-site-footer-bottom-gap);
+}
+
+.nol-site-footer-notice {
+  color: var(--nol-text-muted);
+  font-size: var(--nol-text-small);
+  line-height: var(--nol-line-small);
+}
+
+@media (width < 48rem) {
+  .nol-site-footer-inner {
+    padding-inline: var(--nol-site-padding-inline-phone);
+  }
+
+  .nol-site-footer-top {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--nol-space-6) var(--nol-space-4);
+  }
+
+  .nol-site-footer-brand {
+    grid-column: 1 / -1;
+  }
+}
