@@ -8,6 +8,8 @@
 
 import "@noldova/context.core";
 
+import { GalleryReferenceItem } from "./gallery-reference-item.js";
+
 export class GalleryResources {
   public static readonly scopeClass: string = "nol-theme-scope";
   public static readonly overlayContainerClass: string = "cdk-overlay-container";
@@ -104,29 +106,29 @@ export class GalleryResources {
   public static readonly referenceDuration: number = 552;
   public static readonly referenceAge: number = 2 * 60 * 60 * 1000;
   public static readonly referenceTime: Date = new Date(Date.now() - GalleryResources.referenceAge);
-  public static readonly referencePull = { url: "https://code.example/app/pull/12", reference: "example/app#12", title: "Keep a reply's links readable while it streams", location: "example/app #12", kind: "referencePullKind" } as const;
-  public static readonly referenceDraftPull = { url: "https://code.example/app/pull/14", reference: "example/app#14", title: "Draw the settings page's empty state", location: "example/app #14", kind: "referencePullKind" } as const;
-  public static readonly referenceMergedPull = { url: "https://code.example/app/pull/9", reference: "example/app#9", title: "Show the work row's whole title", location: "example/app #9", kind: "referencePullKind" } as const;
-  public static readonly referenceClosedPull = { url: "https://code.example/app/pull/7", reference: "example/app#7", title: "Try a second title reveal", location: "example/app #7", kind: "referencePullKind" } as const;
-  public static readonly referenceIssue = { url: "https://code.example/app/issues/31", reference: "#31", title: "A reply's chip shows the item it links to", location: "example/app #31", kind: "referenceIssueKind" } as const;
-  public static readonly referenceDoneIssue = { url: "https://code.example/app/issues/28", reference: "#28", title: "A work row's title appears whole", location: "example/app #28", kind: "referenceIssueKind" } as const;
-  public static readonly referenceSkippedIssue = { url: "https://code.example/app/issues/25", reference: "#25", title: "Sort the list by size", location: "example/app #25", kind: "referenceIssueKind" } as const;
-  public static readonly referenceMarked = { url: "https://code.example/app/pull/15", reference: "example/app#15", title: "Mark each chip with its code host", location: "Code host · example/app #15", kind: "referencePullKind" } as const;
-  public static readonly referenceColorMarked = { url: "https://code.example/app/pull/16", reference: "example/app#16", title: "Keep a host's colored mark as it is", location: "Code host · example/app #16", kind: "referencePullKind" } as const;
-  public static readonly referenceFailedRun = { url: "https://code.example/app/runs/42", reference: "example/app · Build #42", title: "Failed", location: "example/app · Build #42", kind: "referenceRunKind" } as const;
-  public static readonly referenceRunCard = { url: "https://code.example/app/runs/42", reference: "example/app · Build #42", title: "main · pull request #12 · 4 jobs, 1 failed: Windows x64", location: "example/app · Build #42", kind: "referenceRunKind" } as const;
-  public static readonly referenceRunningJob = { url: "https://code.example/app/runs/43/jobs/7", reference: "example/app · Build #43", title: "Linux x64", location: "example/app · Build #43", kind: "referenceJobKind" } as const;
-  public static readonly referenceMergeRequest = { url: "https://code.example/app/merge_requests/482", reference: "example/app!482", title: "Tell the chat when the agent stops", location: "example/app !482", kind: "referenceMergeKind" } as const;
-  public static readonly referenceWorkItem = { url: "https://code.example/app/workitems/4512", reference: "Bug 4512", title: "The agent leaves out the app's tools in a folder it doesn't trust", location: "example/app", kind: "referenceWorkItemKind" } as const;
-  public static readonly referenceCommit = { url: "https://code.example/app/commit/4b1c0de", reference: "4b1c0de", title: "Add the garden ideas", location: "notes · 4b1c0de", kind: "referenceCommitKind" } as const;
+  public static readonly referencePull: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/12", "example/app#12", "Keep a reply's links readable while it streams", "example/app #12", "referencePullKind");
+  public static readonly referenceDraftPull: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/14", "example/app#14", "Draw the settings page's empty state", "example/app #14", "referencePullKind");
+  public static readonly referenceMergedPull: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/9", "example/app#9", "Show the work row's whole title", "example/app #9", "referencePullKind");
+  public static readonly referenceClosedPull: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/7", "example/app#7", "Try a second title reveal", "example/app #7", "referencePullKind");
+  public static readonly referenceIssue: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/issues/31", "#31", "A reply's chip shows the item it links to", "example/app #31", "referenceIssueKind");
+  public static readonly referenceDoneIssue: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/issues/28", "#28", "A work row's title appears whole", "example/app #28", "referenceIssueKind");
+  public static readonly referenceSkippedIssue: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/issues/25", "#25", "Sort the list by size", "example/app #25", "referenceIssueKind");
+  public static readonly referenceMarked: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/15", "example/app#15", "Mark each chip with its code host", "Code host · example/app #15", "referencePullKind");
+  public static readonly referenceColorMarked: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/16", "example/app#16", "Keep a host's colored mark as it is", "Code host · example/app #16", "referencePullKind");
+  public static readonly referenceFailedRun: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/runs/42", "example/app · Build #42", "Failed", "example/app · Build #42", "referenceRunKind");
+  public static readonly referenceRunCard: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/runs/42", "example/app · Build #42", "main · pull request #12 · 4 jobs, 1 failed: Windows x64", "example/app · Build #42", "referenceRunKind");
+  public static readonly referenceRunningJob: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/runs/43/jobs/7", "example/app · Build #43", "Linux x64", "example/app · Build #43", "referenceJobKind");
+  public static readonly referenceMergeRequest: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/merge_requests/482", "example/app!482", "Tell the chat when the agent stops", "example/app !482", "referenceMergeKind");
+  public static readonly referenceWorkItem: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/workitems/4512", "Bug 4512", "The agent leaves out the app's tools in a folder it doesn't trust", "example/app", "referenceWorkItemKind");
+  public static readonly referenceCommit: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/commit/4b1c0de", "4b1c0de", "Add the garden ideas", "notes · 4b1c0de", "referenceCommitKind");
   public static readonly referenceBranch = { url: "https://code.example/app/tree/notes-sync", reference: "notes-sync" } as const;
   public static readonly referenceActiveColor: string = "#007ACC";
   public static readonly referenceCommitAdded: number = 6;
   public static readonly referenceCommitFiles: number = 1;
-  public static readonly referencePassedRun = { url: "https://code.example/app/runs/41", reference: "example/app · Build #41", title: "Passed", location: "example/app · Build #41", kind: "referenceRunKind" } as const;
-  public static readonly referencePendingMarked = { url: "https://code.example/app/pull/17", reference: "example/app#17", title: "Keep the place of a mark not shown yet", location: "Code host · example/app #17", kind: "referencePullKind" } as const;
-  public static readonly referenceLong = { url: "https://code.example/app/issues/40", reference: "example/app#40", title: "A title far too long to fit in the chip, which cuts it at the chip's width with an ellipsis and keeps the card's copy whole", location: "example/app #40", kind: "referenceIssueKind" } as const;
-  public static readonly referenceReading = { url: "https://code.example/app/issues/41", reference: "example/app#41", title: "", location: "", kind: "referenceIssueKind" } as const;
+  public static readonly referencePassedRun: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/runs/41", "example/app · Build #41", "Passed", "example/app · Build #41", "referenceRunKind");
+  public static readonly referencePendingMarked: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/pull/17", "example/app#17", "Keep the place of a mark not shown yet", "Code host · example/app #17", "referencePullKind");
+  public static readonly referenceLong: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/issues/40", "example/app#40", "A title far too long to fit in the chip, which cuts it at the chip's width with an ellipsis and keeps the card's copy whole", "example/app #40", "referenceIssueKind");
+  public static readonly referenceReading: GalleryReferenceItem = new GalleryReferenceItem("https://code.example/app/issues/41", "example/app#41", "", "", "referenceIssueKind");
   public static readonly tabImage: string = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAKklEQVR42u3NMREAAAQAQI1EE1wIWhjcDz9/ZPVcCqFQKBQKhUKhUPgxXPhnwOrYLawIAAAAAElFTkSuQmCC";
   public static readonly text = {
     gallery: "Gallery",
@@ -512,6 +514,8 @@ export class GalleryResources {
     referenceDraft: "Draft",
     referenceMerged: "Merged",
     referenceClosed: "Closed",
+    referenceDone: "Done",
+    referenceNotPlanned: "Not planned",
     referenceFailed: "Failed",
     referenceRunning: "In progress",
     referencePassed: "Passed",

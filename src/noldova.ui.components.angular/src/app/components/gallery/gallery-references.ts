@@ -22,6 +22,8 @@ import { LinkReferenceState } from "../../models/link-reference-state.js";
 import { LinkReferenceStatus } from "../../models/link-reference-status.js";
 import { LinkReferenceTone } from "../../models/link-reference-tone.js";
 import { LinkReferenceWorkItemState } from "../../models/link-reference-work-item-state.js";
+import type { GalleryReferenceItem } from "./gallery-reference-item.js";
+import type { GalleryReferenceOptions } from "./gallery-reference-options.js";
 import { GalleryResources } from "./gallery-resources.js";
 
 export class GalleryReferences implements ILinkReferenceSource {
@@ -32,6 +34,10 @@ export class GalleryReferences implements ILinkReferenceSource {
   public static readonly merged: LinkReferenceState = new LinkReferenceState(GalleryReferences.text.referenceMerged,
     GalleryReferences.colorOf(GalleryResources.referenceMergedLightColor, GalleryResources.referenceMergedLightFillPercent),
     GalleryReferences.colorOf(GalleryResources.referenceMergedDarkColor, GalleryResources.referenceMergedDarkFillPercent));
+  public static readonly done: LinkReferenceState = new LinkReferenceState(GalleryReferences.text.referenceDone,
+    GalleryReferences.colorOf(GalleryResources.referenceMergedLightColor, GalleryResources.referenceMergedLightFillPercent),
+    GalleryReferences.colorOf(GalleryResources.referenceMergedDarkColor, GalleryResources.referenceMergedDarkFillPercent));
+  public static readonly notPlanned: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceNotPlanned, GalleryResources.referenceDraftColor);
   public static readonly closed: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceClosed, GalleryResources.referenceClosedColor,
     GalleryResources.referenceClosedFillPercent);
   public static readonly failed: LinkReferenceState = GalleryReferences.stateOf(GalleryReferences.text.referenceFailed, GalleryResources.referenceClosedColor);
@@ -73,8 +79,8 @@ export class GalleryReferences implements ILinkReferenceSource {
     [GalleryResources.referenceMergedPull.url, signal(GalleryReferences.itemOf(GalleryResources.referenceMergedPull, GalleryReferences.icons.merged, GalleryReferences.merged))],
     [GalleryResources.referenceClosedPull.url, signal(GalleryReferences.itemOf(GalleryResources.referenceClosedPull, GalleryReferences.icons.closed, GalleryReferences.closed))],
     [GalleryResources.referenceIssue.url, signal(GalleryReferences.issue)],
-    [GalleryResources.referenceDoneIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceDoneIssue, GalleryReferences.icons.done, GalleryReferences.merged))],
-    [GalleryResources.referenceSkippedIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceSkippedIssue, GalleryReferences.icons.skipped, GalleryReferences.draft))],
+    [GalleryResources.referenceDoneIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceDoneIssue, GalleryReferences.icons.done, GalleryReferences.done))],
+    [GalleryResources.referenceSkippedIssue.url, signal(GalleryReferences.itemOf(GalleryResources.referenceSkippedIssue, GalleryReferences.icons.skipped, GalleryReferences.notPlanned))],
     [GalleryResources.referenceMarked.url, signal(GalleryReferences.itemOf(GalleryResources.referenceMarked, GalleryReferences.icons.pull, GalleryReferences.open, { mark: GalleryReferences.mark }))],
     [GalleryResources.referenceColorMarked.url, signal(GalleryReferences.itemOf(GalleryResources.referenceColorMarked, GalleryReferences.icons.pull, GalleryReferences.open, { mark: GalleryReferences.colorMark }))],
     [GalleryResources.referenceFailedRun.url, signal(GalleryReferences.itemOf(GalleryResources.referenceFailedRun, GalleryReferences.icons.failed, GalleryReferences.failed, {
@@ -105,12 +111,7 @@ export class GalleryReferences implements ILinkReferenceSource {
     return new LinkReferenceColor(color, GalleryResources.formatReferenceBackground(color, percent));
   }
 
-  private static itemOf(item: { readonly reference: string; readonly title: string; readonly location: string; readonly kind: "referencePullKind" | "referenceIssueKind" | "referenceRunKind" | "referenceJobKind"
-    | "referenceMergeKind" | "referenceWorkItemKind" | "referenceCommitKind" }, icon: string,
-    state: LinkReferenceState,
-    options: { readonly diff?: LinkReferenceDiff; readonly comments?: number; readonly mark?: LinkReferenceImage; readonly isMarkPending?: boolean; readonly duration?: number;
-      readonly action?: LinkReferenceAction; readonly statuses?: readonly LinkReferenceStatus[]; readonly footnote?: string; readonly details?: readonly LinkReferenceDetail[];
-      readonly workItemState?: LinkReferenceWorkItemState } = {}): LinkReference {
+  private static itemOf(item: GalleryReferenceItem, icon: string, state: LinkReferenceState, options: GalleryReferenceOptions = {}): LinkReference {
     return new LinkReference(item.reference, GalleryReferences.text[item.kind], new LinkReferenceImage(icon), {
       state, title: item.title, location: item.location, author: GalleryReferences.author, time: GalleryResources.referenceTime, ...options
     });
