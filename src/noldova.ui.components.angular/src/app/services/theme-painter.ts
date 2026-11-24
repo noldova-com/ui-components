@@ -23,16 +23,16 @@ export class ThemePainter {
 
   // Every value is read before any is painted, so a missing one leaves what was painted before whole rather than two themes mixed.
   public paint(element: HTMLElement, theme: Theme, mode: ThemeMode): void {
-    const properties: [string, string][] = [[ThemePainterResources.colorSchemeProperty, mode === ThemeMode.Dark ? Resources.darkScheme : Resources.lightScheme]];
+    const properties: Map<string, string> = new Map([[ThemePainterResources.colorSchemeProperty, mode === ThemeMode.Dark ? Resources.darkScheme : Resources.lightScheme]]);
     for (const token of Resources.colorTokens)
-      properties.push([token.variable, this.requireValue(token.resolve(theme, mode) ?? token.resolve(this.defaultTheme, mode), token.key)]);
+      properties.set(token.variable, this.requireValue(token.resolve(theme, mode) ?? token.resolve(this.defaultTheme, mode), token.key));
     for (const name of Resources.lookTokens)
-      properties.push([Resources.formatLookVariable(name), this.requireValue(theme.readLook(name) ?? this.defaultTheme.readLook(name), name)]);
-    const attributes: [string, string][] = [];
+      properties.set(Resources.formatLookVariable(name), this.requireValue(theme.readLook(name) ?? this.defaultTheme.readLook(name), name));
+    const attributes: Map<string, string> = new Map();
     for (const [control, shapes] of ThemePainterResources.shapes) {
       const chosen = theme.readShape(control);
       const shape = !Object.isUndefined(chosen) && shapes.includes(chosen) ? chosen : this.defaultTheme.readShape(control);
-      attributes.push([Resources.formatShapeAttribute(control), this.requireValue(shape, control)]);
+      attributes.set(Resources.formatShapeAttribute(control), this.requireValue(shape, control));
     }
     for (const [name, value] of properties)
       element.style.setProperty(name, value);

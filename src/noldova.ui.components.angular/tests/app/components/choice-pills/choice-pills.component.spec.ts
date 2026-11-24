@@ -65,7 +65,7 @@ describe("ChoicePillsComponent", () => {
     expect(group().getAttribute("aria-label")).toBe("Mode");
     expect(pills().map(t => [t.getAttribute("role"), t.textContent?.trim(), t.getAttribute("aria-checked")])).toEqual([["radio", "System", "false"], ["radio", "Light", "true"], ["radio", "Dark", "false"]]);
     expect(pills().every(t => getComputedStyle(t).borderTopWidth === "0px")).toBe(true);
-    expect(pills().every(t => t.querySelector("svg, .nol-icon") === null)).toBe(true);
+    expect(pills().every(t => Object.isNull(t.querySelector("svg, .nol-icon")))).toBe(true);
   });
 
   it("describes its group by the elements it is given, and by nothing when given none", () => {
@@ -160,7 +160,7 @@ describe("ChoicePillsComponent", () => {
     host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true),
       new SelectOption("custom", "Custom")]);
     fixture.detectChanges();
-    const looks = (pill: HTMLButtonElement | undefined): unknown[] => pill === undefined ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
+    const looks = (pill: HTMLButtonElement | undefined): unknown[] => Object.isUndefined(pill) ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
     const focused = (): string => document.activeElement?.textContent?.trim() ?? "";
 
     expect([looks(pills()[0]), looks(pills()[1])]).toEqual([["true", "0.5", "default"], [null, "1", "pointer"]]);

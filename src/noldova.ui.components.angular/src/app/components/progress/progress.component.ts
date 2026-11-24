@@ -8,6 +8,8 @@
 
 import { Component, type Signal, computed, input } from "@angular/core";
 
+import "@noldova/context.core";
+
 import { ProgressResources } from "./progress.resources.js";
 import { RevealDelayDirective } from "./reveal-delay.directive.js";
 
@@ -31,9 +33,9 @@ export class ProgressComponent {
   protected readonly maximum: number = ProgressResources.progressMaximum;
   protected readonly fraction: Signal<number | null> = computed(() => {
     const value = this.value();
-    return value === null || Number.isNaN(value) ? null : Math.min(Math.max(value, this.minimum), this.maximum);
+    return Object.isNull(value) || Number.isNaN(value) ? null : Math.min(Math.max(value, this.minimum), this.maximum);
   });
-  protected readonly isIndeterminate: Signal<boolean> = computed(() => this.fraction() === null);
+  protected readonly isIndeterminate: Signal<boolean> = computed(() => Object.isNull(this.fraction()));
 
   public readonly label = input.required<string>();
   public readonly value = input<number | null>(null);
