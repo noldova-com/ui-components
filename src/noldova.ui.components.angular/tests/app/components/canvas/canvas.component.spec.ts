@@ -19,6 +19,7 @@ import { CanvasControlsPlacement } from "../../../../src/app/enums/canvas-contro
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
+import { ContentMovedEvent } from "../../../../src/app/models/content-moved-event";
 import { DragGesture } from "../../../../src/app/models/drag-gesture";
 import { OverlayAnchoring } from "../../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
@@ -363,6 +364,7 @@ describe("CanvasComponent", () => {
           for (const { width, height, hasMapRoom } of sizes) {
             canvas().style.width = `${String(width)}px`;
             canvas().style.height = `${String(height)}px`;
+            await RenderedFrameFixture.nextAsync();
             await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe(hasMapRoom ? "visible" : "hidden"));
             const frame = canvas().getBoundingClientRect();
             const overview = map().getBoundingClientRect();
@@ -374,6 +376,61 @@ describe("CanvasComponent", () => {
             AppearanceFixture.expectPixels(overview.height - 2 * border, (overview.width - 2 * border) * drawing.height / drawing.width);
           }
         });
+
+  describe("with its floating map on a canvas too short for it", () => {
+    const shrinkAsync = async (): Promise<void> => {
+      const border = AppearanceFixture.measureLook("border-width");
+      const widest = Math.max(...DomFixture.all(tools(), "button, .nol-canvas-zoom").map(t => t.getBoundingClientRect().width));
+      canvas().style.width = `${String(widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * (AppearanceFixture.measureLook("space-3") + border))}px`;
+      canvas().style.height = `${String(AppearanceFixture.toPixels(12))}px`;
+      await RenderedFrameFixture.nextAsync();
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe("hidden"));
+    };
+
+    beforeEach(async () => {
+      host.placement.set(CanvasControlsPlacement.Floating);
+      host.cards.set([1, 2, 3]);
+      fixture.detectChanges();
+      await measuredAsync(3);
+    });
+
+    it("moves the focus from the map to the map's button as the map hides, and leaves a focus elsewhere alone", async () => {
+      map().focus();
+      const before = document.activeElement === map();
+      await shrinkAsync();
+      const moved = document.activeElement === button("map-toggle");
+      canvas().style.width = "800px";
+      canvas().style.height = "500px";
+      await RenderedFrameFixture.nextAsync();
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(map()).visibility).toBe("visible"));
+      canvas().focus();
+      await shrinkAsync();
+
+      expect([before, moved, document.activeElement === canvas()]).toEqual([true, true, true]);
+    });
+
+    it("leaves the map out of the free area it reports and fits in, as though hidden by its button", async () => {
+      const areas: DOMRectReadOnly[] = [];
+      canvas().addEventListener("nol-content-moved", t => {
+        if (t instanceof ContentMovedEvent)
+          areas.push(t.area);
+      });
+      const last = (): readonly number[] => {
+        const area = areas.at(-1);
+        return Object.isUndefined(area) ? [] : [area.left, area.top, area.width, area.height];
+      };
+      await shrinkAsync();
+      instance().fit();
+      await RenderedFrameFixture.nextAsync();
+      const roomless = [last(), view()];
+      button("map-toggle").click();
+      await DomChangeFixture.untilAsync(() => expect(DomFixture.maybe(canvas(), "nol-canvas-map")).toBeNull());
+      instance().fit();
+      await RenderedFrameFixture.nextAsync();
+
+      expect(roomless).toEqual([last(), view()]);
+    });
+  });
 
   it("fits its items above its floating toolbar once its map is hidden, from space-3 below its top", async () => {
     host.placement.set(CanvasControlsPlacement.Floating);

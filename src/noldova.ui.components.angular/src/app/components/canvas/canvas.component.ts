@@ -63,7 +63,9 @@ export class CanvasComponent {
   private readonly items: Signal<readonly HTMLElement[]> = inject(CanvasItems, { self: true }).elements;
   private readonly plane: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("plane");
   private readonly tools: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("tools");
+  private readonly bar: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("bar");
   private readonly map: Signal<ElementRef<HTMLElement> | undefined> = viewChild(CanvasMapComponent, { read: ElementRef });
+  private readonly mapToggle: Signal<ElementRef<HTMLElement>> = viewChild.required("mapToggle", { read: ElementRef });
   private readonly shown: WritableSignal<CanvasView> = signal(CanvasView.initial);
   private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   private readonly pointers: Map<number, CanvasPoint> = new Map<number, CanvasPoint>();
@@ -139,8 +141,13 @@ export class CanvasComponent {
       read: () => {
         this.size();
         this.contentBox();
-        const hasRoom = this.measureMapRoom();
-        untracked(() => this.hasMapRoom.set(hasRoom));
+        const map = this.map()?.nativeElement;
+        const hasRoom = Object.isUndefined(map) || this.hasRoomFor(map);
+        untracked(() => {
+          this.hasMapRoom.set(hasRoom);
+          if (!Object.isUndefined(map) && !hasRoom && map.contains(this.host.ownerDocument.activeElement))
+            this.mapToggle().nativeElement.focus();
+        });
       }
     });
   }
@@ -305,11 +312,12 @@ export class CanvasComponent {
   private freeArea(): CanvasBox {
     const size = this.size();
     const tools = this.tools().nativeElement;
-    const map = this.map()?.nativeElement;
+    const shown = this.map()?.nativeElement;
+    const map = Object.isUndefined(shown) || !this.hasRoomFor(shown) ? undefined : shown;
     const mapRoom = CanvasMapResources.canvasMapHeightRem * this.rootSize();
     if (this.isFloating()) {
       const inset = size.height - tools.offsetTop - tools.offsetHeight;
-      const bottom = Object.isUndefined(map) ? tools.offsetTop - inset : tools.offsetTop + map.offsetTop + map.clientHeight - mapRoom - inset;
+      const bottom = Object.isUndefined(map) ? tools.offsetTop + this.bar().nativeElement.offsetTop - inset : tools.offsetTop + map.offsetTop + map.clientHeight - mapRoom - inset;
       return new CanvasBox(inset, inset, size.width - inset * 2, bottom - inset);
     }
     const inset = tools.offsetTop;
@@ -318,10 +326,10 @@ export class CanvasComponent {
     return new CanvasBox(inset, top, size.width - inset * 2, bottom - top);
   }
 
-  // A floating map stands above the toolbar's rows; on a canvas too short for both, its top would pass the canvas's top inset, so it hides.
-  private measureMapRoom(): boolean {
-    const map = this.map()?.nativeElement;
-    if (!this.isFloating() || Object.isUndefined(map))
+  // A floating map stands above the toolbar's rows; on a canvas too short for both, its top would pass the canvas's top inset, so it hides,
+  // and Fit treats it as absent.
+  private hasRoomFor(map: HTMLElement): boolean {
+    if (!this.isFloating())
       return true;
     const tools = this.tools().nativeElement;
     const inset = this.host.clientHeight - tools.offsetTop - tools.offsetHeight;
