@@ -6,18 +6,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, type Signal, computed, input, output } from "@angular/core";
+import { Directionality } from "@angular/cdk/bidi";
+import { Component, type Signal, computed, inject, input, output } from "@angular/core";
 
 import "@noldova/context.core";
 
 import { Resources } from "../../../resources.js";
 import type { SelectOption } from "../../models/select-option.js";
+import { ElementDirectionality } from "../../services/element-directionality.js";
 import { ChoicePillsResources } from "./choice-pills.resources.js";
 
 @Component({
   selector: "nol-choice-pills",
   templateUrl: "./choice-pills.component.html",
   styleUrl: "./choice-pills.component.css",
+  providers: [ElementDirectionality.provide()],
   host: {
     "class": "nol-choice-pills"
   }
@@ -30,6 +33,7 @@ export class ChoicePillsComponent {
   public readonly valueChange = output<string>();
 
   protected readonly resources: typeof Resources = Resources;
+  private readonly directionality: Directionality = inject(Directionality);
   protected readonly tabStop: Signal<string | undefined> = computed(() =>
     (this.options().find(t => t.value === this.value()) ?? this.options().find(t => !t.isDisabled) ?? this.options()[0])?.value);
 
@@ -39,11 +43,12 @@ export class ChoicePillsComponent {
   }
 
   protected move(event: KeyboardEvent, group: HTMLElement): void {
-    if (!(event.target instanceof HTMLButtonElement))
+    if (!(event.target instanceof HTMLButtonElement) || event.altKey || event.ctrlKey || event.metaKey)
       return;
     const pills = [...group.querySelectorAll<HTMLButtonElement>(ChoicePillsResources.choicePillSelector)];
-    const to = ChoicePillsResources.choicePillTargets.get(event.key);
-    const direction = ChoicePillsResources.choicePillDirections.get(event.key);
+    const key = this.directionality.value === Resources.rightToLeftDirection ? ChoicePillsResources.choicePillMirroredKeys.get(event.key) ?? event.key : event.key;
+    const to = ChoicePillsResources.choicePillTargets.get(key);
+    const direction = ChoicePillsResources.choicePillDirections.get(key);
     if (Object.isUndefined(to) || Object.isUndefined(direction))
       return;
     event.preventDefault();

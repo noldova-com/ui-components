@@ -170,10 +170,16 @@ export class MarkdownReader {
     return schemes.names.length === other.names.length && schemes.names.every((t, i) => t === other.names[i]);
   }
 
+  // With no line break within the limit, the cut steps back one before a character the limit would split in two.
   private static parsedEndOf(text: string): number {
-    if (text.length <= MarkdownReaderResources.markdownLengthLimit)
+    const limit = MarkdownReaderResources.markdownLengthLimit;
+    if (text.length <= limit)
       return text.length;
-    return text.lastIndexOf(Resources.markdownLineBreak, MarkdownReaderResources.markdownLengthLimit - 1) + 1 || MarkdownReaderResources.markdownLengthLimit;
+    const lineEnd = text.lastIndexOf(Resources.markdownLineBreak, limit - 1) + 1;
+    if (lineEnd > 0)
+      return lineEnd;
+    const before = text.charCodeAt(limit - 1);
+    return before >= MarkdownReaderResources.markdownHighSurrogateFirst && before <= MarkdownReaderResources.markdownHighSurrogateLast ? limit - 1 : limit;
   }
 
   private static blocksOf(tokens: readonly Token[]): readonly (readonly Token[])[] {

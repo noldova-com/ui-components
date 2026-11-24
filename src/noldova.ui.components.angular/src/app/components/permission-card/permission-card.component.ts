@@ -145,8 +145,9 @@ export class PermissionCardComponent {
       if (this.status() === PermissionStatus.Decided && this.isDecidedToday())
         onCleanup(this.midnight.watch());
     });
+    // On any new phase, a new request's id too, as the confirming question it clears may have held the focus.
     effect(() => {
-      this.status();
+      this.phase();
       if (!this.hasFocus())
         return;
       afterNextRender(() => {

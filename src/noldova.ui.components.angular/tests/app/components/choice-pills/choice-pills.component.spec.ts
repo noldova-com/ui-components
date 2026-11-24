@@ -65,7 +65,7 @@ describe("ChoicePillsComponent", () => {
     expect(group().getAttribute("aria-label")).toBe("Mode");
     expect(pills().map(t => [t.getAttribute("role"), t.textContent?.trim(), t.getAttribute("aria-checked")])).toEqual([["radio", "System", "false"], ["radio", "Light", "true"], ["radio", "Dark", "false"]]);
     expect(pills().every(t => getComputedStyle(t).borderTopWidth === "0px")).toBe(true);
-    expect(pills().every(t => t.querySelector("svg, .nol-icon") === null)).toBe(true);
+    expect(pills().every(t => Object.isNull(t.querySelector("svg, .nol-icon")))).toBe(true);
   });
 
   it("describes its group by the elements it is given, and by nothing when given none", () => {
@@ -131,12 +131,36 @@ describe("ChoicePillsComponent", () => {
     expect(selected()).toEqual(["Light"]);
   });
 
+  it("moves to the next pill with ArrowLeft and to the one before with ArrowRight right to left, and to the last with End", async () => {
+    render();
+    fixture.nativeElement.dir = "rtl";
+    pills()[1]?.focus();
+
+    await userEvent.keyboard("{ArrowLeft}");
+    const left = document.activeElement;
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+    const right = document.activeElement;
+    await userEvent.keyboard("{End}");
+
+    expect([left, right, document.activeElement]).toEqual([pills()[2], pills()[0], pills().at(-1)]);
+  });
+
+  it("does nothing for an arrow key, Home or End held with Alt, Ctrl or Meta", async () => {
+    render();
+    pills()[1]?.focus();
+
+    for (const key of ["{Alt>}{ArrowRight}{/Alt}", "{Control>}{ArrowLeft}{/Control}", "{Meta>}{Home}{/Meta}", "{Alt>}{End}{/Alt}"])
+      await userEvent.keyboard(key);
+
+    expect([document.activeElement, host.changes]).toEqual([pills()[1], []]);
+  });
+
   it("shows a disabled option dimmed and marked disabled, chooses nothing on its click, and passes over it with the arrow keys, Home and End", async () => {
     render();
     host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true),
       new SelectOption("custom", "Custom")]);
     fixture.detectChanges();
-    const looks = (pill: HTMLButtonElement | undefined): unknown[] => pill === undefined ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
+    const looks = (pill: HTMLButtonElement | undefined): unknown[] => Object.isUndefined(pill) ? [] : [pill.getAttribute("aria-disabled"), getComputedStyle(pill).opacity, getComputedStyle(pill).cursor];
     const focused = (): string => document.activeElement?.textContent?.trim() ?? "";
 
     expect([looks(pills()[0]), looks(pills()[1])]).toEqual([["true", "0.5", "default"], [null, "1", "pointer"]]);

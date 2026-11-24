@@ -57,6 +57,21 @@ export class MessageTime {
     const seconds = (time.getTime() - now) / Resources.millisecondsPerSecond;
     const distance = Math.abs(seconds);
     const step = MessageTimeResources.messageTimeSteps.find(t => Math.round(distance / t.seconds) < t.limit) as MessageTimeStep;
-    return format.format(step === MessageTimeResources.messageTimeSteps[0] ? 0 : Math.sign(seconds) * Math.round(distance / step.seconds), step.unit);
+    if (step === MessageTimeResources.messageTimeSteps[0])
+      return format.format(0, step.unit);
+    if (step === MessageTimeResources.messageTimeDayStep) {
+      const days = MessageTime.calendarDaysBetween(now, time);
+      if (days !== 0)
+        return format.format(days, step.unit);
+    }
+    const shown = step === MessageTimeResources.messageTimeDayStep ? MessageTimeResources.messageTimeHourStep : step;
+    return format.format(Math.sign(seconds) * Math.round(distance / shown.seconds), shown.unit);
+  }
+
+  private static calendarDaysBetween(now: number, time: Date): number {
+    const today = new Date(now);
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const day = new Date(time.getFullYear(), time.getMonth(), time.getDate()).getTime();
+    return Math.round((day - start) / (MessageTimeResources.messageTimeDayStep.seconds * Resources.millisecondsPerSecond));
   }
 }

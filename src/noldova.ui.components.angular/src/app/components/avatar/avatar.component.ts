@@ -14,6 +14,7 @@ import { ArgumentOutOfRangeException } from "@noldova/context.exceptions";
 import { AvatarColor } from "../../enums/avatar-color.js";
 import { AvatarSize } from "../../enums/avatar-size.js";
 import { AvatarColors } from "../../models/avatar-colors.js";
+import { GraphemeText } from "../../models/grapheme-text.js";
 import { Resources } from "../../../resources.js";
 import { AvatarInitialsFitter } from "./avatar-initials-fitter.js";
 import { AvatarResources } from "./avatar.resources.js";
@@ -49,8 +50,8 @@ export class AvatarComponent {
     return image === this.failedImage() ? null : image;
   });
   protected readonly shownInitials: Signal<string> = computed(() => {
-    const shown = this.initials() ?? Array.from(this.name().trim())[0]?.toLocaleUpperCase(this.locale) ?? String.empty;
-    return this.size() === AvatarSize.Icon ? Array.from(shown)[0] ?? String.empty : shown;
+    const shown = this.initials() ?? new GraphemeText(this.name().trim()).prefix(1).toLocaleUpperCase(this.locale);
+    return this.size() === AvatarSize.Icon ? new GraphemeText(shown).prefix(1) : shown;
   });
   protected readonly hue: Signal<string> = computed(() => {
     const chosen = this.filledColor();

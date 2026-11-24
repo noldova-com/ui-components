@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DestroyRef, ElementRef, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, inject, input, linkedSignal, output, untracked,
+import { Component, DOCUMENT, DestroyRef, ElementRef, type Signal, ViewEncapsulation, type WritableSignal, afterRenderEffect, computed, inject, input, linkedSignal, output, untracked,
   viewChild } from "@angular/core";
 
 import { ComposingKey } from "../../models/composing-key.js";
@@ -83,10 +83,14 @@ export class TabComponent {
   public readonly labelCancelled = output<void>();
 
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly document: Document = inject(DOCUMENT);
   private readonly fieldElement: Signal<ElementRef<HTMLInputElement> | undefined> = viewChild("field", { read: ElementRef });
   private isSettled: boolean = false;
   private readonly onMenuFocusLeft: (event: Event) => void = event => this.leaveMenu(event);
   private hadField: boolean = false;
+  // Whether the field had the focus when the app left the mode: a blur while editing, as the person clicks elsewhere, clears it, while the blur of
+  // the field's removal, once the mode is left, keeps it.
+  private isFieldFocused: boolean = false;
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => this.stopWaitingOnMenu());
@@ -96,8 +100,9 @@ export class TabComponent {
       this.hadField = !Object.isUndefined(field);
       this.stopWaitingOnMenu();
       if (Object.isUndefined(field)) {
-        if (hadField && (Object.isNull(document.activeElement) || document.activeElement === document.body))
+        if (hadField && this.isFieldFocused && (Object.isNull(this.document.activeElement) || this.document.activeElement === this.document.body))
           this.host.focus();
+        this.isFieldFocused = false;
         return;
       }
       this.isSettled = false;
@@ -143,9 +148,15 @@ export class TabComponent {
     }
   }
 
+  protected onFieldFocus(): void {
+    this.isFieldFocused = true;
+  }
+
   protected onFieldBlur(event: FocusEvent): void {
+    if (this.editing())
+      this.isFieldFocused = false;
     if (TabComponent.isMenu(event.relatedTarget))
-      document.addEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
+      this.document.addEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
     else
       this.keep();
   }
@@ -174,7 +185,7 @@ export class TabComponent {
   }
 
   private stopWaitingOnMenu(): void {
-    document.removeEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
+    this.document.removeEventListener(Resources.focusInEvent, this.onMenuFocusLeft);
   }
 
   private settle(report: () => void): void {

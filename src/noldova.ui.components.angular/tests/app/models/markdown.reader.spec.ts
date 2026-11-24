@@ -460,6 +460,14 @@ describe("MarkdownReader", () => {
     expect([textOf(broken).length, broken[1]?.text, unbroken[1]?.text]).toEqual([limit, "b".repeat(limit - 1), "c"]);
   });
 
+  it("cuts longer text with no line break before a character the limit would split, so the plain rest starts with it whole", () => {
+    const limit = MarkdownReaderResources.markdownLengthLimit;
+
+    const split = reader.read(parser, `${"c".repeat(limit - 1)}\u{1F600}d`, false);
+
+    expect([textOf(split).length, split[1]?.text]).toEqual([limit + 2, "\u{1F600}d"]);
+  });
+
   it("links the references a source finds in text, also as a streamed paragraph grows, and reads the text again for another source", () => {
     const hrefsOf = (nodes: readonly MarkdownNode[]): readonly string[] =>
       nodes.flatMap(t => [...(t.kind === MarkdownNodeKind.Link ? [t.href] : []), ...hrefsOf(t.children)]);
