@@ -12162,6 +12162,13 @@ export declare class SiteLink {
    */
   public readonly isCurrent: boolean;
 
+  /**
+   * Creates the link.
+   *
+   * @param label The text it shows.
+   * @param href Where it leads.
+   * @param isCurrent Whether it leads to the current page; false when left out.
+   */
   public constructor(label: string, href: string, isCurrent?: boolean);
 }
 
@@ -12179,6 +12186,12 @@ export declare class SiteLinkGroup {
    */
   public readonly links: readonly SiteLink[];
 
+  /**
+   * Creates the group.
+   *
+   * @param title The column's title.
+   * @param links Its links, in order.
+   */
   public constructor(title: string, links: readonly SiteLink[]);
 }
 
@@ -12224,6 +12237,13 @@ export declare class SiteSocialLink {
    */
   public readonly icon: string;
 
+  /**
+   * Creates the social link.
+   *
+   * @param label Its accessible name and tooltip.
+   * @param href Where it leads.
+   * @param icon The URL of its icon's file.
+   */
   public constructor(label: string, href: string, icon: string);
 }
 
