@@ -11,6 +11,8 @@ import path from "node:path";
 
 import ts from "typescript";
 
+import "@noldova/context.core";
+
 import type { ApiProgram } from "./api-program.ts";
 import { ApiReach } from "./api-reach.ts";
 import { ApiSymbolWalker } from "./api-symbol-walker.ts";
@@ -41,7 +43,7 @@ export class ApiDocMerger {
   public add(documented: string, compiled: string): void {
     const folder = path.dirname(path.dirname(compiled));
     this.pair(documented, compiled, (owner, declarations, texts) => {
-      if (texts.every(t => t === null))
+      if (texts.every(t => Object.isNull(t)))
         this.found.push(`${owner}: has no JSDoc in ${this.describe(documented)}`);
       else
         declarations.forEach((declaration, index) => this.insert(owner, declaration, texts[index] ?? null, folder));
@@ -97,7 +99,7 @@ export class ApiDocMerger {
     const shown = this.describe(documented);
     for (const [owner, texts] of docs) {
       const declarations = targets.get(owner);
-      if (declarations === undefined)
+      if (Object.isUndefined(declarations))
         this.found.push(`${owner}: documented in ${shown}, but not compiled`);
       else if (declarations.length !== texts.length)
         this.found.push(`${owner}: has ${texts.length} declarations in ${shown}, but ${declarations.length} compiled ones`);
@@ -110,7 +112,7 @@ export class ApiDocMerger {
   }
 
   private insert(owner: string, declaration: ts.Declaration, text: string | null, folder: string): void {
-    if (text === null)
+    if (Object.isNull(text))
       return;
     const holder = ApiDocMerger.holder(declaration);
     const file = holder.getSourceFile();
@@ -121,7 +123,7 @@ export class ApiDocMerger {
     const line = file.getLineAndCharacterOfPosition(holder.getStart(file)).line;
     const docs = this.insertions.get(file.fileName) ?? new Map<number, string>();
     const earlier = docs.get(line);
-    if (earlier !== undefined && earlier !== text)
+    if (!Object.isUndefined(earlier) && earlier !== text)
       this.found.push(`${owner}: ${this.locate(holder)} would carry two different docs`);
     docs.set(line, text);
     this.insertions.set(file.fileName, docs);

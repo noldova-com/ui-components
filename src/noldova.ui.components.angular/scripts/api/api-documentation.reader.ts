@@ -10,6 +10,8 @@ import path from "node:path";
 
 import ts from "typescript";
 
+import "@noldova/context.core";
+
 import type { ApiProgram } from "./api-program.ts";
 import { ApiSymbolWalker } from "./api-symbol-walker.ts";
 import { ApiValue } from "./api-value.ts";
@@ -46,21 +48,21 @@ export class ApiDocumentationReader {
   }
 
   private static listParts(comment: string | ts.NodeArray<ts.JSDocComment> | undefined): readonly (string | ts.JSDocComment)[] {
-    return comment === undefined ? [] : typeof comment === "string" ? [comment] : [...comment];
+    return Object.isUndefined(comment) ? [] : Object.isString(comment) ? [comment] : [...comment];
   }
 
   private static isEmpty(comment: string | ts.NodeArray<ts.JSDocComment> | undefined): boolean {
-    return ApiDocumentationReader.listParts(comment).every(t => typeof t === "string" ? t.trim() === "" : t.kind === ts.SyntaxKind.JSDocText && t.text.trim() === "");
+    return ApiDocumentationReader.listParts(comment).every(t => Object.isString(t) ? t.trim() === "" : t.kind === ts.SyntaxKind.JSDocText && t.text.trim() === "");
   }
 
   private static startsWithHyphen(comment: string | ts.NodeArray<ts.JSDocComment> | undefined): boolean {
     const first = ApiDocumentationReader.listParts(comment)[0];
-    const text = first === undefined ? "" : typeof first === "string" ? first : first.kind === ts.SyntaxKind.JSDocText ? first.text : "";
+    const text = Object.isUndefined(first) ? "" : Object.isString(first) ? first : first.kind === ts.SyntaxKind.JSDocText ? first.text : "";
     return text.startsWith(ApiDocumentationReader.HYPHEN);
   }
 
   private static isThrowing(result: ts.TypeNode | undefined): boolean {
-    return result !== undefined && (result.kind === ts.SyntaxKind.NeverKeyword || ts.isTypePredicateNode(result) && result.assertsModifier !== undefined);
+    return !Object.isUndefined(result) && (result.kind === ts.SyntaxKind.NeverKeyword || ts.isTypePredicateNode(result) && !Object.isUndefined(result.assertsModifier));
   }
 
   private static locate(shown: string, node: ts.Node): string {
@@ -82,7 +84,7 @@ export class ApiDocumentationReader {
         problems.push(`${at}: ${name} has no @throws, which its never or asserts result needs`);
       return;
     }
-    const hasResult = declaration.type !== undefined && declaration.type.kind !== ts.SyntaxKind.VoidKeyword;
+    const hasResult = !Object.isUndefined(declaration.type) && declaration.type.kind !== ts.SyntaxKind.VoidKeyword;
     const hasReturns = tags.some(t => ts.isJSDocReturnTag(t));
     if (hasResult && !hasReturns)
       problems.push(`${at}: ${name} has no @returns`);
@@ -103,7 +105,7 @@ export class ApiDocumentationReader {
     }
     const others = declarations.filter(t => !ApiDocumentationReader.isCallable(t));
     const first = others[0];
-    if (first !== undefined && others.every(t => ApiDocumentationReader.readDocs(t).length === 0))
+    if (!Object.isUndefined(first) && others.every(t => ApiDocumentationReader.readDocs(t).length === 0))
       problems.push(`${ApiDocumentationReader.locate(shown, first)}: ${owner} has no JSDoc`);
     for (const declaration of others)
       this.inspectDocs(shown, owner, ApiDocumentationReader.readDocs(declaration), problems);
@@ -123,11 +125,11 @@ export class ApiDocumentationReader {
         else if (ts.isJSDocParameterTag(tag) && ApiDocumentationReader.startsWithHyphen(tag.comment))
           problems.push(`${ApiDocumentationReader.locate(shown, tag)}: ${name} has a hyphen after @param ${tag.name.getText()}`);
         comments.push(...ApiDocumentationReader.listParts(tag.comment));
-        if (ts.isJSDocThrowsTag(tag) && tag.typeExpression !== undefined)
+        if (ts.isJSDocThrowsTag(tag) && !Object.isUndefined(tag.typeExpression))
           this.inspectThrownTypes(shown, name, tag.typeExpression, problems);
       }
       for (const link of comments)
-        if (typeof link !== "string")
+        if (!Object.isString(link))
           this.inspectLink(shown, name, link, problems);
     }
   }
@@ -142,7 +144,7 @@ export class ApiDocumentationReader {
     collect(type);
     for (const reference of references) {
       const symbol = this.api.checker.getSymbolAtLocation(reference);
-      if (symbol === undefined || (symbol.declarations ?? []).length === 0)
+      if (Object.isUndefined(symbol) || (symbol.declarations ?? []).length === 0)
         problems.push(`${ApiDocumentationReader.locate(shown, reference)}: ${name} has a @throws type that does not resolve: ${reference.getText()}`);
     }
   }
@@ -150,7 +152,7 @@ export class ApiDocumentationReader {
   private inspectLink(shown: string, name: string, comment: ts.JSDocComment, problems: string[]): void {
     if (!ts.isJSDocLinkLike(comment))
       return;
-    if (comment.name === undefined || this.api.checker.getSymbolAtLocation(comment.name) === undefined)
+    if (Object.isUndefined(comment.name) || Object.isUndefined(this.api.checker.getSymbolAtLocation(comment.name)))
       problems.push(`${ApiDocumentationReader.locate(shown, comment)}: ${name} has a link that does not resolve: ${comment.getText()}`);
   }
 }

@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import { AngularCoverageReport } from "./angular/angular-coverage-report.ts";
 import { AngularTestReport } from "./angular/angular-test-report.ts";
 import { CoverageMerge } from "./angular/coverage-merge.ts";
@@ -73,7 +75,7 @@ export class Test extends Script {
       if (Test.ACCEPTED_OPTIONS.includes(argument))
         continue;
       const match = Test.SHARD_PATTERN.exec(argument);
-      if (match !== null && shard === null && Number(match[1]) <= Number(match[2])) {
+      if (!Object.isNull(match) && Object.isNull(shard) && Number(match[1]) <= Number(match[2])) {
         shard = new TestShard(Number(match[1]), Number(match[2]));
         continue;
       }
@@ -86,7 +88,7 @@ export class Test extends Script {
     }
 
     const isFiltered = filters.length > 0;
-    if (!isFiltered && (shard === null || shard.part === 1)) {
+    if (!isFiltered && (Object.isNull(shard) || shard.part === 1)) {
       await this.runCheckAsync(new NativeElementAssertionCheck(Test.ROOT));
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
@@ -105,7 +107,7 @@ export class Test extends Script {
     }
     const selected = await this.runAngularTestsAsync(filters, shard);
 
-    if (shard !== null)
+    if (!Object.isNull(shard))
       await this.writeLogAsync(Test.partRun(shard.part, shard.parts, selected));
     if (isFiltered) {
       await this.writeLogAsync(Test.FILTERED_COVERAGE_SKIPPED);
@@ -129,7 +131,7 @@ export class Test extends Script {
   private async runAngularTestsAsync(filters: readonly string[], shard: TestShard | null): Promise<number> {
     const specs = await this.report.listSpecFilesAsync();
     const matched = filters.length === 0 ? specs : specs.filter(t => filters.some(u => `${Test.KIT_FOLDER}/${t}`.includes(u)));
-    const selected = shard === null ? matched : matched.filter((_, index) => index % shard.parts === shard.part - 1);
+    const selected = Object.isNull(shard) ? matched : matched.filter((_, index) => index % shard.parts === shard.part - 1);
     if (selected.length === 0)
       return 0;
 
@@ -137,7 +139,7 @@ export class Test extends Script {
     for (const spec of selected)
       if ((await this.readFileAsync(path.resolve(Test.WORKSPACE_FOLDER, spec))).includes(Test.TRACED_MARK))
         traced.push(spec);
-    const isWhole = filters.length === 0 && shard === null;
+    const isWhole = filters.length === 0 && Object.isNull(shard);
     const keepsCoverage = filters.length === 0;
     const options = keepsCoverage ? Test.ANGULAR_PART_OPTIONS : Test.ANGULAR_SELECTION_OPTIONS;
     const parts = await new TemporaryFolder().createAsync(process.platform, Test.PARTS_PREFIX);
@@ -152,7 +154,7 @@ export class Test extends Script {
       }
       if (keepsCoverage) {
         await new CoverageMerge(Test.ROOT, Test.KIT_FOLDER).mergeAsync(parts, traced.length > 0 ? 2 : 1, this.coverage.path);
-        if (shard === null)
+        if (Object.isNull(shard))
           for (const line of await this.coverage.listUnhitAsync()) {
             await this.writeLogAsync(line);
             this.failed = true;
@@ -177,7 +179,7 @@ export class Test extends Script {
       await this.writeLogAsync(finding);
       this.failed = true;
     }
-    if (coverageFolder !== null) {
+    if (!Object.isNull(coverageFolder)) {
       await fs.mkdir(coverageFolder, { recursive: true });
       await fs.copyFile(this.coverage.path, path.join(coverageFolder, Test.COVERAGE_PART_FILE)).catch((error: unknown) => {
         throw new CommandFailedException(Test.coverageMissing(filter, this.coverage.path), { cause: error });

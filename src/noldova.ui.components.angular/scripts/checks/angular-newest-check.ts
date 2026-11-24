@@ -10,6 +10,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import Config from "../config.ts";
 import { ProcessResult } from "../process-result.ts";
 import { PeerRange } from "../packages/peer-range.ts";
@@ -120,16 +122,16 @@ export class AngularNewestCheck implements ICheck {
   }
 
   private async findingsAsync(runner: ProcessRunner, npm: string | undefined, pins: ReadonlyMap<string, string>): Promise<readonly string[]> {
-    if (npm === undefined)
+    if (Object.isUndefined(npm))
       return [`Angular's newest versions can't be read: ${AngularNewestCheck.NPM_PATH_VARIABLE} is unset, so run the checks through npm.`];
     const core = pins.get(AngularNewestCheck.CORE);
     const tools = pins.get(AngularNewestCheck.BUILD_TOOLS);
-    if (core === undefined || tools === undefined)
+    if (Object.isUndefined(core) || Object.isUndefined(tools))
       return [`The kit must name ${AngularNewestCheck.CORE} and ${AngularNewestCheck.BUILD_TOOLS} to check Angular's newest against.`];
     const peers = await this.readAsync(runner, npm, `${AngularNewestCheck.BUILD_TOOLS}@${tools}`, AngularNewestCheck.PEERS_FIELDS);
-    if (peers.failure !== null)
+    if (!Object.isNull(peers.failure))
       return [peers.failure];
-    const named = peers.value !== null && typeof peers.value === "object" ? Object.keys(peers.value).filter(t => t.startsWith(AngularNewestCheck.SCOPE)) : [];
+    const named = Object.isObject(peers.value) ? Object.keys(peers.value).filter(t => t.startsWith(AngularNewestCheck.SCOPE)) : [];
     const expected = new Map(pins);
     for (const name of named)
       if (!expected.has(name))
@@ -138,12 +140,12 @@ export class AngularNewestCheck implements ICheck {
     const ahead: string[] = [];
     for (const [name, version] of expected) {
       const listed = await this.readAsync(runner, npm, `${name}@^${version}`, AngularNewestCheck.VERSION_FIELDS);
-      if (listed.failure !== null) {
+      if (!Object.isNull(listed.failure)) {
         findings.push(listed.failure);
         continue;
       }
       const published = PeerRange.newestOf(AngularNewestCheck.undeprecatedVersionsOf(listed.value));
-      if (published !== null && PeerRange.compare(published, version) > 0)
+      if (!Object.isNull(published) && PeerRange.compare(published, version) > 0)
         ahead.push(`${name} ${published}${AngularNewestCheck.AHEAD}${version}.`);
     }
     return ahead.length === 0 ? findings : [...findings, `Angular's newest is ahead of the kit's: ${ahead.join(" ")} ${AngularNewestCheck.FIX}`];
@@ -154,9 +156,9 @@ export class AngularNewestCheck implements ICheck {
     return listed.flatMap(t => {
       if (PeerRange.isExact(t))
         return [t];
-      if (t === null || typeof t !== "object" || !("version" in t) || !PeerRange.isExact(t.version))
+      if (!Object.isObject(t) || !("version" in t) || !PeerRange.isExact(t.version))
         return [];
-      return "deprecated" in t && typeof t.deprecated === "string" ? [] : [t.version];
+      return "deprecated" in t && Object.isString(t.deprecated) ? [] : [t.version];
     });
   }
 

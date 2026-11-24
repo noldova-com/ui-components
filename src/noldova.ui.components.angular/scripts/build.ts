@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import { AngularPackageBuilder } from "./angular-package-builder.ts";
 import { ApiCatalog } from "./api/api-catalog.ts";
 import CommandFailedException from "./command-failed.exception.ts";
@@ -133,14 +135,14 @@ export class Build extends Script {
     await this.runStepAsync(Build.resolvingFreshInstallAlone(kit.packageName), async () => {
       await this.resolveFreshInstallAsync([path.resolve(archive)]);
     });
-    if (process.env[Build.RELEASE_BUILD_VARIABLE] === undefined) {
+    if (Object.isUndefined(process.env[Build.RELEASE_BUILD_VARIABLE])) {
       await this.writeLogAsync(Build.skippingBuildTools(kit.packageName));
       return;
     }
     await this.runStepAsync(Build.addingBuildTools(kit.packageName), async () => {
       // At the kit's own development pin of the build tools.
       const tools = (await this.readDevelopmentPinsAsync(Build.PACKAGE_MANIFEST_FILE_NAME))[Build.ANGULAR_BUILD_TOOLS];
-      if (tools === undefined)
+      if (Object.isUndefined(tools))
         throw new CommandFailedException(Build.missingPin(kit.packageName, Build.ANGULAR_BUILD_TOOLS));
       await this.executeNPMCommandAsync([...Build.APP_INSTALL_ARGUMENTS, Build.SAVE_DEV_OPTION, `${Build.ANGULAR_BUILD_TOOLS}@${tools}`], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
     });
@@ -261,7 +263,7 @@ export class Build extends Script {
 
   private static stampManifest(text: string, version: string, commit: string | null): string {
     const fields = Object.fromEntries(Object.entries(JSON.parse(text) as Readonly<Record<string, unknown>>).filter(([t]) => !Build.WORKSPACE_FIELDS.includes(t)));
-    return JSON.stringify({ ...fields, version, ...(commit === null ? {} : { gitHead: commit }) }, null, 2);
+    return JSON.stringify({ ...fields, version, ...(Object.isNull(commit) ? {} : { gitHead: commit }) }, null, 2);
   }
 
   private static optionAlone(option: string): string {

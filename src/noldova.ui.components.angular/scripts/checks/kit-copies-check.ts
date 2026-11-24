@@ -10,6 +10,8 @@ import { copyFile, mkdir, readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import Config from "../config.ts";
 import { ArchiveReader } from "../packages/archive.reader.ts";
 import type { ProcessResult } from "../process-result.ts";
@@ -121,7 +123,7 @@ export class KitCopiesCheck implements ICheck {
       return [`The list of copies does not end with the line "${KitCopiesCheck.END_LINE}": ${KitCopiesCheck.RULE}`];
 
     const expected = await this.expectLinesAsync();
-    if (typeof expected === "string")
+    if (Object.isString(expected))
       return [expected];
     const actual = [...lines.slice(0, 2), ...lines.slice(2).sort()];
     if (actual.join("\n") !== expected.join("\n")) {
@@ -135,7 +137,7 @@ export class KitCopiesCheck implements ICheck {
 
   private async checkRootListAsync(): Promise<readonly string[]> {
     const npm = process.env[KitCopiesCheck.NPM_PATH_VARIABLE];
-    if (npm === undefined)
+    if (Object.isUndefined(npm))
       return [`The root build's list of copies can't be read: ${KitCopiesCheck.NPM_PATH_VARIABLE} is unset, so run the checks through npm.`];
     const root = await this.runner.captureAsync(process.execPath, [npm, ...KitCopiesCheck.ROOT_LIST_ARGUMENTS], this.root, KitCopiesCheck.TIMEOUT);
     if (!root.isSuccessful)
@@ -152,7 +154,7 @@ export class KitCopiesCheck implements ICheck {
     for (const line of lines) {
       const [source = "", , entry = ""] = line.split(KitCopiesCheck.FIELD_SEPARATOR);
       const copy = packed.get(`${KitCopiesCheck.ARCHIVE_ROOT}/${entry}`);
-      if (copy === undefined)
+      if (Object.isUndefined(copy))
         findings.push(`${archive} holds no copy of ${source} at ${KitCopiesCheck.ARCHIVE_ROOT}/${entry}.`);
       else if (!copy.equals(await readFile(path.join(this.root, ...source.split(path.posix.sep)))))
         findings.push(`${archive} holds a ${KitCopiesCheck.ARCHIVE_ROOT}/${entry} that differs from ${source}.`);

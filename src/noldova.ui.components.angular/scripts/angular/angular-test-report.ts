@@ -9,6 +9,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import CommandFailedException from "../command-failed.exception.ts";
 import type { IAngularFileResult } from "./interfaces/i-angular-file-result.ts";
 import type { IAngularTestResult } from "./interfaces/i-angular-test-result.ts";
@@ -33,7 +35,7 @@ export class AngularTestReport {
       readonly projects: Readonly<Record<string, { readonly architect: { readonly test?: { readonly options: { readonly include: readonly string[]; readonly exclude?: readonly string[] } } } }>>
     };
     const options = workspace.projects[this.project]?.architect.test?.options;
-    if (options === undefined || options.include.length === 0 || options.exclude !== undefined)
+    if (Object.isUndefined(options) || options.include.length === 0 || !Object.isUndefined(options.exclude))
       throw new CommandFailedException(this.formatUnreadableWorkspace());
 
     const files: string[] = [];

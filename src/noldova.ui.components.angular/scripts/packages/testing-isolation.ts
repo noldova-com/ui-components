@@ -10,6 +10,8 @@ import { existsSync, statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import { SourceScanner } from "../structure/source-scanner.ts";
 import type { PackageManifest } from "./package-manifest.ts";
 
@@ -62,8 +64,8 @@ export class TestingIsolation {
   private async listTestingEntriesAsync(): Promise<ReadonlySet<string>> {
     const entries = new Set<string>();
     const fields: unknown = JSON.parse(await readFile(this.locateSource(TestingIsolation.MANIFEST_FILE), "utf8"));
-    const exports = typeof fields === "object" && fields !== null && "exports" in fields ? fields.exports : undefined;
-    if (typeof exports === "object" && exports !== null && TestingIsolation.TESTING_SUBPATH in exports)
+    const exports = Object.isObject(fields) && "exports" in fields ? fields.exports : undefined;
+    if (Object.isObject(exports) && TestingIsolation.TESTING_SUBPATH in exports)
       entries.add(`${this.manifest.name}${TestingIsolation.TESTING_SUBPATH.slice(TestingIsolation.RELATIVE_PREFIX.length)}`);
     return entries;
   }
@@ -76,7 +78,7 @@ export class TestingIsolation {
     const findings: string[] = [];
     const found = new Set<string>([entry]);
     const pending = [entry];
-    for (let file = pending.pop(); file !== undefined; file = pending.pop()) {
+    for (let file = pending.pop(); !Object.isUndefined(file); file = pending.pop()) {
       if (file.startsWith(testing))
         findings.push(`${this.describe(file)}: is a test helper reached from the entry ${this.describe(entry)}; ${TestingIsolation.RULE}`);
       for (const literal of new SourceScanner(await readFile(file, "utf8")).scan().imports) {
@@ -85,7 +87,7 @@ export class TestingIsolation {
         if (helpers.has(literal.value))
           findings.push(`${this.describe(file)}:${literal.line}: imports ${literal.value}, which leads to the test helpers, and is reached from the entry ${this.describe(entry)}; ${TestingIsolation.RULE}`);
         const imported = literal.value.startsWith(TestingIsolation.RELATIVE_PREFIX) ? TestingIsolation.resolve(file, literal.value) : null;
-        if (imported === null || found.has(imported))
+        if (Object.isNull(imported) || found.has(imported))
           continue;
         found.add(imported);
         pending.push(imported);

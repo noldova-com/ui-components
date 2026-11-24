@@ -11,6 +11,8 @@ import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Writable } from "node:stream";
 
+import "@noldova/context.core";
+
 import type { ProcessRunner } from "../processes/process-runner.ts";
 import type { IBundleOutput } from "./interfaces/i-bundle-output.ts";
 import type { ICheck } from "./interfaces/i-check.ts";
@@ -99,18 +101,18 @@ export class KitBundleCheck implements ICheck {
         return null;
       const staticImports = imports.flatMap(t => {
         const target = KitBundleCheck.field(t, "path");
-        return KitBundleCheck.field(t, "kind") === KitBundleCheck.STATIC_IMPORT && typeof target === "string" ? [path.posix.basename(target)] : [];
+        return KitBundleCheck.field(t, "kind") === KitBundleCheck.STATIC_IMPORT && Object.isString(target) ? [path.posix.basename(target)] : [];
       });
       const allImports = imports.flatMap(t => {
         const target = KitBundleCheck.field(t, "path");
-        return typeof target === "string" ? [path.posix.basename(target)] : [];
+        return Object.isString(target) ? [path.posix.basename(target)] : [];
       });
       const entryPoint = KitBundleCheck.field(value, "entryPoint");
       const inputBytes = new Map(Object.entries(inputs).map(([t, u]): [string, number] => {
         const bytes = KitBundleCheck.field(u, "bytesInOutput");
-        return [t, typeof bytes === "number" ? bytes : 0];
+        return [t, Object.isNumber(bytes) ? bytes : 0];
       }));
-      read.set(path.posix.basename(name), { inputs: Object.keys(inputs), inputBytes, staticImports, imports: allImports, entryPoint: typeof entryPoint === "string" ? entryPoint : "" });
+      read.set(path.posix.basename(name), { inputs: Object.keys(inputs), inputBytes, staticImports, imports: allImports, entryPoint: Object.isString(entryPoint) ? entryPoint : "" });
     }
     return read;
   }
@@ -118,7 +120,7 @@ export class KitBundleCheck implements ICheck {
   private static collectInitial(outputs: ReadonlyMap<string, IBundleOutput>): ReadonlySet<string> {
     const initial = new Set<string>([KitBundleCheck.MAIN_FILE]);
     const pending = [KitBundleCheck.MAIN_FILE];
-    for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+    for (let name = pending.pop(); !Object.isUndefined(name); name = pending.pop()) {
       for (const imported of outputs.get(name)?.staticImports ?? []) {
         if (initial.has(imported))
           continue;
@@ -138,7 +140,7 @@ export class KitBundleCheck implements ICheck {
   }
 
   private static isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
+    return Object.isObject(value) && !Array.isArray(value);
   }
 
   private static inspectCodeBlock(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>): readonly string[] {
@@ -180,7 +182,7 @@ export class KitBundleCheck implements ICheck {
     if (project !== KitBundleCheck.WORKER_BUNDLE)
       return [];
     const worker = [...outputs].find(([, t]) => t.entryPoint === KitBundleCheck.WORKER_ENTRY);
-    if (worker === undefined)
+    if (Object.isUndefined(worker))
       return [`${project}: emits no chunk from its worker file, ${KitBundleCheck.WORKER_ENTRY}; ${KitBundleCheck.WORKER_RULE}`];
     const [name, output] = worker;
     const grammars = new Set([...outputs].filter(([t]) => t !== name).flatMap(([, t]) => t.inputs.filter(u => u.includes(KitBundleCheck.GRAMMARS))));
@@ -202,7 +204,7 @@ export class KitBundleCheck implements ICheck {
 
     const stats = path.join(folder, KitBundleCheck.STATS_FILE);
     const outputs = existsSync(stats) ? KitBundleCheck.readOutputs(await readFile(stats, "utf8")) : null;
-    if (outputs === null || !outputs.has(KitBundleCheck.MAIN_FILE))
+    if (Object.isNull(outputs) || !outputs.has(KitBundleCheck.MAIN_FILE))
       return [`${project}: the build wrote no ${this.describe(stats)} that names its outputs and their ${KitBundleCheck.MAIN_FILE}.`];
 
     const initial = KitBundleCheck.collectInitial(outputs);

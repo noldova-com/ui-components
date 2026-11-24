@@ -9,6 +9,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+import "@noldova/context.core";
+
 import { ApiException } from "./api.exception.ts";
 
 export class ApiEntry {
@@ -49,23 +51,23 @@ export class ApiEntry {
     const listed: readonly (readonly [string, unknown])[] = ApiEntry.isRecord(exports)
       ? Object.entries(exports).map(([subpath, target]) => [subpath, ApiEntry.isRecord(target) ? target[ApiEntry.TYPES_FIELD] : undefined])
       : [[ApiEntry.MAIN.subpath, ApiEntry.qualify(fields[ApiEntry.TYPES_FIELD])]];
-    const entries = listed.filter(([, types]) => types !== undefined).map(([subpath, types]) => ApiEntry.parse(file, subpath, types));
+    const entries = listed.filter(([, types]) => !Object.isUndefined(types)).map(([subpath, types]) => ApiEntry.parse(file, subpath, types));
     if (entries.length === 0)
       throw new ApiException(`${file} exports no declarations, so its API cannot be checked.`);
     return entries;
   }
 
   private static isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
+    return Object.isObject(value) && !Array.isArray(value);
   }
 
   private static qualify(types: unknown): unknown {
-    return typeof types === "string" && !types.startsWith(ApiEntry.RELATIVE_PREFIX) ? `${ApiEntry.RELATIVE_PREFIX}${types}` : types;
+    return Object.isString(types) && !types.startsWith(ApiEntry.RELATIVE_PREFIX) ? `${ApiEntry.RELATIVE_PREFIX}${types}` : types;
   }
 
   private static parse(file: string, subpath: string, types: unknown): ApiEntry {
-    const name = typeof types === "string" ? ApiEntry.TYPES_PATTERN.exec(types)?.[1] : undefined;
-    if (name === undefined)
+    const name = Object.isString(types) ? ApiEntry.TYPES_PATTERN.exec(types)?.[1] : undefined;
+    if (Object.isUndefined(name))
       throw new ApiException(`${file} exports ${subpath} with the declarations ${JSON.stringify(types)}, which are not an api/<entry>.d.ts file, so they cannot be checked.`);
     return new ApiEntry(subpath, name);
   }
