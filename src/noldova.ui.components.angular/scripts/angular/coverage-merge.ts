@@ -9,8 +9,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import CommandFailedException from "../command-failed.exception.ts";
 import { JsonFields } from "./json-fields.ts";
 
@@ -21,7 +19,7 @@ class CoverageTally {
 
   public add(key: string, entry: object, counts: readonly number[]): void {
     const known = this.entries.get(key);
-    if (Object.isUndefined(known)) {
+    if (known === undefined) {
       this.entries.set(key, { entry, counts: [...counts] });
       return;
     }

@@ -9,8 +9,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import { AngularCoverageReport } from "./angular/angular-coverage-report.ts";
 import { CoverageMerge } from "./angular/coverage-merge.ts";
 import CommandFailedException from "./command-failed.exception.ts";
@@ -43,7 +41,7 @@ export class MergeCoverage extends Script {
 
   public async runAsync(): Promise<void> {
     const [folder, parts, ...rest] = process.argv.slice(2);
-    if (Object.isUndefined(folder) || Object.isUndefined(parts) || !MergeCoverage.PARTS_PATTERN.test(parts) || rest.length > 0)
+    if (folder === undefined || parts === undefined || !MergeCoverage.PARTS_PATTERN.test(parts) || rest.length > 0)
       throw new CommandFailedException(MergeCoverage.USAGE);
 
     await this.writeLogAsync(MergeCoverage.SELF_CHECK);
@@ -88,7 +86,7 @@ export class MergeCoverage extends Script {
     try {
       for (const [name, text] of Object.entries(check.files)) {
         await fs.mkdir(path.join(folder, "parts", name), { recursive: true });
-        if (!Object.isNull(text))
+        if (text !== null)
           await fs.writeFile(path.join(folder, "parts", name, MergeCoverage.PART_FILE), text, MergeCoverage.ENCODING);
       }
       const root = path.join(folder, "root");
