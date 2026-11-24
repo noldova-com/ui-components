@@ -54,7 +54,7 @@
 
 .nol-canvas-tools {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: var(--nol-space-2);
   right: var(--nol-space-2);
   left: var(--nol-space-2);
@@ -76,6 +76,7 @@
 
 .nol-canvas-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--nol-space-1);
   padding: var(--nol-space-1);
@@ -105,13 +106,17 @@
 
 :host(.nol-canvas-floating) .nol-canvas-tools {
   top: auto;
-  left: auto;
+  left: var(--nol-space-3);
   right: var(--nol-space-3);
   bottom: var(--nol-space-3);
   flex-direction: column-reverse;
   flex-wrap: nowrap;
   align-items: flex-end;
   gap: var(--nol-space-3);
+}
+
+:host(.nol-canvas-floating) .nol-canvas-bar {
+  justify-content: flex-end;
 }
 
 :host(.nol-canvas-floating) .nol-canvas-hint {

@@ -285,6 +285,47 @@ describe("CanvasComponent", () => {
       .toEqual([]);
   });
 
+  for (const placement of [CanvasControlsPlacement.Floating, CanvasControlsPlacement.Edges])
+    for (const mode of AppearanceFixture.modes)
+      for (const theme of AppearanceFixture.themes)
+        it(`wraps its ${placement} toolbar, with its map shown, to keep every control reachable above the map at its 12rem minimum height, and inside the canvas at 13.75rem wide there and down to its widest control on a taller one, from the ${theme.id} theme in ${mode} mode`, async () => {
+          AppearanceFixture.apply(theme, mode);
+          host.placement.set(placement);
+          host.cards.set([1, 2, 3]);
+          fixture.detectChanges();
+          await measuredAsync(3);
+          const controls = (): HTMLElement[] => DomFixture.all(tools(), "button, .nol-canvas-zoom");
+          const border = AppearanceFixture.measureLook("border-width");
+          const inset = AppearanceFixture.measureLook(placement === CanvasControlsPlacement.Floating ? "space-3" : "space-2") + border;
+          const widest = Math.max(...controls().map(t => t.getBoundingClientRect().width));
+          const narrowest = widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * inset;
+          const lowest = AppearanceFixture.toPixels(12);
+          const sizes: readonly (readonly [number, number, boolean])[] = [
+            [AppearanceFixture.toPixels(13.75), lowest, true],
+            [narrowest, lowest, false],
+            [narrowest, AppearanceFixture.toPixels(18), true]
+          ];
+
+          for (const [width, height, inside] of sizes) {
+            canvas().style.width = `${String(width)}px`;
+            canvas().style.height = `${String(height)}px`;
+            const frame = canvas().getBoundingClientRect();
+            const toolbar = tools().getBoundingClientRect();
+            const outside = controls().filter(t => {
+              const box = t.getBoundingClientRect();
+              return box.left < frame.left + inset - 0.5 || box.right > frame.right - inset + 0.5 || box.top < frame.top + inset - 0.5 || box.bottom > frame.bottom - inset + 0.5;
+            });
+            const covered = controls().filter(t => {
+              const box = t.getBoundingClientRect();
+              return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest(".nol-canvas-bar > *") !== t;
+            });
+
+            expect([Math.abs(frame.height - height) <= 2 * border, DomFixture.maybe(canvas(), "nol-canvas-map") !== null, toolbar.width < AppearanceFixture.toPixels(13.75), inside ? outside.map(t => t.className) : [], covered.map(t => t.className)])
+              .toEqual([true, true, true, [], []]);
+            AppearanceFixture.expectPixels(placement === CanvasControlsPlacement.Floating ? frame.right - toolbar.right : toolbar.left - frame.left, inset);
+          }
+        });
+
   it("fits its items above its floating toolbar once its map is hidden, from space-3 below its top", async () => {
     host.placement.set(CanvasControlsPlacement.Floating);
     host.alignment.set(CanvasFitAlignment.Top);
