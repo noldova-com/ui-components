@@ -454,6 +454,8 @@ export class Resources {
   public static readonly codeWorkerLoadFailure: string = "it did not load";
   public static readonly codeWorkerStartFailure: string = "it could not start";
   public static readonly codeWorkerUnreadAnswer: string = "the page could not read one of its answers";
+  public static readonly codeWorkerAnswerLimit: number = 10_000;
+  public static readonly codeWorkerHung: string = "it said nothing for 10 seconds while a request waited";
   public static readonly codeLineClass: string = "nol-code-line";
   public static readonly markdownNestingLimit: number = 24;
   public static readonly markdownListDepthLimit: number = 8;

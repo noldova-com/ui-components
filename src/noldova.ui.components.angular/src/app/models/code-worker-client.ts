@@ -26,6 +26,8 @@ export class CodeWorkerClient {
   private readonly loaded: Set<string> = new Set();
   private worker: ICodeWorker | null = null;
   private cancelStartLimit: (() => void) | null = null;
+  private cancelAnswerLimit: (() => void) | null = null;
+  private isReady: boolean = false;
   private nextId: number = 0;
 
   public isUsable: boolean = true;
@@ -74,8 +76,12 @@ export class CodeWorkerClient {
     return new CodeHighlightingException(error.message, new ExceptionOptions(error));
   }
 
+  private static cancelled(): ICodeWorkerAnswer {
+    return { kind: CodeWorkerMessageKind.Cancel, id: -1, tokens: [], error: null };
+  }
+
   private askAsync(kind: CodeWorkerMessageKind, languageId: string, code: string, timeLimit: number, signal: AbortSignal | null): Promise<ICodeWorkerAnswer | null> {
-    const aborted: ICodeWorkerAnswer = { kind: CodeWorkerMessageKind.Cancel, id: -1, tokens: [], error: null };
+    const aborted = CodeWorkerClient.cancelled();
     if (signal?.aborted === true)
       return Promise.resolve(aborted);
     const worker = this.isUsable ? this.worker ?? this.startWorker() : null;
@@ -85,6 +91,7 @@ export class CodeWorkerClient {
     return new Promise(resolve => {
       const abort = (): void => {
         this.pending.delete(request.id);
+        this.watchAnswers();
         const cancel: ICodeWorkerRequest = { kind: CodeWorkerMessageKind.Cancel, id: request.id, languageId, code: String.empty, timeLimit: Resources.codeNoTokenizeTimeLimit };
         worker.postMessage(cancel);
         resolve(aborted);
@@ -95,6 +102,8 @@ export class CodeWorkerClient {
       });
       signal?.addEventListener("abort", abort, { once: true });
       worker.postMessage(request);
+      if (this.pending.size === 1)
+        this.watchAnswers();
     });
   }
 
@@ -123,22 +132,39 @@ export class CodeWorkerClient {
     if (answer.kind === CodeWorkerMessageKind.Ready) {
       this.cancelStartLimit?.();
       this.cancelStartLimit = null;
+      this.isReady = true;
+      this.watchAnswers();
       return;
     }
     const settle = this.pending.get(answer.id);
     this.pending.delete(answer.id);
+    this.watchAnswers();
     if (!Object.isUndefined(settle))
       settle(answer);
     else if (answer.kind === CodeWorkerMessageKind.Failed && !Object.isNull(answer.error))
       this.report(CodeWorkerClient.failureOf(answer.error));
   }
 
-  private giveUp(error: CodeHighlightingException | null): void {
+  // Once the worker is ready, it must say something within the answer limit while a request waits: a worker silent past it is taken as hung,
+  // as on a pattern that backtracks without end, and given up. What waited on it is answered as cancelled, so that code shows plain rather than
+  // being tokenized on the page, where the same pattern would hang the page. The start limit covers the worker before it is ready.
+  private watchAnswers(): void {
+    this.cancelAnswerLimit?.();
+    this.cancelAnswerLimit = this.isReady && this.pending.size > 0
+      ? this.timeSource.after(() => this.giveUp(new CodeHighlightingException(Resources.formatCodeWorkerFailure(Resources.codeWorkerHung)), CodeWorkerClient.cancelled()),
+        Resources.codeWorkerAnswerLimit)
+      : null;
+  }
+
+  // What waited on the worker is answered with the given answer: null, to be tokenized on the page, unless the worker hung.
+  private giveUp(error: CodeHighlightingException | null, waitingAnswer: ICodeWorkerAnswer | null = null): void {
     if (!this.isUsable)
       return;
     this.isUsable = false;
     this.cancelStartLimit?.();
     this.cancelStartLimit = null;
+    this.cancelAnswerLimit?.();
+    this.cancelAnswerLimit = null;
     this.worker?.terminate();
     this.worker = null;
     if (!Object.isNull(error))
@@ -146,6 +172,6 @@ export class CodeWorkerClient {
     const waiting = [...this.pending.values()];
     this.pending.clear();
     for (const settle of waiting)
-      settle(null);
+      settle(waitingAnswer);
   }
 }
