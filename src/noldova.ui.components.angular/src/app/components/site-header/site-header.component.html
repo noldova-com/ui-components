@@ -20,10 +20,7 @@ LICENSE file in the root directory of this source tree.
       }
     }
   </div>
-  <div #searchPanel class="nol-site-header-search" [id]="searchId">
-    <ng-content select="[nolSiteSearch]" />
-  </div>
-  <div class="nol-site-header-panel" [id]="menuId">
+  <div #menuPanel class="nol-site-header-panel" [id]="menuId">
     @if (links().length > 0) {
       <nav class="nol-site-header-nav" [attr.aria-label]="partResources.navLabel">
         @for (link of links(); track link.href) {
@@ -32,6 +29,9 @@ LICENSE file in the root directory of this source tree.
         }
       </nav>
     }
+    <div #searchPanel class="nol-site-header-search" [id]="searchId">
+      <ng-content select="[nolSiteSearch]" />
+    </div>
     <div class="nol-site-header-tools">
       @for (link of social(); track link.href) {
         <a class="nol-site-social" [href]="link.href" [attr.aria-label]="link.label" [nolTooltip]="link.label"

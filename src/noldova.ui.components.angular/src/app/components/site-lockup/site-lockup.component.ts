@@ -24,5 +24,9 @@ export class SiteLockupComponent {
   public readonly href = input<string>(SiteLockupResources.homeHref);
 
   protected readonly mask: Signal<string> = computed(() => SiteLockupResources.formatMask(this.wordmark()));
+  protected readonly shownName: Signal<string | null> = computed(() => {
+    const name = this.name();
+    return String.isNullOrWhitespace(name) ? null : name;
+  });
   protected readonly accessibleName: Signal<string> = computed(() => SiteLockupResources.formatName(this.name()));
 }

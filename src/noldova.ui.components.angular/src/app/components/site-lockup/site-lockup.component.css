@@ -36,7 +36,6 @@
 .nol-site-wordmark {
   flex: none;
   height: var(--nol-site-wordmark);
-  aspect-ratio: 1333.817 / 201.396;
   background-color: currentColor;
   mask-position: center;
   mask-repeat: no-repeat;
@@ -46,6 +45,13 @@
     forced-color-adjust: none;
     background-color: LinkText;
   }
+}
+
+.nol-site-wordmark-size {
+  display: block;
+  width: auto;
+  height: 100%;
+  visibility: hidden;
 }
 
 .nol-site-lockup-name {

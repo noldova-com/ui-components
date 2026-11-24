@@ -35,9 +35,10 @@ export class SiteThemeSwitchComponent {
   }
 
   protected choose(value: string): void {
-    const preference = SiteThemeSwitchResources.order.find(t => t === value) ?? ModePreference.System;
-    this.apply(preference);
-    this.store(SiteThemeSwitchResources.formatStored(preference));
+    for (const preference of SiteThemeSwitchResources.order.filter(t => t === value)) {
+      this.apply(preference);
+      this.store(SiteThemeSwitchResources.formatStored(preference));
+    }
   }
 
   private apply(preference: ModePreference): void {

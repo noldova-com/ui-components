@@ -14,6 +14,7 @@ export class SiteHeaderResources {
   public static readonly navLabel: string = "Site";
   public static readonly menuLabel: string = "Menu";
   public static readonly menuGlyph: string = "menu";
+  public static readonly menuStops: string = "a[href], button";
   public static readonly closeGlyph: string = "close";
   public static readonly downloadLabel: string = "Download";
   public static readonly downloadGlyph: string = "download";

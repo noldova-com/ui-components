@@ -8,10 +8,8 @@
 
 import { Component, ErrorHandler } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { By } from "@angular/platform-browser";
 import { userEvent } from "vitest/browser";
 
-import { ChoicePillsComponent } from "../../../../src/app/components/choice-pills/choice-pills.component";
 import { SiteThemeSwitchComponent } from "../../../../src/app/components/site-theme-switch/site-theme-switch.component";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -85,16 +83,6 @@ describe("SiteThemeSwitchComponent", () => {
     }
 
     expect(seen).toEqual([[["Dark"], "Dark", "dark"], [["Light"], "Light", "light"], [["System"], null, "system"]]);
-  });
-
-  it("takes a value it does not offer as System", async () => {
-    localStorage.setItem(key, "dark");
-    await renderAsync();
-
-    fixture.debugElement.query(By.directive(ChoicePillsComponent)).injector.get(ChoicePillsComponent).valueChange.emit("sepia");
-    await fixture.whenStable();
-
-    expect([checked(), shownMode(), localStorage.getItem(key)]).toEqual([["System"], null, "system"]);
   });
 
   it("applies a choice the browser refuses to save", async () => {

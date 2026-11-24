@@ -7,8 +7,8 @@ LICENSE file in the root directory of this source tree.
 -->
 
 <a class="nol-site-lockup-link" [href]="href()" [attr.aria-label]="accessibleName()"
-  ><span class="nol-site-wordmark" aria-hidden="true" [style.mask-image]="mask()"></span>
-  @if (name(); as productName) {
+  ><span class="nol-site-wordmark" aria-hidden="true" [style.mask-image]="mask()"><img class="nol-site-wordmark-size" [src]="wordmark()" alt="" /></span>
+  @if (shownName(); as productName) {
     <span class="nol-site-lockup-name" aria-hidden="true" data-truncates>{{ productName }}</span>
   }
 </a>

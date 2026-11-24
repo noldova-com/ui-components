@@ -20,23 +20,24 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
-const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 3'%3E%3Crect width='20' height='3'/%3E%3C/svg%3E";
+const formatWordmark = (width: number, height: number): string =>
+  `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}'/%3E%3C/svg%3E`;
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteHeaderComponent, SiteSearchDirective],
   template: `
-    <nol-site-header [wordmark]="wordmark" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
+    <nol-site-header [wordmark]="wordmark()" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
       [downloadHref]="downloadHref()" [downloadLabel]="downloadLabel()" [wide]="wide()" [contentId]="contentId()" [(menuOpen)]="menuOpen" [(searchOpen)]="searchOpen">
       @if (hasSearch()) {
         <input nolSiteSearch type="search" aria-label="Search" />
       }
     </nol-site-header>
-    <main id="main" tabindex="-1">Content</main>
+    <main id="main" tabindex="-1">Content <input class="outside" aria-label="Outside" /></main>
   `
 })
 class SiteHeaderHostComponent {
-  public readonly wordmark: string = wordmark;
+  public readonly wordmark = signal(formatWordmark(20, 3));
   public readonly name = signal<string | null>("TeamRun");
   public readonly version = signal<string | null>(null);
   public readonly versionHref = signal<string | null>(null);
@@ -63,6 +64,7 @@ describe("SiteHeaderComponent", () => {
     change(host);
     fixture.detectChanges();
     await fixture.whenStable();
+    await Promise.all(DomFixture.allOf(header(), "img.nol-site-wordmark-size", HTMLImageElement).map(t => t.decode()));
   }
 
   async function phoneAsync(): Promise<void> {
@@ -90,11 +92,18 @@ describe("SiteHeaderComponent", () => {
   }
   const shown = (selector: string): boolean => getComputedStyle(part(selector)).display !== "none";
   const edges = (): DOMRect => header().getBoundingClientRect();
-  const content = (): { left: number; right: number } => {
-    const outer = bar().getBoundingClientRect();
-    const style = getComputedStyle(bar());
-    return { left: outer.left + Number.parseFloat(style.paddingLeft), right: outer.right - Number.parseFloat(style.paddingRight) };
-  };
+  const contentLeft = (): number => bar().getBoundingClientRect().left + Number.parseFloat(getComputedStyle(bar()).paddingLeft);
+  const contentRight = (): number => bar().getBoundingClientRect().right - Number.parseFloat(getComputedStyle(bar()).paddingRight);
+  const pill = (): HTMLElement => DomFixture.one(header(), "nol-site-theme-switch .nol-choice-pill[tabindex='0']");
+  async function tabsAsync(expected: readonly HTMLElement[]): Promise<number[]> {
+    const focused = (): number => expected.findIndex(t => t === document.activeElement);
+    const order = [focused()];
+    for (let index = 1; index < expected.length; index++) {
+      await userEvent.keyboard("{Tab}");
+      order.push(focused());
+    }
+    return order;
+  }
 
   afterEach(async () => {
     AppearanceFixture.reset();
@@ -120,7 +129,15 @@ describe("SiteHeaderComponent", () => {
     expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-lockup-name").textContent?.trim(), getComputedStyle(mark).maskImage.includes("data:image/svg+xml")])
       .toEqual(["/", "TeamRun home", "TeamRun", true]);
     AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
-    expect(size.width / size.height).toBeCloseTo(1333.817 / 201.396, 1);
+    expect(size.width / size.height).toBeCloseTo(20 / 3, 1);
+  });
+
+  it("draws the wordmark in the proportions of the file the site passes", async () => {
+    await renderAsync(t => t.wordmark.set(formatWordmark(10, 3)));
+    const size = box(".nol-site-wordmark");
+
+    AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
+    expect(size.width / size.height).toBeCloseTo(10 / 3, 1);
   });
 
   for (const theme of AppearanceFixture.themes)
@@ -137,7 +154,7 @@ describe("SiteHeaderComponent", () => {
     it(`names the lockup Noldova home when the product name is ${JSON.stringify(name)}`, async () => {
       await renderAsync(t => t.name.set(name));
 
-      expect(part(".nol-site-lockup-link").getAttribute("aria-label")).toBe("Noldova home");
+      expect([part(".nol-site-lockup-link").getAttribute("aria-label"), maybe(".nol-site-lockup-name")]).toEqual(["Noldova home", null]);
     });
 
   it("names the lockup link by the product it is given, such as Commitline home, as its accessible name", async () => {
@@ -186,7 +203,7 @@ describe("SiteHeaderComponent", () => {
     await renderAsync(t => t.links.set([]));
 
     expect(maybe(".nol-site-header-nav")).toBeNull();
-    AppearanceFixture.expectPixels(box(".nol-site-download").right, content().right);
+    AppearanceFixture.expectPixels(box(".nol-site-download").right, contentRight());
   });
 
   it("draws the current link strong and the others muted, each at least a pointer target high", async () => {
@@ -230,13 +247,13 @@ describe("SiteHeaderComponent", () => {
     const socials = all(".nol-site-social").map(t => t.getBoundingClientRect());
 
     expect(shown(".nol-site-header-search")).toBe(false);
-    AppearanceFixture.expectPixels(box(".nol-site-header-brand").left, content().left);
+    AppearanceFixture.expectPixels(box(".nol-site-header-brand").left, contentLeft());
     AppearanceFixture.expectPixels(text(DomFixture.at(links, 0)).left - box(".nol-site-header-brand").right, step * 4);
     AppearanceFixture.expectPixels(text(DomFixture.at(links, 1)).left - text(DomFixture.at(links, 0)).right, AppearanceFixture.measureLook("space-6"));
     AppearanceFixture.expectPixels(DomFixture.at(socials, 1).left - DomFixture.at(socials, 0).right, step);
     AppearanceFixture.expectPixels(box("nol-site-theme-switch").left - DomFixture.at(socials, 1).right, step * 2);
     AppearanceFixture.expectPixels(box(".nol-site-download").left - box(".nol-site-header-tools").right, step * 2);
-    AppearanceFixture.expectPixels(box(".nol-site-download").right, content().right);
+    AppearanceFixture.expectPixels(box(".nol-site-download").right, contentRight());
   });
 
   it("draws a projected search at the search width before the tools", async () => {
@@ -246,7 +263,7 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(search.width, AppearanceFixture.measureLook("site-search-width"));
     AppearanceFixture.expectPixels(box(".nol-site-header-tools").left - search.right, AppearanceFixture.measureLook("space-2") * 2);
     expect(search.left).toBeGreaterThan(box(".nol-site-header-nav").right);
-    AppearanceFixture.expectPixels(box(".nol-site-download").right, content().right);
+    AppearanceFixture.expectPixels(box(".nol-site-download").right, contentRight());
   });
 
   it("draws each social link as an icon button in the strong text color, named and tooltipped by its label, its icon a mask at the icon size", async () => {
@@ -472,7 +489,7 @@ describe("SiteHeaderComponent", () => {
     expect([host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === searchButton()]).toEqual([false, false, true]);
   });
 
-  it("keeps the search open on a tap in it, and closes it on a tap outside, returning the focus to its button", async () => {
+  it("keeps the search open on a tap in it, and closes it on a tap outside, leaving the focus where the tap put it", async () => {
     await phoneAsync();
     await renderAsync(t => t.hasSearch.set(true));
     await searchAsync();
@@ -480,10 +497,61 @@ describe("SiteHeaderComponent", () => {
     await userEvent.click(field());
     await fixture.whenStable();
     const inside = [host.searchOpen(), document.activeElement === field()];
-    await userEvent.click(DomFixture.one(document, "main"));
+    const outside = DomFixture.oneOf(document, "input.outside", HTMLInputElement);
+    await userEvent.click(outside);
     await fixture.whenStable();
 
-    expect([inside, host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === searchButton()]).toEqual([[true, true], false, false, true]);
+    expect([inside, host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === outside]).toEqual([[true, true], false, false, true]);
+  });
+
+  for (const [title, close] of [
+    ["the menu", async (): Promise<void> => {
+      await openAsync();
+      await openAsync();
+    }],
+    ["the site", async (): Promise<void> => {
+      host.searchOpen.set(false);
+      await fixture.whenStable();
+    }]
+  ] as const)
+    it(`keeps a search the site opens open on a tap outside after ${title} closed one its button opened`, async () => {
+      await phoneAsync();
+      await renderAsync(t => t.hasSearch.set(true));
+      await searchAsync();
+      await close();
+
+      host.searchOpen.set(true);
+      await fixture.whenStable();
+      await userEvent.click(DomFixture.one(document, "main"));
+      await fixture.whenStable();
+
+      expect([host.searchOpen(), shown(".nol-site-header-search")]).toEqual([true, true]);
+    });
+
+  it("moves the focus to the first link when the menu opens on a phone, and Tab goes on through the menu in the order it is drawn", async () => {
+    await phoneAsync();
+    await renderAsync(t => {
+      t.hasSearch.set(true);
+      t.wide.set(true);
+    });
+    await openAsync();
+
+    const expected = [...all(".nol-site-nav-link"), ...all(".nol-site-social"), pill(), part(".nol-site-download")];
+
+    expect(await tabsAsync(expected)).toEqual(expected.map((_, index) => index));
+  });
+
+  it("follows the bar in the order it is drawn with Tab on a desktop window: the lockup, the links, the search, the tools, then Download", async () => {
+    await renderAsync(t => t.hasSearch.set(true));
+    DomFixture.oneOf(header(), ".nol-site-lockup-link", HTMLAnchorElement).focus();
+    const drawn = [".nol-site-lockup-link", ".nol-site-nav-link", "input[nolSiteSearch]", ".nol-site-social", "nol-site-theme-switch", ".nol-site-download"]
+      .map(t => DomFixture.all(header(), t).map(part => part.getBoundingClientRect().left))
+      .flat();
+
+    const expected = [part(".nol-site-lockup-link"), ...all(".nol-site-nav-link"), field(), ...all(".nol-site-social"), pill(), part(".nol-site-download")];
+
+    expect(await tabsAsync(expected)).toEqual(expected.map((_, index) => index));
+    expect(drawn).toEqual([...drawn].sort((a, b) => a - b));
   });
 
   it("keeps a search its owner opened open on a tap outside, and closes it with Escape", async () => {

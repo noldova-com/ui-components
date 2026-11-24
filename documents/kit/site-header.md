@@ -43,10 +43,11 @@ In the bar the Download button is a menu row high, 0.75rem insets, with a 1.125r
 The search button is a menu row square with the medium radius and a 1.5rem glyph, named Search; it says whether the search is open and which element it controls, and shows the selected fill while it is open.
 The menu button is a menu row square with the medium radius and a 1.5rem glyph (`--nol-site-menu-glyph`), the glyph's end at the content's end; it is named Menu and says whether the menu is open and which element it controls, and while the menu is open it shows a close glyph on the selected fill.
 The open menu shows, under the bar and across its width, ending 1rem above the header's bottom: the links 0.25rem under the bar as rows 2.75rem high (`--nol-site-menu-row`), in 1rem text (`--nol-site-menu-text`) and `text`, the current page's in `text-strong`; 0.75rem under them the social links and the theme switch at the end, each a menu row square, 0.25rem apart, with 1.25rem glyphs (`--nol-site-menu-icon`); and on a documentation site, 0.75rem under those, the Download button across the width, a menu row high, its label 0.875rem (`--nol-site-menu-download-text`).
-Escape closes the menu and returns the focus to its button; following a link in it closes it.
-The search button opens the search under the bar, across its width and ending 1rem above the header's bottom, and moves the focus to its field; the button again, Escape, or a tap outside the search closes it and returns the focus to the button.
+Opening the menu moves the focus to its first link, so Tab goes on through the menu in the order it is drawn; Escape closes the menu and returns the focus to its button; following a link in it closes it.
+The search button opens the search under the bar, across its width and ending 1rem above the header's bottom, and moves the focus to its field; the button again or Escape closes it and returns the focus to the button, and a tap outside the search closes it and leaves the focus where the tap put it, such as in a form field.
 Opening the menu closes the search, and opening the search closes the menu.
-A search the site opens itself stays open on a tap outside it, until the button or Escape closes it.
+A search the site opens itself stays open on a tap outside it, until the button or Escape closes it, even after the button opened an earlier one.
+On a desktop window Tab follows the bar as it is drawn: the lockup, the links, the search, the social links, the theme switch, then Download.
 
 ## Search
 

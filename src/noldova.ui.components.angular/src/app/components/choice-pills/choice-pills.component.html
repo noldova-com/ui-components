@@ -11,7 +11,7 @@ LICENSE file in the root directory of this source tree.
     @if (iconOnly() && option.icon; as glyph) {
       <button type="button" role="radio" class="nol-choice-pill nol-choice-pill-icon" [class.nol-choice-pill-selected]="option.value === value()" [attr.aria-checked]="option.value === value()"
         [attr.aria-disabled]="option.isDisabled ? resources.trueValue : null" [attr.tabindex]="option.value === tabStop() ? 0 : -1" [attr.aria-label]="option.title"
-        [attr.data-nol-value]="option.value" [nolTooltip]="option.title" (click)="choose(option)"><span class="nol-choice-pill-glyph material-symbols-rounded" aria-hidden="true">{{ glyph }}</span></button>
+        [nolTooltip]="option.title" (click)="choose(option)"><span class="nol-choice-pill-glyph material-symbols-rounded" aria-hidden="true">{{ glyph }}</span></button>
     } @else {
       <button type="button" role="radio" class="nol-choice-pill" [class.nol-choice-pill-selected]="option.value === value()" [attr.aria-checked]="option.value === value()"
         [attr.aria-disabled]="option.isDisabled ? resources.trueValue : null" [attr.tabindex]="option.value === tabStop() ? 0 : -1" (click)="choose(option)">{{ option.title }}</button>

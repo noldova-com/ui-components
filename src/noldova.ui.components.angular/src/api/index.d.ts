@@ -11992,7 +11992,8 @@ export declare class ShellRunOutputDirective {
 export declare class SiteFooterComponent {
   /**
    * The URL of the Noldova wordmark's file, drawn as a mask in the text
-   * color, so the site's own copy is used and the package ships none.
+   * color, so the site's own copy is used and the package ships none. It is
+   * drawn in the file's own proportions, at the wordmark height.
    */
   public readonly wordmark: InputSignal<string>;
 
@@ -12057,7 +12058,9 @@ export declare class SiteFooterComponent {
  * on its field; the menu button opens the links, social links and theme
  * switch below it, with Download among them on a wide site. Opening one
  * closes the other, and Escape closes either and returns the focus to its
- * button, as a tap outside the search does.
+ * button; a tap outside the search closes it and leaves the focus where the
+ * tap put it. Opening the menu moves the focus to its first link, and Tab
+ * follows the parts in the order they are drawn at either width.
  *
  * @example
  * ```ts
@@ -12078,7 +12081,8 @@ export declare class SiteFooterComponent {
 export declare class SiteHeaderComponent {
   /**
    * The URL of the Noldova wordmark's file, drawn as a mask in the text
-   * color, so the site's own copy is used and the package ships none.
+   * color, so the site's own copy is used and the package ships none. It is
+   * drawn in the file's own proportions, at the wordmark height.
    */
   public readonly wordmark: InputSignal<string>;
 
