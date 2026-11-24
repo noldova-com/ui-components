@@ -6,13 +6,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { DestroyRef, ErrorHandler } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
+import { codeToTokensBase } from "@shikijs/primitive";
 
 import { ClockTokens } from "../../src/app/models/clock-tokens";
 import { CodeHighlighterTokens } from "../../src/app/models/code-highlighter-tokens";
 import { CodeLanguage } from "../../src/app/models/code-language";
 import type { CodeToken } from "../../src/app/models/code-token";
 import { CodeHighlighter } from "../../src/app/services/code-highlighter";
+import { Resources } from "../../src/resources";
 import type { TestTimeSource } from "./test-time-source";
 import { HangLimitFixture } from "./hang-limit.fixture";
 
@@ -73,13 +76,25 @@ export class CodeHighlighterFixture {
     return () => tokenize.mock.calls.length;
   };
 
-  public static readonly sampleResultsAsync = async (highlighter: CodeHighlighter, share: readonly string[]): Promise<readonly (readonly [string, boolean, boolean])[]> => {
-    const results: (readonly [string, boolean, boolean])[] = [];
+  // Each language's id, whether every token is at its place in the sample, and true once it has tokens. A sample that came back with none gives
+  // why in place of true, so the failure names which of the highlighter's empty paths it took: the grammar's load failed, with what it reported,
+  // the highlighter was disposed, or the grammar's tokens all read as plain, with their scopes. The fixture's signal never aborts, so the aborted
+  // path can't be taken. The error handler's spy goes with the TestBed injector that made it.
+  public static readonly sampleResultsAsync = async (highlighter: CodeHighlighter, share: readonly string[]): Promise<readonly (readonly [string, boolean, true | string])[]> => {
+    const results: (readonly [string, boolean, true | string])[] = [];
+    let isDisposed = false;
+    TestBed.inject(DestroyRef).onDestroy(() => {
+      isDisposed = true;
+    });
+    const errors = vi.spyOn(TestBed.inject(ErrorHandler), "handleError");
     for (const id of share) {
       const language = CodeLanguage.named(id);
       const sample = CodeHighlighterFixture.SAMPLES[id] ?? String.empty;
+      const reported = errors.mock.calls.length;
       const tokens = Object.isNull(language) ? [] : await highlighter.tokensAsync(sample, language, CodeHighlighterFixture.signal);
-      results.push([id, tokens.every(t => sample.slice(t.start, t.end) === t.text), tokens.length > 0]);
+      const failures = errors.mock.calls.slice(reported).map(([t]) => t instanceof Error ? t.message : String(t));
+      const why = tokens.length > 0 ? true : CodeHighlighterFixture.emptyWhy(id, sample, failures, isDisposed);
+      results.push([id, tokens.every(t => sample.slice(t.start, t.end) === t.text), why]);
     }
     return results;
   };
@@ -106,4 +121,22 @@ export class CodeHighlighterFixture {
     }
     return steps;
   };
+
+  private static emptyWhy(id: string, sample: string, failures: readonly string[], isDisposed: boolean): string {
+    if (isDisposed)
+      return "no tokens: the highlighter was disposed";
+    if (failures.length > 0)
+      return `no tokens: the grammar's load failed, reporting ${failures.join("; ")}`;
+    const shiki = TestBed.inject(CodeHighlighterTokens.shiki);
+    if (Object.isNull(shiki))
+      return "no tokens: the grammar loaded, so its tokens all read as plain; its scopes are read only with a shared Shiki";
+    try {
+      const lines = codeToTokensBase(shiki, sample, { lang: id, theme: Resources.codeThemeName, includeExplanation: true });
+      const scoped = lines.flat().map(t => `"${t.content}" ${t.color ?? "no color"} ${(t.explanation ?? []).map(u => u.scopes.map(v => v.scopeName).join(" ")).join(" | ")}`);
+      return `no tokens: the grammar's tokens all read as plain: ${scoped.join(", ")}`;
+    }
+    catch (error) {
+      return `no tokens, and the grammar's scopes couldn't be read: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
 }
