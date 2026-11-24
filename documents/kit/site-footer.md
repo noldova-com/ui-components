@@ -15,7 +15,7 @@ There each link is a row 2.75rem high (`--nol-site-menu-row`), with no space bet
 
 ## Text roles
 
-The product's name: title, at the emphasis weight, in `text-strong`.
+The product's name: as in the [site header](site-header.md), 1rem on a 1.25rem line at the emphasis weight, in `text-strong`.
 The line: panel, in `text-muted`.
 The links: panel, in `text`.
 Group titles: small, at the emphasis weight, in capitals spaced by `--nol-letter-spacing-caps`, in `text-muted`.

@@ -7,6 +7,9 @@
  */
 
 :host {
+  --nol-choice-pill: var(--nol-site-theme-pill);
+  --nol-choice-pill-gap: var(--nol-space-half);
+
   display: inline-flex;
   padding: var(--nol-space-half);
   border-radius: var(--nol-radius-medium);

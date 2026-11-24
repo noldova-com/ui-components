@@ -263,6 +263,14 @@
   --nol-site-footer-gap-phone: 1.5rem;
   --nol-site-footer-line-width: 18rem;
   --nol-site-menu-row: 2.75rem;
+  --nol-site-name-text: 1rem;
+  --nol-site-name-line: 1.25rem;
+  --nol-site-theme-pill: 1.25rem;
+  --nol-site-menu-text: 1rem;
+  --nol-site-menu-icon: 1.25rem;
+  --nol-site-menu-glyph: 1.5rem;
+  --nol-site-download-glyph-phone: 1.125rem;
+  --nol-site-menu-download-text: 0.875rem;
   --nol-menu-padding: 0.25rem;
   --nol-menu-label-padding: 0.5rem 0.75rem 0.25rem;
   --nol-menu-item-height: 1.625rem;

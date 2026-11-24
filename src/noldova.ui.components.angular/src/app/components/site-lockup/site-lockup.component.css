@@ -51,9 +51,9 @@
 .nol-site-lockup-name {
   min-width: 0;
   overflow: hidden;
-  font-size: var(--nol-text-title);
+  font-size: var(--nol-site-name-text);
   font-weight: var(--nol-weight-emphasis);
-  line-height: var(--nol-line-title);
+  line-height: var(--nol-site-name-line);
   text-overflow: ellipsis;
   white-space: nowrap;
 

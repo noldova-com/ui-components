@@ -43,7 +43,7 @@ LICENSE file in the root directory of this source tree.
   </div>
   @if (downloadHref(); as download) {
     <a nol-button class="nol-site-download" [href]="download"
-      ><span nolButtonIcon class="material-symbols-rounded" aria-hidden="true">{{ partResources.downloadGlyph }}</span>{{ downloadLabel() }}</a
+      ><span nolButtonIcon class="material-symbols-rounded nol-site-download-icon" aria-hidden="true">{{ partResources.downloadGlyph }}</span>{{ downloadLabel() }}</a
     >
   }
   <button #menuButton type="button" nol-icon-button class="nol-site-menu-button"

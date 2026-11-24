@@ -147,10 +147,10 @@ describe("SiteThemeSwitchComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`sits on the window color with the ${theme.id} theme's half-space inset and medium radius, its pills square at the choice pill size, in ${mode} mode`, async () => {
+      it(`sits on the window color with the ${theme.id} theme's half-space inset and medium radius, its pills square at the site theme pill size and a half space apart, in ${mode} mode`, async () => {
         await renderAsync(theme, mode);
         const style = getComputedStyle(switchHost());
-        const size = AppearanceFixture.measureLook("choice-pill");
+        const size = AppearanceFixture.measureLook("site-theme-pill");
         const inset = AppearanceFixture.measureLook("space-half");
         const outer = switchHost().getBoundingClientRect();
         const first = DomFixture.at(pills(), 0).getBoundingClientRect();
@@ -165,5 +165,6 @@ describe("SiteThemeSwitchComponent", () => {
         AppearanceFixture.expectPixels(first.left - outer.left, inset);
         AppearanceFixture.expectPixels(first.top - outer.top, inset);
         AppearanceFixture.expectPixels(outer.height, size + inset * 2);
+        AppearanceFixture.expectPixels(DomFixture.at(pills(), 1).getBoundingClientRect().left - first.right, inset);
       });
 });

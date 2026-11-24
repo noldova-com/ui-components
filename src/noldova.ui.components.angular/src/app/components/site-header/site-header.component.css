@@ -12,7 +12,7 @@
   container-type: inline-size;
   top: 0;
   z-index: 1;
-  background-color: var(--nol-window);
+  background-color: var(--nol-panel);
   color: var(--nol-text);
 }
 
@@ -42,7 +42,7 @@
 .nol-site-header-bar {
   display: flex;
   align-items: center;
-  gap: var(--nol-space-6);
+  gap: var(--nol-space-2);
   box-sizing: border-box;
   max-width: var(--nol-site-content-width);
   min-height: var(--nol-site-header-height);
@@ -58,7 +58,7 @@
   display: inline-flex;
   flex: 0 1 auto;
   align-items: center;
-  gap: var(--nol-space-2);
+  gap: calc(var(--nol-space-2) - var(--nol-space-half));
   min-width: 0;
 }
 
@@ -92,8 +92,9 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: flex;
   flex: 1 1 auto;
   align-items: center;
-  gap: var(--nol-space-1);
+  gap: var(--nol-space-2);
   min-width: 0;
+  margin-inline-start: var(--nol-space-4);
   order: 1;
 }
 
@@ -149,7 +150,7 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: block;
   flex: none;
   width: var(--nol-site-search-width);
-  margin-inline-start: auto;
+  margin-inline: auto var(--nol-space-2);
 }
 
 .nol-site-header-tools {
@@ -171,7 +172,7 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   width: var(--nol-icon-button-target);
   height: var(--nol-icon-button-target);
   border-radius: var(--nol-radius-small);
-  color: var(--nol-text-muted);
+  color: var(--nol-text-strong);
 }
 
 .nol-site-social-icon {
@@ -188,13 +189,36 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   }
 }
 
+nol-site-theme-switch {
+  margin-inline-start: var(--nol-space-2);
+}
+
 .nol-site-download {
+  --nol-button-edge-width: 0px;
+
   flex: none;
+  margin-inline-start: var(--nol-space-2);
+  font-size: var(--nol-text-panel);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-line-panel);
   order: 4;
 }
 
+.nol-site-download-icon {
+  margin-inline-start: calc(-1 * var(--nol-space-half));
+}
+
 .nol-site-menu-button {
+  --nol-icon: var(--nol-site-menu-glyph);
+  --nol-icon-button: var(--nol-site-menu-row);
+  --nol-icon-button-face-radius: var(--nol-radius-medium);
+
   display: none;
+  margin-inline-end: calc((var(--nol-site-menu-glyph) - var(--nol-site-menu-row)) / 2);
+}
+
+:host(.nol-site-header-open) .nol-site-menu-button:not(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-selected);
 }
 
 @container (width < 48rem) {
@@ -219,7 +243,12 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   }
 
   .nol-site-download {
+    --nol-button-padding-inline: var(--nol-space-3);
+    --nol-icon: var(--nol-site-download-glyph-phone);
+
     grid-area: download;
+    min-height: var(--nol-site-menu-row);
+    margin-inline-start: 0;
   }
 
   .nol-site-menu-button {
@@ -236,7 +265,6 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   :host(.nol-site-header-wide) .nol-site-download {
     display: none;
     grid-area: action;
-    justify-self: start;
   }
 
   :host(.nol-site-header-open.nol-site-header-with-search) .nol-site-header-search {
@@ -247,23 +275,44 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
     padding-block-end: var(--nol-space-2);
   }
 
+  :host(.nol-site-header-open) .nol-site-header-bar {
+    padding-block-end: var(--nol-space-4);
+  }
+
   :host(.nol-site-header-open) .nol-site-header-nav {
     display: flex;
     grid-area: nav;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+    margin: var(--nol-space-1) 0 0;
   }
 
   :host(.nol-site-header-open) .nol-site-nav-link {
     min-height: var(--nol-site-menu-row);
+    padding-inline: 0;
+    color: var(--nol-text);
+    font-size: var(--nol-site-menu-text);
+  }
+
+  :host(.nol-site-header-open) .nol-site-nav-link-current {
+    color: var(--nol-text-strong);
   }
 
   :host(.nol-site-header-open) .nol-site-header-tools {
+    --nol-icon: var(--nol-site-menu-icon);
+    --nol-site-theme-pill: var(--nol-site-menu-row);
+
     display: flex;
     grid-area: tools;
-    min-height: var(--nol-site-menu-row);
-    margin-inline-start: 0;
+    gap: var(--nol-space-1);
+    margin: var(--nol-space-3) 0 0;
+  }
+
+  :host(.nol-site-header-open) .nol-site-social {
+    width: var(--nol-site-menu-row);
+    height: var(--nol-site-menu-row);
+    border-radius: var(--nol-radius-medium);
   }
 
   :host(.nol-site-header-open) nol-site-theme-switch {
@@ -271,7 +320,11 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   }
 
   :host(.nol-site-header-open.nol-site-header-wide) .nol-site-download {
+    --nol-icon: var(--nol-site-download-glyph-phone);
+
     display: inline-flex;
-    margin-block: var(--nol-space-2) var(--nol-space-4);
+    justify-self: stretch;
+    margin-block-start: var(--nol-space-3);
+    font-size: var(--nol-site-menu-download-text);
   }
 }
