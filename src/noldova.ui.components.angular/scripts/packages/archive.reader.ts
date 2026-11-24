@@ -9,8 +9,6 @@
 import { readFile } from "node:fs/promises";
 import zlib from "node:zlib";
 
-import "@noldova/context.core";
-
 import CommandFailedException from "../command-failed.exception.ts";
 
 export class ArchiveReader {
@@ -35,7 +33,7 @@ export class ArchiveReader {
       tar = zlib.gunzipSync(await readFile(archive));
     }
     catch (error) {
-      if (!(error instanceof Error && "code" in error && Object.isString(error.code) && (error.code === ArchiveReader.MISSING_CODE || error.code.startsWith(ArchiveReader.ZLIB_CODE_PREFIX))))
+      if (!(error instanceof Error && "code" in error && typeof error.code === "string" && (error.code === ArchiveReader.MISSING_CODE || error.code.startsWith(ArchiveReader.ZLIB_CODE_PREFIX))))
         throw error;
       throw new CommandFailedException(`${archive} could not be read as a gzipped archive.`, { cause: error });
     }

@@ -6,8 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "@noldova/context.core";
-
 import { ScannedSource } from "./scanned-source.ts";
 import { SourceLiteral } from "./source-literal.ts";
 
@@ -215,7 +213,7 @@ export class SourceScanner {
   }
 
   private allowsRegularExpression(): boolean {
-    if (Object.isNull(this.previousToken) || SourceScanner.REGULAR_EXPRESSION_KEYWORDS.has(this.previousToken))
+    if (this.previousToken === null || SourceScanner.REGULAR_EXPRESSION_KEYWORDS.has(this.previousToken))
       return true;
     return !SourceScanner.OPERAND_END.test(this.previousToken);
   }
@@ -230,9 +228,9 @@ export class SourceScanner {
   }
 
   private isImportSpecifier(): boolean {
-    if (!Object.isNull(this.previousToken) && SourceScanner.IMPORT_KEYWORDS.has(this.previousToken))
+    if (this.previousToken !== null && SourceScanner.IMPORT_KEYWORDS.has(this.previousToken))
       return true;
-    return this.previousToken === SourceScanner.OPENING_PARENTHESIS && !Object.isNull(this.earlierToken) && SourceScanner.IMPORT_CALLS.has(this.earlierToken);
+    return this.previousToken === SourceScanner.OPENING_PARENTHESIS && this.earlierToken !== null && SourceScanner.IMPORT_CALLS.has(this.earlierToken);
   }
 
   private pushToken(token: string): void {

@@ -9,8 +9,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import { ArchiveReader } from "./archive.reader.ts";
 
 export class PackageBuilder {
@@ -39,7 +37,7 @@ export class PackageBuilder {
       const entry = `${PackageBuilder.ARCHIVE_FOLDER}/${name}`;
       const copy = packed.get(entry);
       const origin = path.relative(this.root, file).split(path.sep).join(path.posix.sep);
-      if (Object.isUndefined(copy))
+      if (copy === undefined)
         differences.push(`${path.basename(archive)} lacks ${entry}, the copy of ${origin}.`);
       else if (!copy.equals(await readFile(file)))
         differences.push(`${path.basename(archive)} holds a ${entry} that differs from ${origin}.`);

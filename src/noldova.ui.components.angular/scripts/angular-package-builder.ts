@@ -11,8 +11,6 @@ import { copyFile, cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } 
 import os from "node:os";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import { JsonFields } from "./angular/json-fields.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import type { ProcessRunner } from "./processes/process-runner.ts";
@@ -202,7 +200,7 @@ export class AngularPackageBuilder {
       }
       await writeFile(target, text.replace(AngularPackageBuilder.URL, (whole, quote: string, reference: string) => {
         const replacement = rewritten.get(reference);
-        return Object.isUndefined(replacement) ? whole : `url(${quote}${replacement}${quote})`;
+        return replacement === undefined ? whole : `url(${quote}${replacement}${quote})`;
       }), AngularPackageBuilder.ENCODING);
     }
   }
@@ -210,9 +208,9 @@ export class AngularPackageBuilder {
   private async copyFolderAsync(folder: string, output: string, copied: Map<string, string>, subject: string): Promise<string> {
     const copy = path.join(output, path.basename(folder));
     const earlier = copied.get(copy);
-    if (!Object.isUndefined(earlier) && earlier !== folder)
+    if (earlier !== undefined && earlier !== folder)
       throw new CommandFailedException(`${subject} ${this.describe(folder)}, and the package already takes ${this.describe(earlier)} as ${path.basename(folder)}/.`);
-    if (Object.isUndefined(earlier)) {
+    if (earlier === undefined) {
       await cp(folder, copy, { recursive: true });
       copied.set(copy, folder);
     }

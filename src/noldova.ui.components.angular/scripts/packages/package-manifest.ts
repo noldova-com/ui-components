@@ -9,8 +9,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import CommandFailedException from "../command-failed.exception.ts";
 import type PackageInfo from "../package-info.ts";
 import { PeerRange } from "./peer-range.ts";
@@ -44,7 +42,7 @@ export class PackageManifest {
         throw error;
       throw new CommandFailedException(`${file} could not be read as JSON.`, { cause: error });
     }
-    if (!Object.isObject(manifest) || !("name" in manifest) || !Object.isString(manifest.name))
+    if (typeof manifest !== "object" || manifest === null || !("name" in manifest) || typeof manifest.name !== "string")
       throw new CommandFailedException(`${file} must have a name.`);
     if (manifest.name !== kit.packageName)
       throw new CommandFailedException(`${file} must be named "${kit.packageName}".`);
@@ -52,15 +50,15 @@ export class PackageManifest {
       throw new CommandFailedException(`${file} must have the version "${PackageManifest.VERSION_PLACEHOLDER}"; the build stamps version.json's version.`);
 
     const dependencies = "dependencies" in manifest ? manifest.dependencies : {};
-    if (!Object.isObject(dependencies))
+    if (typeof dependencies !== "object" || dependencies === null)
       throw new CommandFailedException(`${file} must list its dependencies as an object.`);
     const peers = "peerDependencies" in manifest ? manifest.peerDependencies : {};
-    if (!Object.isObject(peers))
+    if (typeof peers !== "object" || peers === null)
       throw new CommandFailedException(`${file} must list its peer dependencies as an object.`);
     const pins = "devDependencies" in manifest ? manifest.devDependencies : {};
-    if (!Object.isObject(pins))
+    if (typeof pins !== "object" || pins === null)
       throw new CommandFailedException(`${file} must list its development dependencies as an object.`);
-    const unpinned = Object.entries(dependencies).filter(([, version]) => !Object.isString(version)).map(([name]) => name);
+    const unpinned = Object.entries(dependencies).filter(([, version]) => typeof version !== "string").map(([name]) => name);
     if (unpinned.length > 0)
       throw new CommandFailedException(`${file} must pin ${unpinned.join(", ")} to an exact version.`);
     const loose = Object.entries(dependencies).filter(([name, version]) => name.startsWith(PackageManifest.CONTEXT_SCOPE) && !PeerRange.isExact(version)).map(([name]) => name);

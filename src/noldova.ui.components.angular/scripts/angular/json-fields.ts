@@ -6,8 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import "@noldova/context.core";
-
 import CommandFailedException from "../command-failed.exception.ts";
 
 export class JsonFields {
@@ -18,7 +16,7 @@ export class JsonFields {
   public constructor(value: unknown, source: string, place: readonly string[] = []) {
     this.source = source;
     this.place = place;
-    if (!Object.isObject(value) || Array.isArray(value))
+    if (typeof value !== "object" || value === null || Array.isArray(value))
       throw new CommandFailedException(`${this.subject} is not a JSON object.`);
     this.value = value;
   }
@@ -38,28 +36,28 @@ export class JsonFields {
 
   public count(name: string): number {
     const value: unknown = Reflect.get(this.value, name);
-    if (!Object.isNumber(value) || !Number.isInteger(value) || value < 0)
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 0)
       throw new CommandFailedException(`${this.subject} has no count ${name}.`);
     return value;
   }
 
   public number(name: string): number {
     const value: unknown = Reflect.get(this.value, name);
-    if (!Object.isNumber(value) || !Number.isFinite(value))
+    if (typeof value !== "number" || !Number.isFinite(value))
       throw new CommandFailedException(`${this.subject} has no number ${name}.`);
     return value;
   }
 
   public flag(name: string): boolean {
     const value: unknown = Reflect.get(this.value, name);
-    if (!Object.isBoolean(value))
+    if (typeof value !== "boolean")
       throw new CommandFailedException(`${this.subject} has no flag ${name}.`);
     return value;
   }
 
   public text(name: string): string {
     const value: unknown = Reflect.get(this.value, name);
-    if (!Object.isString(value))
+    if (typeof value !== "string")
       throw new CommandFailedException(`${this.subject} has no text ${name}.`);
     return value;
   }
@@ -73,7 +71,7 @@ export class JsonFields {
 
   public counts(name: string): readonly number[] {
     const values = this.list(name);
-    if (values.some(t => !Object.isNumber(t) || !Number.isInteger(t) || t < 0))
+    if (values.some(t => typeof t !== "number" || !Number.isInteger(t) || t < 0))
       throw new CommandFailedException(`${this.subject} has a list ${name} that is not all counts.`);
     return values.map(t => Number(t));
   }
@@ -84,7 +82,7 @@ export class JsonFields {
 
   public texts(name: string): readonly string[] {
     const values = this.list(name);
-    if (values.some(t => !Object.isString(t)))
+    if (values.some(t => typeof t !== "string"))
       throw new CommandFailedException(`${this.subject} has a list ${name} that is not all text.`);
     return values.map(t => String(t));
   }
@@ -102,7 +100,7 @@ export class JsonFields {
   }
 
   public has(name: string): boolean {
-    return Reflect.has(this.value, name) && !Object.isNull(Reflect.get(this.value, name));
+    return Reflect.has(this.value, name) && Reflect.get(this.value, name) !== null;
   }
 
   private get subject(): string {

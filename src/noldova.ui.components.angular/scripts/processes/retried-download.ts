@@ -9,8 +9,6 @@
 import type { Writable } from "node:stream";
 import timers from "node:timers/promises";
 
-import "@noldova/context.core";
-
 import { ProcessException } from "./process.exception.ts";
 
 export class RetriedDownload {
@@ -23,7 +21,7 @@ export class RetriedDownload {
     let failure = "";
     for (let attempt = 1; attempt <= RetriedDownload.ATTEMPTS; attempt++) {
       const reason = await attemptAsync();
-      if (Object.isNull(reason))
+      if (reason === null)
         return;
       failure = reason;
       if (attempt < RetriedDownload.ATTEMPTS) {
