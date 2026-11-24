@@ -44,7 +44,7 @@ import { provideTimeFormats } from "../../../../src/app/services/provide-time-fo
 import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
-import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
 import { Resources } from "../../../../src/resources";
 import { MessageResources } from "../../../../src/app/components/message/message.resources";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
@@ -968,6 +968,41 @@ describe("MessageComponent", () => {
 
     const copied = "Use **this**:\n\n````md\na ``` b\n````\n\n```\nplain\n```\n\na.txt";
     expect([clipboard.texts, host.events, find(".nol-message-copy").getAttribute("aria-label"), announcements]).toEqual([[copied], [["copied", copied]], "Copied", ["Copied"]]);
+  });
+
+  it("shows and announces nothing, sets no feedback timer and emits nothing when a copy settles after it is removed, and still reports a failed write", async () => {
+    const errors: unknown[] = [];
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    const clipboard = new ClipboardWriterFixture();
+    TestBed.overrideProvider(ClipboardWriter, { useValue: clipboard });
+    const source = provideTimeSource();
+    await renderAsync();
+    const failure = new Error("Denied.");
+    let settle: (isWritten: boolean) => void = () => undefined;
+    let fail: (error: Error) => void = () => undefined;
+    clipboard.answer = (): Promise<boolean> => new Promise(resolve => {
+      settle = resolve;
+    });
+    find(".nol-message-copy").click();
+    clipboard.answer = (): Promise<boolean> => new Promise((_resolve, reject) => {
+      fail = reject;
+    });
+    find(".nol-message-copy").click();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    let warnings: string[] = [];
+    try {
+      fixture.destroy();
+      settle(true);
+      fail(failure);
+      await Promise.resolve();
+      await Promise.resolve();
+      warnings = warn.mock.calls.flat().map(String);
+    } finally {
+      warn.mockRestore();
+    }
+
+    // Angular warns of an emit on a destroyed component's output, so none means the copy told the app nothing.
+    expect([announcements, source.timerCount, warnings, errors]).toEqual([[], 0, [], [failure]]);
   });
 
   it("copies each formula KaTeX drew as its source, delimiters included", async () => {

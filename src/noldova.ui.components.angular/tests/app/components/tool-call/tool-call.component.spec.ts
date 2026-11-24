@@ -554,6 +554,32 @@ describe("ToolCallComponent", () => {
     expect([pending, source.timerCount]).toEqual([1, 0]);
   });
 
+  it("shows and announces nothing and sets no feedback timer when a copy settles after it is removed, and still reports a failed write", async () => {
+    const errors: unknown[] = [];
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    const source = provideTimeSource();
+    await renderAsync(callOf({ input: ToolCallInput.fromFields([new ToolCallField("path", "src")]), output: "done" }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true)));
+    const failure = new Error("The clipboard is unavailable.");
+    const settles: ((isWritten: boolean) => void)[] = [];
+    let fail: (error: Error) => void = () => undefined;
+    clipboard.answer = (): Promise<boolean> => new Promise(resolve => {
+      settles.push(resolve);
+    });
+    find(".nol-tool-call-input .nol-tool-call-copy").click();
+    clipboard.answer = (): Promise<boolean> => new Promise((_resolve, reject) => {
+      fail = reject;
+    });
+    find(".nol-tool-call-result .nol-tool-call-copy").click();
+
+    await changeAsync(() => host.isShown.set(false));
+    settles[0]?.(true);
+    fail(failure);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect([settles.length, announcements, source.timerCount, errors]).toEqual([1, [], 0, [failure]]);
+  });
+
   it("shows code input in a code block, which copies it, without a copy button of its own", async () => {
     await renderAsync(callOf({ input: ToolCallInput.fromCode("npm test", "bash") }), t => t.views.set(ToolCallViews.empty.withExpanded(t.call(), true)));
 

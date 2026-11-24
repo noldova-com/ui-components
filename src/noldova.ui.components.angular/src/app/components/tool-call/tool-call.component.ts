@@ -81,6 +81,7 @@ export class ToolCallComponent {
   private readonly isTitleCut: WritableSignal<boolean> = signal(false);
   private readonly startedAt: Signal<number | null> = computed(() => this.call().status === ToolCallStatus.Running ? this.call().startedAt?.getTime() ?? null : null);
   private readonly copyTimers: Map<WritableSignal<CopyState>, () => void> = new Map();
+  private isDestroyed: boolean = false;
   private lastCall: ToolCall | null = null;
   private isRetryingFromFocus: boolean = false;
   private readonly answer: RowAnswer = new RowAnswer(this.host, this.injector);
@@ -178,6 +179,7 @@ export class ToolCallComponent {
         fits.observe(part);
     });
     inject(DestroyRef).onDestroy(() => {
+      this.isDestroyed = true;
       for (const cancel of this.copyTimers.values())
         cancel();
     });
@@ -323,7 +325,10 @@ export class ToolCallComponent {
       next.focus({ preventScroll: true });
   }
 
+  // A copy that settles once the call is gone shows and announces nothing, and sets no timer.
   private showCopy(state: WritableSignal<CopyState>, value: CopyState): void {
+    if (this.isDestroyed)
+      return;
     this.copyTimers.get(state)?.();
     state.set(value);
     this.announcer.announce(Resources.copyLabels[value], AnnouncementPoliteness.Polite);

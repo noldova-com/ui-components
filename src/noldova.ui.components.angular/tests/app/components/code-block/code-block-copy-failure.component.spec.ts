@@ -55,4 +55,39 @@ describe("CodeBlockComponent", () => {
 
     expect([pending, harness.source.timerCount]).toEqual([1, 0]);
   });
+
+  it("shows and announces nothing and sets no feedback timer when a copy settles after it is removed", async () => {
+    await renderAsync();
+    let settle: (isWritten: boolean) => void = () => undefined;
+    harness.clipboard.answer = (): Promise<boolean> => new Promise(resolve => {
+      settle = resolve;
+    });
+    await copyAsync();
+
+    await changeAsync(() => harness.host.isShown.set(false));
+    settle(true);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect([harness.announcements, harness.source.timerCount]).toEqual([[], 0]);
+  });
+
+  it("still reports the error, but shows and announces nothing and sets no timer, when writing fails after it is removed", async () => {
+    const errors: unknown[] = [];
+    TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    await renderAsync();
+    const failure = new Error("The clipboard is unavailable.");
+    let fail: (error: Error) => void = () => undefined;
+    harness.clipboard.answer = (): Promise<boolean> => new Promise((_resolve, reject) => {
+      fail = reject;
+    });
+    await copyAsync();
+
+    await changeAsync(() => harness.host.isShown.set(false));
+    fail(failure);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect([harness.announcements, harness.source.timerCount, errors]).toEqual([[], 0, [failure]]);
+  });
 });
