@@ -131,7 +131,7 @@ describe("ChoicePillsComponent", () => {
     expect(selected()).toEqual(["Light"]);
   });
 
-  it("moves to the next pill with ArrowLeft and to the one before with ArrowRight right to left", async () => {
+  it("moves to the next pill with ArrowLeft and to the one before with ArrowRight right to left, and to the last with End", async () => {
     render();
     fixture.nativeElement.dir = "rtl";
     pills()[1]?.focus();
@@ -139,8 +139,10 @@ describe("ChoicePillsComponent", () => {
     await userEvent.keyboard("{ArrowLeft}");
     const left = document.activeElement;
     await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+    const right = document.activeElement;
+    await userEvent.keyboard("{End}");
 
-    expect([left, document.activeElement]).toEqual([pills()[2], pills()[0]]);
+    expect([left, right, document.activeElement]).toEqual([pills()[2], pills()[0], pills().at(-1)]);
   });
 
   it("does nothing for an arrow key, Home or End held with Alt, Ctrl or Meta", async () => {
