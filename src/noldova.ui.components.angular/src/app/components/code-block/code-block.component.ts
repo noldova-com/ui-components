@@ -19,7 +19,10 @@ import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
 import { CodeHighlighterTokens } from "../../models/code-highlighter-tokens.js";
 import { CodeLines } from "../../models/code-lines.js";
+import { CodeShown } from "../../models/code-shown.js";
+import { CodeShownSource } from "../../models/code-shown-source.js";
 import type { CodeToken } from "../../models/code-token.js";
+import { CodeTokensRequest } from "../../models/code-tokens-request.js";
 import { ScrollEndFollower } from "../../models/scroll-end-follower.js";
 import { ShellRun } from "../../models/shell-run.js";
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
@@ -63,12 +66,11 @@ export class CodeBlockComponent {
     const language = highlighter?.languageNamed(this.language()) ?? null;
     return Object.isNull(highlighter) || Object.isNull(language) ? undefined : highlighter.tokens(this.code(), language);
   });
-  private readonly shown: Signal<readonly [string, readonly CodeToken[] | undefined]> = linkedSignal<
-    readonly [string, readonly CodeToken[] | undefined, boolean], readonly [string, readonly CodeToken[] | undefined]>({
-    source: () => [this.code(), this.loadedTokens() ?? (this.tokens.hasValue() ? this.tokens.value() : undefined), this.tokens.isLoading()],
-    computation: ([code, tokens, isLoading], previous) => {
-      const [shownCode, shownTokens] = previous?.value ?? [String.empty, undefined];
-      return Object.isUndefined(tokens) && isLoading && !Object.isUndefined(shownTokens) && code.startsWith(shownCode) ? [shownCode, shownTokens] : [code, tokens];
+  private readonly shown: Signal<CodeShown> = linkedSignal<CodeShownSource, CodeShown>({
+    source: () => new CodeShownSource(this.code(), this.loadedTokens() ?? (this.tokens.hasValue() ? this.tokens.value() : undefined), this.tokens.isLoading()),
+    computation: ({ code, tokens, isLoading }, previous) => {
+      const shown = previous?.value;
+      return !Object.isUndefined(shown) && Object.isUndefined(tokens) && isLoading && !Object.isUndefined(shown.tokens) && code.startsWith(shown.code) ? new CodeShown(shown.code, shown.tokens) : new CodeShown(code, tokens);
     }
   });
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
@@ -83,7 +85,6 @@ export class CodeBlockComponent {
   protected readonly isCopied: Signal<boolean> = computed(() => this.copyState() === CopyState.Copied);
   protected readonly copyGlyph: Signal<string> = computed(() => Resources.copyGlyphs[this.copyState()]);
   protected readonly copyLabel: Signal<string> = computed(() => Resources.copyLabels[this.copyState()]);
-  // Trimmed, as the language is for coloring, so a language given with spaces around it offers Run and sends it without them.
   protected readonly runLanguage: Signal<string | null> = computed(() => {
     const language = this.language()?.trim() ?? null;
     return this.runnable() && !Object.isNull(language) && CodeBlockResources.shellLanguages.has(language.toLowerCase()) ? language : null;
@@ -104,7 +105,7 @@ export class CodeBlockComponent {
     params: () => {
       const highlighter = this.highlighter;
       const language = highlighter?.languageNamed(this.language()) ?? null;
-      return Object.isNull(highlighter) || Object.isNull(language) || !Object.isUndefined(this.loadedTokens()) ? undefined : { code: this.code(), language, highlighter };
+      return Object.isNull(highlighter) || Object.isNull(language) || !Object.isUndefined(this.loadedTokens()) ? undefined : new CodeTokensRequest(this.code(), language, highlighter);
     },
     loader: ({ params, abortSignal }) => params.highlighter.tokensAsync(params.code, params.language, abortSignal)
   });
@@ -122,7 +123,7 @@ export class CodeBlockComponent {
         this.errors.handleError(error);
     });
     afterRenderEffect(() => {
-      const [, tokens] = this.shown();
+      const { tokens } = this.shown();
       const isStreaming = this.streaming();
       this.lines.show(this.text().nativeElement, this.code(), tokens, !isStreaming);
       this.grewStreaming ||= isStreaming;
