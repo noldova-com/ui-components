@@ -37,7 +37,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      packages: read
       issues: write
     steps:
       - name: Check out the revision
@@ -50,17 +49,11 @@ jobs:
         with:
           node-version: ${{ needs.versions.outputs.node-version }}
           package-manager-cache: false
-          registry-url: ${{ needs.versions.outputs.install-registry-url }}
-          scope: ${{ needs.versions.outputs.install-scope }}
 
       - name: Move the kit to the newest context in its peer range
-        env:
-          NODE_AUTH_TOKEN: ${{ needs.versions.outputs.install-registry-url == 'https://npm.pkg.github.com' && github.token || '' }}
         run: npm run newest-context
 
       - name: Build the packages
-        env:
-          NODE_AUTH_TOKEN: ${{ needs.versions.outputs.install-registry-url == 'https://npm.pkg.github.com' && github.token || '' }}
         run: npm run build
 
       - name: Test the packages
