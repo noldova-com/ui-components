@@ -6,7 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { DestroyRef, ErrorHandler, Injectable, inject } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
+import { DestroyRef, ErrorHandler, Injectable, PLATFORM_ID, inject } from "@angular/core";
 import type { ShikiPrimitive } from "@shikijs/primitive";
 
 import "@noldova/context.core";
@@ -36,6 +37,7 @@ export class CodeHighlighter implements ICodeHighlighter {
   private readonly tokensKeptLength: number = inject(CodeHighlighterTokens.tokensKeptLength);
   private readonly startWorker: (() => ICodeWorker) | null = inject(CodeHighlighterTokens.worker);
   private readonly sharedShiki: ShikiPrimitive | null = inject(CodeHighlighterTokens.shiki);
+  private readonly isInBrowser: boolean = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly kept: Map<string, readonly CodeToken[]> = new Map();
   private keptLength: number = 0;
   private lastKept: string | null = null;
@@ -64,7 +66,7 @@ export class CodeHighlighter implements ICodeHighlighter {
 
   public preload(names: readonly string[]): void {
     const languages = [...new Set(names.flatMap(t => CodeLanguage.named(t) ?? []))];
-    if (languages.length > 0)
+    if (this.isInBrowser && languages.length > 0)
       void this.preloadAsync(languages);
   }
 
@@ -161,7 +163,7 @@ export class CodeHighlighter implements ICodeHighlighter {
   }
 
   private usableWorker(): CodeWorkerClient | null {
-    if (Object.isNull(this.startWorker) || this.isDisposed)
+    if (!this.isInBrowser || Object.isNull(this.startWorker) || this.isDisposed)
       return null;
     this.worker ??= new CodeWorkerClient(this.startWorker, this.timeSource, error => this.reportFailure(error));
     return this.worker.isUsable ? this.worker : null;
