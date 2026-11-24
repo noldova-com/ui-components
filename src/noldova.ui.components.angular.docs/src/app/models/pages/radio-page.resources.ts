@@ -20,7 +20,7 @@ export class RadioPageResources {
     new DocsKey("Space", "Picks the focused radio; a disabled one refuses it.")
   ];
   public static readonly roles: readonly string[] = [
-    "The kit styles the browser's own radio, inside a label that holds its text, so it has the radio role, reports whether it is checked, and is named by its text.",
+    "The kit styles the browser's own radio, inside a label that holds its text, so it has the radio role, reports whether it is checked, and is named by its text; label names a radio with no visible text, as aria-label.",
     "In a radio group the radios share one name, so the browser gives the group one Tab stop and its arrow keys; a radio on its own takes its checked from its owner.",
     "A disabled radio is marked aria-disabled rather than natively disabled: it stays focusable and the arrow keys reach it, but a click, Space or an arrow key never picks it.",
     "The dot is drawn over the circle and hidden from assistive technology with aria-hidden."

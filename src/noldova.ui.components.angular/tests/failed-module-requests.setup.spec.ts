@@ -61,6 +61,8 @@ describe("failed module request setup", () => {
 
   it("prints, after a module request whose connection is refused, what its port held: whether Node connects there and what listens", async () => {
     const port = await commands.closedPort();
+    expect(port).toBeGreaterThanOrEqual(20_000);
+    expect(port).toBeLessThanOrEqual(29_999);
     const url = `http://localhost:${port}/refused-${crypto.randomUUID()}.js`;
 
     await failImportAsync(url);

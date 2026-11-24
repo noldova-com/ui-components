@@ -22,6 +22,7 @@ export class Resources {
   public static readonly xLink: string = "https://x.com/noldova";
   public static readonly xLabel: string = "X";
   public static readonly menuLabel: string = "Pages";
+  public static readonly menuGroupLevel: number = 2;
   public static readonly menuButtonLabel: string = "Menu";
   public static readonly menuGlyph: string = "menu";
   public static readonly onThisPageLabel: string = "On this page";

@@ -30,6 +30,19 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
 
+// A canvas size a spec sets in pixels, and whether its map stands upright inside it, its top too.
+class CanvasSize {
+  public readonly width: number;
+  public readonly height: number;
+  public readonly upright: boolean;
+
+  public constructor(width: number, height: number, upright: boolean) {
+    this.width = width;
+    this.height = height;
+    this.upright = upright;
+  }
+}
+
 @Component({
   template: `<div style="width: 80px; height: 30px;"></div>`
 })
@@ -341,13 +354,13 @@ describe("CanvasComponent", () => {
           const narrowest = widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * inset;
           const full = map().getBoundingClientRect();
           const drawing = DomFixture.oneOf(map(), "svg", SVGSVGElement).viewBox.baseVal;
-          const sizes: readonly (readonly [number, number, boolean])[] = [
-            [AppearanceFixture.toPixels(13.75), AppearanceFixture.toPixels(12), true],
-            [narrowest, AppearanceFixture.toPixels(12), placement === CanvasControlsPlacement.Edges],
-            [narrowest, AppearanceFixture.toPixels(18), true]
+          const sizes: readonly CanvasSize[] = [
+            new CanvasSize(AppearanceFixture.toPixels(13.75), AppearanceFixture.toPixels(12), true),
+            new CanvasSize(narrowest, AppearanceFixture.toPixels(12), placement === CanvasControlsPlacement.Edges),
+            new CanvasSize(narrowest, AppearanceFixture.toPixels(18), true)
           ];
 
-          for (const [width, height, upright] of sizes) {
+          for (const { width, height, upright } of sizes) {
             canvas().style.width = `${String(width)}px`;
             canvas().style.height = `${String(height)}px`;
             const frame = canvas().getBoundingClientRect();
