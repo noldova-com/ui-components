@@ -10,7 +10,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 ## Text role
 
-The bar is a progress bar named for its work, with its fraction only when known; the spinner is a status whose text names the work, shown only once the spinner is, so a delayed one is announced when it appears, and its ring is hidden from assistive technology.
+The bar is a progress bar named for its work, with its fraction only when known, and a fraction that is not a number counts as unknown; the spinner is a status whose text names the work, shown only once the spinner is, so a delayed one is announced when it appears, and its ring is hidden from assistive technology.
 
 ## Surface and behavior
 

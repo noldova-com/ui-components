@@ -31,7 +31,7 @@ export class ProgressComponent {
   protected readonly maximum: number = ProgressResources.progressMaximum;
   protected readonly fraction: Signal<number | null> = computed(() => {
     const value = this.value();
-    return value === null ? null : Math.min(Math.max(value, this.minimum), this.maximum);
+    return value === null || Number.isNaN(value) ? null : Math.min(Math.max(value, this.minimum), this.maximum);
   });
   protected readonly isIndeterminate: Signal<boolean> = computed(() => this.fraction() === null);
 

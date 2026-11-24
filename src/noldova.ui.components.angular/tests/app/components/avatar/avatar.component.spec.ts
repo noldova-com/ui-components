@@ -171,6 +171,22 @@ describe("AvatarComponent", () => {
     expect(texts).toEqual(["\u{10400}", "A", "", "RV"]);
   });
 
+  it("takes the first character as the reader sees it, a flag, an emoji joined of several or a letter with its accent, from its name and at the icon size from its initials", async () => {
+    await renderAsync(t => t.name.set("\u{1F1E9}\u{1F1EA} Team"));
+    const texts = [shown()];
+    await changeAsync(() => host.name.set("\u{1F469}\u{200D}\u{1F4BB}x"));
+    texts.push(shown());
+    await changeAsync(() => host.name.set("e\u0301mile"));
+    texts.push(shown());
+    await changeAsync(() => {
+      host.size.set(AvatarSize.Icon);
+      host.initials.set("\u{1F469}\u{200D}\u{1F4BB}V");
+    });
+    texts.push(shown());
+
+    expect(texts).toEqual(["\u{1F1E9}\u{1F1EA}", "\u{1F469}\u{200D}\u{1F4BB}", "E\u0301", "\u{1F469}\u{200D}\u{1F4BB}"]);
+  });
+
   it("writes its initial in the app's locale", async () => {
     TestBed.configureTestingModule({ providers: [{ provide: LOCALE_ID, useValue: "tr" }] });
     await renderAsync(t => t.name.set("irem"));

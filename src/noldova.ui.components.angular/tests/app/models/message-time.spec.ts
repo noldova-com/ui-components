@@ -9,13 +9,25 @@
 import { MessageTime } from "../../../src/app/models/message-time";
 
 describe("MessageTime", () => {
-  const now = Date.UTC(2026, 9, 11, 12, 0, 0);
+  const now = new Date(2026, 9, 11, 12, 0, 0).getTime();
   const english = MessageTime.of("en-US", false);
   const ago = (seconds: number, time: MessageTime = english): string => time.relativeOf(new Date(now - seconds * 1000), now);
 
   it("says how long ago a time was, in the largest unit that reads well, and now for under 45 seconds", () => {
     expect([ago(0), ago(44), ago(45), ago(44 * 60), ago(45 * 60), ago(21 * 3600), ago(22 * 3600), ago(25 * 86_400), ago(26 * 86_400), ago(300 * 86_400), ago(800 * 86_400), ago(-120)])
       .toEqual(["now", "now", "1 minute ago", "44 minutes ago", "1 hour ago", "21 hours ago", "yesterday", "25 days ago", "last month", "10 months ago", "2 years ago", "in 2 minutes"]);
+  });
+
+  it("counts days by the calendar, so a time earlier today reads in hours and one late the day before yesterday reads as 2 days ago", () => {
+    const between = (time: Date, at: Date): string => english.relativeOf(time, at.getTime());
+
+    expect([
+      between(new Date(2026, 9, 11, 0, 30), new Date(2026, 9, 11, 22, 30)),
+      between(new Date(2026, 9, 9, 19, 0), new Date(2026, 9, 11, 1, 0)),
+      between(new Date(2026, 9, 10, 23, 0), new Date(2026, 9, 11, 22, 30)),
+      between(new Date(2026, 9, 12, 22, 0), new Date(2026, 9, 11, 23, 0)),
+      english.shortRelativeOf(new Date(2026, 9, 11, 0, 30), new Date(2026, 9, 11, 22, 30).getTime())
+    ]).toEqual(["22 hours ago", "2 days ago", "yesterday", "tomorrow", "22h ago"]);
   });
 
   it("gives a time's date and time of day", () => {

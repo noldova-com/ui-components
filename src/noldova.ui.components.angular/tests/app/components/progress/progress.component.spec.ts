@@ -73,6 +73,14 @@ describe("ProgressComponent", () => {
     expect(progress().getAttribute("aria-valuenow")).toBe("0");
   });
 
+  it("takes a fraction that is not a number as unknown, with no value for assistive technology and the moving bar", () => {
+    update(0.5);
+    update(Number.NaN);
+
+    expect([progress().hasAttribute("aria-valuenow"), progress().classList.contains("nol-progress-indeterminate"), bar().getBoundingClientRect().width,
+      getComputedStyle(bar()).animationName]).toEqual([false, true, 80, expect.stringContaining("nol-progress-slide")]);
+  });
+
   it("fills its track by the fraction and a part of it, moving, when the fraction is unknown", () => {
     update(0.5);
     expect(bar().getBoundingClientRect().width).toBe(100);
