@@ -43,6 +43,13 @@ describe("CodeBlockComponent", () => {
     expect([writeAsync.mock.calls.length, harness.announcements, glyph(run())]).toEqual([0, [], "play_arrow"]);
   });
 
+  it("offers Run for a shell language given with spaces around it, as it colors it, and emits the language without them", async () => {
+    await runnableAsync("  Bash ");
+    await userEvent.click(run(), { force: true });
+
+    expect(harness.host.runs.map(t => t.language)).toEqual(["Bash"]);
+  });
+
   it("is one tab stop whose arrow keys move from Word wrap to Run to Copy", async () => {
     await runnableAsync("bash");
 

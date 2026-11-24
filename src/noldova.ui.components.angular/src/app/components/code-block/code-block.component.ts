@@ -83,8 +83,9 @@ export class CodeBlockComponent {
   protected readonly isCopied: Signal<boolean> = computed(() => this.copyState() === CopyState.Copied);
   protected readonly copyGlyph: Signal<string> = computed(() => Resources.copyGlyphs[this.copyState()]);
   protected readonly copyLabel: Signal<string> = computed(() => Resources.copyLabels[this.copyState()]);
+  // Trimmed, as the language is for coloring, so a language given with spaces around it offers Run and sends it without them.
   protected readonly runLanguage: Signal<string | null> = computed(() => {
-    const language = this.language();
+    const language = this.language()?.trim() ?? null;
     return this.runnable() && !Object.isNull(language) && CodeBlockResources.shellLanguages.has(language.toLowerCase()) ? language : null;
   });
   protected readonly shownRunState: Signal<ShellRunState> = computed(() => Object.isNull(this.blocks) ? this.runState() : this.blocks.stateOf(this.block()));
