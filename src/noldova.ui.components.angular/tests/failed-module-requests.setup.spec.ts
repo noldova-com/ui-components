@@ -203,12 +203,12 @@ describe("failed module request setup", () => {
     await expect.poll(printedAfterDecode).toContainEqual(expect.stringMatching(/^Font decode warning at \S+Z: OTS parsing error: \S/u));
   });
 
-  it("prints, after the first request the browser fails for lack of resources, the machine's TCP sockets by state, their top holders by process name and the dynamic port range", async () => {
+  it("prints, after the first request the browser fails for lack of resources, the machine's TCP sockets by state, their top holders by process name without ids, and the dynamic port range", async () => {
     const printed = await commands.scriptedResourceError("sample", "net::ERR_NO_BUFFER_SPACE");
 
     expect(printed).toEqual([
       expect.stringMatching(/^Failed module request at \S+Z: net::ERR_NO_BUFFER_SPACE http:/u),
-      expect.stringMatching(/^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets 8: TIME_WAIT 3, ESTABLISHED 3, CLOSE_WAIT 1, LISTENING 1; most held by chrome\.exe \(pid 4120\) 5, unknown \(pid 0\) 2, node\.exe \(pid 7788\) 1; dynamic ports 49152-65535 \(16384 ports\)$/u)
+      expect.stringMatching(/^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets 8: TIME_WAIT 3, ESTABLISHED 3, CLOSE_WAIT 1, LISTENING 1; most held by chrome\.exe 5, unknown 2, node\.exe 1; dynamic ports 49152-65535 \(16384 ports\)$/u)
     ]);
   });
 
@@ -239,7 +239,7 @@ describe("failed module request setup", () => {
   it("reads this machine's own listings on Windows, and says it's Windows only elsewhere", async () => {
     const printed = await commands.scriptedResourceError("this machine", "net::ERR_NO_BUFFER_SPACE");
 
-    expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: (TCP sockets [1-9]\d*: [A-Z_]+ \d+.*; most held by .+ \(pid \d+\) \d+.*; dynamic ports \d+-\d+ \(\d+ ports\)|taken on Windows only)$/u);
+    expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: (TCP sockets [1-9]\d*: [A-Z_]+ \d+.*; most held by .+ \d+.*; dynamic ports \d+-\d+ \(\d+ ports\)|taken on Windows only)$/u);
   });
 
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
