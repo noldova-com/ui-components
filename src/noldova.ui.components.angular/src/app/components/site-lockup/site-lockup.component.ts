@@ -20,6 +20,7 @@ import { SiteLockupResources } from "./site-lockup.resources.js";
 })
 export class SiteLockupComponent {
   public readonly wordmark = input.required<string>();
+  public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly href = input<string>(SiteLockupResources.homeHref);
 
@@ -28,5 +29,6 @@ export class SiteLockupComponent {
     const name = this.name();
     return String.isNullOrWhitespace(name) ? null : name;
   });
+  protected readonly reservedRatio: Signal<string> = computed(() => SiteLockupResources.formatRatio(this.wordmarkRatio()));
   protected readonly accessibleName: Signal<string> = computed(() => SiteLockupResources.formatName(this.name()));
 }

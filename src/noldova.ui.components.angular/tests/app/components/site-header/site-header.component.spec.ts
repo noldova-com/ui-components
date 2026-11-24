@@ -22,12 +22,13 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
 const formatWordmark = (width: number, height: number): string =>
   `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}'/%3E%3C/svg%3E`;
+const unreadable = "data:image/svg+xml,unreadable";
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteHeaderComponent, SiteSearchDirective],
   template: `
-    <nol-site-header [wordmark]="wordmark()" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
+    <nol-site-header [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
       [downloadHref]="downloadHref()" [downloadLabel]="downloadLabel()" [wide]="wide()" [contentId]="contentId()" [(menuOpen)]="menuOpen" [(searchOpen)]="searchOpen">
       @if (hasSearch()) {
         <input nolSiteSearch type="search" aria-label="Search" />
@@ -38,6 +39,7 @@ const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 })
 class SiteHeaderHostComponent {
   public readonly wordmark = signal(formatWordmark(20, 3));
+  public readonly wordmarkRatio = signal(20 / 3);
   public readonly name = signal<string | null>("TeamRun");
   public readonly version = signal<string | null>(null);
   public readonly versionHref = signal<string | null>(null);
@@ -50,6 +52,19 @@ class SiteHeaderHostComponent {
   public readonly hasSearch = signal(false);
   public readonly menuOpen = signal(false);
   public readonly searchOpen = signal(false);
+}
+
+@Component({
+  imports: [SiteHeaderComponent],
+  template: `<nol-site-header [wordmark]="wordmark" />`
+})
+class SiteHeaderDefaultRatioHostComponent {
+  public readonly wordmark: string = unreadable;
+}
+
+class SearchCloseCase {
+  public constructor(public readonly title: string, public readonly closeAsync: () => Promise<void>) {
+  }
 }
 
 describe("SiteHeaderComponent", () => {
@@ -138,6 +153,40 @@ describe("SiteHeaderComponent", () => {
 
     AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
     expect(size.width / size.height).toBeCloseTo(10 / 3, 1);
+  });
+
+  it("reserves the wordmark's width from the ratio the site passes before its file loads, so the name after it doesn't move when it does", async () => {
+    AppearanceFixture.apply(AppearanceFixture.themes[0], AppearanceFixture.modes[0]);
+    fixture = TestBed.createComponent(SiteHeaderHostComponent);
+    fixture.componentInstance.wordmark.set(unreadable);
+    fixture.componentInstance.wordmarkRatio.set(10 / 3);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const image = DomFixture.oneOf(header(), "img.nol-site-wordmark-size", HTMLImageElement);
+    const isUnloaded = image.naturalWidth === 0;
+    const widthBefore = box(".nol-site-wordmark").width;
+    const nameBefore = box(".nol-site-lockup-name").left;
+    fixture.componentInstance.wordmark.set(formatWordmark(10, 3));
+    fixture.detectChanges();
+    await image.decode();
+    const width = box(".nol-site-wordmark").width;
+
+    expect([isUnloaded, image.naturalWidth > 0]).toEqual([true, true]);
+    AppearanceFixture.expectPixels(width, AppearanceFixture.measureLook("site-wordmark") * 10 / 3);
+    AppearanceFixture.expectPixels(widthBefore, width);
+    AppearanceFixture.expectPixels(nameBefore, box(".nol-site-lockup-name").left);
+  });
+
+  it("reserves the Noldova wordmark's width when the site passes no ratio, even for a file that never loads", async () => {
+    AppearanceFixture.apply(AppearanceFixture.themes[0], AppearanceFixture.modes[0]);
+    const other = TestBed.createComponent(SiteHeaderDefaultRatioHostComponent);
+    other.detectChanges();
+    await other.whenStable();
+    const size = DomFixture.one(DomFixture.host(other), ".nol-site-wordmark").getBoundingClientRect();
+
+    AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
+    expect(size.width / size.height).toBeCloseTo(1333.817 / 201.396, 2);
+    other.destroy();
   });
 
   for (const theme of AppearanceFixture.themes)
@@ -504,21 +553,21 @@ describe("SiteHeaderComponent", () => {
     expect([inside, host.searchOpen(), shown(".nol-site-header-search"), document.activeElement === outside]).toEqual([[true, true], false, false, true]);
   });
 
-  for (const [title, close] of [
-    ["the menu", async (): Promise<void> => {
+  for (const { title, closeAsync } of [
+    new SearchCloseCase("the menu", async () => {
       await openAsync();
       await openAsync();
-    }],
-    ["the site", async (): Promise<void> => {
+    }),
+    new SearchCloseCase("the site", async () => {
       host.searchOpen.set(false);
       await fixture.whenStable();
-    }]
-  ] as const)
+    })
+  ])
     it(`keeps a search the site opens open on a tap outside after ${title} closed one its button opened`, async () => {
       await phoneAsync();
       await renderAsync(t => t.hasSearch.set(true));
       await searchAsync();
-      await close();
+      await closeAsync();
 
       host.searchOpen.set(true);
       await fixture.whenStable();

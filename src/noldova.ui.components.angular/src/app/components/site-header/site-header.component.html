@@ -11,7 +11,7 @@ LICENSE file in the root directory of this source tree.
 }
 <div class="nol-site-header-bar">
   <div class="nol-site-header-brand">
-    <nol-site-lockup [wordmark]="wordmark()" [name]="name()" [href]="homeHref()" />
+    <nol-site-lockup [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [href]="homeHref()" />
     @if (version(); as versionText) {
       @if (versionHref(); as versionLink) {
         <a class="nol-site-version" [href]="versionLink">{{ versionText }}</a>

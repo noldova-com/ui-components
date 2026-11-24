@@ -11998,6 +11998,14 @@ export declare class SiteFooterComponent {
   public readonly wordmark: InputSignal<string>;
 
   /**
+   * The wordmark file's width over its height, from its viewBox, which
+   * reserves the wordmark's width before the file loads so nothing after it
+   * moves; the Noldova wordmark's, 1333.817 / 201.396, when not bound. A site
+   * that passes its own file passes that file's ratio.
+   */
+  public readonly wordmarkRatio: InputSignal<number>;
+
+  /**
    * The product's name, drawn after the wordmark, such as `TeamRun`, which
    * names the lockup's link `TeamRun home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
@@ -12085,6 +12093,14 @@ export declare class SiteHeaderComponent {
    * drawn in the file's own proportions, at the wordmark height.
    */
   public readonly wordmark: InputSignal<string>;
+
+  /**
+   * The wordmark file's width over its height, from its viewBox, which
+   * reserves the wordmark's width before the file loads so nothing after it
+   * moves; the Noldova wordmark's, 1333.817 / 201.396, when not bound. A site
+   * that passes its own file passes that file's ratio.
+   */
+  public readonly wordmarkRatio: InputSignal<number>;
 
   /**
    * The product's name, drawn after the wordmark, such as `TeamRun`, which

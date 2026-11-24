@@ -8,7 +8,7 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 
 3.5rem high (`--nol-site-header-height`); the content keeps to 75rem (`--nol-site-content-width`), or 108rem on a documentation site (`--nol-site-content-width-wide`), centered, with 1.5rem insets (`--nol-site-padding-inline`).
 From the start: the lockup, the links' text 2rem after it and 1.5rem apart, then at the end the search, 16rem wide (`--nol-site-search-width`), the social links 0.5rem apart, the theme switch and the Download button, the search, the switch and the button each 1rem from the part before.
-The lockup's wordmark is 0.8125rem high (`--nol-site-wordmark`) in the wordmark's proportions, with the product's name 0.5rem after it and a version 0.375rem after that.
+The lockup's wordmark is 0.8125rem high (`--nol-site-wordmark`) in the wordmark's proportions, its width reserved before the file loads from `wordmarkRatio`, the Noldova wordmark's by default and the file's own when a site passes its own, with the product's name 0.5rem after it and a version 0.375rem after that.
 Each link is at least the pointer target high, with 0.5rem insets; each social link is an icon button target square with an icon-sized glyph.
 The Download button is the kit's [button](button.md) at its height with no edge, its label in panel text at the emphasis weight, and its icon 0.375rem from its start.
 

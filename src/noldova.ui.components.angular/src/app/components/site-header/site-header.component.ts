@@ -40,6 +40,7 @@ export class SiteHeaderComponent {
   private static nextId: number = 0;
 
   public readonly wordmark = input.required<string>();
+  public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
   public readonly version = input<string | null>(null);

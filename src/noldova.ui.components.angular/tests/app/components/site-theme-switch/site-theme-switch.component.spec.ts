@@ -21,6 +21,11 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 class SiteThemeSwitchHostComponent {
 }
 
+class StoredCase {
+  public constructor(public readonly stored: string, public readonly label: string, public readonly mode: string | null) {
+  }
+}
+
 describe("SiteThemeSwitchComponent", () => {
   const key = "noldova-theme";
   const modeAttribute = "data-nol-theme-mode";
@@ -65,7 +70,8 @@ describe("SiteThemeSwitchComponent", () => {
     expect([checked(), shownMode()]).toEqual([["System"], null]);
   });
 
-  for (const [stored, label, mode] of [["light", "Light", "Light"], ["dark", "Dark", "Dark"], ["system", "System", null], ["sepia", "System", null]] as const)
+  for (const { stored, label, mode } of [new StoredCase("light", "Light", "Light"), new StoredCase("dark", "Dark", "Dark"), new StoredCase("system", "System", null),
+    new StoredCase("sepia", "System", null)])
     it(`shows and applies ${label} once it renders when ${stored} is saved`, async () => {
       localStorage.setItem(key, stored);
       await renderAsync();

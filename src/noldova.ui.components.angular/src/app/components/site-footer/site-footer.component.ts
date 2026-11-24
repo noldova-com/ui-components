@@ -26,6 +26,7 @@ import { SiteFooterResources } from "./site-footer.resources.js";
 })
 export class SiteFooterComponent {
   public readonly wordmark = input.required<string>();
+  public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
   public readonly line = input<string | null>(null);
