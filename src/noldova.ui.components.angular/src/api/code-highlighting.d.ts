@@ -62,7 +62,8 @@ export interface ICodeHighlightingOptions {
    * loaded shows plain until it has; the language then loads at once, as
    * without a preload, with no more idle waits. A load that fails is reported to the
    * app's `ErrorHandler` and tried again when a block needs it 10 seconds
-   * or more later.
+   * or more later. On the server, as when a page is prerendered, nothing is
+   * preloaded and no highlighting worker starts.
    */
   readonly preload?: readonly string[];
 }
