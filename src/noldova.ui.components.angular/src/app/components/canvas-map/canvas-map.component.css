@@ -9,6 +9,7 @@
 :host {
   display: block;
   box-sizing: content-box;
+  max-width: calc(100% - 2 * var(--nol-border-width));
   overflow: hidden;
   border: var(--nol-border-width) solid var(--nol-card-border);
   border-radius: var(--nol-radius-medium);

@@ -326,6 +326,40 @@ describe("CanvasComponent", () => {
           }
         });
 
+  for (const placement of [CanvasControlsPlacement.Floating, CanvasControlsPlacement.Edges])
+    for (const mode of AppearanceFixture.modes)
+      for (const theme of AppearanceFixture.themes)
+        it(`narrows its ${placement} map in the content's proportions to keep it inside the canvas at 13.75rem wide and down to its widest control, at its 12rem minimum height and on a taller one, from the ${theme.id} theme in ${mode} mode`, async () => {
+          AppearanceFixture.apply(theme, mode);
+          host.placement.set(placement);
+          host.cards.set([1, 2, 3]);
+          fixture.detectChanges();
+          await measuredAsync(3);
+          const border = AppearanceFixture.measureLook("border-width");
+          const inset = AppearanceFixture.measureLook(placement === CanvasControlsPlacement.Floating ? "space-3" : "space-2") + border;
+          const widest = Math.max(...DomFixture.all(tools(), "button, .nol-canvas-zoom").map(t => t.getBoundingClientRect().width));
+          const narrowest = widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * inset;
+          const full = map().getBoundingClientRect();
+          const drawing = DomFixture.oneOf(map(), "svg", SVGSVGElement).viewBox.baseVal;
+          const sizes: readonly (readonly [number, number, boolean])[] = [
+            [AppearanceFixture.toPixels(13.75), AppearanceFixture.toPixels(12), true],
+            [narrowest, AppearanceFixture.toPixels(12), placement === CanvasControlsPlacement.Edges],
+            [narrowest, AppearanceFixture.toPixels(18), true]
+          ];
+
+          for (const [width, height, upright] of sizes) {
+            canvas().style.width = `${String(width)}px`;
+            canvas().style.height = `${String(height)}px`;
+            const frame = canvas().getBoundingClientRect();
+            const overview = map().getBoundingClientRect();
+
+            expect([full.width > width - 2 * inset, overview.left >= frame.left + inset - 0.5, upright ? overview.top >= frame.top + inset - 0.5 : true, overview.bottom <= frame.bottom - inset + 0.5])
+              .toEqual([true, true, true, true]);
+            AppearanceFixture.expectPixels(frame.right - overview.right, inset);
+            AppearanceFixture.expectPixels(overview.height - 2 * border, (overview.width - 2 * border) * drawing.height / drawing.width);
+          }
+        });
+
   it("fits its items above its floating toolbar once its map is hidden, from space-3 below its top", async () => {
     host.placement.set(CanvasControlsPlacement.Floating);
     host.alignment.set(CanvasFitAlignment.Top);
