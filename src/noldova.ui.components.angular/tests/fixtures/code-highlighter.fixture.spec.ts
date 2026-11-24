@@ -48,9 +48,9 @@ describe("CodeHighlighterFixture", () => {
     await sampleResultsAsync(highlighter, ["json"]);
     vi.spyOn(highlighter, "tokensAsync").mockResolvedValue([]);
 
-    const [[, , why]] = await sampleResultsAsync(highlighter, ["json"]);
+    const results = await sampleResultsAsync(highlighter, ["json"]);
 
-    expect(why).toMatch(/^no tokens: the grammar's tokens all read as plain: "\{" \S+ source\.json .*punctuation\.definition\.dictionary\.begin\.json/u);
+    expect(results).toEqual([["json", true, expect.stringMatching(/^no tokens: the grammar's tokens all read as plain: "\{" \S+ source\.json .*punctuation\.definition\.dictionary\.begin\.json/u)]]);
   });
 
   it("says the scopes are read only with a shared Shiki when the highlighter has its own", async () => {
@@ -62,8 +62,8 @@ describe("CodeHighlighterFixture", () => {
   });
 
   it("says why the scopes couldn't be read for a language the highlighter doesn't know", async () => {
-    const [[, , why]] = await sampleResultsAsync(TestBed.inject(CodeHighlighter), ["no-such-language"]);
+    const results = await sampleResultsAsync(TestBed.inject(CodeHighlighter), ["no-such-language"]);
 
-    expect(why).toMatch(/^no tokens, and the grammar's scopes couldn't be read: .*no-such-language/u);
+    expect(results).toEqual([["no-such-language", true, expect.stringMatching(/^no tokens, and the grammar's scopes couldn't be read: .*no-such-language/u)]]);
   });
 });
