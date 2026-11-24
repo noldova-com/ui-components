@@ -8,7 +8,6 @@
 
 import type { CodeToken } from "./code-token.js";
 
-// What a code block's shown code follows: its code, the tokens it has for that code, if any, and whether more are loading.
 export class CodeShownSource {
   public readonly code: string;
   public readonly tokens: readonly CodeToken[] | undefined;

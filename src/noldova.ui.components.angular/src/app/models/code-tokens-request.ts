@@ -9,7 +9,6 @@
 import type { ICodeHighlighter } from "../interfaces/i-code-highlighter.js";
 import type { CodeLanguage } from "./code-language.js";
 
-// A code block's request for the tokens of its code in its language, from the highlighter that gives them.
 export class CodeTokensRequest {
   public readonly code: string;
   public readonly language: CodeLanguage;

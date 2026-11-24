@@ -8,7 +8,6 @@
 
 import type { CodeToken } from "./code-token.js";
 
-// The code a code block shows and its tokens, undefined while it has none.
 export class CodeShown {
   public readonly code: string;
   public readonly tokens: readonly CodeToken[] | undefined;
