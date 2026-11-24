@@ -44,7 +44,7 @@ import { provideTimeFormats } from "../../../../src/app/services/provide-time-fo
 import { FixtureTheme } from "../../../../src/testing/models/fixture-theme";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
-import type { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
+import { ClipboardWriterFixture } from "../../../../src/testing/services/clipboard-writer-fixture";
 import { Resources } from "../../../../src/resources";
 import { MessageResources } from "../../../../src/app/components/message/message.resources";
 import { AccessibilityFixture } from "../../../fixtures/accessibility.fixture";
@@ -973,9 +973,10 @@ describe("MessageComponent", () => {
   it("shows and announces nothing, sets no feedback timer and emits nothing when a copy settles after it is removed, and still reports a failed write", async () => {
     const errors: unknown[] = [];
     TestBed.overrideProvider(ErrorHandler, { useValue: { handleError: (error: unknown) => errors.push(error) } });
+    const clipboard = new ClipboardWriterFixture();
+    TestBed.overrideProvider(ClipboardWriter, { useValue: clipboard });
     const source = provideTimeSource();
     await renderAsync();
-    const clipboard = TestBed.inject(ClipboardWriter) as ClipboardWriterFixture;
     const failure = new Error("Denied.");
     let settle: (isWritten: boolean) => void = () => undefined;
     let fail: (error: Error) => void = () => undefined;
