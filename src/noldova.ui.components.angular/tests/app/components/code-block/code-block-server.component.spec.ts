@@ -6,11 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, PLATFORM_ID } from "@angular/core";
+import { Component, ErrorHandler, PLATFORM_ID } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 
 import { CodeBlockComponent } from "../../../../src/app/components/code-block/code-block.component";
 import { ShellRunOutputComponent } from "../../../../src/app/components/code-block/shell-run-output.component";
+import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
+import { provideCodeHighlightingWorker } from "../../../../src/app/services/provide-code-highlighting-worker";
 import { Resources } from "../../../../src/resources";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -45,14 +47,37 @@ describe("CodeBlockComponent on the server", () => {
     await harness.resetAsync();
   });
 
-  it("renders its code as lines in the HTML and observes no sizes when it is prerendered", async () => {
+  async function renderAsync(): Promise<readonly unknown[]> {
     const fixture = TestBed.createComponent(CodeBlockServerHostComponent);
     await fixture.whenStable();
     const block = DomFixture.one(DomFixture.host(fixture), "nol-code-block");
     const lines = DomFixture.all(block, `code > .${Resources.codeLineClass}`).map(t => t.textContent);
     const html = block.outerHTML;
     fixture.destroy();
+    return [lines, html.includes("npm install"), html.includes("ngskiphydration")];
+  }
 
-    expect([lines, html.includes("npm install"), html.includes("ngskiphydration")]).toEqual([["npm install\n", "\n", "npm test\n"], true, true]);
+  it("renders its code as lines in the HTML and observes no sizes when it is prerendered", async () => {
+    expect(await renderAsync()).toEqual([["npm install\n", "\n", "npm test\n"], true, true]);
+  });
+
+  it("asks the highlighter for no tokens when it is prerendered", async () => {
+    const tokensAsync = vi.spyOn(TestBed.inject(CodeHighlighter), "tokensAsync");
+
+    const rendered = await renderAsync();
+
+    expect([rendered, tokensAsync.mock.calls]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], []]);
+  });
+
+  it("starts no highlighting worker and reports no failure when it is prerendered", async () => {
+    const start = vi.fn<() => Worker>(() => {
+      throw new Error("A prerendered block started the highlighting worker.");
+    });
+    TestBed.configureTestingModule({ providers: [provideCodeHighlightingWorker(start)] });
+    const handleError = vi.spyOn(TestBed.inject(ErrorHandler), "handleError").mockImplementation(() => undefined);
+
+    const rendered = await renderAsync();
+
+    expect([rendered, start.mock.calls, handleError.mock.calls]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], [], []]);
   });
 });

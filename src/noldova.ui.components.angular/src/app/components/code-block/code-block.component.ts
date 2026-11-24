@@ -112,7 +112,7 @@ export class CodeBlockComponent {
     params: () => {
       const highlighter = this.highlighter;
       const language = highlighter?.languageNamed(this.language()) ?? null;
-      return Object.isNull(highlighter) || Object.isNull(language) || !Object.isUndefined(this.loadedTokens()) ? undefined : new CodeTokensRequest(this.code(), language, highlighter);
+      return !this.isInBrowser || Object.isNull(highlighter) || Object.isNull(language) || !Object.isUndefined(this.loadedTokens()) ? undefined : new CodeTokensRequest(this.code(), language, highlighter);
     },
     loader: ({ params, abortSignal }) => params.highlighter.tokensAsync(params.code, params.language, abortSignal)
   });
