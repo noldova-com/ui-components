@@ -7,8 +7,8 @@ The themes, the tokens and the rules every control shares are in [KIT.md](../KIT
 ## Default geometry
 
 The content keeps to the [site header's](site-header.md) width and insets, 3rem from the footer's top and bottom (`--nol-site-footer-padding-block`).
-The lockup, with an optional line 0.75rem under it, takes two fifths of the row, and the link groups share the other three fifths as equal columns; the parts are 2rem apart (`--nol-site-footer-gap`), the last column ending at the content's end.
-Each group's links are 0.25rem apart, 0.75rem under its title, and each is at least the pointer target high.
+The lockup, with an optional line 0.75rem under it and at most 18rem wide (`--nol-site-footer-line-width`), takes two fifths of the row, and the link groups share the other three fifths as equal columns; the parts are 2rem apart (`--nol-site-footer-gap`), the last column ending at the content's end.
+Each group's links are 0.25rem apart and each is at least the pointer target high, the first one's text 0.75rem under its title as on a 1.25rem line.
 The bottom row is the same 2rem under the groups, with the notice at its start and any content the site projects at its end.
 When the footer is narrower than 48rem, as on a phone, the content takes the phone insets and is 2rem from the top and bottom (`--nol-site-footer-padding-block-phone`); the lockup takes its own row, the groups fall into two columns 1rem apart, and the rows, the bottom row included, are 1.5rem apart (`--nol-site-footer-gap-phone`).
 There each link is a row 2.75rem high (`--nol-site-menu-row`), with no space between, 0.25rem under its title.

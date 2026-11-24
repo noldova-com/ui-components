@@ -81,7 +81,7 @@ describe("SiteFooterComponent", () => {
     const link = part(".nol-site-lockup-link");
 
     expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "Noldova TeamRun", "Run a team of agents."]);
-    AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("space-2"));
+    AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("space-3"));
     expect(getComputedStyle(part(".nol-site-footer-line")).color).toBe(color("text-muted"));
   });
 
@@ -192,14 +192,17 @@ describe("SiteFooterComponent", () => {
     AppearanceFixture.expectPixels(DomFixture.at(groups, 2).right, end);
   });
 
-  it("puts each group's links a quarter space apart, three quarters under its title", async () => {
-    await page.viewport(1920, 1000);
-    await renderAsync();
-    const links = all(".nol-site-footer-link").map(t => t.getBoundingClientRect());
+  for (const theme of AppearanceFixture.themes)
+    it(`keeps the line to the ${theme.id} theme's line width, and puts each group's links a quarter space apart, the first one's middle 1.375rem under its title`, async () => {
+      await page.viewport(1920, 1000);
+      await renderAsync(t => t.line.set("Run a team of agents, each in its own worktree, and review what they change before it lands."), theme);
+      const links = all(".nol-site-footer-link").map(t => t.getBoundingClientRect());
+      const first = DomFixture.at(links, 0);
 
-    AppearanceFixture.expectPixels(DomFixture.at(links, 0).top - box(".nol-site-footer-title").bottom, AppearanceFixture.measureLook("space-3"));
-    AppearanceFixture.expectPixels(DomFixture.at(links, 1).top - DomFixture.at(links, 0).bottom, AppearanceFixture.measureLook("space-1"));
-  });
+      AppearanceFixture.expectPixels(box(".nol-site-footer-line").width, AppearanceFixture.measureLook("site-footer-line-width"));
+      AppearanceFixture.expectPixels(first.top + first.height / 2 - box(".nol-site-footer-title").bottom, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("space-half") + AppearanceFixture.measureLook("pointer-target") / 2);
+      AppearanceFixture.expectPixels(DomFixture.at(links, 1).top - first.bottom, AppearanceFixture.measureLook("space-1"));
+    });
 
   it("widens to the wide content width on a documentation site", async () => {
     await page.viewport(1920, 1000);

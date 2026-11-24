@@ -27,7 +27,7 @@ import { DomFixture } from "./dom.fixture";
 import { LayoutSettleFixture } from "./layout-settle.fixture";
 
 export class GalleryStateFixture {
-  private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility"];
+  private static readonly PROPERTIES: readonly string[] = ["background-color", "background-image", "color", "border-top-color", "outline-style", "outline-color", "outline-offset", "opacity", "visibility", "text-decoration-line"];
 
   // The kit sections that have a Focus and a Hover spec file of their own; its spec holds it to the kit's sections, so a new one needs its files.
   public static readonly sections: readonly Type<unknown>[] = [GalleryContentComponent, GalleryFormsComponent, GalleryNavigationComponent, GalleryOverlaysComponent];

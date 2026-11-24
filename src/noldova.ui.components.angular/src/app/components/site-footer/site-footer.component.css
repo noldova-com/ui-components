@@ -55,6 +55,7 @@
 }
 
 .nol-site-footer-line {
+  max-width: var(--nol-site-footer-line-width);
   color: var(--nol-text-muted);
   font-size: var(--nol-text-panel);
   line-height: var(--nol-line-panel);
@@ -63,7 +64,7 @@
 .nol-site-footer-group {
   display: flex;
   flex-direction: column;
-  gap: var(--nol-space-3);
+  gap: calc(var(--nol-space-2) + var(--nol-space-half));
   min-width: 0;
 }
 

@@ -272,6 +272,7 @@ export class Resources {
     "site-footer-padding-block-phone",
     "site-footer-gap",
     "site-footer-gap-phone",
+    "site-footer-line-width",
     "site-menu-row",
     "menu-padding",
     "menu-label-padding",

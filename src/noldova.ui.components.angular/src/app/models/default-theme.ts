@@ -434,6 +434,7 @@ export class DefaultTheme {
       ["site-footer-padding-block-phone", "2rem"],
       ["site-footer-gap", "2rem"],
       ["site-footer-gap-phone", "1.5rem"],
+      ["site-footer-line-width", "18rem"],
       ["site-menu-row", "2.75rem"],
       ["docking-plate-gap", "0.125rem"],
       ["menu-padding", "0.25rem"],

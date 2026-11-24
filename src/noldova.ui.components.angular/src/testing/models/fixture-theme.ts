@@ -433,6 +433,7 @@ export class FixtureTheme {
     ["site-footer-padding-block-phone", "2.25rem"],
     ["site-footer-gap", "2.5rem"],
     ["site-footer-gap-phone", "1.75rem"],
+    ["site-footer-line-width", "20rem"],
     ["site-menu-row", "3rem"],
     ["docking-plate-gap", "0.25rem"],
     ["menu-padding", "0.375rem"],
