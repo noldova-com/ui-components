@@ -54,7 +54,7 @@
 
 .nol-canvas-tools {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: var(--nol-space-2);
   right: var(--nol-space-2);
   left: var(--nol-space-2);

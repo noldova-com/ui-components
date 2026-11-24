@@ -288,7 +288,7 @@ describe("CanvasComponent", () => {
   for (const placement of [CanvasControlsPlacement.Floating, CanvasControlsPlacement.Edges])
     for (const mode of AppearanceFixture.modes)
       for (const theme of AppearanceFixture.themes)
-        it(`wraps its ${placement} toolbar to keep every control inside a narrow canvas and reachable, down to its widest control, from the ${theme.id} theme in ${mode} mode`, async () => {
+        it(`wraps its ${placement} toolbar to keep every control inside a narrow canvas at its 12rem minimum height, with its map shown, and reachable above the map, down to its widest control, from the ${theme.id} theme in ${mode} mode`, async () => {
           AppearanceFixture.apply(theme, mode);
           host.placement.set(placement);
           host.cards.set([1, 2, 3]);
@@ -299,6 +299,7 @@ describe("CanvasComponent", () => {
           const inset = AppearanceFixture.measureLook(placement === CanvasControlsPlacement.Floating ? "space-3" : "space-2") + border;
           const widest = Math.max(...controls().map(t => t.getBoundingClientRect().width));
           const narrowest = widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * inset;
+          canvas().style.height = `${String(AppearanceFixture.toPixels(12))}px`;
 
           for (const width of [AppearanceFixture.toPixels(13.75), narrowest]) {
             canvas().style.width = `${width}px`;
@@ -313,7 +314,8 @@ describe("CanvasComponent", () => {
               return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.closest(".nol-canvas-bar > *") !== t;
             });
 
-            expect([toolbar.width < AppearanceFixture.toPixels(13.75), outside.map(t => t.className), covered.map(t => t.className)]).toEqual([true, [], []]);
+            expect([Math.abs(frame.height - AppearanceFixture.toPixels(12)) <= 2 * border, DomFixture.maybe(canvas(), "nol-canvas-map") !== null, toolbar.width < AppearanceFixture.toPixels(13.75), outside.map(t => t.className), covered.map(t => t.className)])
+              .toEqual([true, true, true, [], []]);
             AppearanceFixture.expectPixels(placement === CanvasControlsPlacement.Floating ? frame.right - toolbar.right : toolbar.left - frame.left, inset);
           }
         });
