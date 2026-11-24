@@ -93,7 +93,7 @@ describe("ComponentPageComponent", () => {
       controls: "nol-checkbox",
       roles: ["label.nol-checkbox-label input[type=\"checkbox\"]", "input[type=\"checkbox\"].nol-checkbox-box[aria-disabled=\"true\"]", ".nol-checkbox-mark[aria-hidden=\"true\"]"],
       keys: ["Tab", "Space"],
-      inputs: ["checked", "disabled"],
+      inputs: ["checked", "disabled", "label"],
       outputs: ["checkedChange"]
     },
     SwitchComponent: {
@@ -111,7 +111,7 @@ describe("ComponentPageComponent", () => {
       roles: ["nol-radio-group[role=\"radiogroup\"][aria-label=\"Line endings\"]", "label.nol-radio-label input[type=\"radio\"]", "nol-radio-group input[type=\"radio\"][name]",
         "input[type=\"radio\"][aria-disabled=\"true\"]", ".nol-radio-dot[aria-hidden=\"true\"]"],
       keys: ["Tab", "Arrow Down", "Arrow Up", "Space"],
-      inputs: ["value", "checked", "disabled"],
+      inputs: ["value", "checked", "disabled", "label"],
       outputs: ["checkedChange"]
     },
     ChoiceRowComponent: {

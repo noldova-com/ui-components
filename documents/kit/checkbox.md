@@ -15,5 +15,5 @@ Panel label.
 ## Surface and behavior
 
 It is controlled: a click or Space asks its owner for the other value, and it keeps showing the value its owner gives until the owner gives the new one, so a change the owner refuses never shows, to sight or to assistive technology.
-Label participates in the hit target; border and check mark remain identifiable; disabled dims the box, its tick and the label to half strength, as the kit's other disabled controls are dimmed, draws the box's border, the tick and the label in `GrayText` under forced colors, and keeps the default cursor on the label.
+Label participates in the hit target, and a box with no visible label is named by the name its owner gives; border and check mark remain identifiable; disabled dims the box, its tick and the label to half strength, as the kit's other disabled controls are dimmed, draws the box's border, the tick and the label in `GrayText` under forced colors, and keeps the default cursor on the label.
 A disabled box is marked `aria-disabled="true"` rather than natively disabled, so it stays in the Tab order and keeps focus when it turns disabled, and it refuses a click or Space; focused, it stays dimmed as a whole, as unfocused, and its control draws the focus outline over it at full strength.

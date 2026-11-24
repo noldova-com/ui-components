@@ -33,7 +33,7 @@ import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
       <nol-radio class="one" value="one">One</nol-radio>
     </nol-radio-group>
     <nol-radio class="alone" value="alone" [checked]="alone()" (checkedChange)="changes.push($event)">Alone</nol-radio>
-    <nol-radio class="bare" value="bare" [checked]="true" />
+    <nol-radio class="bare" value="bare" [checked]="true" label="Bare branch" />
     <nol-radio class="wrapped" value="wrapped" style="width: 9rem">A label that is far too long to fit the width its radio gives it</nol-radio>
     <nol-radio-group class="busy" label="Folder" [(value)]="folder">
       <nol-radio class="new" value="new" [disabled]="busy()">New folder</nol-radio>
@@ -70,6 +70,14 @@ describe("RadioComponent", () => {
   const settleAsync = (): Promise<number> => new Promise(resolve => requestAnimationFrame(resolve));
 
   afterEach(() => AppearanceFixture.reset());
+
+  it("is named by its label input when it shows no text, and by its text alone when it has no label input", () => {
+    render();
+
+    expect(page.getByRole("radio", { name: "Bare branch" }).element()).toBe(box("bare"));
+    expect([box("bare").getAttribute("aria-label"), box("alone").hasAttribute("aria-label")]).toEqual(["Bare branch", false]);
+    expect(page.getByRole("radio", { name: "Alone" }).element()).toBe(box("alone"));
+  });
 
   it("is a native radio named by its label that sets its group's value, shows its dot only while checked and ignores clicks while disabled", async () => {
     render();

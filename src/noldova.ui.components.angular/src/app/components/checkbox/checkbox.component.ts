@@ -23,6 +23,7 @@ export class CheckboxComponent {
 
   public readonly checked = input<boolean>(false);
   public readonly disabled = input<boolean>(false);
+  public readonly label = input<string | null>(null);
   public readonly checkedChange = output<boolean>();
 
   protected refuse(event: Event): void {

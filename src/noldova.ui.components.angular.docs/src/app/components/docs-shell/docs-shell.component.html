@@ -29,7 +29,7 @@ LICENSE file in the root directory of this source tree.
       [routerLinkActiveOptions]="{ exact: true }" (click)="choosePage()">{{ gettingStarted.title }}</a>
     <a class="nol-docs-menu-link" [routerLink]="tokens.link" routerLinkActive="nol-docs-menu-current" ariaCurrentWhenActive="page" (click)="choosePage()">{{ tokens.title }}</a>
     @for (group of groups; track group.label) {
-      <nol-section-header [label]="group.label" />
+      <nol-section-header [label]="group.label" [level]="resources.menuGroupLevel" />
       <ul class="nol-docs-menu-list">
         @for (page of group.pages; track page.path) {
           <li><a class="nol-docs-menu-link" [routerLink]="page.link" routerLinkActive="nol-docs-menu-current" ariaCurrentWhenActive="page" (click)="choosePage()">{{ page.title }}</a></li>

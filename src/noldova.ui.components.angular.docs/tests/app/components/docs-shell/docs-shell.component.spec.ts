@@ -611,6 +611,7 @@ describe("DocsShellComponent", () => {
 
     expect(DocsFixture.all(nav, ":scope > a").map(t => t.textContent?.trim())).toEqual(["Getting started", "Theme tokens"]);
     expect(DocsFixture.all(nav, "nol-section-header").map(t => t.textContent?.trim())).toEqual(["Inputs", "Choices", "Overlays and menus", "Content", "Status", "Layout"]);
+    expect(DocsFixture.all(nav, "nol-section-header").map(t => [t.getAttribute("role"), t.getAttribute("aria-level")])).toEqual(Array(6).fill(["heading", "2"]));
     await userEvent.click(DocsFixture.byText(nav, "a", "Button"));
 
     await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
