@@ -102,6 +102,7 @@
   z-index: 1;
   right: var(--nol-space-2);
   bottom: var(--nol-space-2);
+  max-width: calc(100% - 2 * var(--nol-space-2) - 2 * var(--nol-border-width));
 }
 
 :host(.nol-canvas-floating) .nol-canvas-tools {
@@ -125,7 +126,12 @@
 
 :host(.nol-canvas-floating) .nol-canvas-map {
   position: static;
+  max-width: calc(100% - 2 * var(--nol-border-width));
   pointer-events: auto;
+}
+
+.nol-canvas-map-roomless {
+  visibility: hidden;
 }
 
 @media (forced-colors: active) {

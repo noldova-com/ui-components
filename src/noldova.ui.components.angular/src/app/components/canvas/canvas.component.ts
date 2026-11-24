@@ -63,7 +63,9 @@ export class CanvasComponent {
   private readonly items: Signal<readonly HTMLElement[]> = inject(CanvasItems, { self: true }).elements;
   private readonly plane: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("plane");
   private readonly tools: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("tools");
+  private readonly bar: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("bar");
   private readonly map: Signal<ElementRef<HTMLElement> | undefined> = viewChild(CanvasMapComponent, { read: ElementRef });
+  private readonly mapToggle: Signal<ElementRef<HTMLElement>> = viewChild.required("mapToggle", { read: ElementRef });
   private readonly shown: WritableSignal<CanvasView> = signal(CanvasView.initial);
   private readonly size: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   private readonly pointers: Map<number, CanvasPoint> = new Map<number, CanvasPoint>();
@@ -75,6 +77,7 @@ export class CanvasComponent {
   protected readonly partResources: typeof CanvasResources = CanvasResources;
   protected readonly textVariant: ButtonVariant = ButtonVariant.Text;
   protected readonly isDragging: WritableSignal<boolean> = signal(false);
+  protected readonly hasMapRoom: WritableSignal<boolean> = signal(true);
   protected readonly contentBox: WritableSignal<CanvasBox> = signal(new CanvasBox(0, 0, 0, 0), { equal: (a, b) => a.equals(b) });
   protected readonly itemBoxes: WritableSignal<readonly CanvasBox[]> = signal([], { equal: (a, b) => CanvasComponent.sameBoxes(a, b) });
   protected readonly transform: Signal<string> = computed(() => {
@@ -132,6 +135,19 @@ export class CanvasComponent {
         this.size();
         const area = this.freeAreaOnScreen();
         untracked(() => this.host.dispatchEvent(new ContentMovedEvent(area, this.host)));
+      }
+    });
+    afterRenderEffect({
+      read: () => {
+        this.size();
+        this.contentBox();
+        const map = this.map()?.nativeElement;
+        const hasRoom = Object.isUndefined(map) || this.hasRoomFor(map);
+        untracked(() => {
+          this.hasMapRoom.set(hasRoom);
+          if (!Object.isUndefined(map) && !hasRoom && map.contains(this.host.ownerDocument.activeElement))
+            this.mapToggle().nativeElement.focus();
+        });
       }
     });
   }
@@ -296,17 +312,28 @@ export class CanvasComponent {
   private freeArea(): CanvasBox {
     const size = this.size();
     const tools = this.tools().nativeElement;
-    const map = this.map()?.nativeElement;
+    const shown = this.map()?.nativeElement;
+    const map = Object.isUndefined(shown) || !this.hasRoomFor(shown) ? undefined : shown;
     const mapRoom = CanvasMapResources.canvasMapHeightRem * this.rootSize();
     if (this.isFloating()) {
       const inset = size.height - tools.offsetTop - tools.offsetHeight;
-      const bottom = Object.isUndefined(map) ? tools.offsetTop - inset : tools.offsetTop + map.offsetTop + map.clientHeight - mapRoom - inset;
+      const bottom = Object.isUndefined(map) ? tools.offsetTop + this.bar().nativeElement.offsetTop - inset : tools.offsetTop + map.offsetTop + map.clientHeight - mapRoom - inset;
       return new CanvasBox(inset, inset, size.width - inset * 2, bottom - inset);
     }
     const inset = tools.offsetTop;
     const top = inset + tools.offsetHeight + inset;
     const bottom = Object.isUndefined(map) ? size.height - inset : map.offsetTop + map.clientHeight - mapRoom - inset;
     return new CanvasBox(inset, top, size.width - inset * 2, bottom - top);
+  }
+
+  // A floating map stands above the toolbar's rows; on a canvas too short for both, its top would pass the canvas's top inset, so it hides,
+  // and Fit treats it as absent.
+  private hasRoomFor(map: HTMLElement): boolean {
+    if (!this.isFloating())
+      return true;
+    const tools = this.tools().nativeElement;
+    const inset = this.host.clientHeight - tools.offsetTop - tools.offsetHeight;
+    return tools.offsetTop + map.offsetTop >= inset;
   }
 
   private freeAreaOnScreen(): DOMRectReadOnly {

@@ -19,6 +19,7 @@ import { CanvasControlsPlacement } from "../../../../src/app/enums/canvas-contro
 import { CanvasFitAlignment } from "../../../../src/app/enums/canvas-fit-alignment";
 import { OverlayAlignment } from "../../../../src/app/enums/overlay-alignment";
 import { CanvasPoint } from "../../../../src/app/models/canvas-point";
+import { ContentMovedEvent } from "../../../../src/app/models/content-moved-event";
 import { DragGesture } from "../../../../src/app/models/drag-gesture";
 import { OverlayAnchoring } from "../../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../../src/app/models/overlay-side";
@@ -29,6 +30,19 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { HangLimitFixture } from "../../../fixtures/hang-limit.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
+
+// A canvas size a spec sets in pixels, and whether the canvas has room for its map, which then stands inside it; without room, the map hides.
+class CanvasSize {
+  public readonly width: number;
+  public readonly height: number;
+  public readonly hasMapRoom: boolean;
+
+  public constructor(width: number, height: number, hasMapRoom: boolean) {
+    this.width = width;
+    this.height = height;
+    this.hasMapRoom = hasMapRoom;
+  }
+}
 
 @Component({
   template: `<div style="width: 80px; height: 30px;"></div>`
@@ -84,6 +98,29 @@ describe("CanvasComponent", () => {
 
   const measuredAsync = async (count: number = cards().length): Promise<void> => {
     await DomChangeFixture.untilAsync(() => expect(DomFixture.allOf(map(), ".nol-canvas-map-box", SVGRectElement)).toHaveLength(count));
+  };
+
+  // Sets the canvas's size, then waits for the free area it reports once it has measured that size, as wide as the canvas less its insets,
+  // and for the frame that draws the state measured there.
+  const resizedAsync = async (width: number, height: number): Promise<void> => {
+    const inner = (): DOMRect => {
+      const frame = canvas().getBoundingClientRect();
+      return new DOMRect(frame.left + canvas().clientLeft, frame.top + canvas().clientTop, canvas().clientWidth, canvas().clientHeight);
+    };
+    const measured = new Promise<void>(resolve => {
+      const onMoved = (event: Event): void => {
+        const at = inner();
+        if (!(event instanceof ContentMovedEvent) || Math.abs(2 * (event.area.left - at.left) + event.area.width - at.width) > 0.5)
+          return;
+        canvas().removeEventListener("nol-content-moved", onMoved);
+        resolve();
+      };
+      canvas().addEventListener("nol-content-moved", onMoved);
+    });
+    canvas().style.width = `${String(width)}px`;
+    canvas().style.height = `${String(height)}px`;
+    await measured;
+    await RenderedFrameFixture.nextAsync();
   };
 
   const changedAsync = async (before: string): Promise<void> => {
@@ -325,6 +362,92 @@ describe("CanvasComponent", () => {
             AppearanceFixture.expectPixels(placement === CanvasControlsPlacement.Floating ? frame.right - toolbar.right : toolbar.left - frame.left, inset);
           }
         });
+
+  for (const placement of [CanvasControlsPlacement.Floating, CanvasControlsPlacement.Edges])
+    for (const mode of AppearanceFixture.modes)
+      for (const theme of AppearanceFixture.themes)
+        it(`narrows its ${placement} map in the content's proportions to keep it inside the canvas at 13.75rem wide and down to its widest control, at its 12rem minimum height and on a taller one, hiding it where it has no room, from the ${theme.id} theme in ${mode} mode`, async () => {
+          AppearanceFixture.apply(theme, mode);
+          host.placement.set(placement);
+          host.cards.set([1, 2, 3]);
+          fixture.detectChanges();
+          await measuredAsync(3);
+          const border = AppearanceFixture.measureLook("border-width");
+          const inset = AppearanceFixture.measureLook(placement === CanvasControlsPlacement.Floating ? "space-3" : "space-2") + border;
+          const widest = Math.max(...DomFixture.all(tools(), "button, .nol-canvas-zoom").map(t => t.getBoundingClientRect().width));
+          const narrowest = widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * inset;
+          const full = map().getBoundingClientRect();
+          const drawing = DomFixture.oneOf(map(), "svg", SVGSVGElement).viewBox.baseVal;
+          const sizes: readonly CanvasSize[] = [
+            new CanvasSize(AppearanceFixture.toPixels(13.75), AppearanceFixture.toPixels(12), true),
+            new CanvasSize(narrowest, AppearanceFixture.toPixels(12), placement === CanvasControlsPlacement.Edges),
+            new CanvasSize(narrowest, AppearanceFixture.toPixels(18), true)
+          ];
+
+          for (const { width, height, hasMapRoom } of sizes) {
+            await resizedAsync(width, height);
+            const frame = canvas().getBoundingClientRect();
+            const overview = map().getBoundingClientRect();
+
+            expect(getComputedStyle(map()).visibility).toBe(hasMapRoom ? "visible" : "hidden");
+            expect([full.width > width - 2 * inset, overview.top >= frame.top + inset - 0.5, overview.bottom <= frame.bottom - inset + 0.5])
+              .toEqual([true, hasMapRoom, true]);
+            AppearanceFixture.expectPixels(overview.left - frame.left, inset);
+            AppearanceFixture.expectPixels(frame.right - overview.right, inset);
+            AppearanceFixture.expectPixels(overview.height - 2 * border, (overview.width - 2 * border) * drawing.height / drawing.width);
+          }
+        });
+
+  describe("with its floating map on a canvas too short for it", () => {
+    const shrinkAsync = async (): Promise<void> => {
+      const border = AppearanceFixture.measureLook("border-width");
+      const widest = Math.max(...DomFixture.all(tools(), "button, .nol-canvas-zoom").map(t => t.getBoundingClientRect().width));
+      await resizedAsync(widest + 2 * (AppearanceFixture.measureLook("space-1") + border) + 2 * (AppearanceFixture.measureLook("space-3") + border), AppearanceFixture.toPixels(12));
+      expect(getComputedStyle(map()).visibility).toBe("hidden");
+    };
+
+    beforeEach(async () => {
+      host.placement.set(CanvasControlsPlacement.Floating);
+      host.cards.set([1, 2, 3]);
+      fixture.detectChanges();
+      await measuredAsync(3);
+    });
+
+    it("moves the focus from the map to the map's button as the map hides, and leaves a focus elsewhere alone", async () => {
+      map().focus();
+      const before = document.activeElement === map();
+      await shrinkAsync();
+      const moved = document.activeElement === button("map-toggle");
+      await resizedAsync(800, 500);
+      expect(getComputedStyle(map()).visibility).toBe("visible");
+      canvas().focus();
+      await shrinkAsync();
+
+      expect([before, moved, document.activeElement === canvas()]).toEqual([true, true, true]);
+    });
+
+    it("leaves the map out of the free area it reports and fits in, as though hidden by its button", async () => {
+      const areas: DOMRectReadOnly[] = [];
+      canvas().addEventListener("nol-content-moved", t => {
+        if (t instanceof ContentMovedEvent)
+          areas.push(t.area);
+      });
+      const last = (): readonly number[] => {
+        const area = areas.at(-1);
+        return Object.isUndefined(area) ? [] : [area.left, area.top, area.width, area.height];
+      };
+      await shrinkAsync();
+      instance().fit();
+      await RenderedFrameFixture.nextAsync();
+      const roomless = [last(), view()];
+      button("map-toggle").click();
+      await DomChangeFixture.untilAsync(() => expect(DomFixture.maybe(canvas(), "nol-canvas-map")).toBeNull());
+      instance().fit();
+      await RenderedFrameFixture.nextAsync();
+
+      expect(roomless).toEqual([last(), view()]);
+    });
+  });
 
   it("fits its items above its floating toolbar once its map is hidden, from space-3 below its top", async () => {
     host.placement.set(CanvasControlsPlacement.Floating);
