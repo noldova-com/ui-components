@@ -2990,8 +2990,9 @@ export declare class CanvasMapComponent {
 
 /**
  * The kit's checkbox, `nol-checkbox`, a native checkbox with a drawn tick
- * whose content is its label, which is part of its hit target. It does not
- * keep its own state: it reports each change through
+ * whose content is its label, which is part of its hit target. A checkbox
+ * with no visible label takes its name from {@link CheckboxComponent.label}.
+ * It does not keep its own state: it reports each change through
  * {@link CheckboxComponent.checkedChange}, and its owner binds the new value
  * back to {@link CheckboxComponent.checked}.
  *
@@ -3024,6 +3025,12 @@ export declare class CheckboxComponent {
    * its focus outline at full strength.
    */
   public readonly disabled: InputSignal<boolean>;
+
+  /**
+   * The box's accessible name when it has no visible label, such as in a
+   * table row whose text names it elsewhere; none when not bound or null.
+   */
+  public readonly label: InputSignal<string | null>;
 
   /**
    * Emits the value the person asks for each time they toggle the box; the
@@ -3118,7 +3125,8 @@ export declare class SwitchComponent {
  * a name, so the arrow keys move between them and pick, and only the picked
  * one, or the first when none is, or, while one has focus, that one, is in
  * the Tab order. A disabled radio stays in the arrow keys' path: they move
- * the focus onto it but do not pick it.
+ * the focus onto it but do not pick it. A radio with no visible label takes
+ * its name from {@link RadioComponent.label}.
  * Outside a group it keeps no state of its own: its owner binds
  * {@link RadioComponent.checked}.
  *
@@ -3163,6 +3171,12 @@ export declare class RadioComponent {
    * focus outline at full strength.
    */
   public readonly disabled: InputSignal<boolean>;
+
+  /**
+   * The radio's accessible name when it has no visible label, such as in a
+   * table row whose text names it elsewhere; none when not bound or null.
+   */
+  public readonly label: InputSignal<string | null>;
 
   /**
    * Emits true each time the person picks the radio.

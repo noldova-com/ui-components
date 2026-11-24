@@ -18,7 +18,7 @@ export class CheckboxPageResources {
     new DocsKey("Space", "Checks or clears the box; a disabled box refuses it.")
   ];
   public static readonly roles: readonly string[] = [
-    "The kit styles the browser's own checkbox, inside a label that holds its text, so the box has the checkbox role, reports whether it is checked, and is named by its text.",
+    "The kit styles the browser's own checkbox, inside a label that holds its text, so the box has the checkbox role, reports whether it is checked, and is named by its text; label names a box with no visible text, as aria-label.",
     "A disabled box is marked aria-disabled rather than natively disabled, so it stays focusable, keeps the focus when it turns disabled, and refuses a click or Space.",
     "The check mark is drawn over the box and hidden from assistive technology with aria-hidden."
   ];

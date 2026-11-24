@@ -25,7 +25,7 @@ import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
   template: `
     <button type="button" class="before">Before</button>
     <nol-checkbox class="labelled" [checked]="checked()" [disabled]="disabled()" (checkedChange)="changes.push($event)">Do not disturb</nol-checkbox>
-    <nol-checkbox class="bare" [checked]="true" />
+    <nol-checkbox class="bare" [checked]="true" label="Mute alerts" />
     <nol-checkbox class="wrapped" style="width: 9rem">A label that is far too long to fit the width its checkbox gives it</nol-checkbox>
     <nol-checkbox class="owned" [checked]="owned()" (checkedChange)="owned.set($event)">Owned</nol-checkbox>
     <button type="button" class="after">After</button>
@@ -97,6 +97,14 @@ describe("CheckboxComponent", () => {
     expect(["bare", "labelled"].map(t => getComputedStyle(fixture.nativeElement.querySelector(`nol-checkbox.${t} label`)).cursor)).toEqual(["pointer", "default"]);
     expect(mark("labelled").getAttribute("aria-hidden")).toBe("true");
     expect(getComputedStyle(fixture.nativeElement.querySelector("nol-checkbox.bare .nol-checkbox-text")).display).toBe("none");
+  });
+
+  it("is named by its label input when it shows no text, and by its text alone when it has no label input", () => {
+    render();
+
+    expect(page.getByRole("checkbox", { name: "Mute alerts" }).element()).toBe(box("bare"));
+    expect([box("bare").getAttribute("aria-label"), box("labelled").hasAttribute("aria-label")]).toEqual(["Mute alerts", false]);
+    expect(page.getByRole("checkbox", { name: "Do not disturb" }).element()).toBe(box("labelled"));
   });
 
   it("keeps focus on its box when it turns disabled while busy, marked aria-disabled, and changes nothing by key or pointer, ringed only on keyboard focus", async () => {
