@@ -11,6 +11,8 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page, userEvent } from "vitest/browser";
 
 import { ChoicePillsComponent } from "../../../../src/app/components/choice-pills/choice-pills.component";
+import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SelectOption } from "../../../../src/app/models/select-option";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -20,7 +22,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   imports: [ChoicePillsComponent],
   template: `
     <button type="button" class="before">Before</button>
-    <div class="row" style="background: var(--nol-hover); width: 20rem"><nol-choice-pills label="Mode" [describedBy]="describedBy()" [options]="options()" [value]="value()" (valueChange)="choose($event)" /></div>
+    <div class="row" style="background: var(--nol-hover); width: 20rem"><nol-choice-pills label="Mode" [describedBy]="describedBy()" [options]="options()" [value]="value()" [iconOnly]="iconOnly()" (valueChange)="choose($event)" /></div>
     <button type="button" class="after">After</button>
   `
 })
@@ -28,6 +30,7 @@ class ChoicePillsHostComponent {
   public readonly options = signal<readonly SelectOption[]>([new SelectOption("system", "System"), new SelectOption("light", "Light"), new SelectOption("dark", "Dark")]);
   public readonly value = signal("light");
   public readonly describedBy = signal<string | null>(null);
+  public readonly iconOnly = signal(false);
   public readonly changes: string[] = [];
 
   public choose(value: string): void {
@@ -430,4 +433,70 @@ describe("ChoicePillsComponent", () => {
     expect(new Set(pills().map(t => t.getBoundingClientRect().top)).size).toBeGreaterThan(1);
     expect(pills().every(t => t.getBoundingClientRect().right <= bounds.right + 1)).toBe(true);
   });
+
+  function renderIcons(iconOnly: boolean, mode = AppearanceFixture.modes[0]): void {
+    render(AppearanceFixture.themes[0], mode);
+    host.options.set([new SelectOption("light", "Light", null, false, "light_mode"), new SelectOption("dark", "Dark", null, true, "dark_mode"), new SelectOption("system", "System")]);
+    host.iconOnly.set(iconOnly);
+    fixture.detectChanges();
+  }
+
+  const glyphs = (): HTMLElement[] => DomFixture.all(group(), ".nol-choice-pill-glyph");
+
+  it("draws an option's icon alone in a square pill named by its title when icon-only, and the title of an option without an icon", () => {
+    renderIcons(true);
+    const size = AppearanceFixture.measureLook("choice-pill");
+
+    expect(pills().map(t => [t.getAttribute("aria-label"), t.textContent?.trim(), t.getAttribute("aria-checked")]))
+      .toEqual([["Light", "light_mode", "true"], ["Dark", "dark_mode", "false"], [null, "System", "false"]]);
+    expect(glyphs().map(t => t.getAttribute("aria-hidden"))).toEqual(["true", "true"]);
+    for (const rectangle of pills().slice(0, 2).map(t => t.getBoundingClientRect())) {
+      AppearanceFixture.expectPixels(rectangle.width, size);
+      AppearanceFixture.expectPixels(rectangle.height, size);
+    }
+  });
+
+  it("centers an icon-only pill's glyph at the icon size in the icon color", () => {
+    renderIcons(true);
+    const pill = DomFixture.at(pills(), 1).getBoundingClientRect();
+    const glyph = DomFixture.at(glyphs(), 1);
+    const box = glyph.getBoundingClientRect();
+
+    AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(glyph).fontSize), AppearanceFixture.measureLook("icon"));
+    AppearanceFixture.expectPixels(box.left + box.width / 2, pill.left + pill.width / 2);
+    AppearanceFixture.expectPixels(box.top + box.height / 2, pill.top + pill.height / 2);
+    expect(getComputedStyle(glyph).color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "icon-color"));
+  });
+
+  it("draws the titles, and no icon, when not icon-only", () => {
+    renderIcons(false);
+
+    expect([pills().map(t => [t.getAttribute("aria-label"), t.textContent?.trim()]), glyphs()]).toEqual([[[null, "Light"], [null, "Dark"], [null, "System"]], []]);
+  });
+
+  it("moves the choice between icon-only pills with the arrow keys, passing over a disabled one", async () => {
+    renderIcons(true);
+    DomFixture.at(pills(), 0).focus();
+
+    await userEvent.keyboard("{ArrowRight}");
+    fixture.detectChanges();
+
+    expect([host.changes, document.activeElement?.textContent?.trim()]).toEqual([["system"], "System"]);
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws an icon-only pill's glyph in HighlightText when chosen, GrayText when disabled and its pill's text color otherwise, under forced colors in ${mode} mode`, async () => {
+      renderIcons(true, mode);
+      host.options.set([new SelectOption("light", "Light", null, false, "light_mode"), new SelectOption("dark", "Dark", null, true, "dark_mode"), new SelectOption("system", "System", null, false, "contrast")]);
+      fixture.detectChanges();
+      await ForcedColorsFixture.activateAsync();
+      try {
+        const colors = glyphs().map(t => getComputedStyle(t).color);
+        const pillColors = pills().map(t => getComputedStyle(t).color);
+
+        expect([colors[0], colors[1], colors[2]]).toEqual([ForcedColorsFixture.resolve("HighlightText"), ForcedColorsFixture.resolve("GrayText"), pillColors[2]]);
+      } finally {
+        await ForcedColorsFixture.resetAsync();
+      }
+    });
 });

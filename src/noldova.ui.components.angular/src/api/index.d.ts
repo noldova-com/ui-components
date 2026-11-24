@@ -12038,9 +12038,9 @@ export declare class SiteFooterComponent {
  * The theme switch offers Light, Dark and System, saves the choice in
  * `localStorage` under `noldova-theme` as `light`, `dark` or `system`, and
  * sets `data-nol-theme-mode` on the root element, or removes it for System;
- * with nothing saved it follows the system. A page that loads the package's
- * `styles/site-theme.js` in its head applies the saved choice before it
- * draws, so a prerendered page never flashes the other theme.
+ * with nothing saved it follows the system. It applies the saved choice
+ * once it renders; a prerendered site sets the same attribute from the same
+ * key in a script in its head, so the page never flashes the other theme.
  *
  * Under 48rem the bar keeps the wordmark, Download and a menu button; the
  * button opens the links, search, social links and theme switch below it,
@@ -12127,6 +12127,14 @@ export declare class SiteHeaderComponent {
    * the focus, leads to; null, the default, draws no skip link.
    */
   public readonly contentId: InputSignal<string | null>;
+
+  /**
+   * Whether the phone menu is open; false, the default. The menu button,
+   * Escape and following a link in the menu change it, and a site sets it
+   * false to close the menu, such as when its router moves to another page.
+   * It has no effect from 48rem wide, where the header shows no menu.
+   */
+  public readonly menuOpen: ModelSignal<boolean>;
 }
 
 /**

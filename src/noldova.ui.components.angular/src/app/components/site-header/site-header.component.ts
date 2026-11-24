@@ -6,15 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, ElementRef, type Signal, computed, contentChildren, input, signal, viewChild } from "@angular/core";
-
-import "@noldova/context.core";
+import { Component, ElementRef, type Signal, computed, contentChildren, input, model, viewChild } from "@angular/core";
 
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
 import { ButtonComponent } from "../button/button.component.js";
 import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { SiteLockupComponent } from "../site-lockup/site-lockup.component.js";
+import { SiteLockupResources } from "../site-lockup/site-lockup.resources.js";
 import { SiteThemeSwitchComponent } from "../site-theme-switch/site-theme-switch.component.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { SiteHeaderResources } from "./site-header.resources.js";
@@ -39,7 +38,7 @@ export class SiteHeaderComponent {
 
   public readonly wordmark = input.required<string>();
   public readonly name = input<string | null>(null);
-  public readonly homeHref = input<string>("/");
+  public readonly homeHref = input<string>(SiteLockupResources.homeHref);
   public readonly version = input<string | null>(null);
   public readonly versionHref = input<string | null>(null);
   public readonly links = input<readonly SiteLink[]>([]);
@@ -48,16 +47,16 @@ export class SiteHeaderComponent {
   public readonly downloadLabel = input<string>(SiteHeaderResources.downloadLabel);
   public readonly wide = input<boolean>(false);
   public readonly contentId = input<string | null>(null);
+  public readonly menuOpen = model<boolean>(false);
 
   protected readonly partResources: typeof SiteHeaderResources = SiteHeaderResources;
   protected readonly menuId: string = `${SiteHeaderResources.menuIdPrefix}${SiteHeaderComponent.nextId++}`;
-  protected readonly menuOpen = signal<boolean>(false);
   private readonly searches: Signal<readonly SiteSearchDirective[]> = contentChildren(SiteSearchDirective);
   protected readonly hasSearch: Signal<boolean> = computed(() => this.searches().length > 0);
   private readonly menuButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("menuButton", { read: ElementRef });
 
   protected maskOf(link: SiteSocialLink): string {
-    return SiteHeaderResources.formatMask(link.icon);
+    return SiteLockupResources.formatMask(link.icon);
   }
 
   protected toggleMenu(): void {

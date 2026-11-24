@@ -20,8 +20,4 @@ export class SiteHeaderResources {
   public static formatTarget(id: string): string {
     return `#${id}`;
   }
-
-  public static formatMask(url: string): string {
-    return `url(${JSON.stringify(url)})`;
-  }
 }

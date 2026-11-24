@@ -9,6 +9,7 @@
 :host {
   display: block;
   position: sticky;
+  container-type: inline-size;
   top: 0;
   z-index: 1;
   background-color: var(--nol-window);
@@ -55,7 +56,7 @@
 
 .nol-site-header-brand {
   display: inline-flex;
-  flex: none;
+  flex: 0 1 auto;
   align-items: center;
   gap: var(--nol-space-2);
   min-width: 0;
@@ -195,7 +196,7 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: none;
 }
 
-@media (width < 48rem) {
+@container (width < 48rem) {
   .nol-site-header-bar {
     display: grid;
     grid-template-areas:

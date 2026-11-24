@@ -8,8 +8,6 @@
 
 import { Component, type Signal, computed, input } from "@angular/core";
 
-import "@noldova/context.core";
-
 import { SiteLockupResources } from "./site-lockup.resources.js";
 
 @Component({
