@@ -126,6 +126,7 @@
 
 :host(.nol-canvas-floating) .nol-canvas-map {
   position: static;
+  max-width: calc(100% - 2 * var(--nol-border-width));
   pointer-events: auto;
 }
 

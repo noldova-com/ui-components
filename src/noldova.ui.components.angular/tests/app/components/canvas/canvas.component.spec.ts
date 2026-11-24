@@ -353,8 +353,9 @@ describe("CanvasComponent", () => {
             const frame = canvas().getBoundingClientRect();
             const overview = map().getBoundingClientRect();
 
-            expect([full.width > width - 2 * inset, overview.left >= frame.left + inset - 0.5, upright ? overview.top >= frame.top + inset - 0.5 : true, overview.bottom <= frame.bottom - inset + 0.5])
-              .toEqual([true, true, true, true]);
+            expect([full.width > width - 2 * inset, upright ? overview.top >= frame.top + inset - 0.5 : true, overview.bottom <= frame.bottom - inset + 0.5])
+              .toEqual([true, true, true]);
+            AppearanceFixture.expectPixels(overview.left - frame.left, inset);
             AppearanceFixture.expectPixels(frame.right - overview.right, inset);
             AppearanceFixture.expectPixels(overview.height - 2 * border, (overview.width - 2 * border) * drawing.height / drawing.width);
           }
