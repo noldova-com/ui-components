@@ -36,6 +36,76 @@ class AvatarHostComponent {
   public readonly unavailable = signal(false);
 }
 
+class InitialsAdvance {
+  public readonly laid: number;
+  public readonly measured: number;
+
+  public constructor(laid: number, measured: number) {
+    this.laid = laid;
+    this.measured = measured;
+  }
+}
+
+class AvatarPixels {
+  public readonly width: number;
+  public readonly height: number;
+  public readonly at: (x: number, y: number) => string;
+
+  public constructor(width: number, height: number, at: (x: number, y: number) => string) {
+    this.width = width;
+    this.height = height;
+    this.at = at;
+  }
+}
+
+class FailingImage {
+  public readonly kind: string;
+  public readonly address: string;
+
+  public constructor(kind: string, address: string) {
+    this.kind = kind;
+    this.address = address;
+  }
+}
+
+class PairRoom {
+  public readonly size: AvatarSize;
+  public readonly pair: string;
+  public readonly room: number;
+  public readonly advance: InitialsAdvance;
+
+  public constructor(size: AvatarSize, pair: string, room: number, advance: InitialsAdvance) {
+    this.size = size;
+    this.pair = pair;
+    this.room = room;
+    this.advance = advance;
+  }
+}
+
+class DrawnInitials {
+  public readonly size: AvatarSize;
+  public readonly shown: string;
+  public readonly scale: string;
+  public readonly isInside: boolean;
+
+  public constructor(size: AvatarSize, shown: string, scale: string, isInside: boolean) {
+    this.size = size;
+    this.shown = shown;
+    this.scale = scale;
+    this.isInside = isInside;
+  }
+}
+
+class InitialsRoom {
+  public readonly room: number;
+  public readonly advance: InitialsAdvance;
+
+  public constructor(room: number, advance: InitialsAdvance) {
+    this.room = room;
+    this.advance = advance;
+  }
+}
+
 describe("AvatarComponent", () => {
   let fixture: ComponentFixture<AvatarHostComponent>;
   let host: AvatarHostComponent;
@@ -66,7 +136,7 @@ describe("AvatarComponent", () => {
     const drawn = letters.getBoundingClientRect();
     const font = getComputedStyle(letters);
     const context = document.createElement("canvas").getContext("2d");
-    if (context === null)
+    if (Object.isNull(context))
       throw new Error("The canvas has no 2D context.");
     context.font = `${font.fontStyle} ${font.fontWeight} ${font.fontSize} ${font.fontFamily}`;
     const line = context.measureText(letters.innerText);
@@ -78,14 +148,14 @@ describe("AvatarComponent", () => {
     return roomAround([drawn.left - ink.actualBoundingBoxLeft * scale, drawn.right - (ink.width - ink.actualBoundingBoxRight) * scale],
       [baseline - ink.actualBoundingBoxAscent * scale, baseline + ink.actualBoundingBoxDescent * scale]);
   };
-  const advance = (): readonly [laid: number, measured: number] => {
+  const advance = (): InitialsAdvance => {
     const letters = DomFixture.one(avatar(), ".nol-avatar-initials");
     const font = getComputedStyle(letters);
     const context = document.createElement("canvas").getContext("2d");
-    if (context === null)
+    if (Object.isNull(context))
       throw new Error("The canvas has no 2D context.");
     context.font = `${font.fontStyle} ${font.fontWeight} 1000px ${font.fontFamily}`;
-    return [letters.getBoundingClientRect().width / drawnShrink(), context.measureText(letters.innerText).width * Number.parseFloat(font.fontSize) / 1000];
+    return new InitialsAdvance(letters.getBoundingClientRect().width / drawnShrink(), context.measureText(letters.innerText).width * Number.parseFloat(font.fontSize) / 1000);
   };
   const textRoom = (): number => {
     const range = document.createRange();
@@ -93,7 +163,7 @@ describe("AvatarComponent", () => {
     const letters = range.getBoundingClientRect();
     return roomAround([letters.left, letters.right], [letters.top, letters.bottom]);
   };
-  const pixelsAsync = async (): Promise<{ width: number; height: number; at: (x: number, y: number) => string }> => {
+  const pixelsAsync = async (): Promise<AvatarPixels> => {
     const shot = new Image();
     shot.src = `data:image/png;base64,${await page.screenshot({ element: avatar(), save: false })}`;
     await shot.decode();
@@ -101,10 +171,10 @@ describe("AvatarComponent", () => {
     canvas.width = shot.width;
     canvas.height = shot.height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (context === null)
+    if (Object.isNull(context))
       throw new Error("The canvas has no 2D context.");
     context.drawImage(shot, 0, 0);
-    return { width: shot.width, height: shot.height, at: (x, y) => context.getImageData(Math.round(x), Math.round(y), 1, 1).data.join(",") };
+    return new AvatarPixels(shot.width, shot.height, (x, y) => context.getImageData(Math.round(x), Math.round(y), 1, 1).data.join(","));
   };
   const expectCircleAsync = async (size: AvatarSize): Promise<void> => {
     const pixels = await pixelsAsync();
@@ -247,30 +317,30 @@ describe("AvatarComponent", () => {
     await fixture.whenStable();
   }
 
-  async function expectInitialsForAsync(address: string, colors: readonly [string, string]): Promise<void> {
+  async function expectInitialsForAsync(address: string, background: string, text: string): Promise<void> {
     const box = avatar().getBoundingClientRect();
     await failAsync(address);
     const failed = avatar().getBoundingClientRect();
     const style = getComputedStyle(avatar());
 
     expect([avatar().querySelector("img"), shown(), [failed.left, failed.top, failed.width, failed.height], [style.backgroundColor, style.color]])
-      .toEqual([null, "A", [box.left, box.top, box.width, box.height], colors]);
+      .toEqual([null, "A", [box.left, box.top, box.width, box.height], [background, text]]);
     expectLetterCentred();
   }
 
   const LOADING_IMAGE: string = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-  const failingImages: readonly (readonly [string, string])[] = [
-    ["a data address whose bytes aren't a picture", "data:image/png;base64,bm90IGEgcGljdHVyZQ=="],
-    ["a file address that doesn't load", "file:///missing/avatar.png"]
+  const failingImages: readonly FailingImage[] = [
+    new FailingImage("a data address whose bytes aren't a picture", "data:image/png;base64,bm90IGEgcGljdHVyZQ=="),
+    new FailingImage("a file address that doesn't load", "file:///missing/avatar.png")
   ];
 
-  for (const [kind, address] of failingImages)
+  for (const { kind, address } of failingImages)
     for (const mode of AppearanceFixture.modes)
       it(`shows its initials in its own box when its image is ${kind}, in ${mode} mode, and its image again once given one that loads`, async () => {
         AppearanceFixture.apply(DefaultTheme.theme, mode);
         await renderAsync(t => t.color.set(3));
-        await expectInitialsForAsync(address, [AppearanceFixture.readColor(DefaultTheme.theme, mode, "avatar-green"),
-          AppearanceFixture.readColor(DefaultTheme.theme, mode, "avatar-green-text")]);
+        await expectInitialsForAsync(address, AppearanceFixture.readColor(DefaultTheme.theme, mode, "avatar-green"),
+          AppearanceFixture.readColor(DefaultTheme.theme, mode, "avatar-green-text"));
         await changeAsync(() => host.image.set(LOADING_IMAGE));
         const loaded = DomFixture.oneOf(avatar(), "img", HTMLImageElement);
         await loaded.decode();
@@ -281,7 +351,7 @@ describe("AvatarComponent", () => {
       });
 
   it("tries an address again once it is given it again after another, and shows its initials again when it fails again", async () => {
-    const [, failing] = failingImages[0] ?? ["", ""];
+    const failing = failingImages[0]?.address ?? "";
     await renderAsync();
     await failAsync(failing);
     await changeAsync(() => host.image.set(LOADING_IMAGE));
@@ -294,7 +364,7 @@ describe("AvatarComponent", () => {
   });
 
   it("shows an address given before the one it replaces has failed, whose failure, heard before the render, then changes nothing", async () => {
-    const [, failing] = failingImages[0] ?? ["", ""];
+    const failing = failingImages[0]?.address ?? "";
     await renderAsync();
     await changeAsync(() => host.image.set(failing));
     const image = DomFixture.oneOf(avatar(), "img", HTMLImageElement);
@@ -306,14 +376,14 @@ describe("AvatarComponent", () => {
     expect([avatar().querySelector("img") === image, image.getAttribute("src"), image.naturalWidth, shown()]).toEqual([true, LOADING_IMAGE, 1, ""]);
   });
 
-  for (const [kind, address] of failingImages)
+  for (const { kind, address } of failingImages)
     it(`shows its initials in its own box, with its border and its letter at least 4.5:1, when its image is ${kind}, in forced colors`, async () => {
       AppearanceFixture.apply();
       await ForcedColorsFixture.activateAsync();
       try {
         await renderAsync(t => t.color.set(3));
         const style = getComputedStyle(avatar());
-        await expectInitialsForAsync(address, [style.backgroundColor, style.color]);
+        await expectInitialsForAsync(address, style.backgroundColor, style.color);
         const failed = getComputedStyle(avatar());
 
         expect([failed.borderTopStyle, failed.borderTopWidth, failed.borderTopColor, AppearanceFixture.contrast(failed.color, ForcedColorsFixture.resolve("Canvas")) >= 4.5])
@@ -370,7 +440,7 @@ describe("AvatarComponent", () => {
       if (forced)
         await ForcedColorsFixture.activateAsync();
       try {
-        const rooms: (readonly [AvatarSize, string, number, readonly number[]])[] = [];
+        const rooms: PairRoom[] = [];
         await document.fonts.ready;
         for (const size of [AvatarSize.Normal, AvatarSize.Small, ...forced ? [] : [AvatarSize.IconButton], AvatarSize.Byline])
           for (const pair of ["MW", "WW"]) {
@@ -378,10 +448,10 @@ describe("AvatarComponent", () => {
               t.initials.set(pair);
               t.size.set(size);
             });
-            rooms.push([size, pair, room(), advance()]);
+            rooms.push(new PairRoom(size, pair, room(), advance()));
           }
 
-        expect(rooms.filter(([, , t]) => t < 1), `the room between the pair's letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([]);
+        expect(rooms.filter(t => t.room < 1), `the room between the pair's letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([]);
       } finally {
         await ForcedColorsFixture.resetAsync();
       }
@@ -409,22 +479,22 @@ describe("AvatarComponent", () => {
       if (forced)
         await ForcedColorsFixture.activateAsync();
       try {
-        const drawn: (readonly [AvatarSize, string, string, boolean])[] = [];
-        const rooms: (readonly [number, readonly [laid: number, measured: number]])[] = [];
+        const drawn: DrawnInitials[] = [];
+        const rooms: InitialsRoom[] = [];
         await document.fonts.ready;
         for (const size of [AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline]) {
           await renderAsync(t => {
             t.initials.set("RV");
             t.size.set(size);
           });
-          drawn.push([size, shown() ?? "", drawnScale(), room() >= 1]);
-          rooms.push([room(), advance()]);
+          drawn.push(new DrawnInitials(size, shown() ?? "", drawnScale(), room() >= 1));
+          rooms.push(new InitialsRoom(room(), advance()));
         }
 
-        const wholePixels = Number.isInteger(rooms[0]?.[1][0]);
+        const wholePixels = Number.isInteger(rooms[0]?.advance.laid);
         const scaleOf = (size: AvatarSize): string => forced && wholePixels && size === AvatarSize.Byline ? "scale(0.984597)" : "";
 
-        expect(drawn, `the room between the letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline].map(t => [t, t === AvatarSize.Icon ? "R" : "RV", scaleOf(t), true]));
+        expect(drawn, `the room between the letters and the circle inside the edge, and their laid and measured advance: ${JSON.stringify(rooms)}`).toEqual([AvatarSize.Normal, AvatarSize.Small, AvatarSize.IconButton, AvatarSize.Icon, AvatarSize.Byline].map(t => new DrawnInitials(t, t === AvatarSize.Icon ? "R" : "RV", scaleOf(t), true)));
       } finally {
         await ForcedColorsFixture.resetAsync();
       }

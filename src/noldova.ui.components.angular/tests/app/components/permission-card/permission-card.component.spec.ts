@@ -77,10 +77,20 @@ class PermissionCardHostComponent {
   public readonly heard: string[] = [];
 }
 
+class Announcement {
+  public readonly message: string;
+  public readonly politeness: string | undefined;
+
+  public constructor(message: string, politeness: string | undefined) {
+    this.message = message;
+    this.politeness = politeness;
+  }
+}
+
 describe("PermissionCardComponent", () => {
   let fixture: ComponentFixture<PermissionCardHostComponent>;
   let host: PermissionCardHostComponent;
-  let announcements: (readonly [string, string | undefined])[];
+  let announcements: Announcement[];
 
   function provideTimeSource(start: Date = DECIDED_AT): TestTimeSource {
     const source = new TestTimeSource(start.getTime());
@@ -94,7 +104,7 @@ describe("PermissionCardComponent", () => {
     host = fixture.componentInstance;
     host.requests.set(requests);
     vi.spyOn(TestBed.inject(LiveAnnouncer), "announce").mockImplementation((message, politeness) => {
-      announcements.push([String(message), typeof politeness === "string" ? politeness : undefined]);
+      announcements.push(new Announcement(String(message), Object.isString(politeness) ? politeness : undefined));
       return Promise.resolve();
     });
     await fixture.whenStable();
@@ -313,22 +323,22 @@ describe("PermissionCardComponent", () => {
 
     expect(find(".nol-permission-card-requester").textContent).toBe("Files · Build agent · This computer");
     expect(card().getAttribute("aria-describedby")?.split(" ")).toContain(find(".nol-permission-card-requester").id);
-    expect(announcements).toEqual([["Permission request from Files · Build agent · This computer: Delete the build folder", "assertive"]]);
+    expect(announcements).toEqual([new Announcement("Permission request from Files · Build agent · This computer: Delete the build folder", "assertive")]);
   });
 
   it("announces a pending request once, assertively when it shows alone and politely when another card is already pending", async () => {
     await renderAsync(requestOf());
 
-    expect(announcements).toEqual([[ANNOUNCED, "assertive"]]);
+    expect(announcements).toEqual([new Announcement(ANNOUNCED, "assertive")]);
 
     await showAsync(requestOf(PermissionRisk.Low, { expiresAt: new Date() }), requestOf(PermissionRisk.High, {}, "request-2"));
 
-    expect(announcements).toEqual([[ANNOUNCED, "assertive"], [ANNOUNCED, "polite"]]);
+    expect(announcements).toEqual([new Announcement(ANNOUNCED, "assertive"), new Announcement(ANNOUNCED, "polite")]);
 
     await showAsync(answeredOf(PermissionStatus.Decided, "deny"), answeredOf(PermissionStatus.Decided, "deny", PermissionRisk.High, {}, "request-2"));
     await showAsync(answeredOf(PermissionStatus.Decided, "deny"), answeredOf(PermissionStatus.Decided, "deny", PermissionRisk.High, {}, "request-2"), requestOf(PermissionRisk.Low, {}, "request-3"));
 
-    expect(announcements.at(-1)).toEqual([ANNOUNCED, "assertive"]);
+    expect(announcements.at(-1)).toEqual(new Announcement(ANNOUNCED, "assertive"));
 
     await showAsync(answeredOf(PermissionStatus.Decided, "deny", PermissionRisk.Low, {}, "request-4"));
 
@@ -501,7 +511,7 @@ describe("PermissionCardComponent", () => {
     await showAsync(answeredOf(PermissionStatus.Sending, "allow-once"));
 
     expect([options().map(t => t.getAttribute("aria-disabled")), document.activeElement]).toEqual([["true", "true", "true"], option("Allow once")]);
-    expect([find("nol-spinner") !== null, text(".nol-permission-card-sending")]).toEqual([true, "Sending your answer"]);
+    expect([!Object.isNull(find("nol-spinner")), text(".nol-permission-card-sending")]).toEqual([true, "Sending your answer"]);
 
     await clickAsync(option("Deny"));
     await pressAsync("{Enter}");
