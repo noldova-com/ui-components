@@ -10,11 +10,12 @@ import net from "node:net";
 
 import { ConnectionProbe } from "./connection-probe.ts";
 
-// The browser command that gives a spec a localhost port nothing listens on: a port from a fixed range below every system's range for the ports
-// it hands out itself, listened on and closed again, and kept only once Node's connection to it is refused on every address localhost resolves
-// to, as the browser may take any of them. A port something listens on, on any of them, is passed over for the next. The range keeps the port
-// from a short-lived listener the system gives a port of its own, such as one a Windows process opens on 127.0.0.1 to pair two sockets, which
-// once answered a port taken from the system's range between this check and the spec's request.
+// The browser command that gives a spec a localhost port nothing listens on: a port from a fixed range below each system's default dynamic range,
+// listened on and closed again, and kept only once Node's connection to it is refused on every address localhost resolves to, as the browser may
+// take any of them. A port something listens on, on any of them, is passed over for the next. The dynamic range is where both a listener the
+// system gives a port of its own and an outgoing connection take their ports from, so a port below it is taken by neither between this check and
+// the spec's request; a machine whose dynamic range was lowered over the fixed range loses that. A port taken from the dynamic range once
+// connected on 127.0.0.1 after the check, with nothing listening on it by the time it was listed.
 export class ClosedPort {
   public static readonly LOWEST: number = 20_000;
   public static readonly HIGHEST: number = 29_999;
