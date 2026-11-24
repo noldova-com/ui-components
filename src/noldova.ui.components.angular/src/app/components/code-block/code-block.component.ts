@@ -73,6 +73,7 @@ export class CodeBlockComponent {
   });
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
   private cancelCopy: (() => void) | null = null;
+  private isDestroyed: boolean = false;
   private grewStreaming: boolean = false;
   private readonly follower: ScrollEndFollower = new ScrollEndFollower(CodeBlockResources.codeBlockFollowDistance);
 
@@ -110,6 +111,7 @@ export class CodeBlockComponent {
 
   public constructor() {
     inject(DestroyRef).onDestroy(() => {
+      this.isDestroyed = true;
       this.clearCopyTimer();
       this.lines.clear();
       this.blocks?.delete(this.host);
@@ -181,7 +183,10 @@ export class CodeBlockComponent {
     this.grewStreaming = false;
   }
 
+  // A copy that settles once the block is gone shows and announces nothing, and sets no timer.
   private showCopy(state: CopyState): void {
+    if (this.isDestroyed)
+      return;
     this.clearCopyTimer();
     this.copyState.set(state);
     this.announcer.announce(Resources.copyLabels[state], AnnouncementPoliteness.Polite);
