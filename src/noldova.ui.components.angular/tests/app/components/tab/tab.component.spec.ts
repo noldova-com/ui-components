@@ -625,6 +625,17 @@ describe("TabComponent", () => {
     }
   });
 
+  it("leaves the focus where it went when the field lost it to empty space before the app left the mode", async () => {
+    await startEditingAsync();
+    await userEvent.keyboard(" Draft");
+
+    field()?.blur();
+    stopEditing();
+    await fixture.whenStable();
+
+    expect([host.kept, field(), document.activeElement]).toEqual([["Draft"], null, document.body]);
+  });
+
   it("reports once per editing, though the app stays in the mode after Enter and the field then loses the focus", async () => {
     const outside = document.body.appendChild(document.createElement("button"));
     try {

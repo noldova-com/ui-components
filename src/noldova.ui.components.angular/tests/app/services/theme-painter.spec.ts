@@ -125,6 +125,16 @@ describe("ThemePainter", () => {
     expect(element.getAttributeNames()).toEqual(["data-other", "style"]);
   });
 
+  it("leaves what it painted before whole when it refuses to paint a theme that lacks a value", () => {
+    const painter = new ThemePainter(DefaultTheme.theme);
+    painter.paint(element, FixtureTheme.theme, ThemeMode.Dark);
+    const before = [[...element.style].map(t => [t, variable(t)]), element.getAttributeNames().map(t => [t, element.getAttribute(t)])];
+    const withoutShapes = FixtureTheme.create(undefined, new Map());
+
+    expect(() => new ThemePainter(withoutShapes).paint(element, withoutShapes, ThemeMode.Light)).toThrowError(ThemeException);
+    expect([[...element.style].map(t => [t, variable(t)]), element.getAttributeNames().map(t => [t, element.getAttribute(t)])]).toEqual(before);
+  });
+
   it("refuses to paint, naming the value, when even the default theme lacks it", () => {
     const empty = new Theme("fixture.empty", "Empty", new Map(), new Map(), new Map(), new Map());
     const withoutLook = FixtureTheme.create(new Map(), new Map([["tab", "pill"]]));

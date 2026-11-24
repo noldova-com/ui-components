@@ -284,6 +284,22 @@ describe("PermissionCardComponent", () => {
     expect([document.activeElement, open.tabIndex, host.decided]).toEqual([open, -1, []]);
   });
 
+  it("keeps the focus in the card when it is given a new pending request while its confirming Cancel has the focus", async () => {
+    const rebound = TestBed.createComponent(PermissionCardComponent);
+    rebound.componentRef.setInput("request", requestOf(PermissionRisk.High));
+    await rebound.whenStable();
+    const shown = DomFixture.host(rebound);
+    option("Always allow", shown).focus();
+    await clickAsync(option("Always allow", shown));
+    const confirming = document.activeElement === find(".nol-permission-card-cancel", shown);
+
+    rebound.componentRef.setInput("request", requestOf(PermissionRisk.High, {}, "request-2"));
+    await rebound.whenStable();
+
+    expect([confirming, answerButtons(shown), document.activeElement]).toEqual([true, ["Allow once", "Always allow", "Deny"], shown]);
+    rebound.destroy();
+  });
+
   it("focuses the card itself once the request is answered", async () => {
     await renderAsync(answeredOf(PermissionStatus.Decided, "deny"));
     component().focus();

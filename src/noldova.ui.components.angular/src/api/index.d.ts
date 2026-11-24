@@ -12988,8 +12988,8 @@ export declare class ThemePainter {
    * @param theme The theme.
    * @param mode The mode whose colors are painted.
    * @throws ThemeException synchronously when neither the theme nor the
-   * default theme has a value the kit paints; what was painted before it
-   * stays.
+   * default theme has a value the kit paints, before anything is painted,
+   * so what was painted before stays whole.
    * @example
    * ```ts
    * import { DefaultTheme, type Theme, ThemeMode, ThemePainter } from "@noldova/ui.components.angular";

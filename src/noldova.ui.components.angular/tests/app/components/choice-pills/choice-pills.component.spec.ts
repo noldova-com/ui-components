@@ -131,6 +131,28 @@ describe("ChoicePillsComponent", () => {
     expect(selected()).toEqual(["Light"]);
   });
 
+  it("moves to the next pill with ArrowLeft and to the one before with ArrowRight right to left", async () => {
+    fixture.nativeElement.dir = "rtl";
+    render();
+    pills()[1]?.focus();
+
+    await userEvent.keyboard("{ArrowLeft}");
+    const left = document.activeElement;
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+
+    expect([left, document.activeElement]).toEqual([pills()[2], pills()[0]]);
+  });
+
+  it("does nothing for an arrow key, Home or End held with Alt, Ctrl or Meta", async () => {
+    render();
+    pills()[1]?.focus();
+
+    for (const key of ["{Alt>}{ArrowRight}{/Alt}", "{Control>}{ArrowLeft}{/Control}", "{Meta>}{Home}{/Meta}", "{Alt>}{End}{/Alt}"])
+      await userEvent.keyboard(key);
+
+    expect([document.activeElement, host.changes]).toEqual([pills()[1], []]);
+  });
+
   it("shows a disabled option dimmed and marked disabled, chooses nothing on its click, and passes over it with the arrow keys, Home and End", async () => {
     render();
     host.options.set([new SelectOption("system", "System", null, true), new SelectOption("light", "Light"), new SelectOption("dark", "Dark", null, true),

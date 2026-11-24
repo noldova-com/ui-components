@@ -16,6 +16,8 @@ export class ChoicePillsResources {
     ["Home", () => 0],
     ["End", (_current, last) => last]
   ]);
+  // Right to left, the arrow keys move as they point: ArrowLeft to the next pill and ArrowRight to the one before.
+  public static readonly choicePillMirroredKeys: ReadonlyMap<string, string> = new Map<string, string>([["ArrowRight", "ArrowLeft"], ["ArrowLeft", "ArrowRight"]]);
   public static readonly choicePillDirections: ReadonlyMap<string, number> = new Map<string, number>([
     ["ArrowRight", 1],
     ["ArrowDown", 1],

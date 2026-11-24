@@ -27,7 +27,7 @@ LICENSE file in the root directory of this source tree.
     <span class="nol-tab-icon material-symbols-rounded" aria-hidden="true">{{ glyph }}</span>
   }
   <span class="nol-tab-label" data-truncates>{{ label() }}@if (editing()) {<input #field nol-text-field class="nol-tab-field" type="text" spellcheck="false" [attr.aria-label]="partResources.tabTitleFieldLabel"
-    (keydown)="onFieldKeyDown($event)" (blur)="onFieldBlur($event)" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" (auxclick)="$event.stopPropagation()" />}</span>
+    (keydown)="onFieldKeyDown($event)" (focus)="onFieldFocus()" (blur)="onFieldBlur($event)" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()" (auxclick)="$event.stopPropagation()" />}</span>
   @if (badge() !== null) {
     <nol-view-badge class="nol-tab-badge" [count]="badgeCount()" />
   }
