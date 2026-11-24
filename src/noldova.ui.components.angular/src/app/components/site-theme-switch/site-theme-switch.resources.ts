@@ -21,7 +21,7 @@ export class SiteThemeSwitchResources {
   public static readonly glyphs: Readonly<Record<ModePreference, string>> = {
     [ModePreference.Light]: "light_mode",
     [ModePreference.Dark]: "dark_mode",
-    [ModePreference.System]: "contrast"
+    [ModePreference.System]: "desktop_windows"
   };
 
   public static formatStored(preference: ModePreference): string {

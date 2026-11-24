@@ -8,27 +8,27 @@ LICENSE file in the root directory of this source tree.
 
 <nol-gallery-specimen [name]="text.siteFooter" [size]="sizes.Full">
   <nol-gallery-cell [caption]="text.siteProduct">
-    <nol-site-footer [wordmark]="wordmark" [name]="text.siteProductName" [line]="text.siteLine" [groups]="groups" />
+    <nol-site-footer class="nol-gallery-site" [wordmark]="wordmark" [name]="text.siteProductName" [line]="text.siteLine" [groups]="groups" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.siteCompany">
-    <nol-site-footer [wordmark]="wordmark" [groups]="groups" />
+    <nol-site-footer class="nol-gallery-site" [wordmark]="wordmark" [groups]="groups" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.siteDocs">
-    <nol-site-footer [wordmark]="wordmark" [name]="text.siteDocsName" [groups]="groups" [wide]="true" />
+    <nol-site-footer class="nol-gallery-site" [wordmark]="wordmark" [name]="text.siteDocsName" [groups]="groups" [wide]="true" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.sitePhone">
-    <div class="nol-gallery-site-phone">
+    <div class="nol-gallery-site nol-gallery-site-phone">
       <nol-site-footer [wordmark]="wordmark" [name]="text.siteProductName" [line]="text.siteLine" [groups]="groups" />
     </div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hover">
-    <nol-site-footer [nolGalleryHover]="hoveredLink" [wordmark]="wordmark" [name]="text.siteProductName" [groups]="groups" />
+    <nol-site-footer class="nol-gallery-site" [nolGalleryHover]="hoveredLink" [wordmark]="wordmark" [name]="text.siteProductName" [groups]="groups" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
-    <nol-site-footer [nolGalleryFocus]="focusedLink" [wordmark]="wordmark" [name]="text.siteProductName" [groups]="groups" />
+    <nol-site-footer class="nol-gallery-site" [nolGalleryFocus]="focusedLink" [wordmark]="wordmark" [name]="text.siteProductName" [groups]="groups" />
   </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
-    <div class="nol-gallery-narrow">
+    <div class="nol-gallery-site nol-gallery-narrow">
       <nol-site-footer [wordmark]="wordmark" [name]="text.siteLongName" [line]="text.siteLongLine" [groups]="groups" />
     </div>
   </nol-gallery-cell>

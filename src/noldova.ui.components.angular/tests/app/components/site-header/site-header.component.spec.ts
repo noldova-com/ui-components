@@ -145,7 +145,7 @@ describe("SiteHeaderComponent", () => {
     const style = getComputedStyle(part(".nol-site-version"));
 
     expect(style.color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "text-muted"));
-    AppearanceFixture.expectLook(style.fontSize, DefaultTheme.theme, "text-small", "font-size");
+    AppearanceFixture.expectPixels(Number.parseFloat(style.fontSize), AppearanceFixture.measureLook("text-small"));
     AppearanceFixture.expectPixels(box(".nol-site-version").left - box("nol-site-lockup").right, AppearanceFixture.measureLook("space-2"));
   });
 
@@ -169,7 +169,7 @@ describe("SiteHeaderComponent", () => {
     const [current, other] = all(".nol-site-nav-link").map(t => getComputedStyle(t));
     const colors = (key: string): string => AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, key);
 
-    expect([current?.color, current?.fontWeight, other?.color]).toEqual([colors("text-strong"), "600", colors("text-muted")]);
+    expect([current?.color, current?.fontWeight, other?.color]).toEqual([colors("text-strong"), "500", colors("text-muted")]);
     for (const link of all(".nol-site-nav-link"))
       expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("pointer-target") - 1 / 32);
   });

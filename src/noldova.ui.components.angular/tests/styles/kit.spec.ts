@@ -388,7 +388,7 @@ describe("kit styles in forced colors", () => {
 
   it.each([
     { name: "forms", section: GalleryFormsComponent, hovered: 14, focused: 18, selected: 1 },
-    { name: "navigation", section: GalleryNavigationComponent, hovered: 6, focused: 12, selected: 1 },
+    { name: "navigation", section: GalleryNavigationComponent, hovered: 8, focused: 14, selected: 1 },
     { name: "overlays", section: GalleryOverlaysComponent, hovered: 4, focused: 5, selected: 0 },
     { name: "content", section: GalleryContentComponent, hovered: 2, focused: 4, selected: 0 }
   ])("outlines every hovered control of the $name section with a dashed highlight, since the hover fill is forced away, and rings every focused one with the highlight at twice the border width, a field, a select, a checked pill and a selected tab included", async ({ section, hovered, focused, selected }) => {

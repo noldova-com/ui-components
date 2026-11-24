@@ -90,6 +90,11 @@
 .nol-site-footer-link:is(:hover, [data-nol-state="Hover"]) {
   color: var(--nol-text-strong);
   text-decoration: underline;
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: var(--nol-border-width);
+  }
 }
 
 .nol-site-footer-link:is(:focus-visible, [data-nol-state="Focus"]) {

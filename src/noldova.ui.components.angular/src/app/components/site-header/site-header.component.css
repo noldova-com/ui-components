@@ -110,9 +110,15 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   white-space: nowrap;
 }
 
-.nol-site-nav-link:is(:hover, [data-nol-state="Hover"]) {
+.nol-site-nav-link:is(:hover, [data-nol-state="Hover"]),
+.nol-site-social:is(:hover, [data-nol-state="Hover"]) {
   background-color: var(--nol-toolbar-hover);
   color: var(--nol-text-strong);
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: calc(var(--nol-border-width) * -1);
+  }
 }
 
 .nol-site-nav-link-current {
@@ -166,11 +172,6 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   height: var(--nol-icon-button-target);
   border-radius: var(--nol-radius-small);
   color: var(--nol-text-muted);
-}
-
-.nol-site-social:is(:hover, [data-nol-state="Hover"]) {
-  background-color: var(--nol-toolbar-hover);
-  color: var(--nol-text-strong);
 }
 
 .nol-site-social-icon {

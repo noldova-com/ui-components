@@ -11967,7 +11967,8 @@ export declare class ShellRunOutputDirective {
  * Noldova wordmark, with a product's name after it, linking home, an optional
  * line under it, a column of links for each {@link SiteLinkGroup}, and a
  * bottom row with a notice and any content projected into it. It draws on
- * the panel color with no border, and its content keeps to the site's
+ * the panel color with no border, and takes its width from the block it is
+ * in, such as the page's body. Its content keeps to the site's
  * content width, a wider one for a documentation site. When the footer is
  * narrower than 48rem, as on a phone, the groups fall into two columns under
  * the wordmark.
@@ -12035,6 +12036,8 @@ export declare class SiteFooterComponent {
  * product's name after it, linking home, an optional version, the site's
  * links, a search field projected with {@link SiteSearchDirective}, social
  * links, the theme switch and an optional Download button. It has no border.
+ * It takes its width from the block it is in, such as the page's body, and
+ * lays itself out by that width, never by its content's.
  *
  * The theme switch offers Light, Dark and System, saves the choice in
  * `localStorage` under `noldova-theme` as `light`, `dark` or `system`, and

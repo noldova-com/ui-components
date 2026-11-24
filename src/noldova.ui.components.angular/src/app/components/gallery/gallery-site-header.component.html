@@ -8,36 +8,36 @@ LICENSE file in the root directory of this source tree.
 
 <nol-gallery-specimen [name]="text.siteHeader" [size]="sizes.Full">
   <nol-gallery-cell [caption]="text.siteProduct">
-    <nol-site-header [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" [downloadHref]="href" />
+    <nol-site-header class="nol-gallery-site" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" [downloadHref]="href" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.siteCompany">
-    <nol-site-header [wordmark]="wordmark" [links]="links" [social]="social" />
+    <nol-site-header class="nol-gallery-site" [wordmark]="wordmark" [links]="links" [social]="social" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.siteDocs">
-    <nol-site-header [wordmark]="wordmark" [name]="text.siteDocsName" [version]="text.siteVersion" [versionHref]="href" [links]="links" [social]="social" [downloadHref]="href" [wide]="true">
+    <nol-site-header class="nol-gallery-site" [wordmark]="wordmark" [name]="text.siteDocsName" [version]="text.siteVersion" [versionHref]="href" [links]="links" [social]="social" [downloadHref]="href" [wide]="true">
       <input nol-text-field nolSiteSearch type="search" [attr.aria-label]="text.siteSearch" [placeholder]="text.siteSearch" />
     </nol-site-header>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.sitePhone">
-    <div class="nol-gallery-site-phone">
+    <div class="nol-gallery-site nol-gallery-site-phone">
       <nol-site-header [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" [downloadHref]="href" />
     </div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.sitePhoneOpen">
-    <div class="nol-gallery-site-phone">
+    <div class="nol-gallery-site nol-gallery-site-phone">
       <nol-site-header [wordmark]="wordmark" [name]="text.siteDocsName" [links]="links" [social]="social" [downloadHref]="href" [wide]="true" [menuOpen]="true">
         <input nol-text-field nolSiteSearch type="search" [attr.aria-label]="text.siteSearch" [placeholder]="text.siteSearch" />
       </nol-site-header>
     </div>
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.hover">
-    <nol-site-header [nolGalleryHover]="hoveredLink" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" />
+    <nol-site-header class="nol-gallery-site" [nolGalleryHover]="hoveredLink" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" />
   </nol-gallery-cell>
   <nol-gallery-cell [caption]="text.focus">
-    <nol-site-header [nolGalleryFocus]="focusedLink" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" />
+    <nol-site-header class="nol-gallery-site" [nolGalleryFocus]="focusedLink" [wordmark]="wordmark" [name]="text.siteProductName" [links]="links" [social]="social" />
   </nol-gallery-cell>
   <nol-gallery-cell long [caption]="text.longCaption">
-    <div class="nol-gallery-narrow">
+    <div class="nol-gallery-site nol-gallery-narrow">
       <nol-site-header [wordmark]="wordmark" [name]="text.siteLongName" [links]="links" />
     </div>
   </nol-gallery-cell>
