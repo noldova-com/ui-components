@@ -22,7 +22,14 @@ class SiteThemeSwitchHostComponent {
 }
 
 class StoredCase {
-  public constructor(public readonly stored: string, public readonly label: string, public readonly mode: string | null) {
+  public readonly stored: string;
+  public readonly label: string;
+  public readonly mode: string | null;
+
+  public constructor(stored: string, label: string, mode: string | null) {
+    this.stored = stored;
+    this.label = label;
+    this.mode = mode;
   }
 }
 

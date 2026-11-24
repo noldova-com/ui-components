@@ -63,7 +63,12 @@ class SiteHeaderDefaultRatioHostComponent {
 }
 
 class SearchCloseCase {
-  public constructor(public readonly title: string, public readonly closeAsync: () => Promise<void>) {
+  public readonly title: string;
+  public readonly closeAsync: () => Promise<void>;
+
+  public constructor(title: string, closeAsync: () => Promise<void>) {
+    this.title = title;
+    this.closeAsync = closeAsync;
   }
 }
 

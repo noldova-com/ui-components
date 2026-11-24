@@ -25,14 +25,15 @@ const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   imports: [SiteFooterComponent],
   template: `
     @if (notice(); as text) {
-      <nol-site-footer [wordmark]="wordmark" [name]="name()" homeHref="/teamrun" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/teamrun" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
     } @else {
-      <nol-site-footer [wordmark]="wordmark" [name]="name()" [line]="line()" [groups]="groups()" [wide]="wide()" />
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [line]="line()" [groups]="groups()" [wide]="wide()" />
     }
   `
 })
 class SiteFooterHostComponent {
-  public readonly wordmark: string = wordmark;
+  public readonly wordmark = signal(wordmark);
+  public readonly wordmarkRatio = signal(20 / 3);
   public readonly name = signal<string | null>("TeamRun");
   public readonly line = signal<string | null>("Run a team of agents.");
   public readonly groups = signal<readonly SiteLinkGroup[]>([
@@ -67,6 +68,19 @@ describe("SiteFooterComponent", () => {
     AppearanceFixture.reset();
     await ForcedColorsFixture.resetAsync();
     await page.viewport(viewport.width, viewport.height);
+  });
+
+  it("reserves the wordmark's width from the ratio the site passes before its file loads", async () => {
+    await renderAsync(t => {
+      t.wordmark.set("data:image/svg+xml,unreadable");
+      t.wordmarkRatio.set(4);
+    });
+    const image = DomFixture.oneOf(footer(), "img.nol-site-wordmark-size", HTMLImageElement);
+    const size = DomFixture.one(footer(), ".nol-site-wordmark").getBoundingClientRect();
+
+    expect(image.naturalWidth).toBe(0);
+    AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
+    AppearanceFixture.expectPixels(size.width, size.height * 4);
   });
 
   it("is the page's content information, on the panel color with no border", async () => {
