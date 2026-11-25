@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ElementRef, type OutputEmitterRef, type Signal, output, signal } from "@angular/core";
+import { ElementRef, OutputEmitterRef, type Signal, signal } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 
 import { ChoicePillsBehavior } from "../../../../src/app/components/choice-pills/choice-pills-behavior";
@@ -14,13 +14,13 @@ import type { IChoicePillsSource } from "../../../../src/app/interfaces/i-choice
 import { SelectOption } from "../../../../src/app/models/select-option";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
-// The inputs and output a pills component gives its behavior, here set by the spec; it takes each value it emits, as a bound host does.
+// The inputs and output a pills component gives its behavior, here set by the spec, the output built as output() builds it outside a component; it takes each value it emits, as a bound host does.
 class PillsSource implements IChoicePillsSource {
   public readonly choices = signal<readonly SelectOption[]>([]);
   public readonly chosen = signal("");
   public readonly options: Signal<readonly SelectOption[]> = this.choices.asReadonly();
   public readonly value: Signal<string> = this.chosen.asReadonly();
-  public readonly valueChange: OutputEmitterRef<string> = output<string>();
+  public readonly valueChange = new OutputEmitterRef<string>();
   public readonly emitted: string[] = [];
 
   public constructor() {
