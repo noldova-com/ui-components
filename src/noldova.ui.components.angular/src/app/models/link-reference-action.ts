@@ -8,14 +8,15 @@
 
 import { LinkReferenceException } from "../exceptions/link-reference.exception.js";
 import { Resources } from "../../resources.js";
+import type { IconName } from "./icon-name.js";
 import { LinkReferenceActionResources } from "./link-reference-action.resources.js";
 
 export class LinkReferenceAction {
   public readonly label: string;
   public readonly href: string;
-  public readonly glyph: string;
+  public readonly glyph: IconName;
 
-  public constructor(label: string, href: string, glyph: string = Resources.linkReferenceActionGlyph) {
+  public constructor(label: string, href: string, glyph: IconName = Resources.linkReferenceActionGlyph) {
     for (const [subject, value] of [[LinkReferenceActionResources.linkReferenceActionLabelSubject, label], [LinkReferenceActionResources.linkReferenceActionHrefSubject, href],
       [LinkReferenceActionResources.linkReferenceActionGlyphSubject, glyph]] as const)
       if (value.trim().length === 0)

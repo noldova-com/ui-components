@@ -6,14 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "./icon-name.js";
 import { TabTone } from "../enums/tab-tone.js";
 
 export class TabStatus {
-  public readonly glyph: string;
+  public readonly glyph: IconName;
   public readonly description: string;
   public readonly tone: TabTone;
 
-  public constructor(glyph: string, description: string, tone: TabTone = TabTone.Neutral) {
+  public constructor(glyph: IconName, description: string, tone: TabTone = TabTone.Neutral) {
     this.glyph = glyph;
     this.description = description;
     this.tone = tone;

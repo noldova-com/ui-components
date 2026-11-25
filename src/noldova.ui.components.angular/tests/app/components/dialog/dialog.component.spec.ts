@@ -85,7 +85,7 @@ class MediumDialogHostComponent {
   imports: [DialogComponent, IconButtonComponent],
   template: `
     <nol-dialog title="Notes" [size]="large">
-      <button type="button" nol-icon-button nolDialogControl icon="push_pin" label="Pin"></button>
+      <button type="button" nol-icon-button nolDialogControl icon="keep" label="Pin"></button>
       <p class="nol-dialog-probe">Plan</p>
     </nol-dialog>
   `

@@ -12,6 +12,7 @@ import type { FormValueControl } from "@angular/forms/signals";
 import "@noldova/context.core";
 
 import { Resources } from "../../../resources.js";
+import type { IconName } from "../../models/icon-name.js";
 import { IconNames } from "../../models/icon-names.js";
 import { TextFieldComponent } from "../text-field/text-field.component.js";
 import { IconChooserCell } from "./icon-chooser-cell.js";
@@ -27,7 +28,7 @@ import { IconChooserResources } from "./icon-chooser.resources.js";
     "(focusout)": "leave($event)"
   }
 })
-export class IconChooserComponent implements FormValueControl<string | null> {
+export class IconChooserComponent implements FormValueControl<IconName | null> {
   private static count: number = 0;
 
   private readonly id: string = `${IconChooserResources.iconChooserIdPrefix}${IconChooserComponent.count++}`;
@@ -45,17 +46,17 @@ export class IconChooserComponent implements FormValueControl<string | null> {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
 
   public readonly label = input.required<string>();
-  public readonly names = input<readonly string[]>(IconNames.all);
+  public readonly names = input<readonly IconName[]>(IconNames.all);
   public readonly allowNone = input<boolean>(true);
   public readonly disabled = input<boolean>(false);
-  public readonly value = model<string | null>(null);
+  public readonly value = model<IconName | null>(null);
   public readonly touch = output<void>();
 
   protected readonly partResources: typeof IconChooserResources = IconChooserResources;
   protected readonly listId: string = `${this.id}${IconChooserResources.iconChooserOptionInfix}${IconChooserResources.iconChooserListSuffix}`;
   protected readonly query: WritableSignal<string> = signal(String.empty);
   protected readonly cellSize: Signal<number> = this.cell.asReadonly();
-  protected readonly choices: Signal<readonly (string | null)[]> = computed(() => {
+  protected readonly choices: Signal<readonly (IconName | null)[]> = computed(() => {
     const words = IconChooserComponent.wordsOf(this.query());
     const found = this.names().filter(t => words.every(u => t.includes(u)));
     return this.allowNone() ? [null, ...found] : found;

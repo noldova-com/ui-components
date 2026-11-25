@@ -37,12 +37,12 @@ class Point {
     <button type="button" class="off" nol-icon-button icon="close" label="Remove" [overlay]="true" disabled></button>
     <button type="button" class="locked" nol-icon-button icon="close" label="Remove" [overlay]="true" aria-disabled="true"></button>
     <button type="button" class="both" nol-icon-button icon="send" label="Send" [filled]="true" [overlay]="true"></button>
-    <button type="button" class="pinned" nol-icon-button icon="push_pin" label="Pin" [overlay]="true" [pressed]="true"></button>
-    <button type="button" class="pinned-locked" nol-icon-button icon="push_pin" label="Pin" [overlay]="true" [pressed]="true" aria-disabled="true"></button>
+    <button type="button" class="pinned" nol-icon-button icon="keep" label="Pin" [overlay]="true" [pressed]="true"></button>
+    <button type="button" class="pinned-locked" nol-icon-button icon="keep" label="Pin" [overlay]="true" [pressed]="true" aria-disabled="true"></button>
     <button type="button" class="lifted" data-testid="lifted" nol-icon-button icon="close" label="Close" [overlay]="true" [backdrop]="true"></button>
     <button type="button" class="lifted-off" nol-icon-button icon="close" label="Close" [overlay]="true" [backdrop]="true" disabled></button>
     <button type="button" class="lifted-locked" nol-icon-button icon="close" label="Close" [overlay]="true" [backdrop]="true" aria-disabled="true"></button>
-    <button type="button" class="lifted-pinned" nol-icon-button icon="push_pin" label="Pin" [overlay]="true" [backdrop]="true" [pressed]="true"></button>
+    <button type="button" class="lifted-pinned" nol-icon-button icon="keep" label="Pin" [overlay]="true" [backdrop]="true" [pressed]="true"></button>
     <button type="button" class="lifted-both" nol-icon-button icon="send" label="Send" [filled]="true" [overlay]="true" [backdrop]="true"></button>
     <button type="button" class="lifted-plain" nol-icon-button icon="add" label="Add files" [backdrop]="true"></button>
     <div class="probe"></div>

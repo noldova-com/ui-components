@@ -14,6 +14,7 @@ import {
 import "@noldova/context.core";
 
 import { ComposingKey } from "../../models/composing-key.js";
+import type { IconName } from "../../models/icon-name.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { QuickInputGroup } from "../../models/quick-input-group.js";
 import type { QuickInputItem } from "../../models/quick-input-item.js";
@@ -75,7 +76,7 @@ export class QuickInputComponent {
 
   public readonly items = input.required<readonly QuickInputItem[]>();
   public readonly label = input.required<string>();
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly emptyText = input<string>(String.empty);
   public readonly isEmptyTextAlert = input<boolean>(false);
   public readonly query = model<string>(String.empty);

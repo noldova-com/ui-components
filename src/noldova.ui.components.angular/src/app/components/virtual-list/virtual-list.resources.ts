@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { Resources } from "../../../resources.js";
 
 export class VirtualListResources {
@@ -25,8 +26,8 @@ export class VirtualListResources {
   public static readonly virtualListRowSelector: string = ".nol-virtual-list-slot > .nol-virtual-list-row";
   public static readonly virtualListPressEnds: readonly string[] = ["pointerup", "pointercancel"];
   public static readonly virtualListJumpLabel: string = "Jump to latest";
-  public static readonly virtualListJumpGlyph: string = "arrow_downward";
-  public static readonly virtualListJumpStartGlyph: string = "arrow_upward";
+  public static readonly virtualListJumpGlyph: IconName = "arrow_downward";
+  public static readonly virtualListJumpStartGlyph: IconName = "arrow_upward";
   public static formatVirtualListRowSelector(index: number): string {
     return `[data-nol-row="${index}"] > .nol-virtual-list-row`;
   }

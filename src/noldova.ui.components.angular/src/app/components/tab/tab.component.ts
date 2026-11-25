@@ -10,6 +10,7 @@ import { Component, DOCUMENT, DestroyRef, ElementRef, type Signal, ViewEncapsula
   viewChild } from "@angular/core";
 
 import { ComposingKey } from "../../models/composing-key.js";
+import type { IconName } from "../../models/icon-name.js";
 import type { TabMarker } from "../../models/tab-marker.js";
 import type { TabStatus } from "../../models/tab-status.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
@@ -63,7 +64,7 @@ export class TabComponent {
   protected readonly isImageLoaded: WritableSignal<boolean> = linkedSignal({ source: () => this.image(), computation: () => false });
 
   public readonly label = input.required<string>();
-  public readonly icon = input<string>();
+  public readonly icon = input<IconName>();
   public readonly selected = input<boolean>(false);
   public readonly preview = input<boolean>(false);
   public readonly working = input<boolean>(false);
@@ -72,7 +73,7 @@ export class TabComponent {
   public readonly badge = input<string | null>(null);
   public readonly badgeCount = input<number | null>(null);
   public readonly image = input<string | null>(null);
-  public readonly imageGlyph = input<string | null>(null);
+  public readonly imageGlyph = input<IconName | null>(null);
   public readonly status = input<TabStatus | null>(null);
   public readonly leadingSpinner = input<boolean>(false);
   public readonly marker = input<TabMarker | null>(null);

@@ -6,13 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class IconChooserResources {
   public static readonly iconChooserIdPrefix: string = "nol-icon-chooser-";
   public static readonly iconChooserOptionInfix: string = "-option-";
   public static readonly iconChooserSearchLabel: string = "Search icons";
   public static readonly iconChooserSearchPlaceholder: string = "Search";
   public static readonly iconChooserNoneLabel: string = "No icon";
-  public static readonly iconChooserNoneGlyph: string = "block";
+  public static readonly iconChooserNoneGlyph: IconName = "block";
   public static readonly iconChooserNothingFound: string = "No icon matches.";
   public static readonly iconChooserListSuffix: string = "list";
   public static readonly iconChooserOverscanRows: number = 2;

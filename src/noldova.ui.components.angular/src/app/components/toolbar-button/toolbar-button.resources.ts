@@ -6,7 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class ToolbarButtonResources {
-  public static readonly toolbarChevronGlyph: string = "expand_more";
+  public static readonly toolbarChevronGlyph: IconName = "keyboard_arrow_down";
   public static readonly menuPopup: string = "menu";
 }

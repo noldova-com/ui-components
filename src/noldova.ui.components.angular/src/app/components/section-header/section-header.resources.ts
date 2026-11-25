@@ -6,7 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class SectionHeaderResources {
   public static readonly sectionHeaderLevel: number = 3;
-  public static readonly sectionHeaderCaretGlyph: string = "expand_more";
+  public static readonly sectionHeaderCaretGlyph: IconName = "keyboard_arrow_down";
 }

@@ -136,7 +136,7 @@ describe("SplitButtonComponent", () => {
 
     expect([main().tagName, main().type, main().getAttribute("aria-label"), main().querySelector(".nol-icon-button-glyph")?.textContent]).toEqual(["BUTTON", "button", "New terminal", "add"]);
     expect([arrow().tagName, arrow().type, arrow().getAttribute("aria-label"), arrow().querySelector(".nol-icon-button-glyph")?.textContent])
-      .toEqual(["BUTTON", "button", "Choose a shell", "expand_more"]);
+      .toEqual(["BUTTON", "button", "Choose a shell", "keyboard_arrow_down"]);
     expect([focused, fixture.componentInstance.created, menu()]).toEqual([arrow(), 1, null]);
     expect([arrow().getAttribute("aria-haspopup"), arrow().getAttribute("aria-expanded")]).toEqual(["menu", "false"]);
 
