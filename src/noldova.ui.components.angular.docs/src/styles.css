@@ -179,24 +179,17 @@ body {
 }
 
 .nol-docs-page code,
-.nol-docs-page kbd,
-.nol-docs-code {
+.nol-docs-page kbd {
   font-family: var(--nol-font-mono);
   font-size: var(--nol-text-code);
   overflow-wrap: anywhere;
-}
-
-.nol-docs-code {
-  margin: 0;
-  white-space: pre-wrap;
 }
 
 .nol-docs-page p:not(.nol-docs-example-preview *, .nol-docs-states *, table *) {
   line-height: 1.5;
 }
 
-.nol-docs-page nol-code-block:not(.nol-docs-example-preview *, .nol-docs-states *),
-.nol-docs-code {
+.nol-docs-page nol-code-block:not(.nol-docs-example-preview *, .nol-docs-states *) {
   --nol-text-code: 0.8125rem;
   --nol-code: var(--nol-docs-code, #FFFFFF);
 }

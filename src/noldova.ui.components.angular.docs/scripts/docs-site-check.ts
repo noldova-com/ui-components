@@ -29,6 +29,9 @@ export class DocsSiteCheck implements ICheck {
   private static readonly LOAD_TIMEOUT: number = 15000;
   private static readonly TIMEOUT_ERROR: string = "TimeoutError";
   private static readonly IMAGE_TYPE: string = "image/";
+  private static readonly CODE_BLOCK_START: string = "<nol-code-block";
+  private static readonly CODE_BLOCK_END: string = "</nol-code-block>";
+  private static readonly CODE_LINE: string = "class=\"nol-code-line\"";
   private static readonly ICONS: string =
     "Promise.all([...document.querySelectorAll('link[rel=icon], link[rel=apple-touch-icon]')].map(t => fetch(t.href).then(r => ({ link: t.getAttribute('href') ?? '', status: r.status, type: r.headers.get('content-type') ?? '' })))).then(t => JSON.stringify({ icons: t }))";
   private static readonly MENU_LINKS: string =
@@ -109,6 +112,9 @@ export class DocsSiteCheck implements ICheck {
         findings.push(DocsSiteCheck.notServed(link));
         return;
       }
+      const emptyCode = DocsSiteCheck.countServedWithoutCode(await response.text());
+      if (emptyCode > 0)
+        findings.push(DocsSiteCheck.servedWithoutCode(link, emptyCode));
       try {
         await page.waitForFunction(DocsSiteCheck.SETTLED, undefined, { timeout: DocsSiteCheck.LOAD_TIMEOUT });
       }
@@ -153,6 +159,10 @@ export class DocsSiteCheck implements ICheck {
       findings.push(DocsSiteCheck.namesWrapped(link, width, names));
   }
 
+  private static countServedWithoutCode(html: string): number {
+    return html.split(DocsSiteCheck.CODE_BLOCK_START).slice(1).filter(t => !t.slice(0, t.indexOf(DocsSiteCheck.CODE_BLOCK_END)).includes(DocsSiteCheck.CODE_LINE)).length;
+  }
+
   private static isTimeout(error: unknown): boolean {
     return error instanceof Error && error.name === DocsSiteCheck.TIMEOUT_ERROR;
   }
@@ -175,6 +185,10 @@ export class DocsSiteCheck implements ICheck {
 
   private static notServed(link: string): string {
     return `${link} isn't served from the built site.`;
+  }
+
+  private static servedWithoutCode(link: string, count: number): string {
+    return `${link} serves ${count} code blocks with no code line in its prerendered HTML.`;
   }
 
   private static unsettled(link: string): string {
