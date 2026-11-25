@@ -6,18 +6,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class SiteHeaderResources {
   public static readonly menuIdPrefix: string = "nol-site-header-menu-";
   public static readonly searchIdPrefix: string = "nol-site-header-search-";
   public static readonly searchLabel: string = "Search";
-  public static readonly searchGlyph: string = "search";
+  public static readonly searchGlyph: IconName = "search";
   public static readonly navLabel: string = "Site";
   public static readonly menuLabel: string = "Menu";
-  public static readonly menuGlyph: string = "menu";
+  public static readonly menuGlyph: IconName = "menu";
   public static readonly menuStops: string = "a[href], button";
-  public static readonly closeGlyph: string = "close";
+  public static readonly closeGlyph: IconName = "close";
   public static readonly downloadLabel: string = "Download";
-  public static readonly downloadGlyph: string = "download";
+  public static readonly downloadGlyph: IconName = "download";
   public static readonly skipLabel: string = "Skip to content";
   public static readonly currentPage: string = "page";
 

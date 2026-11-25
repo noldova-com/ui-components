@@ -17,18 +17,20 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
-// A product's own wordmark, in the proportions of Commitline's, and an icon with no text in it.
-const ratio = 1708.818 / 201.396;
-const wordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1708.818 201.396'%3E%3Crect width='1708.818' height='201.396'/%3E%3C/svg%3E`;
+// A product's own wordmark four times as wide as high, one as long as Commitline's, and an icon with no text in it.
+const ratio = 4;
+const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Crect width='800' height='200'/%3E%3C/svg%3E";
+const longRatio = 1708.818 / 201.396;
+const longWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1708.818 201.396'%3E%3Crect width='1708.818' height='201.396'/%3E%3C/svg%3E`;
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteHeaderComponent],
-  template: `<nol-site-header [wordmark]="wordmark" [wordmarkRatio]="ratio" [icon]="icon()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" />`
+  template: `<nol-site-header [wordmark]="wordmark()" [wordmarkRatio]="ratio()" [icon]="icon()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" />`
 })
 class SiteHeaderLockupHostComponent {
-  public readonly wordmark: string = wordmark;
-  public readonly ratio: number = ratio;
+  public readonly wordmark = signal(wordmark);
+  public readonly ratio = signal(ratio);
   public readonly icon = signal<string | null>(icon);
   public readonly name = signal<string | null>(null);
   public readonly homeLabel = signal<string | null>("Commitline home");
@@ -135,4 +137,24 @@ describe("SiteHeaderComponent's lockup", () => {
 
     expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(1.0625) * ratio - 1 / 32);
   });
+
+  for (const width of [360, 320]) {
+    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark's box narrowed and drawn inside it in its file's proportions, in a header ${width} pixels wide`, async () => {
+      await page.viewport(width, 800);
+      await renderAsync(t => {
+        t.wordmark.set(longWordmark);
+        t.ratio.set(longRatio);
+      });
+      const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
+      const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
+      const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-site-actions-gap-phone"));
+
+      expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
+      expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
+      AppearanceFixture.expectPixels(mark().height, rem(1.0625));
+      expect(mark().width).toBeLessThan(rem(1.0625) * longRatio - 1);
+      expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
+      expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
+    });
+  }
 });

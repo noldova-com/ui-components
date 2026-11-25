@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class SplitButtonResources {
-  public static readonly splitButtonGlyph: string = "expand_more";
+  public static readonly splitButtonGlyph: IconName = "keyboard_arrow_down";
 }

@@ -88,8 +88,12 @@
   }
 }
 
+/* The wordmark keeps its height and its file's proportions; where its link is narrower than it, as a long product
+ * wordmark in a phone's bar once the name has given its space, its box narrows to the link and the mask draws it smaller
+ * in its proportions inside. */
 .nol-site-wordmark {
   flex: none;
+  max-width: 100%;
   height: var(--nol-site-lockup-wordmark);
   background-color: var(--nol-setting-title);
   mask-position: center;
@@ -102,9 +106,14 @@
   }
 }
 
+:host(.nol-site-lockup-with-icon) .nol-site-wordmark {
+  max-width: calc(100% - var(--nol-site-icon) - var(--nol-space-3));
+}
+
 .nol-site-wordmark-size {
   display: block;
   width: auto;
+  max-width: 100%;
   height: 100%;
   visibility: hidden;
 }

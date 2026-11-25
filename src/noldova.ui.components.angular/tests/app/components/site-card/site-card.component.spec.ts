@@ -15,6 +15,7 @@ import { SiteCardComponent } from "../../../../src/app/components/site-card/site
 import { SiteSectionComponent } from "../../../../src/app/components/site-section/site-section.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
@@ -33,7 +34,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 })
 class SiteCardHostComponent {
   public readonly title = "One chat,\nevery agent.";
-  public readonly icon = signal<string | null>("forum");
+  public readonly icon = signal<IconName | null>("forum");
   public readonly index = signal<string | null>("01");
   public readonly text = signal<string | null>("Each agent reads the same chat.");
 }

@@ -9,6 +9,7 @@
 import { NgTemplateOutlet } from "@angular/common";
 import { Component, type Signal, computed, contentChildren, input, model } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { SectionHeaderActionDirective } from "./section-header-action.directive.js";
 import { SectionHeaderResources } from "./section-header.resources.js";
 
@@ -33,7 +34,7 @@ export class SectionHeaderComponent {
 
   public readonly label = input.required<string>();
   public readonly level = input<number>(SectionHeaderResources.sectionHeaderLevel);
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly collapsible = input<boolean>(false);
   public readonly uppercase = input<boolean>(false);
   public readonly controls = input<string | null>(null);

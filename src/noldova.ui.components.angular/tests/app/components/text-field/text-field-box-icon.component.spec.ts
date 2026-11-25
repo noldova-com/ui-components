@@ -14,6 +14,7 @@ import { TextFieldBoxComponent } from "../../../../src/app/components/text-field
 import { TextFieldComponent } from "../../../../src/app/components/text-field/text-field.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
@@ -41,7 +42,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   `
 })
 class TextFieldBoxIconHostComponent {
-  public readonly icon = signal<string | null>("search");
+  public readonly icon = signal<IconName | null>("search");
 }
 
 interface Placement {
@@ -105,17 +106,12 @@ describe("TextFieldBoxComponent's leading icon", () => {
     ]);
   });
 
-  it("draws no glyph, and starts the text the field padding from the border, while the icon is null or empty", () => {
+  it("draws no glyph, and starts the text the field padding from the border, while the icon is null", () => {
     render();
     const padding = AppearanceFixture.measureLook("field-padding");
     fixture.componentInstance.icon.set(null);
     fixture.detectChanges();
-    const none = [glyphs("search"), parseFloat(getComputedStyle(input("search")).paddingLeft)];
-    fixture.componentInstance.icon.set("");
-    fixture.detectChanges();
 
-    expect(none[0]).toBe(0);
-    AppearanceFixture.expectPixels(DomFixture.at(none, 1), padding);
     expect(glyphs("search")).toBe(0);
     AppearanceFixture.expectPixels(parseFloat(getComputedStyle(input("search")).paddingLeft), padding);
   });

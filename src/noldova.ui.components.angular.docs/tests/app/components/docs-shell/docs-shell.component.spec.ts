@@ -18,6 +18,19 @@ import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
 import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
+import { EmulatedMediaFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/emulated-media.fixture.js";
+
+class FrameLink {
+  public readonly text: string | null;
+  public readonly href: string | null;
+  public readonly current: string | null;
+
+  public constructor(text: string | null, href: string | null, current: string | null) {
+    this.text = text;
+    this.href = href;
+    this.current = current;
+  }
+}
 
 describe("DocsShellComponent", () => {
   const renderAsync = async (url: string): Promise<ComponentFixture<DocsShellComponent>> => {
@@ -30,6 +43,15 @@ describe("DocsShellComponent", () => {
 
   const heading = (fixture: ComponentFixture<DocsShellComponent>): string | undefined =>
     DocsFixture.host(fixture).querySelector("main h1")?.textContent?.trim();
+
+  const topOf = (host: HTMLElement): number =>
+    Math.max(...["nol-site-header", ".nol-docs-pages-bar"].map(t => DocsFixture.one(host, t).getBoundingClientRect()).filter(t => t.height > 0).map(t => t.bottom));
+
+  const rootRem = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // A kit length token's value in rem, as the kit's theme declares it.
+  const tokenRem = (name: string): number => Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+
+  const changelogLink = `https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md#${versionFile.version.replaceAll(".", "")}`;
 
   afterEach(() => DocsFixture.resetAsync());
 
@@ -51,7 +73,7 @@ describe("DocsShellComponent", () => {
       expect(getComputedStyle(document.documentElement).colorScheme).toBe(scheme);
       expect(window.innerWidth).toBe(width);
       expect(DocsFixture.overflowWidth()).toBe(0);
-      expect(DocsFixture.one(host, ".nol-docs-header").getBoundingClientRect().right).toBeLessThanOrEqual(edge);
+      expect(DocsFixture.one(host, "nol-site-header").getBoundingClientRect().right).toBeLessThanOrEqual(edge);
       expect(DocsFixture.one(host, "main").getBoundingClientRect().right).toBeLessThanOrEqual(edge);
     });
   });
@@ -81,274 +103,258 @@ describe("DocsShellComponent", () => {
   });
 
   describe.each([
-    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
-    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
-    ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
-    ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
-  ])("in the %s mode at %ipx wide, the header", (mode, width, height) => {
-    const githubMark = "M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656";
-    const xMark = "M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z";
-
-    const outside = (header: HTMLElement, selector: string): readonly HTMLElement[] => DocsFixture.all(document, selector).filter(t => !header.contains(t));
-
-    const pathOf = (link: HTMLElement): SVGPathElement => {
-      const path = link.querySelector("nol-docs-brand-mark[aria-hidden=true] svg path");
-      if (!(path instanceof SVGPathElement))
-        throw new TypeError("No mark's path in the link.");
-      return path;
-    };
-
-    const nameOf = (element: HTMLElement): string =>
-      [...element.childNodes].filter(t => t.nodeType === Node.TEXT_NODE).map(t => t.textContent).join(String()).trim();
-
-    const renderHeaderAsync = async (): Promise<HTMLElement> => {
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, ""],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, ""],
+    ["Light", 1920, 1080, ""],
+    ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, "-phone"],
+    ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, "-phone"]
+  ])("in the %s mode at %i by %i CSS pixels, the site's header and footer", (mode, width, height, size) => {
+    const renderSiteAsync = async (url: string): Promise<HTMLElement> => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
-      return DocsFixture.one(DocsFixture.host(await renderAsync("/")), ".nol-docs-header");
+      return DocsFixture.host(await renderAsync(url));
     };
 
-    afterEach(() => ForcedColorsFixture.resetAsync());
+    // The header's content keeps to 108rem, centered, with the site's inset outside it.
+    const contentStart = (): number =>
+      Math.max(tokenRem(`--nol-site-padding-inline${size}`) * rootRem(), (document.documentElement.clientWidth - 108 * rootRem()) / 2);
 
-    it("shows the Noldova wordmark, in the text's color, then the site's name", async () => {
-      const header = await renderHeaderAsync();
-      const brand = DocsFixture.one(header, ".nol-docs-brand");
-      const wordmark = DocsFixture.one(brand, "[role=img]");
-      const name = DocsFixture.byText(brand, "span", "UI Components");
-      const style = getComputedStyle(wordmark);
-      const em = parseFloat(getComputedStyle(brand).fontSize);
-      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const mark = wordmark.getBoundingClientRect();
+    const linksOf = (root: HTMLElement, selector: string): readonly FrameLink[] =>
+      DocsFixture.all(root, selector).map(t => new FrameLink(t.textContent?.trim() ?? null, t.getAttribute("href"), t.getAttribute("aria-current")));
 
-      expect(wordmark.getAttribute("aria-label")).toBe("Noldova");
-      expect(brand.getAttribute("href")).toBe("/");
-      expect(style.backgroundColor).toBe(getComputedStyle(brand).color);
-      expect(style.maskImage).toContain("/assets/noldova-wordmark.svg");
-      expect(mark.height / em).toBeCloseTo(0.75, 2);
-      expect(mark.width / mark.height).toBeCloseTo(1333.817 / 201.396, 1);
-      expect(mark.right).toBeLessThanOrEqual(name.getBoundingClientRect().left);
-      expect(Math.abs(mark.top + mark.height / 2 - (name.getBoundingClientRect().top + name.getBoundingClientRect().height / 2)) / rem).toBeLessThanOrEqual(0.25);
-    });
+    it("are the kit's wide header and footer, with the UI Components lockup home, the kit's version, the search, GitHub and X, and no page links or Download", async () => {
+      const host = await renderSiteAsync("/tokens");
+      const header = DocsFixture.one(host, "nol-site-header");
+      const footer = DocsFixture.one(host, "nol-site-footer");
+      const version = DocsFixture.one(header, ".nol-site-version");
 
-    const resolve = (header: HTMLElement, property: string, value: string): string => {
-      const probe = header.appendChild(document.createElement("span"));
-      probe.style.setProperty(property, value);
-      const resolved = getComputedStyle(probe).getPropertyValue(property);
-      probe.remove();
-      return resolved;
-    };
-
-    const textBoxOf = (element: HTMLElement): DOMRect => {
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      return range.getBoundingClientRect();
-    };
-
-    it("shows the kit's version from version.json as v and the version, its text space-2 after the site's name and centred on its line, linking to the version's CHANGELOG section", async () => {
-      const header = await renderHeaderAsync();
-      const version = DocsFixture.one(header, ".nol-docs-version");
-      const box = version.getBoundingClientRect();
-      const text = textBoxOf(version);
-      const name = DocsFixture.byText(DocsFixture.one(header, ".nol-docs-brand"), "span", "UI Components").getBoundingClientRect();
-      const gap = parseFloat(resolve(header, "padding-left", "var(--nol-space-2)"));
-
-      expect([version.textContent?.trim(), version.getAttribute("href"), version.getAttribute("target")]).toEqual([
-        `v${versionFile.version}`, `https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md#${versionFile.version.replaceAll(".", "")}`, null
+      expect([header.classList.contains("nol-site-header-wide"), footer.classList.contains("nol-site-footer-wide")]).toEqual([true, true]);
+      expect([DocsFixture.one(header, ".nol-site-lockup-link").getAttribute("href"), DocsFixture.one(header, ".nol-site-lockup-name").textContent?.trim()]).toEqual(["/", "UI Components"]);
+      expect([version.textContent?.trim(), version.getAttribute("href")]).toEqual([`v${versionFile.version}`, changelogLink]);
+      expect(header.querySelectorAll(".nol-site-nav-link, .nol-site-download")).toHaveLength(0);
+      expect(header.querySelectorAll(".nol-site-header-search nol-docs-search")).toHaveLength(1);
+      expect(DocsFixture.all(header, ".nol-site-social").map(t => [t.getAttribute("aria-label"), t.getAttribute("href")]))
+        .toEqual([["GitHub", "https://github.com/noldova-com/ui-components"], ["X", "https://x.com/noldova"]]);
+      expect([DocsFixture.one(header, ".nol-site-skip").getAttribute("href"), DocsFixture.one(host, "main").id]).toEqual(["#nol-docs-main", "nol-docs-main"]);
+      expect(DocsFixture.all(footer, ".nol-site-footer-group").map(t => [t.getAttribute("aria-label"), ...linksOf(t, "a").map(u => `${u.text} ${u.href}`)])).toEqual([
+        ["UI Components", "Getting started /", "Theme tokens /tokens", "Changelog https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md"],
+        ["Help", "Issues https://github.com/noldova-com/ui-components/issues", "Privacy https://noldova.com/privacy/"],
+        ["Follow", "GitHub https://github.com/noldova-com/ui-components", "X https://x.com/noldova"]
       ]);
-      expect(Math.abs(text.left - name.right - gap)).toBeLessThan(1 / 32);
-      expect(Math.abs(box.top + box.height / 2 - (name.top + name.height / 2))).toBeLessThan(0.5);
-      expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
-      if (width === DocsFixture.DESKTOP_WIDTH)
-        expect(box.right).toBeLessThanOrEqual(DocsFixture.one(header, "nol-docs-search").getBoundingClientRect().left);
-      else
-        expect(box.left).toBeGreaterThanOrEqual(DocsFixture.one(header, "button.nol-docs-menu-button").getBoundingClientRect().right);
+      expect(footer.querySelector(".nol-site-footer-line")).toBeNull();
     });
 
-    it("draws the version in the muted text color at the label size and line height, underlined only under the pointer", async () => {
-      const header = await renderHeaderAsync();
-      const version = DocsFixture.one(header, ".nol-docs-version");
-      const look = (): string[] => {
-        const style = getComputedStyle(version);
-        return [style.color, style.fontSize, style.lineHeight, style.textDecorationLine];
-      };
-      const resting = look();
-      await userEvent.hover(version);
-      await DomChangeFixture.untilAsync(() => expect(version.matches(":hover")).toBe(true));
+    it.each([["/", "Getting started"], ["/tokens", "Theme tokens"], ["/components/button", null]])("marks in the footer, on %s, %s as the current page", async (url, current) => {
+      const host = await renderSiteAsync(url);
 
-      expect([resting, look()]).toEqual([
-        [resolve(header, "color", "var(--nol-text-muted)"), resolve(header, "font-size", "var(--nol-text-label)"), resolve(header, "line-height", "var(--nol-line-label)"), "none"],
-        [resolve(header, "color", "var(--nol-text-muted)"), resolve(header, "font-size", "var(--nol-text-label)"), resolve(header, "line-height", "var(--nol-line-label)"), "underline"]
-      ]);
+      expect(linksOf(DocsFixture.one(host, "nol-site-footer"), "a.nol-site-footer-link").filter(t => t.current === "page").map(t => t.text)).toEqual(Object.isNull(current) ? [] : [current]);
     });
 
-    const focusRingAsync = async (header: HTMLElement): Promise<readonly string[]> => {
-      const version = DocsFixture.one(header, ".nol-docs-version");
-      await userEvent.keyboard("{Shift}");
-      version.focus();
-      await DomChangeFixture.untilAsync(() => expect(version.matches(":focus-visible")).toBe(true));
-      const style = getComputedStyle(version);
-      return [style.outlineColor, style.outlineStyle, style.outlineWidth, style.outlineOffset];
-    };
-
-    it("rings the version on keyboard focus in a solid accent outline at the border width, inset by it on a hit area as tall as the other header links'", async () => {
-      const header = await renderHeaderAsync();
-      const border = resolve(header, "padding-left", "var(--nol-border-width)");
-      const target = parseFloat(resolve(header, "padding-left", "var(--nol-icon-button-target)"));
-      const ring = await focusRingAsync(header);
-
-      expect(ring).toEqual([resolve(header, "color", "var(--nol-accent)"), "solid", border, `-${border}`]);
-      expect(DocsFixture.one(header, ".nol-docs-version").getBoundingClientRect().height).toBeCloseTo(target, 2);
-      expect(DocsFixture.one(header, ".nol-docs-header-link").getBoundingClientRect().height).toBeCloseTo(target, 2);
-    });
-
-    it("draws the version in the link color under forced colors, and its focus ring in a solid Highlight outline at the border width", async () => {
-      await ForcedColorsFixture.activateAsync();
-      const header = await renderHeaderAsync();
-      const border = resolve(header, "padding-left", "var(--nol-border-width)");
-
-      expect(getComputedStyle(DocsFixture.one(header, ".nol-docs-version")).color).toBe(ForcedColorsFixture.resolve("LinkText"));
-      expect(await focusRingAsync(header)).toEqual([ForcedColorsFixture.resolve("Highlight"), "solid", border, `-${border}`]);
-    });
-
-    it("draws the wordmark in the link color under forced colors, as the brand link's text", async () => {
-      await ForcedColorsFixture.activateAsync();
-      const brand = DocsFixture.one(await renderHeaderAsync(), ".nol-docs-brand");
-      const background = getComputedStyle(DocsFixture.one(brand, "[role=img]")).backgroundColor;
-
-      expect(background).toBe(ForcedColorsFixture.resolve("LinkText"));
-      expect(background).toBe(getComputedStyle(brand).color);
-    });
-
-    it("links to the kit's repository and to Noldova on X in this tab, each named by its brand and showing only that brand's mark", async () => {
-      const header = await renderHeaderAsync();
-      const links = DocsFixture.all(header, ".nol-docs-header-link");
-
-      expect(links.map(t => [t.getAttribute("aria-label"), nameOf(t), t.getAttribute("href"), t.getAttribute("target")])).toEqual([
-        ["GitHub", String(), "https://github.com/noldova-com/ui-components", null],
-        ["X", String(), "https://x.com/noldova", null]
-      ]);
-      expect(links.map(t => pathOf(t).getAttribute("d"))).toEqual([githubMark, xMark]);
-    });
-
-    it("draws each mark 1rem square in the middle of a pointer target, black in the Light look and white in the Dark one", async () => {
-      const header = await renderHeaderAsync();
-      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-pointer-target"));
-
-      for (const link of DocsFixture.all(header, ".nol-docs-header-link")) {
-        const box = link.getBoundingClientRect();
-        const mark = DocsFixture.one(link, "nol-docs-brand-mark").getBoundingClientRect();
-
-        expect(mark.width / rem).toBeCloseTo(1, 2);
-        expect(mark.height / rem).toBeCloseTo(1, 2);
-        expect(box.width).toBeGreaterThanOrEqual(target);
-        expect(box.height).toBeGreaterThanOrEqual(target);
-        expect(Math.abs(mark.left + mark.width / 2 - (box.left + box.width / 2)) / rem).toBeLessThanOrEqual(0.05);
-        expect(Math.abs(mark.top + mark.height / 2 - (box.top + box.height / 2)) / rem).toBeLessThanOrEqual(0.05);
-        expect(getComputedStyle(pathOf(link)).fill).toBe(mode === "Light" ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)");
-      }
-    });
-
-    it("draws the GitHub mark's circle 1rem across and the X 0.8rem tall, so the X's square ink looks no larger, each in the middle of its link", async () => {
-      const header = await renderHeaderAsync();
-      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
-      const links = DocsFixture.all(header, ".nol-docs-header-link");
-      const github = pathOf(DocsFixture.one(header, ".nol-docs-header-link[aria-label=\"GitHub\"]")).getBoundingClientRect();
-      const x = pathOf(DocsFixture.one(header, ".nol-docs-header-link[aria-label=\"X\"]")).getBoundingClientRect();
-
-      expect(github.width / rem).toBeCloseTo(1, 2);
-      expect(x.height / rem).toBeCloseTo(0.8, 2);
-      expect(x.height).toBeLessThan(github.height);
-      expect(x.width).toBeLessThan(github.width);
-      for (const [index, link] of links.entries()) {
-        const box = link.getBoundingClientRect();
-        const ink = pathOf(link).getBoundingClientRect();
-
-        expect(Math.abs(ink.left + ink.width / 2 - (box.left + box.width / 2)) / rem, `link ${index}'s ink across`).toBeLessThanOrEqual(0.05);
-        expect(Math.abs(ink.top + ink.height / 2 - (box.top + box.height / 2)) / rem, `link ${index}'s ink down`).toBeLessThanOrEqual(0.05);
-      }
-    });
-
-    it("takes each mark's color from the site's --nol-docs-brand-mark", async () => {
-      const header = await renderHeaderAsync();
-      const root = document.documentElement;
-      root.style.setProperty("--nol-docs-brand-mark", "rgb(1, 2, 3)");
-      const fills = DocsFixture.all(header, ".nol-docs-header-link").map(t => getComputedStyle(pathOf(t)).fill);
-      root.style.removeProperty("--nol-docs-brand-mark");
-
-      expect(fills).toEqual(["rgb(1, 2, 3)", "rgb(1, 2, 3)"]);
-    });
-
-    it("shows each link's name as its tooltip under the pointer, inside the window", async () => {
-      const header = await renderHeaderAsync();
-
-      for (const link of DocsFixture.all(header, ".nol-docs-header-link")) {
-        await userEvent.hover(link);
-        await DomChangeFixture.untilAsync(() => expect(outside(header, "[role=\"tooltip\"]").map(t => t.textContent?.trim())).toEqual([link.getAttribute("aria-label")]));
-        const tip = outside(header, "[role=\"tooltip\"]")[0]?.getBoundingClientRect();
-
-        expect(tip?.left).toBeGreaterThanOrEqual(0);
-        expect(tip?.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
-        await userEvent.unhover(link);
-        await DomChangeFixture.untilAsync(() => expect(outside(header, "[role=\"tooltip\"]")).toEqual([]));
-      }
-    });
-
-    it("draws each mark in the link color under forced colors", async () => {
-      await ForcedColorsFixture.activateAsync();
-      const header = await renderHeaderAsync();
-
-      for (const link of DocsFixture.all(header, ".nol-docs-header-link")) {
-        const fill = getComputedStyle(pathOf(link)).fill;
-
-        expect(fill).toBe(ForcedColorsFixture.resolve("LinkText"));
-        expect(fill).toBe(getComputedStyle(link).color);
-      }
-    });
-
-    it("keeps the brand first on a desktop and right after the menu button on a phone, the links last, and every part inside the window", async () => {
-      const header = await renderHeaderAsync();
-      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    it("lays the header at the kit's header height across the window at its top, its wordmark and its last part at the site's inset outside 108rem and its parts centered on its line", async () => {
+      const host = await renderSiteAsync("/");
+      const unit = rootRem();
+      const header = DocsFixture.one(host, "nol-site-header");
       const box = header.getBoundingClientRect();
-      const brand = DocsFixture.one(header, ".nol-docs-brand").getBoundingClientRect();
-      const search = DocsFixture.one(header, "nol-docs-search").getBoundingClientRect();
-      const theme = DocsFixture.one(header, "nol-docs-theme-switch").getBoundingClientRect();
-      const links = DocsFixture.all(header, ".nol-docs-header-link").map(t => t.getBoundingClientRect());
-      const last = DocsFixture.one(header, ".nol-docs-header-link:last-child nol-docs-brand-mark").getBoundingClientRect();
-      const style = getComputedStyle(header);
-      const first = width === DocsFixture.DESKTOP_WIDTH ? brand : DocsFixture.one(header, "button.nol-docs-menu-button").getBoundingClientRect();
+      const edge = document.documentElement.clientWidth;
+      const wordmark = DocsFixture.one(header, ".nol-site-header-bar .nol-site-wordmark").getBoundingClientRect();
+      const end = DocsFixture.one(header, width === DocsFixture.PHONE_WIDTH ? ".nol-site-menu-button" : ".nol-site-header-social").getBoundingClientRect();
+      const middle = box.top + box.height / 2;
 
-      expect((first.left - box.left - parseFloat(style.paddingInlineStart)) / rem).toBeCloseTo(0, 2);
-      if (width !== DocsFixture.DESKTOP_WIDTH)
-        expect(brand.left).toBeGreaterThanOrEqual(first.right);
-      expect((box.right - last.right - parseFloat(style.paddingInlineEnd)) / rem).toBeCloseTo(0, 2);
-      for (const part of [brand, search, theme, ...links])
-        expect(part.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
-      for (const link of links) {
-        expect(link.left).toBeGreaterThanOrEqual(theme.right);
-        expect(Math.abs(link.top + link.height / 2 - (theme.top + theme.height / 2)) / rem).toBeLessThanOrEqual(0.25);
-      }
-      if (width === DocsFixture.DESKTOP_WIDTH) {
-        expect(search.left).toBeGreaterThanOrEqual(brand.right);
-        expect(theme.left).toBeGreaterThanOrEqual(search.right);
-        for (const part of [search, theme])
-          expect(Math.abs(part.top + part.height / 2 - (brand.top + brand.height / 2)) / rem).toBeLessThanOrEqual(0.25);
-      }
-      else {
-        expect(search.top).toBeGreaterThanOrEqual(brand.bottom);
-        expect(theme.top).toBeGreaterThanOrEqual(search.bottom);
-      }
+      expect(box.height / unit).toBeCloseTo(tokenRem(`--nol-site-header-height${size}`), 2);
+      expect([box.top, box.left, box.right]).toEqual([0, 0, edge]);
+      expect(wordmark.left / unit).toBeCloseTo(contentStart() / unit, 2);
+      expect(Math.abs(wordmark.top + wordmark.height / 2 - middle) / unit).toBeLessThanOrEqual(0.05);
+      expect(Math.abs(end.top + end.height / 2 - middle) / unit).toBeLessThanOrEqual(0.05);
+      expect(end.right).toBeLessThanOrEqual(edge - contentStart());
+      if (width !== DocsFixture.PHONE_WIDTH)
+        expect((edge - end.right) / unit).toBeCloseTo(contentStart() / unit, 2);
+      expect(DocsFixture.overflowWidth()).toBe(0);
+    });
+
+    it("puts the footer under the page across the window, its wordmark under the header's", async () => {
+      const host = await renderSiteAsync("/components/button");
+      await DomChangeFixture.untilAsync(() => expect(host.querySelectorAll("nol-code-block pre code").length).toBeGreaterThan(0));
+      const unit = rootRem();
+      const footer = DocsFixture.one(host, "nol-site-footer").getBoundingClientRect();
+      const header = DocsFixture.one(host, "nol-site-header .nol-site-wordmark").getBoundingClientRect();
+      const wordmark = DocsFixture.one(host, "nol-site-footer .nol-site-wordmark").getBoundingClientRect();
+
+      expect(footer.top).toBeGreaterThanOrEqual(DocsFixture.one(host, ".nol-docs-body").getBoundingClientRect().bottom - 0.5);
+      expect([footer.left, footer.right]).toEqual([0, document.documentElement.clientWidth]);
+      expect(Math.abs(wordmark.left - header.left) / unit).toBeLessThanOrEqual(0.01);
+      // A phone's header narrows its wordmark, here by under a pixel, to keep its gap before the theme switch.
+      expect((wordmark.width - header.width) / unit).toBeGreaterThanOrEqual(-0.01);
+      expect((wordmark.width - header.width) / unit).toBeLessThanOrEqual(0.0625);
+    });
+  });
+
+  describe.each(["Light", "Dark"])("on a desktop in the %s mode, the site header", mode => {
+    it("shows the docs search 16rem wide after the version and before GitHub, X and the theme, and reaches a page from it", async () => {
+      DocsFixture.setMode(mode);
+      const fixture = await renderAsync("/");
+      const header = DocsFixture.one(DocsFixture.host(fixture), "nol-site-header");
+      const unit = rootRem();
+      const search = DocsFixture.one(header, "nol-docs-search").getBoundingClientRect();
+      const version = DocsFixture.one(header, ".nol-site-version").getBoundingClientRect();
+      const social = DocsFixture.one(header, ".nol-site-social").getBoundingClientRect();
+
+      expect(search.width / unit).toBeCloseTo(16, 2);
+      expect(search.left).toBeGreaterThanOrEqual(version.right);
+      expect(social.left).toBeGreaterThanOrEqual(search.right);
+      expect(DocsFixture.one(header, ".nol-site-search-button").getBoundingClientRect().width).toBe(0);
+
+      await userEvent.fill(DocsFixture.one(header, "input[type=search]"), "variant");
+      await userEvent.click(await DomChangeFixture.untilAsync(() => DocsFixture.byText(header, ".nol-docs-search-result", "Button")));
+
+      await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
+    });
+
+    it("saves the kit's theme choice under noldova-theme and applies it to the page", async () => {
+      DocsFixture.setMode(mode);
+      const other = mode === "Light" ? "Dark" : "Light";
+      const header = DocsFixture.one(DocsFixture.host(await renderAsync("/")), "nol-site-header");
+
+      await userEvent.click(DocsFixture.one(header, `nol-site-theme-switch [aria-label="${other}"]`));
+
+      await DomChangeFixture.untilAsync(() => expect(document.documentElement.getAttribute(DocsFixture.MODE_ATTRIBUTE)).toBe(other));
+      expect(localStorage.getItem(DocsFixture.STORAGE_KEY)).toBe(other.toLowerCase());
+    });
+  });
+
+  it("follows the header's and footer's links to the site's own pages through the router, without a final slash, and leaves other sites' links, links within the page and modified clicks to the browser", async () => {
+    const fixture = await renderAsync("/");
+    const host = DocsFixture.host(fixture);
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, "navigateByUrl");
+    const clickOn = (target: Node, init: MouseEventInit): boolean => {
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, ...init });
+      window.addEventListener("click", t => t.preventDefault(), { once: true });
+      target.dispatchEvent(event);
+      return navigate.mock.calls.length > 0;
+    };
+    const tokens = (): HTMLElement => DocsFixture.byText(host, "nol-site-footer a", "Theme tokens");
+
+    await userEvent.click(DocsFixture.byText(host, "nol-site-footer a", "Theme tokens"));
+    await DocsFixture.routedAsync(router, "/tokens");
+    expect(heading(fixture)).toBe("Theme tokens");
+    await userEvent.click(DocsFixture.one(host, "nol-site-header .nol-site-lockup-link"));
+    await DocsFixture.routedAsync(router, "/");
+    navigate.mockClear();
+
+    expect([
+      clickOn(DocsFixture.byText(host, "nol-site-footer a", "Changelog"), {}),
+      clickOn(tokens(), { ctrlKey: true }),
+      clickOn(tokens(), { metaKey: true }),
+      clickOn(tokens(), { shiftKey: true }),
+      clickOn(tokens(), { altKey: true }),
+      clickOn(tokens(), { button: 1 }),
+      clickOn(DocsFixture.one(host, "nol-site-header .nol-site-skip"), {}),
+      clickOn(DocsFixture.one(host, "nol-site-footer .nol-site-footer-group"), {}),
+      clickOn(tokens().firstChild ?? tokens(), {})
+    ]).toEqual([false, false, false, false, false, false, false, false, false]);
+
+    tokens().addEventListener("click", t => t.preventDefault(), { once: true });
+    expect(clickOn(tokens(), {})).toBe(false);
+    tokens().setAttribute("target", "_blank");
+    expect(clickOn(tokens(), {})).toBe(false);
+    tokens().removeAttribute("target");
+
+    const home = DocsFixture.one(host, "nol-site-header .nol-site-lockup-link");
+    home.setAttribute("href", "/tokens/");
+    await userEvent.click(home);
+    await DocsFixture.routedAsync(router, "/tokens");
+    expect(heading(fixture)).toBe("Theme tokens");
+  });
+
+  describe.each(["Light", "Dark"])("on a phone in the %s mode, the site header", mode => {
+    const phoneAsync = async (): Promise<HTMLElement> => {
+      DocsFixture.setMode(mode);
+      await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
+      return DocsFixture.host(await renderAsync("/tokens"));
+    };
+
+    it("takes turns with the pages menu, so only one of the two is open", async () => {
+      const host = await phoneAsync();
+      const header = DocsFixture.one(host, "nol-site-header");
+      const siteButton = DocsFixture.one(header, ".nol-site-menu-button");
+      const pagesButton = DocsFixture.one(host, "button.nol-docs-menu-button");
+
+      await userEvent.click(pagesButton);
+      await DomChangeFixture.untilAsync(() => expect(pagesButton.getAttribute("aria-expanded")).toBe("true"));
+
+      await userEvent.click(siteButton);
+      await DomChangeFixture.untilAsync(() => expect(siteButton.getAttribute("aria-expanded")).toBe("true"));
+
+      expect(pagesButton.getAttribute("aria-expanded")).toBe("false");
+      expect(getComputedStyle(DocsFixture.one(host, "#nol-docs-menu")).display).toBe("none");
+
+      await userEvent.click(pagesButton);
+      await DomChangeFixture.untilAsync(() => expect(pagesButton.getAttribute("aria-expanded")).toBe("true"));
+      expect(siteButton.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("opens the docs search across the bar from its search button with the focus in its field, and closes it on reaching a page", async () => {
+      const host = await phoneAsync();
+      const unit = rootRem();
+      const header = DocsFixture.one(host, "nol-site-header");
+      const button = DocsFixture.one(header, ".nol-site-search-button");
+      const field = DocsFixture.one(header, "input[type=search]");
+
+      expect(field.getBoundingClientRect().width).toBe(0);
+      await userEvent.click(button);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(field));
+      const box = DocsFixture.one(header, "nol-docs-search").getBoundingClientRect();
+
+      expect(box.left / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 2);
+      expect((document.documentElement.clientWidth - box.right) / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 2);
+      await userEvent.fill(field, "variant");
+      await userEvent.click(await DomChangeFixture.untilAsync(() => DocsFixture.byText(header, ".nol-docs-search-result", "Button")));
+
+      await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("false"));
+      expect(DocsFixture.one(host, "main h1").textContent?.trim()).toBe("Button");
+    });
+
+    it("keeps the pages bar under the header's open menu on a scrolled page, in front of the page", async () => {
+      const host = await phoneAsync();
+      const header = DocsFixture.one(host, "nol-site-header");
+      const bar = DocsFixture.one(host, ".nol-docs-pages-bar");
+      window.scrollTo(0, document.documentElement.scrollHeight / 2);
+      await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(0));
+
+      await userEvent.click(DocsFixture.one(header, ".nol-site-menu-button"));
+
+      await DomChangeFixture.untilAsync(() => expect(Math.abs(bar.getBoundingClientRect().top - header.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0.5));
+      const box = bar.getBoundingClientRect();
+      expect(header.getBoundingClientRect().top).toBe(0);
+      expect(bar.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2))).toBe(true);
+    });
+
+    it("puts the pages bar right under the header, 3.5rem high, its button centered on it with its glyph at the site's phone inset", async () => {
+      const host = await phoneAsync();
+      const unit = rootRem();
+      const bar = DocsFixture.one(host, ".nol-docs-pages-bar").getBoundingClientRect();
+      const button = DocsFixture.one(host, "button.nol-docs-menu-button");
+      const box = button.getBoundingClientRect();
+      const icon = DocsFixture.one(button, "[nolButtonIcon]").getBoundingClientRect();
+
+      expect(bar.top).toBe(DocsFixture.one(host, "nol-site-header").getBoundingClientRect().bottom);
+      expect(bar.height / unit).toBeCloseTo(3.5, 2);
+      expect(icon.left / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 1);
+      expect(button.textContent?.trim()).toContain("Pages");
+      expect(Math.abs(box.top + box.height / 2 - (bar.top + bar.height / 2)) / unit).toBeLessThanOrEqual(0.05);
     });
   });
 
   it("puts the menu beside the page on a desktop, with no menu button, and behind a closed menu button on a phone", async () => {
     const fixture = await renderAsync("/");
     const host = DocsFixture.host(fixture);
-    const menu = DocsFixture.one(host, "nav");
+    const menu = DocsFixture.one(host, "#nol-docs-menu");
     const main = DocsFixture.one(host, "main");
     const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
     expect(menu.getBoundingClientRect().right).toBeLessThanOrEqual(main.getBoundingClientRect().left);
-    expect(getComputedStyle(button).display).toBe("none");
+    expect(getComputedStyle(DocsFixture.one(host, ".nol-docs-pages-bar")).display).toBe("none");
+    expect(button.getBoundingClientRect().width).toBe(0);
 
     await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
     await DomChangeFixture.untilAsync(() => expect(getComputedStyle(menu).display).toBe("none"));
@@ -367,7 +373,7 @@ describe("DocsShellComponent", () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
-      const header = DocsFixture.one(host, ".nol-docs-header");
+      const header = DocsFixture.one(host, "nol-site-header");
       await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"));
       const before = header.getBoundingClientRect().height;
       window.scrollTo(0, document.documentElement.scrollHeight / 2);
@@ -375,22 +381,28 @@ describe("DocsShellComponent", () => {
       return { host, header, height: before };
     };
 
-    afterEach(() => window.scrollTo(0, 0));
+    beforeEach(() => EmulatedMediaFixture.emulateAsync("prefers-reduced-transparency", "no-preference"));
 
-    it("keeps the header at the top of the window, at its height and in front of the page", async () => {
+    afterEach(async () => {
+      window.scrollTo(0, 0);
+      await EmulatedMediaFixture.resetAsync();
+    });
+
+    it("keeps the header at the top of the window, at its height and in front of the page, which shows through it blurred", async () => {
       const { header, height: before } = await scrolledAsync("/components/radio");
+      await DomChangeFixture.untilAsync(() => expect(getComputedStyle(header).backgroundColor).toMatch(/ \/ 0\.92\)$/u));
       const box = header.getBoundingClientRect();
 
       expect(box.top).toBe(0);
       expect(box.height).toBeCloseTo(before, 1);
-      expect(getComputedStyle(header).backgroundColor).toMatch(/^rgb\(/u);
+      expect(getComputedStyle(header).backdropFilter).toContain("blur(");
       expect(header.contains(document.elementFromPoint(box.left + box.width / 2, box.bottom - 1))).toBe(true);
       expect(header.contains(document.elementFromPoint(box.left + 1, box.top + 1))).toBe(true);
     });
 
     it("keeps the menu right below the header, in front of the page and in the window wherever the page is scrolled, scrolling on its own", async () => {
-      const { host, header } = await scrolledAsync("/components/radio");
-      const menu = DocsFixture.one(host, "nav#nol-docs-menu");
+      const { host } = await scrolledAsync("/components/radio");
+      const menu = DocsFixture.one(host, "#nol-docs-menu");
       if (width === DocsFixture.PHONE_WIDTH) {
         await userEvent.click(DocsFixture.one(host, "button.nol-docs-menu-button"));
         await DomChangeFixture.untilAsync(() => expect(menu.getBoundingClientRect().height).toBeGreaterThan(0));
@@ -398,7 +410,7 @@ describe("DocsShellComponent", () => {
       const expectInView = (): void => {
         const box = menu.getBoundingClientRect();
 
-        expect(Math.abs(box.top - header.getBoundingClientRect().bottom)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(box.top - topOf(host))).toBeLessThanOrEqual(0.5);
         expect(box.bottom).toBeLessThanOrEqual(window.innerHeight + 0.5);
         expect(menu.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2))).toBe(true);
       };
@@ -417,12 +429,12 @@ describe("DocsShellComponent", () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync("/components/radio#nol-docs-page-api"));
-      const header = DocsFixture.one(host, ".nol-docs-header");
+      const header = DocsFixture.one(host, "nol-site-header");
       const target = DocsFixture.one(host, "#nol-docs-page-api");
 
       await DomChangeFixture.untilAsync(() => {
         expect(window.scrollY).toBeGreaterThan(0);
-        expect(Math.abs(target.getBoundingClientRect().top - header.getBoundingClientRect().bottom)).toBeLessThanOrEqual(1);
+        expect(Math.abs(target.getBoundingClientRect().top - topOf(host))).toBeLessThanOrEqual(1);
       });
       expect(header.getBoundingClientRect().top).toBe(0);
     });
@@ -434,9 +446,10 @@ describe("DocsShellComponent", () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes, withComponentInputBinding()), provideMarkdown(), TooltipFixture.atOnce] });
     const fixture = TestBed.createComponent(DocsShellComponent);
     fixture.detectChanges();
-    const header = DocsFixture.one(DocsFixture.host(fixture), ".nol-docs-header");
+    const host = DocsFixture.host(fixture);
+    const height = DocsFixture.one(host, "nol-site-header").getBoundingClientRect().height + DocsFixture.one(host, ".nol-docs-pages-bar").getBoundingClientRect().height;
 
-    expect(root.style.getPropertyValue("--nol-docs-header-height")).toBe(`${header.getBoundingClientRect().height}px`);
+    expect(root.style.getPropertyValue("--nol-docs-header-height")).toBe(`${height}px`);
   });
 
   it("takes the header height off the root when it goes", async () => {
@@ -458,7 +471,7 @@ describe("DocsShellComponent", () => {
     it("keeps the header at the top and in front of the page, filled with the window's ground", async () => {
       await ForcedColorsFixture.activateAsync();
       const host = DocsFixture.host(await renderAsync("/components/radio"));
-      const header = DocsFixture.one(host, ".nol-docs-header");
+      const header = DocsFixture.one(host, "nol-site-header");
       await DomChangeFixture.untilAsync(() => expect(DocsFixture.one(host, "main").textContent).toContain("Default geometry"));
       window.scrollTo(0, document.documentElement.scrollHeight / 2);
       await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(0));
@@ -502,7 +515,7 @@ describe("DocsShellComponent", () => {
         DocsFixture.setMode(mode);
         await ForcedColorsFixture.activateAsync();
         const host = DocsFixture.host(await renderAsync("/components/radio"));
-        const nav = DocsFixture.one(host, "nav");
+        const nav = DocsFixture.one(host, "#nol-docs-menu");
         await DomChangeFixture.untilAsync(() => expect(getComputedStyle(nav).display).toBe("grid"));
 
         await expectCurrentMarkedAsync(nav);
@@ -513,7 +526,7 @@ describe("DocsShellComponent", () => {
         await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
         await ForcedColorsFixture.activateAsync();
         const host = DocsFixture.host(await renderAsync("/components/radio"));
-        const nav = DocsFixture.one(host, "nav");
+        const nav = DocsFixture.one(host, "#nol-docs-menu");
         const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
         button.focus();
@@ -531,19 +544,20 @@ describe("DocsShellComponent", () => {
       await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
       const fixture = await renderAsync("/components/button");
       const host = DocsFixture.host(fixture);
-      const header = DocsFixture.one(host, ".nol-docs-header");
-      const menu = DocsFixture.one(host, "nav");
+      const header = DocsFixture.one(host, "nol-site-header");
+      const menu = DocsFixture.one(host, "#nol-docs-menu");
       const main = DocsFixture.one(host, "main");
       const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
       expect(getComputedStyle(document.documentElement).colorScheme).toBe(scheme);
-      expect(main.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
+      expect(main.getBoundingClientRect().top).toBe(topOf(host));
+      expect(DocsFixture.one(host, ".nol-docs-pages-bar").getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
       expect(DocsFixture.one(main, "h1").getBoundingClientRect().bottom).toBeLessThanOrEqual(DocsFixture.PHONE_HEIGHT / 2);
       expect(button.getBoundingClientRect().left).toBeGreaterThanOrEqual(header.getBoundingClientRect().left);
 
       await userEvent.click(button);
       await DomChangeFixture.untilAsync(() => expect(button.getAttribute("aria-expanded")).toBe("true"));
-      expect(menu.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
+      expect(menu.getBoundingClientRect().top).toBe(topOf(host));
       expect(menu.getBoundingClientRect().bottom).toBeLessThanOrEqual(main.getBoundingClientRect().top);
       expect(DocsFixture.overflowWidth()).toBe(0);
 
@@ -557,7 +571,7 @@ describe("DocsShellComponent", () => {
     await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
     const fixture = await renderAsync("/");
     const host = DocsFixture.host(fixture);
-    const menu = DocsFixture.one(host, "nav");
+    const menu = DocsFixture.one(host, "#nol-docs-menu");
     const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
     button.focus();
@@ -580,7 +594,7 @@ describe("DocsShellComponent", () => {
       await DocsFixture.viewAsync(DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT);
       const fixture = await renderAsync("/");
       const host = DocsFixture.host(fixture);
-      const menu = DocsFixture.one(host, "nav");
+      const menu = DocsFixture.one(host, "#nol-docs-menu");
       const button = DocsFixture.one(host, "button.nol-docs-menu-button");
 
       await userEvent.click(button);
@@ -596,7 +610,7 @@ describe("DocsShellComponent", () => {
   it("leaves the focus on a desktop menu's link the reader chose", async () => {
     const fixture = await renderAsync("/");
     const host = DocsFixture.host(fixture);
-    const link = DocsFixture.byText(DocsFixture.one(host, "nav"), "a", "Button");
+    const link = DocsFixture.byText(DocsFixture.one(host, "#nol-docs-menu"), "a", "Button");
 
     await userEvent.click(link);
     await DomChangeFixture.untilAsync(() => expect(heading(fixture)).toBe("Button"));
@@ -607,7 +621,7 @@ describe("DocsShellComponent", () => {
   it("reaches the Button page from its menu group and marks its link current", async () => {
     const fixture = await renderAsync("/");
     const host = DocsFixture.host(fixture);
-    const nav = DocsFixture.one(host, "nav");
+    const nav = DocsFixture.one(host, "#nol-docs-menu");
 
     expect(DocsFixture.all(nav, ":scope > a").map(t => t.textContent?.trim())).toEqual(["Getting started", "Theme tokens"]);
     expect(DocsFixture.all(nav, "nol-section-header").map(t => t.textContent?.trim())).toEqual(["Inputs", "Choices", "Overlays and menus", "Content", "Status", "Layout"]);
@@ -718,18 +732,18 @@ describe("DocsShellComponent", () => {
         expect(own).toBeLessThan(kit);
     });
 
-    it("lays the menu, the page and the list across at most 108rem centered in the window, 3.5rem in from its sides from 75rem wide, the page filling the space between them", async () => {
+    it("lays the menu, the page and the list across at most 108rem and the site's inset on each side, as the header's content, centered in the window, in from its sides alike from 48rem wide, the page filling the space between them", async () => {
       const host = await pageAsync("/components/button");
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const body = DocsFixture.one(host, ".nol-docs-body");
       const box = body.getBoundingClientRect();
       const style = getComputedStyle(body);
       const page = edges(host);
-      const inset = width >= 75 * rem ? 3.5 : 0;
+      const start = Number.parseFloat(style.paddingInlineStart);
 
-      expect(box.width / rem).toBeLessThanOrEqual(108 + 0.01);
+      expect(box.width / rem).toBeLessThanOrEqual(108 + 2 * tokenRem("--nol-site-padding-inline") + 0.01);
       expect(Math.abs(box.left - (document.documentElement.clientWidth - box.right)) / rem).toBeLessThanOrEqual(0.01);
-      expect([Number.parseFloat(style.paddingInlineStart) / rem, Number.parseFloat(style.paddingInlineEnd) / rem]).toEqual([inset, inset]);
+      expect([start > 0, Number.parseFloat(style.paddingInlineEnd)]).toEqual([width >= 48 * rem, start]);
       expect([Math.abs(page.page.left - page.start) / rem <= 0.01, Math.abs(page.end - page.page.right) / rem <= 0.01]).toEqual([true, true]);
       expect(DocsFixture.overflowWidth()).toBe(0);
     });
@@ -749,18 +763,18 @@ describe("DocsShellComponent", () => {
       return host;
     };
 
-    it("starts the header's brand where the menu's text starts and ends its last link's mark where the list's links end", async () => {
+    it("starts the header's wordmark and the footer's where the menu's text starts, and ends the header's last part, its social links, where the list's links end", async () => {
       const host = await deskAsync();
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const range = document.createRange();
       range.selectNodeContents(DocsFixture.one(host, ".nol-docs-menu-link"));
       const menuText = range.getBoundingClientRect().left;
-      const marks = DocsFixture.all(host, ".nol-docs-header-link nol-docs-brand-mark");
-      const lastMark = marks.at(-1)?.getBoundingClientRect().right ?? Number.NaN;
       const list = DocsFixture.one(host, ".nol-docs-outline-list");
+      const theme = DocsFixture.one(host, "nol-site-header .nol-site-header-social").getBoundingClientRect();
 
-      expect(Math.abs(DocsFixture.one(host, ".nol-docs-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);
-      expect(Math.abs(lastMark - list.getBoundingClientRect().right) / rem).toBeLessThanOrEqual(0.01);
+      expect(Math.abs(DocsFixture.one(host, "nol-site-header .nol-site-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);
+      expect(Math.abs(DocsFixture.one(host, "nol-site-footer .nol-site-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);
+      expect(Math.abs(theme.right - list.getBoundingClientRect().right) / rem).toBeLessThanOrEqual(0.01);
     });
 
     it("scrolls the menu and the list on their own, keeping the list's heading in view and both inside the window", async () => {

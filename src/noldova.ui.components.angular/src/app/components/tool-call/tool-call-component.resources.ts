@@ -8,6 +8,7 @@
 
 import "@noldova/context.core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { CopyState } from "../../enums/copy-state.js";
 import { ToolCallKind } from "../../enums/tool-call-kind.js";
 import { ToolCallStatus } from "../../enums/tool-call-status.js";
@@ -30,7 +31,7 @@ export class ToolCallComponentResources {
   public static readonly toolCallToggleSelector: string = ".nol-tool-call-toggle";
   public static readonly toolCallHeaderSelector: string = ".nol-tool-call-header";
   public static readonly toolCallOutputKeys: ReadonlySet<string> = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown"]);
-  public static readonly toolCallKindGlyphs: Readonly<Record<ToolCallKind, string>> = {
+  public static readonly toolCallKindGlyphs: Readonly<Record<ToolCallKind, IconName>> = {
     [ToolCallKind.Read]: "description",
     [ToolCallKind.Edit]: "edit",
     [ToolCallKind.RunCommand]: "terminal",
@@ -39,7 +40,7 @@ export class ToolCallComponentResources {
     [ToolCallKind.Browse]: "language",
     [ToolCallKind.Other]: "build"
   };
-  public static readonly toolCallStatusGlyphs: Readonly<Record<ToolCallStatus, string>> = {
+  public static readonly toolCallStatusGlyphs: Readonly<Record<ToolCallStatus, IconName>> = {
     [ToolCallStatus.Pending]: "schedule",
     [ToolCallStatus.AwaitingPermission]: "pan_tool",
     [ToolCallStatus.AwaitingAnswer]: "help",
@@ -84,9 +85,9 @@ export class ToolCallComponentResources {
   public static readonly toolCallOutputLoading: string = "Loading output";
   public static readonly toolCallOutputFailed: string = "The output couldn't load.";
   public static readonly toolCallRetryLabel: string = "Retry";
-  public static readonly toolCallCancelGlyph: string = "stop_circle";
+  public static readonly toolCallCancelGlyph: IconName = "stop_circle";
   public static readonly toolCallCancelLabel: string = "Cancel";
-  public static readonly toolCallErrorGlyph: string = "error";
+  public static readonly toolCallErrorGlyph: IconName = "error";
   public static readonly toolCallNoteSeparator: string = " · ";
   public static formatToolCallShowAllLines(count: number): string {
     return `Show all ${count} lines`;

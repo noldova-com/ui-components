@@ -13,22 +13,23 @@ import { DiffFileStatus } from "../../enums/diff-file-status.js";
 import { DiffLineKind } from "../../enums/diff-line-kind.js";
 import { DiffReviewState } from "../../enums/diff-review-state.js";
 import { DiffShortcut } from "../../models/diff-shortcut.js";
+import type { IconName } from "../../models/icon-name.js";
 
 export class DiffViewResources {
   public static readonly diffAcceptLabel: string = "Accept";
   public static readonly diffRejectLabel: string = "Reject";
-  public static readonly diffAcceptGlyph: string = "check";
-  public static readonly diffRejectGlyph: string = "close";
+  public static readonly diffAcceptGlyph: IconName = "check";
+  public static readonly diffRejectGlyph: IconName = "close";
   public static readonly diffViewActionsLabel: string = "Diff view actions";
   public static readonly diffSideBySideLabel: string = "Side by side";
-  public static readonly diffSideBySideGlyph: string = "vertical_split";
+  public static readonly diffSideBySideGlyph: IconName = "vertical_split";
   public static readonly diffEmptyText: string = "No changes";
   public static readonly diffHeldText: string = "This file's changes are large, so they're hidden until you load them.";
   public static readonly diffLoadLabel: string = "Load diff";
   public static readonly diffOpenFileLabel: string = "Open file";
-  public static readonly diffOpenFileGlyph: string = "open_in_new";
+  public static readonly diffOpenFileGlyph: IconName = "open_in_new";
   public static readonly diffCommentLabel: string = "Comment on this line";
-  public static readonly diffCommentGlyph: string = "add_comment";
+  public static readonly diffCommentGlyph: IconName = "add_comment";
   public static readonly diffLineKeys: string = "Enter Shift+Enter";
   public static readonly diffCommentKeys: string = "Shift+Enter";
   public static readonly diffIdPrefix: string = "nol-diff-view-";
@@ -50,9 +51,9 @@ export class DiffViewResources {
     [DiffExpandDirection.Up]: "Show lines above",
     [DiffExpandDirection.Down]: "Show lines below"
   };
-  public static readonly diffExpandGlyphs: Readonly<Record<DiffExpandDirection, string>> = {
-    [DiffExpandDirection.Up]: "expand_less",
-    [DiffExpandDirection.Down]: "expand_more"
+  public static readonly diffExpandGlyphs: Readonly<Record<DiffExpandDirection, IconName>> = {
+    [DiffExpandDirection.Up]: "keyboard_arrow_up",
+    [DiffExpandDirection.Down]: "keyboard_arrow_down"
   };
   public static readonly diffStatusTexts: Readonly<Record<DiffFileStatus, string>> = {
     [DiffFileStatus.Added]: "Added",

@@ -7,7 +7,7 @@
  */
 
 import { Component, type WritableSignal, signal } from "@angular/core";
-import { IconChooserComponent } from "@noldova/ui.components.angular";
+import { IconChooserComponent, type IconName } from "@noldova/ui.components.angular";
 
 @Component({
   selector: "nol-docs-icon-chooser-bound-example",
@@ -16,5 +16,5 @@ import { IconChooserComponent } from "@noldova/ui.components.angular";
   styleUrl: "./icon-chooser-bound-example.component.css"
 })
 export class IconChooserBoundExampleComponent {
-  protected readonly icon: WritableSignal<string | null> = signal("folder");
+  protected readonly icon: WritableSignal<IconName | null> = signal("folder");
 }

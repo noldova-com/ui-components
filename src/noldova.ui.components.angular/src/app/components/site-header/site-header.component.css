@@ -320,6 +320,11 @@ nol-site-theme-switch {
     grid-area: brand;
   }
 
+  /* The lockup may narrow below its wordmark's full width, so the gap before the theme switch holds at any width. */
+  .nol-site-header-brand nol-site-lockup {
+    min-width: 0;
+  }
+
   nol-site-theme-switch {
     grid-area: theme;
     margin-inline-start: var(--nol-site-actions-gap-phone);

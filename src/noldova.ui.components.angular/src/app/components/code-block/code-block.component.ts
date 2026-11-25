@@ -24,6 +24,7 @@ import { CodeShown } from "../../models/code-shown.js";
 import { CodeShownSource } from "../../models/code-shown-source.js";
 import type { CodeToken } from "../../models/code-token.js";
 import { CodeTokensRequest } from "../../models/code-tokens-request.js";
+import type { IconName } from "../../models/icon-name.js";
 import { ScrollEndFollower } from "../../models/scroll-end-follower.js";
 import { ShellRun } from "../../models/shell-run.js";
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
@@ -89,7 +90,7 @@ export class CodeBlockComponent {
   protected readonly runStates: typeof ShellRunState = ShellRunState;
   protected readonly advanceRatio: WritableSignal<string | null> = signal(null);
   protected readonly isCopied: Signal<boolean> = computed(() => this.copyState() === CopyState.Copied);
-  protected readonly copyGlyph: Signal<string> = computed(() => Resources.copyGlyphs[this.copyState()]);
+  protected readonly copyGlyph: Signal<IconName> = computed(() => Resources.copyGlyphs[this.copyState()]);
   protected readonly copyLabel: Signal<string> = computed(() => Resources.copyLabels[this.copyState()]);
   protected readonly runLanguage: Signal<string | null> = computed(() => {
     const language = this.language()?.trim() ?? null;

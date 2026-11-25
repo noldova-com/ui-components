@@ -9,6 +9,8 @@
 import "@noldova/context.core";
 import { Component, computed, input } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
+
 @Component({
   selector: "nol-site-card",
   templateUrl: "./site-card.component.html",
@@ -19,7 +21,7 @@ import { Component, computed, input } from "@angular/core";
   }
 })
 export class SiteCardComponent {
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly index = input<string | null>(null);
   public readonly title = input.required<string>();
   public readonly text = input<string | null>(null);

@@ -16,6 +16,7 @@ import { SectionHeaderComponent } from "../../../../src/app/components/section-h
 import { TreeComponent } from "../../../../src/app/components/tree/tree.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import type { Theme } from "../../../../src/app/models/theme";
 import { TreeNode } from "../../../../src/app/models/tree.node";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -168,7 +169,7 @@ describe("SectionHeaderComponent", () => {
 })
 class SectionHeaderIconHostComponent {
   public readonly label = signal("Chats");
-  public readonly icon = signal<string | null>("chat");
+  public readonly icon = signal<IconName | null>("chat");
   public readonly rows: readonly TreeNode[] = [new TreeNode("notes", "Meeting notes", "description")];
 }
 
@@ -294,7 +295,7 @@ describe("SectionHeaderComponent with an icon", () => {
 })
 class CollapsibleSectionHeaderHostComponent {
   public readonly label = signal("Chats");
-  public readonly icon = signal<string | null>(null);
+  public readonly icon = signal<IconName | null>(null);
   public readonly direction = signal("ltr");
   public readonly isOpen = signal(true);
   public readonly rows: readonly TreeNode[] = [new TreeNode("notes", "Meeting notes", "description")];
@@ -335,7 +336,7 @@ describe("SectionHeaderComponent when collapsible", () => {
 
     expect([header().getAttribute("role"), header().getAttribute("aria-level"), header().querySelectorAll("button").length, toggle().getAttribute("aria-expanded"),
       toggle().getAttribute("aria-controls"), toggle().querySelector(".nol-section-header-label")?.textContent, caret().textContent, caret().getAttribute("aria-hidden")])
-      .toEqual(["heading", "4", 1, "true", "chat-rows", "Chats", "expand_more", "true"]);
+      .toEqual(["heading", "4", 1, "true", "chat-rows", "Chats", "keyboard_arrow_down", "true"]);
     expect(plain().querySelector("button")).toBeNull();
 
     toggle().click();
@@ -528,7 +529,7 @@ describe("SectionHeaderComponent in uppercase", () => {
     const caret = part("chats", ".nol-section-header-caret");
 
     expect([getComputedStyle(toggle).textTransform, getComputedStyle(caret).textTransform, getComputedStyle(caret).letterSpacing, caret.textContent, toggle.getAttribute("aria-expanded")])
-      .toEqual(["uppercase", "none", "normal", "expand_more", "true"]);
+      .toEqual(["uppercase", "none", "normal", "keyboard_arrow_down", "true"]);
     expect(spacing(toggle)).toBeCloseTo(0.05, 3);
     AppearanceFixture.expectPixels(box(caret).width, AppearanceFixture.measureLook("section-header-caret"));
     expect(getComputedStyle(caret).color).toBe(getComputedStyle(toggle).color);

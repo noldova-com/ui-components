@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { CopyState } from "../../enums/copy-state.js";
 import { Resources } from "../../../resources.js";
 
@@ -22,8 +23,8 @@ export class MessageResources {
   public static readonly messageFlashDelayProperty: string = "--nol-message-flash-delay";
   public static readonly messageStreamingLabel: string = "Writing";
   public static readonly messageCancelledLabel: string = "Cancelled";
-  public static readonly messageCancelledGlyph: string = "block";
-  public static readonly messageErrorGlyph: string = "error";
+  public static readonly messageCancelledGlyph: IconName = "block";
+  public static readonly messageErrorGlyph: IconName = "error";
   public static readonly messageDefaultError: string = "The message couldn't be completed.";
   public static readonly messageRetryLabel: string = "Retry";
   public static readonly messageEmptyText: string = "No text";
