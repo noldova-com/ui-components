@@ -12,6 +12,16 @@ import { TestBed } from "@angular/core/testing";
 import { AvatarInitialsFitter } from "../../../../src/app/components/avatar/avatar-initials-fitter";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 
+class DrawnAvatar {
+  public readonly host: HTMLElement;
+  public readonly letters: HTMLElement;
+
+  public constructor(host: HTMLElement, letters: HTMLElement) {
+    this.host = host;
+    this.letters = letters;
+  }
+}
+
 describe("AvatarInitialsFitter", () => {
   const browserObserver = window.ResizeObserver;
   const made: RecordingObserver[] = [];
@@ -39,7 +49,7 @@ describe("AvatarInitialsFitter", () => {
     }
   }
 
-  const draw = (size: number, text: string, fontSize: number = 16): [HTMLElement, HTMLElement] => {
+  const draw = (size: number, text: string, fontSize: number = 16): DrawnAvatar => {
     const host = document.createElement("div");
     host.style.cssText = `display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: ${size}px; height: ${size}px; border: 1px solid;
       border-radius: 50%; font-size: ${fontSize}px; line-height: 1`;
@@ -49,7 +59,7 @@ describe("AvatarInitialsFitter", () => {
     host.append(letters);
     document.body.append(host);
     drawn.push(host);
-    return [host, letters];
+    return new DrawnAvatar(host, letters);
   };
 
   const observer = (): RecordingObserver => {
@@ -74,14 +84,14 @@ describe("AvatarInitialsFitter", () => {
   });
 
   it("measures 1 for letters with room to spare inside the circle", () => {
-    const [host, letters] = draw(64, "A", 12);
+    const { host, letters } = draw(64, "A", 12);
 
     expect(fitter().measure(host, letters)).toBe(1);
   });
 
   it("measures the scale that brings wide letters inside the circle, larger for a larger circle, and the same again once that scale is drawn", () => {
-    const [small, smallLetters] = draw(24, "WWW");
-    const [large, largeLetters] = draw(32, "WWW");
+    const { host: small, letters: smallLetters } = draw(24, "WWW");
+    const { host: large, letters: largeLetters } = draw(32, "WWW");
     const scale = fitter().measure(small, smallLetters);
     const larger = fitter().measure(large, largeLetters);
 
@@ -94,7 +104,7 @@ describe("AvatarInitialsFitter", () => {
   });
 
   it("never measures below the least size its host names, as a share of the letters' own size", () => {
-    const [host, letters] = draw(16, "WWWW");
+    const { host, letters } = draw(16, "WWWW");
     const free = fitter().measure(host, letters);
 
     host.style.setProperty("--nol-avatar-initials-least", "12px");
@@ -103,7 +113,7 @@ describe("AvatarInitialsFitter", () => {
   });
 
   it("draws a scale of 1 or more as no transform, clearing one it drew before", () => {
-    const [, letters] = draw(24, "WWW");
+    const { letters } = draw(24, "WWW");
 
     fitter().apply(letters, 0.5);
     const shrunk = letters.style.transform;
@@ -114,15 +124,15 @@ describe("AvatarInitialsFitter", () => {
 
   it("measures from the letters' text box when the browser gives no 2D canvas, still fitting wide letters and leaving narrow ones", () => {
     const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-    const [wide, wideLetters] = draw(24, "WWW");
-    const [roomy, roomyLetters] = draw(64, "A", 12);
+    const { host: wide, letters: wideLetters } = draw(24, "WWW");
+    const { host: roomy, letters: roomyLetters } = draw(64, "A", 12);
     const scale = fitter().measure(wide, wideLetters);
 
     expect([scale > 0, scale < 1, fitter().measure(roomy, roomyLetters), getContext.mock.calls.length > 0]).toEqual([true, true, 1, true]);
   });
 
   it("fits watched letters again when their avatar shrinks, and stops watching both once unwatched", async () => {
-    const [host, letters] = draw(64, "WWW", 12);
+    const { host, letters } = draw(64, "WWW", 12);
     fitter().watch(host, letters);
 
     host.style.width = "20px";
@@ -134,8 +144,8 @@ describe("AvatarInitialsFitter", () => {
   });
 
   it("leaves letters as they are when it hears of a resize of an element it doesn't watch", async () => {
-    const [host, letters] = draw(64, "WWW", 12);
-    const [other] = draw(20, "WWW");
+    const { host, letters } = draw(64, "WWW", 12);
+    const { host: other } = draw(20, "WWW");
     fitter().watch(host, letters);
     fitter().unwatch(host, letters);
     const entries = await new Promise<ResizeObserverEntry[]>(resolve => {
@@ -153,7 +163,7 @@ describe("AvatarInitialsFitter", () => {
 
   it("starts no resize observer on the server platform, as when a page is prerendered", () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: "server" }] });
-    const [host, letters] = draw(24, "WWW");
+    const { host, letters } = draw(24, "WWW");
 
     fitter().watch(host, letters);
     fitter().unwatch(host, letters);
@@ -162,7 +172,7 @@ describe("AvatarInitialsFitter", () => {
   });
 
   it("disconnects its resize observer when its injector is destroyed, and has none to disconnect when it never watched", () => {
-    const [host, letters] = draw(24, "WWW");
+    const { host, letters } = draw(24, "WWW");
     fitter().watch(host, letters);
     const started = observer();
     TestBed.resetTestingModule();
