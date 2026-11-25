@@ -491,6 +491,14 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(centre(box(".nol-site-download")), centre(box(".nol-site-social")));
   });
 
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the phone's menu glyph in the text color, ${mode}`, async () => {
+      await phoneAsync();
+      await renderAsync(() => undefined, DefaultTheme.theme, mode);
+
+      expect(getComputedStyle(part(".nol-site-menu-button")).color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, mode, "text"));
+    });
+
   it("makes every target in the open phone menu at least the pointer target in both directions", async () => {
     await phoneAsync();
     await renderAsync();
