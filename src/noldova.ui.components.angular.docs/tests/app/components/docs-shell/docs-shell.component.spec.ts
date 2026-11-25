@@ -18,6 +18,19 @@ import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
 import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
+import { EmulatedMediaFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/emulated-media.fixture.js";
+
+class FrameLink {
+  public readonly text: string | null;
+  public readonly href: string | null;
+  public readonly current: string | null;
+
+  public constructor(text: string | null, href: string | null, current: string | null) {
+    this.text = text;
+    this.href = href;
+    this.current = current;
+  }
+}
 
 describe("DocsShellComponent", () => {
   const renderAsync = async (url: string): Promise<ComponentFixture<DocsShellComponent>> => {
@@ -102,8 +115,8 @@ describe("DocsShellComponent", () => {
 
     const contentStart = (): number => Math.max(0, (document.documentElement.clientWidth - 108 * rootRem()) / 2);
 
-    const linksOf = (root: HTMLElement, selector: string): readonly (readonly (string | null)[])[] =>
-      DocsFixture.all(root, selector).map(t => [t.textContent?.trim() ?? null, t.getAttribute("href"), t.getAttribute("aria-current")]);
+    const linksOf = (root: HTMLElement, selector: string): readonly FrameLink[] =>
+      DocsFixture.all(root, selector).map(t => new FrameLink(t.textContent?.trim() ?? null, t.getAttribute("href"), t.getAttribute("aria-current")));
 
     it("are the kit's wide header and footer, with the UI Components lockup home, the kit's version, the search, GitHub and X, and no page links or Download", async () => {
       const host = await renderSiteAsync("/tokens");
@@ -119,7 +132,7 @@ describe("DocsShellComponent", () => {
       expect(DocsFixture.all(header, ".nol-site-social").map(t => [t.getAttribute("aria-label"), t.getAttribute("href")]))
         .toEqual([["GitHub", "https://github.com/noldova-com/ui-components"], ["X", "https://x.com/noldova"]]);
       expect([DocsFixture.one(header, ".nol-site-skip").getAttribute("href"), DocsFixture.one(host, "main").id]).toEqual(["#nol-docs-main", "nol-docs-main"]);
-      expect(DocsFixture.all(footer, ".nol-site-footer-group").map(t => [t.getAttribute("aria-label"), ...linksOf(t, "a").map(u => `${u[0]} ${u[1]}`)])).toEqual([
+      expect(DocsFixture.all(footer, ".nol-site-footer-group").map(t => [t.getAttribute("aria-label"), ...linksOf(t, "a").map(u => `${u.text} ${u.href}`)])).toEqual([
         ["UI Components", "Getting started /", "Theme tokens /tokens", "Changelog https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md"],
         ["Help", "Issues https://github.com/noldova-com/ui-components/issues", "Privacy https://noldova.com/privacy/"],
         ["Follow", "GitHub https://github.com/noldova-com/ui-components", "X https://x.com/noldova"]
@@ -130,7 +143,7 @@ describe("DocsShellComponent", () => {
     it.each([["/", "Getting started"], ["/tokens", "Theme tokens"], ["/components/button", null]])("marks in the footer, on %s, %s as the current page", async (url, current) => {
       const host = await renderSiteAsync(url);
 
-      expect(linksOf(DocsFixture.one(host, "nol-site-footer"), "a.nol-site-footer-link").filter(t => t[2] === "page").map(t => t[0])).toEqual(Object.isNull(current) ? [] : [current]);
+      expect(linksOf(DocsFixture.one(host, "nol-site-footer"), "a.nol-site-footer-link").filter(t => t.current === "page").map(t => t.text)).toEqual(Object.isNull(current) ? [] : [current]);
     });
 
     it("lays the header 3.5rem high across the window at its top, its wordmark at the site's inset inside 108rem and its parts centered on its line", async () => {
@@ -362,7 +375,12 @@ describe("DocsShellComponent", () => {
       return { host, header, height: before };
     };
 
-    afterEach(() => window.scrollTo(0, 0));
+    beforeEach(() => EmulatedMediaFixture.emulateAsync("prefers-reduced-transparency", "no-preference"));
+
+    afterEach(async () => {
+      window.scrollTo(0, 0);
+      await EmulatedMediaFixture.resetAsync();
+    });
 
     it("keeps the header at the top of the window, at its height and in front of the page, which shows through it blurred", async () => {
       const { header, height: before } = await scrolledAsync("/components/radio");

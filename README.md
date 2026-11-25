@@ -616,8 +616,8 @@ The docs site, which isn't published as a package, also shows two marks that are
 
 | What | Where | License | Obligations |
 |---|---|---|---|
-| The GitHub mark (Invertocat), `GitHub_Invertocat_Black.svg` from GitHub's brand page | the docs site's `public/brand/github.svg`, drawn by the site header and footer | GitHub's logo terms, https://brand.github.com | Unchanged, and linking only to Noldova's GitHub account. GitHub is a trademark of GitHub, Inc. |
-| The X logo, `logo.svg` from X's brand toolkit | the docs site's `public/brand/x.svg`, drawn by the site header and footer | X's Trademark Guidelines | Unchanged, and linking only to Noldova's X account. X is a trademark of X Corp. |
+| The GitHub mark (Invertocat), `GitHub_Invertocat_Black.svg` from GitHub's brand page | the docs site's `public/brand/github.svg`, drawn by the site header | GitHub's logo terms, https://brand.github.com | Unchanged, and linking only to Noldova's GitHub account. GitHub is a trademark of GitHub, Inc. |
+| The X logo, `logo.svg` from X's brand toolkit | the docs site's `public/brand/x.svg`, drawn by the site header | X's Trademark Guidelines | Unchanged, and linking only to Noldova's X account. X is a trademark of X Corp. |
 
 ## Trademarks
 

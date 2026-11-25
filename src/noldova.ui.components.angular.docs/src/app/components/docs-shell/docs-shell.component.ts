@@ -127,7 +127,7 @@ export class DocsShellComponent {
       return;
     this.isMenuOpen.set(false);
     queueMicrotask(() => {
-      if (this.router.currentNavigation() === null)
+      if (Object.isNull(this.router.currentNavigation()))
         this.focusHeadingAfterRender();
       else
         this.isHeadingToFocus = true;

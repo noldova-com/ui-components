@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "@noldova/context.core";
+
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { Router, provideRouter, withComponentInputBinding } from "@angular/router";
 import { provideMarkdown } from "@noldova/ui.components.angular/markdown";
@@ -87,7 +89,7 @@ describe("DocsOnThisPageComponent", () => {
       await TestBed.inject(Router).navigateByUrl(page.link);
       await DomChangeFixture.untilAsync(() => {
         const main = DocsFixture.one(host, "main");
-        if (page.content !== null)
+        if (!Object.isNull(page.content))
           expect(DocsFixture.all(main, "section[aria-labelledby=\"nol-docs-page-specification\"] nol-markdown-view .nol-markdown-blocks > *").length).toBeGreaterThan(0);
         const headings = DocsFixture.all(main, ownHeadings);
         expect(headings.length).toBeGreaterThan(0);

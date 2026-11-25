@@ -3,7 +3,7 @@
 **Scope:** The docs site's commands, its generated sources, the rules its pages keep, its theme and what it leaves to hosting.
 
 The docs site shows each component of `@noldova/ui.components.angular` with its description, live examples and their code, its states and its API.
-It is an Angular app in `src/noldova.ui.components.angular.docs`, built against the kit's source, never published as a package, and drawn only with the kit's own components, tokens, fonts and icons, apart from the GitHub and X marks its header and footer show.
+It is an Angular app in `src/noldova.ui.components.angular.docs`, built against the kit's source, never published as a package, and drawn only with the kit's own components, tokens, fonts and icons, apart from the GitHub and X marks its header shows.
 
 ## Commands
 

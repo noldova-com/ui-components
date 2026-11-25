@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "@noldova/context.core";
+
 import type { ComponentFixture } from "@angular/core/testing";
 import type { Router } from "@angular/router";
 import { page } from "vitest/browser";
@@ -40,13 +42,13 @@ export class DocsFixture {
 
   public static byText(root: ParentNode, selector: string, text: string): HTMLElement {
     const element = DocsFixture.all(root, selector).find(t => t.textContent?.trim() === text);
-    if (element === undefined)
+    if (Object.isUndefined(element))
       throw new TypeError(`No ${selector} reads ${text}.`);
     return element;
   }
 
   public static setMode(mode: string | null): void {
-    if (mode === null) {
+    if (Object.isNull(mode)) {
       document.documentElement.removeAttribute(DocsFixture.MODE_ATTRIBUTE);
       localStorage.removeItem(DocsFixture.STORAGE_KEY);
     }
