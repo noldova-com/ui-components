@@ -320,7 +320,7 @@ describe("ComponentPageComponent", () => {
       roles: ["li > a.nol-link-reference-chip[href=\"https://code.example/app/pull/12\"] .nol-link-reference-chip-text",
         "a.nol-link-reference-chip nol-link-reference-image[aria-hidden=\"true\"]"],
       keys: ["Tab", "Shift+Tab", "Escape"],
-      inputs: ["reference"],
+      inputs: ["reference", "isInline"],
       outputs: ["linkActivate", "linkMenu"]
     },
     LinkReferenceWorkItemStateComponent: {
