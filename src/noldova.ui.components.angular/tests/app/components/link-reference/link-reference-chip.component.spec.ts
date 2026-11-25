@@ -48,6 +48,7 @@ import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 class TestReferences implements ILinkReferenceSource {
@@ -78,6 +79,18 @@ class ChipAloneHostComponent {
   public readonly url: string = "https://code.example/app/pull/12";
   public readonly reference: WritableSignal<LinkReference | null> = signal(null);
   public readonly opens: LinkOpenEvent[] = [];
+}
+
+@Component({
+  imports: [LinkReferenceChipComponent],
+  template: `<p class="line" [style.width.px]="width()">Fixed in @if (reference(); as item) {<a nol-link-reference-chip [reference]="item" [isInline]="isInline()" [href]="url"></a>} today.</p>`,
+  styles: [".line { margin-top: 4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"]
+})
+class ChipInLineHostComponent {
+  public readonly url: string = "https://code.example/app/pull/12";
+  public readonly reference: WritableSignal<LinkReference | null> = signal(null);
+  public readonly isInline: WritableSignal<boolean> = signal(true);
+  public readonly width: WritableSignal<number> = signal(1000);
 }
 
 @Component({
@@ -1346,4 +1359,139 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
     expect([style.color, style.textDecorationLine, style.textDecorationColor, getComputedStyle(part("icon")).backgroundColor, getComputedStyle(part("mark")).backgroundColor])
       .toEqual([linkColor, "underline", linkColor, linkColor, linkColor]);
   });
+});
+
+describe("LinkReferenceChipComponent in-line in a line cut with an ellipsis", () => {
+  const square = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16'/%3E%3C/svg%3E";
+  const merged = new LinkReferenceState("Merged", new LinkReferenceColor("#8250DF", "color-mix(in srgb, #8250DF 14%, transparent)"),
+    new LinkReferenceColor("#A371F7", "color-mix(in srgb, #A371F7 18%, transparent)"));
+  const title = "Keep a reply's links readable while it streams";
+  const itemOf = (options: ILinkReferenceOptions = {}): LinkReference => new LinkReference("example/app#12", "Pull request", new LinkReferenceImage(square), {
+    state: merged, title, mark: new LinkReferenceImage(square), ...options
+  });
+  const drawn = 96;
+  const pixels = (rem: number): number => AppearanceFixture.toPixels(rem);
+  const line = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "p.line");
+  const chip = (): HTMLElement => DomFixture.one(line(), "a.nol-link-reference-chip");
+  const part = (name: string): HTMLElement => DomFixture.one(chip(), `.nol-link-reference-chip-${name}`);
+  const centreOf = (box: DOMRect): DOMPoint => new DOMPoint(box.left + box.width / 2, box.top + box.height / 2);
+  const inkIn = (shot: ImageData, origin: DOMRect, box: DOMRect): number => {
+    const ratio = devicePixelRatio;
+    const left = Math.floor(origin.left * ratio);
+    const top = Math.floor(origin.top * ratio);
+    let largest = 0;
+    for (let y = Math.ceil(box.top * ratio) - top; y < Math.floor(box.bottom * ratio) - top; y++)
+      for (let x = Math.ceil(box.left * ratio) - left; x < Math.floor(box.right * ratio) - left; x++)
+        for (let channel = 0; channel < 3; channel++)
+          largest = Math.max(largest, Math.abs((shot.data[(y * shot.width + x) * 4 + channel] ?? 0) - (shot.data[channel] ?? 0)));
+    return largest;
+  };
+  const textRange = (): Range => {
+    const range = document.createRange();
+    range.selectNodeContents(part("text"));
+    return range;
+  };
+  let fixture: ComponentFixture<ChipInLineHostComponent>;
+
+  async function renderAsync(item: LinkReference, mode: ThemeMode = ThemeMode.Light): Promise<void> {
+    AppearanceFixture.apply(DefaultTheme.theme, mode);
+    fixture = TestBed.createComponent(ChipInLineHostComponent);
+    fixture.componentInstance.reference.set(item);
+    await fixture.whenStable();
+  }
+
+  async function changeAsync(change: (host: ChipInLineHostComponent) => void): Promise<void> {
+    change(fixture.componentInstance);
+    await fixture.whenStable();
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [{ provide: ClockTokens.timeSource, useValue: new TestTimeSource() }] });
+  });
+
+  afterEach(() => {
+    fixture.destroy();
+    AppearanceFixture.reset();
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`looks as the default chip does while it fits, its mark, icon and text in the same places, in ${mode} mode`, async () => {
+      await renderAsync(itemOf(), mode);
+      const placesOf = (): number[] => {
+        const origin = line().getBoundingClientRect();
+        const mark = part("mark").getBoundingClientRect();
+        const icon = part("icon").getBoundingClientRect();
+        const text = textRange().getBoundingClientRect();
+        return [mark.left - origin.left, mark.top - origin.top, mark.width, mark.height, icon.left - origin.left, icon.top - origin.top, icon.width, icon.height,
+          text.left - origin.left, text.right - origin.left, text.bottom - origin.top];
+      };
+      await changeAsync(host => host.isInline.set(false));
+      const flex = placesOf();
+      await changeAsync(host => host.isInline.set(true));
+      const inline = placesOf();
+      const box = line().getBoundingClientRect();
+      const icon = part("icon").getBoundingClientRect();
+      const mark = part("mark").getBoundingClientRect();
+
+      expect([chip().classList.contains("nol-link-reference-chip-inline"), inline.length]).toEqual([true, flex.length]);
+      inline.forEach((value, index) => AppearanceFixture.expectPixels(value, DomFixture.at(flex, index)));
+      expect([mark.width, icon.width]).toEqual([pixels(0.875), pixels(1)]);
+      AppearanceFixture.expectPixels(icon.left - mark.right, pixels(0.25));
+      AppearanceFixture.expectPixels(textRange().getBoundingClientRect().left - icon.right, pixels(0.25));
+      AppearanceFixture.expectPixels(centreOf(icon).y, box.top + box.height / 2);
+      AppearanceFixture.expectPixels(centreOf(mark).y, box.top + box.height / 2);
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps a pending mark's dashed square where the default chip has it, 0.25rem before the icon and centred on the line, in ${mode} mode`, async () => {
+      await renderAsync(itemOf({ isMarkPending: true, mark: null }), mode);
+      const placesOf = (): number[] => {
+        const origin = line().getBoundingClientRect();
+        const slot = part("slot").getBoundingClientRect();
+        const icon = part("icon").getBoundingClientRect();
+        return [slot.left - origin.left, slot.top - origin.top, slot.width, slot.height, icon.left - origin.left, icon.top - origin.top];
+      };
+      await changeAsync(host => host.isInline.set(false));
+      const flex = placesOf();
+      await changeAsync(host => host.isInline.set(true));
+      const inline = placesOf();
+      const box = line().getBoundingClientRect();
+      const slot = part("slot").getBoundingClientRect();
+      const icon = part("icon").getBoundingClientRect();
+
+      expect([chip().classList.contains("nol-link-reference-chip-inline"), inline.length]).toEqual([true, flex.length]);
+      inline.forEach((value, index) => AppearanceFixture.expectPixels(value, DomFixture.at(flex, index)));
+      expect([slot.width, slot.height]).toEqual([pixels(0.875), pixels(0.875)]);
+      AppearanceFixture.expectPixels(icon.left - slot.right, pixels(0.25));
+      AppearanceFixture.expectPixels(centreOf(slot).y, box.top + box.height / 2);
+    });
+
+  it("isn't held to 27.5rem, so a long title runs to the line's width", async () => {
+    await renderAsync(itemOf({ title: `${title}, and a second clause long enough to pass the default chip's width` }));
+    const box = line().getBoundingClientRect();
+    const text = textRange().getBoundingClientRect();
+    const inlineWidth = chip().getBoundingClientRect().width;
+    await changeAsync(host => host.isInline.set(false));
+
+    expect([inlineWidth > pixels(27.5), text.right <= box.right]).toEqual([true, true]);
+    AppearanceFixture.expectPixels(chip().getBoundingClientRect().width, pixels(27.5));
+  });
+
+  for (const room of [2, 6, 12])
+    it(`is cut inside its text by the line's ellipsis when the line ends ${room}rem into its text, its mark, icon and text start drawn, the mark and icon whole and centred on the line`, async () => {
+      await renderAsync(itemOf());
+      const start = textRange().getBoundingClientRect().left - line().getBoundingClientRect().left;
+      await changeAsync(host => host.width.set(Math.round(start + pixels(room))));
+      const box = line().getBoundingClientRect();
+      const mark = part("mark").getBoundingClientRect();
+      const icon = part("icon").getBoundingClientRect();
+      const text = textRange().getBoundingClientRect();
+      const shot = await ScreenshotFixture.pixelsAsync(line());
+      const inks = [mark, icon, new DOMRect(text.left, box.top, pixels(1), box.height)].map(t => inkIn(shot, box, t));
+
+      expect(inks.map(t => t > drawn)).toEqual([true, true, true]);
+      expect([icon.right <= box.right, text.left < box.right, text.right > box.right]).toEqual([true, true, true]);
+      AppearanceFixture.expectPixels(centreOf(icon).y, box.top + box.height / 2);
+      AppearanceFixture.expectPixels(centreOf(mark).y, box.top + box.height / 2);
+    });
 });

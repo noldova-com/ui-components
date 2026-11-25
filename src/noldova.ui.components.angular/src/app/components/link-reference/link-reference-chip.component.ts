@@ -39,6 +39,7 @@ import { LinkReferenceImageComponent } from "./link-reference-image.component.js
   styleUrl: "./link-reference-chip.component.css",
   host: {
     "class": "nol-link-reference-chip",
+    "[class.nol-link-reference-chip-inline]": "isInline()",
     "[style.--nol-link-reference-state]": "stateColor()",
     "(pointerenter)": "scheduleShow()",
     "(pointerleave)": "leaveChip($event)",
@@ -70,6 +71,7 @@ export class LinkReferenceChipComponent {
   });
 
   public readonly reference = input.required<LinkReference>();
+  public readonly isInline = input<boolean>(false);
   public readonly linkActivate = output<LinkOpenEvent>();
   public readonly linkMenu = output<LinkMenuEvent>();
 
