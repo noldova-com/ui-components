@@ -30,8 +30,6 @@ import type { TooltipEngine } from "./tooltip-engine.js";
   }
 })
 export class LazyTooltipDirective implements ITooltipSource {
-  private static module: Promise<typeof import("./tooltip-engine.js")> | null = null;
-
   private readonly defaults: TooltipDefaults = inject(TooltipDefaults, { self: true, optional: true }) ?? TooltipDefaults.standard;
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   protected engine: TooltipEngine | null = null;
@@ -73,14 +71,8 @@ export class LazyTooltipDirective implements ITooltipSource {
     this.engine?.leaveAnchor(event);
   }
 
+  // The browser keeps one copy of the engine's module, however many anchors import it.
   private static loadAsync(): Promise<typeof import("./tooltip-engine.js")> {
-    if (!Object.isNull(LazyTooltipDirective.module))
-      return LazyTooltipDirective.module;
-    const loading = import("./tooltip-engine.js");
-    LazyTooltipDirective.module = loading;
-    void loading.catch(() => {
-      LazyTooltipDirective.module = null;
-    });
-    return loading;
+    return import("./tooltip-engine.js");
   }
 }

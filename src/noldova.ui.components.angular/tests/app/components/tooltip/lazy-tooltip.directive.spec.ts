@@ -36,7 +36,7 @@ class LazyTooltipHostComponent {
 }
 
 describe("LazyTooltipDirective", () => {
-  const statics = LazyTooltipDirective as unknown as { module: Promise<unknown> | null; loadAsync: () => Promise<unknown> };
+  const statics = LazyTooltipDirective as unknown as { loadAsync: () => Promise<unknown> };
   let fixture: ComponentFixture<LazyTooltipHostComponent>;
 
   beforeEach(() => TestBed.configureTestingModule({ providers: [TooltipFixture.atOnce] }));
@@ -48,7 +48,6 @@ describe("LazyTooltipDirective", () => {
     fixture.destroy();
     AppearanceFixture.reset();
     vi.restoreAllMocks();
-    statics.module = null;
   });
 
   async function renderAsync(): Promise<void> {
@@ -131,7 +130,6 @@ describe("LazyTooltipDirective", () => {
   });
 
   it("reports an engine that can't load to the error handler and leaves its anchor without a tooltip", async () => {
-    statics.module = null;
     const failure = new Error("The tooltip engine's chunk did not load.");
     vi.spyOn(statics, "loadAsync").mockRejectedValue(failure);
     const reported = new ChangeSignalFixture();
