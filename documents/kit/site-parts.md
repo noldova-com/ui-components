@@ -1,6 +1,6 @@
-# Site hero, sections and cards
+# Site hero, sections, cards and closing
 
-**Scope:** The kit's website page parts, the hero, the section and the cards, with the type scale and spacing they share: their default geometry, the text roles they use, and their surface and behavior.
+**Scope:** The kit's website page parts, the hero, the section, the cards and the closing call to action, with the type scale and spacing they share: their default geometry, the text roles they use, and their surface and behavior.
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
@@ -56,3 +56,14 @@ Below 68.75em the sides are 1.25rem; below 47.5em the card is min(1.5625rem, 6vw
 **Text roles.** The icon in `accent`; the index at `--nol-site-text-small` in the monospace font in `text-muted`; the title at `--nol-site-card-title-size` on a 1.2 line, spaced −0.035em, at the emphasis weight, in `setting-title`; the text at `--nol-site-text-small` on a 1.8 line in `text-muted`.
 
 **Surface and behavior.** Each card is an article on `--nol-site-surface` with a 1px `border` line and the parts' radius, clipping what the site projects after its text, such as a small picture of the feature.
+A site that needs markup in the text, such as a key name that differs by platform, leaves `text` unset and projects an element with the `nolSiteCardText` attribute, which the card draws in its text's place and style; with neither, the card has no text.
+
+## Closing
+
+**Default geometry.** The closing keeps to the shell, 5.75rem under its top and 5.1875rem over its end, everything centred: the optional mark in a 4.1875rem square frame, its file 2.3125rem, 1.75rem over the optional line above; the title 1.3125rem under that line; the actions 1.9375rem under the title, 1rem apart; and the note 1.4375rem under them, its parts 0.375rem apart.
+The button is 2.5rem high, as in the hero; the text link is at least the pointer target high, its icon 0.4375rem after its label.
+Below 47.5em the closing is 4.125rem under its top and over its end, and a text link that wraps under the button is 0.3125rem further down.
+
+**Text roles.** The line above: as `.nol-site-eyebrow`, centred. The title: clamp(2.4375rem, 5cqi, 3.8125rem) on a 1.1 line, spaced −0.05em, at the emphasis weight, balanced, in `setting-title`. The text link: `--nol-site-text-small` at the emphasis weight in `accent`, in `text` under the pointer. The note: `--nol-site-text-small` in `text-muted`.
+
+**Surface and behavior.** A region named by its title, a level-2 heading; a line break in the title starts a new line. The mark's frame is on `raised` with a 1px `border` line and a 0.8125rem radius, and the mark is decorative. The button is a [button](button.md) link with its icon hidden from assistive tech; the text link's icon is hidden too, and its focus ring is 2px of `accent`, 5px out. The note is the content the site projects, such as a line and a wordmark, and takes no room when there is none. A site that needs markup in the title leaves `title` unset and projects an element with the `nolSiteClosingTitle` attribute, which fills the heading in its style.

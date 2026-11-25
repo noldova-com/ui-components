@@ -1,0 +1,140 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.nol-site-closing-block {
+  padding-block: 5.75rem 5.1875rem;
+  text-align: center;
+}
+
+.nol-site-closing-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 4.1875rem;
+  height: 4.1875rem;
+  margin-bottom: 1.75rem;
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: 0.8125rem;
+  background: var(--nol-raised);
+}
+
+.nol-site-closing-mark img {
+  display: block;
+  width: 2.3125rem;
+  height: 2.3125rem;
+}
+
+.nol-site-closing-eyebrow {
+  justify-content: center;
+}
+
+.nol-site-closing-title {
+  margin: 1.3125rem 0 1.9375rem;
+  color: var(--nol-setting-title);
+  font-size: clamp(2.4375rem, 5cqi, 3.8125rem);
+  font-weight: var(--nol-weight-emphasis);
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.nol-site-closing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--nol-space-4);
+}
+
+.nol-site-closing-action {
+  --nol-button-height: 2.5rem;
+  --nol-button-padding-inline: 1.25rem;
+
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.nol-site-closing-action-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  white-space: normal;
+  text-align: center;
+}
+
+.nol-site-closing-action-icon {
+  width: 1em;
+  height: 1em;
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.nol-site-closing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  max-width: 100%;
+  min-height: var(--nol-pointer-target);
+  color: var(--nol-accent);
+  font-size: var(--nol-site-text-small);
+  font-weight: var(--nol-weight-emphasis);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:is(:hover, [data-nol-state="Hover"]) {
+    color: var(--nol-text);
+  }
+
+  &:focus-visible,
+  &[data-nol-state="Focus"] {
+    outline: 2px solid var(--nol-accent);
+    outline-offset: 5px;
+  }
+}
+
+.nol-site-closing-link-icon {
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.nol-site-closing-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin: 1.4375rem 0 0;
+  color: var(--nol-text-muted);
+  font-size: var(--nol-site-text-small);
+}
+
+.nol-site-closing-note:empty {
+  display: none;
+}
+
+@container (width < 47.5rem) {
+  .nol-site-closing-block {
+    --nol-site-shell-gutter: 1.25rem;
+
+    padding-block: 4.125rem;
+  }
+
+  .nol-site-closing-link {
+    margin-top: 0.3125rem;
+  }
+}

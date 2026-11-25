@@ -82,6 +82,7 @@ export class GalleryResources {
   public static readonly hoveredFooterLink: string = ".nol-site-footer-link";
   public static readonly focusedFooterLink: string = ".nol-site-footer-link[aria-current]";
   public static readonly heroAction: string = ".nol-site-hero-action";
+  public static readonly closingLink: string = ".nol-site-closing-link";
   public static readonly siteShot: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23808080'/%3E%3C/svg%3E";
   public static readonly messageActionsTop: string = "var(--nol-space-2)";
   public static readonly messageActionsEnd: string = "var(--nol-space-4)";
@@ -587,6 +588,13 @@ export class GalleryResources {
     siteCardTitles: ["One chat,\nevery agent.", "The right teammate\nfor the task.", "See the changes.\nKeep the control."],
     siteCardTexts: ["Each agent reads the same chat.", "Give an agent a name and a role.", "Approve what they do."],
     siteCardLongTitle: "A card title far too long to stand on one line of a narrow card",
+    siteClosing: "Site closing",
+    siteClosingEyebrow: "Ready when you are",
+    siteClosingTitle: "Your team of agents\nis one download away.",
+    siteClosingAction: "Download",
+    siteClosingLink: "Find your first step",
+    siteClosingNote: "Free and open source, made by",
+    siteClosingLongTitle: "A closing title far too long to stand on one line of a narrow page",
     sectionRecent: "Recent",
     sectionOlder: "Older",
     sectionRowNotes: "Meeting notes",

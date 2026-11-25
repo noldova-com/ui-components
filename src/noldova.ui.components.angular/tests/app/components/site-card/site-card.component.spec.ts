@@ -26,6 +26,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
       <nol-site-card [icon]="icon()" [index]="index()" [title]="title" [text]="text()"><div class="picture">Picture</div></nol-site-card>
       <nol-site-card icon="group" index="02" title="The right teammate." text="Give an agent a role." />
       <nol-site-card icon="difference" index="03" title="See the changes." text="Approve what they do." />
+      <nol-site-card title="Take it back." [text]="null"><span nolSiteCardText>Press <kbd>Ctrl+Z</kbd> to take it back.</span><div class="picture">Second picture</div></nol-site-card>
     </nol-site-card-grid>
     </nol-site-section>
   `
@@ -77,9 +78,24 @@ describe("SiteCardComponent", () => {
       t.text.set(null);
     });
 
-    expect([DomFixture.maybe(first(), ".nol-site-card-head"), DomFixture.maybe(first(), ".nol-site-card-text")]).toEqual([null, null]);
+    expect([DomFixture.maybe(first(), ".nol-site-card-head"), getComputedStyle(part(".nol-site-card-text")).display]).toEqual([null, "none"]);
     AppearanceFixture.expectPixels(box("h3").top - first().getBoundingClientRect().top, rem(1.6875) + 1);
   });
+
+  for (const mode of AppearanceFixture.modes) {
+    it(`draws the text a site projects, in the card text's own style and place, before the card's content, ${mode}`, async () => {
+      await renderAsync(undefined, mode);
+      const card = DomFixture.at(cards(), 3);
+      const text = DomFixture.one(card, ".nol-site-card-text");
+      const style = getComputedStyle(text);
+
+      expect([text.textContent, DomFixture.one(text, "[nolSiteCardText]").parentElement === text, style.color, style.fontSize, style.lineHeight]).toEqual([
+        "Press Ctrl+Z to take it back.", true, color(mode, "text-muted"), getComputedStyle(part(".nol-site-card-text")).fontSize, getComputedStyle(part(".nol-site-card-text")).lineHeight]);
+      AppearanceFixture.expectPixels(text.getBoundingClientRect().top - DomFixture.one(card, "h3").getBoundingClientRect().bottom,
+        part(".nol-site-card-text").getBoundingClientRect().top - box("h3").bottom);
+      expect(DomFixture.one(card, ".picture").getBoundingClientRect().top).toBeGreaterThanOrEqual(text.getBoundingClientRect().bottom);
+    });
+  }
 
   it("keeps the row over the title when the card has only an index", async () => {
     await renderAsync(t => t.icon.set(null));
@@ -100,7 +116,8 @@ describe("SiteCardComponent", () => {
     it(`sets the cards side by side, as tall as each other, each with its icon and index on one row over the title, at 1280 pixels, ${mode}`, async () => {
       await page.viewport(1280, 800);
       await renderAsync(undefined, mode);
-      const boxes = cards().map(t => t.getBoundingClientRect());
+      // The three data cards share the first row; the fourth wraps to the next.
+      const boxes = cards().slice(0, 3).map(t => t.getBoundingClientRect());
       const card = DomFixture.at(boxes, 0);
       const icon = box(".nol-site-card-icon");
 

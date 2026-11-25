@@ -12001,7 +12001,8 @@ export declare class ShellRunOutputDirective {
 }
 
 /**
- * A call to action of a {@link SiteHeroComponent}: a button link with its
+ * A call to action of a {@link SiteHeroComponent} or a
+ * {@link SiteClosingComponent}: a button link with its
  * label and an optional Material Symbols icon after it.
  */
 export declare class SiteAction {
@@ -12079,7 +12080,9 @@ export declare class SiteCardComponent {
 
   /**
    * The paragraph under the title, in the muted color; null, the default, for
-   * none.
+   * the content projected with the `nolSiteCardText` attribute, which then
+   * takes the paragraph's place and style, such as a line holding markup of
+   * its own. With neither, the card has no paragraph.
    */
   public readonly text: InputSignal<string | null>;
 }
@@ -12090,6 +12093,69 @@ export declare class SiteCardComponent {
  * is narrower.
  */
 export declare class SiteCardGridComponent {
+}
+
+/**
+ * The closing call to action of a website's page, `nol-site-closing`: an
+ * optional mark in a raised frame, an optional line in the monospace font and
+ * the accent color, the level-2 title, an optional button and an optional text
+ * link in the accent color, and the note under them, all centred. The note is
+ * the content projected into it, such as a line and a wordmark; with none, it
+ * takes no room. It keeps to the site's content width; below 47.5em its space
+ * above and below narrows. It needs the site parts' styles, `styles/site.css`.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { SiteAction, SiteClosingComponent } from "@noldova/ui.components.angular/site";
+ *
+ * @Component({
+ *   selector: "nol-home-closing",
+ *   imports: [SiteClosingComponent],
+ *   template: "<nol-site-closing title=\"Ready when you are.\" headingId=\"closing-title\" [action]=\"download\">Free and open source.</nol-site-closing>"
+ * })
+ * export class HomeClosingComponent {
+ *   protected readonly download: SiteAction = new SiteAction("Download", "/download/", "download");
+ * }
+ * ```
+ */
+export declare class SiteClosingComponent {
+  /**
+   * The file of the product's mark, drawn 2.3125rem square in a raised frame
+   * over the rest; null, the default, for none. It is decorative, so it has no
+   * text alternative.
+   */
+  public readonly mark: InputSignal<string | null>;
+
+  /**
+   * The line above the title, drawn in capitals; null, the default, for
+   * none.
+   */
+  public readonly eyebrow: InputSignal<string | null>;
+
+  /**
+   * The title, where each line break starts a new line; null, the default,
+   * for the content projected with the `nolSiteClosingTitle` attribute, which
+   * then fills the heading in its style, such as a title holding markup of its
+   * own.
+   */
+  public readonly title: InputSignal<string | null>;
+
+  /**
+   * The title's id, which names the closing region.
+   */
+  public readonly headingId: InputSignal<string>;
+
+  /**
+   * The button under the title; null, the default, for none.
+   */
+  public readonly action: InputSignal<SiteAction | null>;
+
+  /**
+   * The text link beside the button, in the accent color, with its icon after
+   * the label; null, the default, for none. Its variant is not used.
+   */
+  public readonly link: InputSignal<SiteAction | null>;
 }
 
 /**

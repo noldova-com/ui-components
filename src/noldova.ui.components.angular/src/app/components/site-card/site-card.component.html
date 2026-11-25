@@ -17,7 +17,5 @@ LICENSE file in the root directory of this source tree.
   </div>
 }
 <h3 class="nol-site-card-title">{{ title() }}</h3>
-@if (text(); as bodyText) {
-  <p class="nol-site-card-text">{{ bodyText }}</p>
-}
+<p class="nol-site-card-text">@if (text(); as bodyText) {<ng-container>{{ bodyText }}</ng-container>} @else {<ng-content select="[nolSiteCardText]" />}</p>
 <ng-content />

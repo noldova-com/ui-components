@@ -75,3 +75,30 @@ LICENSE file in the root directory of this source tree.
     </div>
   </nol-gallery-cell>
 </nol-gallery-specimen>
+
+<nol-gallery-specimen [name]="text.siteClosing" [size]="sizes.Full">
+  <nol-gallery-cell [caption]="text.siteProduct">
+    <nol-site-closing class="nol-gallery-site" [mark]="mark" [eyebrow]="text.siteClosingEyebrow" [title]="text.siteClosingTitle" [action]="closingAction" [link]="closingLink"
+      headingId="nol-gallery-closing-product"
+      ><span>{{ text.siteClosingNote }}</span><img class="nol-gallery-site-closing-wordmark" [src]="wordmark" width="80" height="12" alt="Noldova"
+    /></nol-site-closing>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.sitePhone">
+    <div class="nol-gallery-site nol-gallery-site-phone">
+      <nol-site-closing [mark]="mark" [eyebrow]="text.siteClosingEyebrow" [title]="text.siteClosingTitle" [action]="closingAction" [link]="closingLink" headingId="nol-gallery-closing-phone"
+        ><span>{{ text.siteClosingNote }}</span></nol-site-closing
+      >
+    </div>
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.hover">
+    <nol-site-closing class="nol-gallery-site" [nolGalleryHover]="closingLinkPart" [title]="text.siteClosingTitle" [link]="closingLink" headingId="nol-gallery-closing-hover" />
+  </nol-gallery-cell>
+  <nol-gallery-cell [caption]="text.focus">
+    <nol-site-closing class="nol-gallery-site" [nolGalleryFocus]="closingLinkPart" [title]="text.siteClosingTitle" [link]="closingLink" headingId="nol-gallery-closing-focus" />
+  </nol-gallery-cell>
+  <nol-gallery-cell long [caption]="text.longCaption">
+    <div class="nol-gallery-site nol-gallery-narrow">
+      <nol-site-closing [title]="text.siteClosingLongTitle" [action]="closingAction" [link]="closingLink" headingId="nol-gallery-closing-long" />
+    </div>
+  </nol-gallery-cell>
+</nol-gallery-specimen>

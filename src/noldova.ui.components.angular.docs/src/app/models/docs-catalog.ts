@@ -134,6 +134,7 @@ export class DocsCatalog {
     "PlanComponent",
     "SiteCardComponent",
     "SiteCardGridComponent",
+    "SiteClosingComponent",
     "SiteFooterComponent",
     "SiteHeaderComponent",
     "SiteHeroComponent",

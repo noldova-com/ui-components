@@ -58,6 +58,11 @@
   text-wrap: pretty;
 }
 
+/* A card with neither text nor projected text has no paragraph to hold room for. */
+.nol-site-card-text:empty {
+  display: none;
+}
+
 /* A card takes the narrower spacing by the width of the section it is in, the page's width. */
 @container (width < 68.75rem) {
   :host {
