@@ -38,6 +38,13 @@
   opacity: 1;
 }
 
+:host(.nol-text-field-quiet) {
+  @media not (forced-colors: active) {
+    border-color: transparent;
+    background-color: var(--nol-window);
+  }
+}
+
 :host(:is(:focus, [data-nol-state="Focus"])) {
   border-color: var(--nol-accent);
   outline: none;

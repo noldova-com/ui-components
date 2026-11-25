@@ -46,6 +46,7 @@ export class Resources {
   public static readonly tokensPath: string = "tokens";
   public static readonly homeLink: string = "/";
   public static readonly searchLabel: string = "Search the docs";
+  public static readonly searchGlyph: IconName = "search";
   public static readonly searchResultsLabel: string = "Search results";
   public static readonly searchEmpty: string = "No page matches.";
   public static readonly themeLight: string = "Light";

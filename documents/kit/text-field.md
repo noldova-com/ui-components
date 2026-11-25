@@ -47,3 +47,10 @@ With end text, the glyph's room counts too, so the typed text still keeps its 4r
 The glyph is hidden from assistive technology, so the input keeps the name its owner gives it, and it takes no pointer, so a click on it reaches the input.
 Under forced colors an invalid field's wider border takes from its padding, so the glyph and the start of the text stay where they are; a disabled field's glyph dims with it, and is `GrayText` under forced colors.
 In a right-to-left layout the glyph is at the right.
+
+## The quiet look
+
+A one-line field in a site's header, such as a docs site's search, takes the quiet look with `quiet`: no visible border and the theme's `window` fill instead of the input's, with the search glyph at its start from `nol-text-field-box` with `search` as its `icon`, as above.
+The border keeps its width, transparent, so the field's height, its text and the glyph stay where a plain field's are.
+Focus shows the accent border, an invalid entry the error border and a disabled field dims, as on a plain field.
+Under forced colors it is the plain field: its `FieldText` border, the `Highlight` focus outline and the invalid and disabled cues above.

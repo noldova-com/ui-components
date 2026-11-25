@@ -6,9 +6,11 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<input #searchInput nol-text-field class="nol-docs-search-field" type="search" role="combobox" aria-autocomplete="list" autocomplete="off" [attr.aria-label]="resources.searchLabel"
-  [attr.aria-expanded]="isOpen()" [attr.aria-controls]="isOpen() ? listId : null" [attr.aria-activedescendant]="activeId()" [placeholder]="resources.searchLabel" [value]="query()"
-  (input)="type(field().nativeElement.value)" (keydown)="press($event)" />
+<nol-text-field-box class="nol-docs-search-box" [icon]="resources.searchGlyph">
+  <input #searchInput nol-text-field class="nol-docs-search-field" [quiet]="true" type="search" role="combobox" aria-autocomplete="list" autocomplete="off"
+    [attr.aria-label]="resources.searchLabel" [attr.aria-expanded]="isOpen()" [attr.aria-controls]="isOpen() ? listId : null" [attr.aria-activedescendant]="activeId()" [placeholder]="resources.searchLabel" [value]="query()"
+    (input)="type(field().nativeElement.value)" (keydown)="press($event)" />
+</nol-text-field-box>
 @if (isOpen()) {
   <ul #resultsList class="nol-docs-search-results" role="listbox" [id]="listId" [attr.aria-label]="resources.searchResultsLabel">
     @for (page of results(); track page.path; let index = $index) {

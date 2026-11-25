@@ -14,6 +14,7 @@ export class TextFieldBoxPageResources {
   public static readonly textFieldBoxActionTitle: string = "A button inside the field";
   public static readonly textFieldBoxEndTitle: string = "Muted text at the field's end";
   public static readonly textFieldBoxIconTitle: string = "A glyph at the field's start";
+  public static readonly textFieldBoxQuietTitle: string = "The quiet look";
   public static readonly keys: readonly DocsKey[] = [
     new DocsKey("Tab", "Moves the focus into the input, then to the button inside the field, which comes after it; the muted text at the end takes no focus.")
   ];

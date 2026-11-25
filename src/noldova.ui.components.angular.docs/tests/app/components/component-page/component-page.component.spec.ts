@@ -67,7 +67,7 @@ describe("ComponentPageComponent", () => {
       controls: ".nol-text-field",
       roles: ["label > input.nol-text-field", "label > textarea.nol-text-field", "input.nol-text-field[disabled]", "input.nol-text-field[aria-invalid=\"true\"][aria-describedby]"],
       keys: ["Tab"],
-      inputs: [],
+      inputs: ["quiet"],
       outputs: []
     },
     TextFieldBoxComponent: {

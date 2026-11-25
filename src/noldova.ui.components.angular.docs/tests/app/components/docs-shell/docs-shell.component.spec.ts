@@ -182,6 +182,51 @@ describe("DocsShellComponent", () => {
     });
   });
 
+  describe.each([
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT],
+    ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
+    ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
+  ])("in the %s mode at %ipx wide, the docs search", (mode, width, height) => {
+    const tokenColor = (inside: HTMLElement, name: string): string => {
+      const probe = document.createElement("div");
+      probe.style.backgroundColor = `var(--nol-${name})`;
+      inside.append(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return color;
+    };
+
+    it("is the kit's quiet search field, with no visible border on the window fill, the search glyph centred at its start, the text the space-2 step after it, and the accent border while focused", async () => {
+      DocsFixture.setMode(mode);
+      await DocsFixture.viewAsync(width, height);
+      const host = DocsFixture.host(await renderAsync("/"));
+      const header = DocsFixture.one(host, "nol-site-header");
+      const field = DocsFixture.one(header, "input[type=search]");
+      const glyph = DocsFixture.one(header, ".nol-docs-search-box > .nol-text-field-start");
+      const unit = rootRem();
+      const scale = 14 / 13;
+      const resting = getComputedStyle(field);
+      const look = [resting.borderTopColor, resting.borderLeftColor, resting.backgroundColor];
+
+      await userEvent.click(width < DocsFixture.DESKTOP_WIDTH ? DocsFixture.one(header, ".nol-site-search-button") : field);
+      await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(field));
+      const style = getComputedStyle(field);
+      const box = field.getBoundingClientRect();
+      const mark = glyph.getBoundingClientRect();
+      const border = Number.parseFloat(style.borderLeftWidth);
+      const textStart = box.left + border + Number.parseFloat(style.paddingLeft);
+
+      expect(look).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", tokenColor(header, "window")]);
+      expect([glyph.textContent?.trim(), glyph.getAttribute("aria-hidden"), field.getAttribute("aria-label")]).toEqual(["search", "true", "Search the docs"]);
+      expect(style.borderTopColor).toBe(tokenColor(header, "accent"));
+      expect(box.height / unit).toBeCloseTo(1.625 * scale, 2);
+      expect((mark.left - box.left - border) / unit).toBeCloseTo(0.375 * scale, 2);
+      expect((mark.top - box.top - (box.bottom - mark.bottom)) / unit).toBeCloseTo(0, 2);
+      expect((textStart - mark.right) / unit).toBeCloseTo(0.5 * scale, 2);
+    });
+  });
+
   describe.each(["Light", "Dark"])("on a desktop in the %s mode, the site header", mode => {
     it("shows the docs search 16rem wide after the version and before GitHub, X and the theme, and reaches a page from it", async () => {
       DocsFixture.setMode(mode);

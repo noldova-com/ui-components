@@ -26,6 +26,9 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
     <nol-text-field-box class="search" [icon]="icon()">
       <input nol-text-field aria-label="Search conversations" value="A search whose words run on past the end of the field" />
     </nol-text-field-box>
+    <nol-text-field-box class="quiet" icon="search">
+      <input nol-text-field [quiet]="true" aria-label="Search the docs" value="A search whose words run on past the end of the field" />
+    </nol-text-field-box>
     <nol-text-field-box class="invalid" icon="search">
       <input nol-text-field aria-label="Missing search" aria-invalid="true" />
     </nol-text-field-box>
@@ -96,6 +99,35 @@ describe("TextFieldBoxComponent's leading icon", () => {
         AppearanceFixture.expectPixels(at.textStart - at.glyph.right, AppearanceFixture.measureLook("space-2"));
         AppearanceFixture.expectPixels(at.field.right - at.border - at.textEnd, padding);
         expect([glyph("search").textContent?.trim(), getComputedStyle(glyph("search")).color]).toEqual(["search", AppearanceFixture.readColor(theme, mode, "text-muted")]);
+      });
+
+  const offsets = (at: Placement): number[] => [at.field.width, at.field.height, at.glyph.left - at.field.left, at.glyph.top - at.field.top, at.textStart - at.field.left, at.field.right - at.textEnd];
+
+  const expectOffsets = (actual: Placement, expected: Placement): void => {
+    const want = offsets(expected);
+    for (const [index, value] of offsets(actual).entries())
+      AppearanceFixture.expectPixels(value, want[index] as number);
+  };
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws a quiet field's glyph and text where a plain field's are, inside its transparent border on the window fill, and keeps them there under forced colors, in the ${theme.id} theme in ${mode} mode`, async () => {
+        render(theme, mode);
+        const style = getComputedStyle(input("quiet"));
+        const off = place("quiet");
+
+        expect([style.borderTopColor, style.backgroundColor, getComputedStyle(glyph("quiet")).color]).toEqual([
+          "rgba(0, 0, 0, 0)", AppearanceFixture.readColor(theme, mode, "window"), AppearanceFixture.readColor(theme, mode, "text-muted")
+        ]);
+        expectOffsets(off, place("search"));
+        await ForcedColorsFixture.activateAsync();
+        try {
+          expectOffsets(place("quiet"), off);
+          expectOffsets(place("quiet"), place("search"));
+        }
+        finally {
+          await ForcedColorsFixture.resetAsync();
+        }
       });
 
   it("hides the glyph from assistive technology and lets a click on it reach the input, which keeps its own name", () => {

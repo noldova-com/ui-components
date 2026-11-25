@@ -8,7 +8,7 @@
 
 import { Component, ElementRef, type Signal, type WritableSignal, computed, inject, signal, viewChild } from "@angular/core";
 import { Router, RouterLink } from "@angular/router";
-import { TextFieldComponent } from "@noldova/ui.components.angular";
+import { TextFieldBoxComponent, TextFieldComponent } from "@noldova/ui.components.angular";
 
 import "@noldova/context.core";
 
@@ -22,7 +22,7 @@ import { DocsSearchIndex } from "../../models/docs-search-index.js";
     "tabindex": "-1",
     "(focus)": "focusField()"
   },
-  imports: [RouterLink, TextFieldComponent],
+  imports: [RouterLink, TextFieldBoxComponent, TextFieldComponent],
   templateUrl: "./docs-search.component.html",
   styleUrl: "./docs-search.component.css"
 })
