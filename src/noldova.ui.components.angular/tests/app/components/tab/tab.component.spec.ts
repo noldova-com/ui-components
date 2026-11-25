@@ -16,6 +16,7 @@ import { MenuComponent } from "../../../../src/app/components/menu/menu.componen
 import { TabComponent } from "../../../../src/app/components/tab/tab.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
@@ -43,7 +44,7 @@ import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
 class TabHostComponent {
   public readonly fieldMenu = viewChild.required(ContextMenuTriggerDirective);
   public readonly label = signal("Readme");
-  public readonly icon = signal<string | undefined>(undefined);
+  public readonly icon = signal<IconName | undefined>(undefined);
   public readonly selected = signal(false);
   public readonly preview = signal(false);
   public readonly working = signal(false);

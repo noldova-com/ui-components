@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "@noldova/ui.components.angular";
+
 import { DocsGroup } from "./app/enums/docs-group.js";
 import { DocsTokenGroup } from "./app/enums/docs-token-group.js";
 
@@ -24,7 +26,7 @@ export class Resources {
   public static readonly menuLabel: string = "Pages";
   public static readonly menuGroupLevel: number = 2;
   public static readonly menuButtonLabel: string = "Menu";
-  public static readonly menuGlyph: string = "menu";
+  public static readonly menuGlyph: IconName = "menu";
   public static readonly onThisPageLabel: string = "On this page";
   public static readonly currentLocation: string = "location";
   public static readonly gettingStartedTitle: string = "Getting started";

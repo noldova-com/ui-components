@@ -13,6 +13,7 @@ import "@noldova/context.core";
 import { CopyState } from "./app/enums/copy-state.js";
 import { DiffSide } from "./app/enums/diff-side.js";
 import { MarkdownNodeKind } from "./app/enums/markdown-node-kind.js";
+import type { IconName } from "./app/models/icon-name.js";
 
 export class Resources {
   public static readonly lookTokens: readonly string[] = [
@@ -237,7 +238,7 @@ export class Resources {
   public static readonly codeSizeVariable: string = "--nol-text-code";
   public static readonly noldovaSansFonts: string = "\"Noldova Sans\", system-ui, \"Segoe UI\", Roboto, sans-serif";
   public static readonly noldovaMonoFonts: string = "\"Noldova Mono\", ui-monospace, \"Cascadia Mono\", Consolas, monospace";
-  public static readonly closeGlyph: string = "close";
+  public static readonly closeGlyph: IconName = "close";
   public static readonly verticalOrientation: string = "vertical";
   public static readonly badgeLimit: number = 99;
   public static readonly badgeOverflow: string = "99+";
@@ -251,7 +252,7 @@ export class Resources {
   public static readonly nearestEdge: ScrollLogicalPosition = "nearest";
   public static readonly tabKey: string = "Tab";
   public static readonly spaceKey: string = " ";
-  public static readonly twistieGlyph: string = "chevron_right";
+  public static readonly twistieGlyph: IconName = "chevron_right";
   public static readonly arrowDownKey: string = "ArrowDown";
   public static readonly arrowUpKey: string = "ArrowUp";
   public static readonly homeKey: string = "Home";
@@ -260,7 +261,7 @@ export class Resources {
   public static readonly pageUpKey: string = "PageUp";
   public static readonly enterKey: string = "Enter";
   public static readonly inputMethodKeyCode: number = 229;
-  public static readonly wordWrapGlyph: string = "wrap_text";
+  public static readonly wordWrapGlyph: IconName = "wrap_text";
   public static readonly wordWrapLabel: string = "Word wrap";
   public static readonly codeBlockHeaderClass: string = "nol-code-block-header";
   public static readonly terminalOutputPaletteSize: number = 256;
@@ -269,7 +270,7 @@ export class Resources {
   public static readonly terminalOutputForeground: string = "var(--nol-terminal-foreground)";
   public static readonly terminalOutputBackground: string = "var(--nol-terminal-background)";
 
-  public static readonly copyGlyphs: Readonly<Record<CopyState, string>> = {
+  public static readonly copyGlyphs: Readonly<Record<CopyState, IconName>> = {
     [CopyState.Ready]: "content_copy",
     [CopyState.Copied]: "check",
     [CopyState.Failed]: "content_copy"
@@ -283,8 +284,8 @@ export class Resources {
   public static readonly codeThemeName: string = "noldova";
   public static readonly codeLoadFailureHold: number = 10_000;
   public static readonly linkReferenceSeparator: string = " · ";
-  public static readonly linkReferenceCommentsGlyph: string = "chat_bubble";
-  public static readonly linkReferenceActionGlyph: string = "open_in_new";
+  public static readonly linkReferenceCommentsGlyph: IconName = "chat_bubble";
+  public static readonly linkReferenceActionGlyph: IconName = "open_in_new";
   public static readonly codeNoTokenizeTimeLimit: number = 0;
   public static readonly codeTokensKeySeparator: string = "\n";
   public static readonly codeLineBreak: string = "\n";

@@ -19,10 +19,9 @@ describe("LinkReferenceAction", () => {
     expect([own.label, own.href, own.glyph, standard.glyph]).toEqual(["Open in Pipelines", href, "rocket_launch", "open_in_new"]);
   });
 
-  it("refuses an empty or blank label, address or glyph", () => {
+  it("refuses an empty or blank label or address", () => {
     expect(() => new LinkReferenceAction("", href)).toThrow(new LinkReferenceException("An action's label must not be empty."));
     expect(() => new LinkReferenceAction(" ", href)).toThrow(new LinkReferenceException("An action's label must not be empty."));
     expect(() => new LinkReferenceAction("Open in Pipelines", "")).toThrow(new LinkReferenceException("An action's address must not be empty."));
-    expect(() => new LinkReferenceAction("Open in Pipelines", href, " ")).toThrow(new LinkReferenceException("An action's glyph must not be empty."));
   });
 });

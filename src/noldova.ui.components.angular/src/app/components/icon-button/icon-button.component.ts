@@ -8,6 +8,7 @@
 
 import { Component, ElementRef, inject, input } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { BusyGuard } from "../../services/busy-guard.js";
 import { DomResources } from "../../../dom-resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
@@ -34,7 +35,7 @@ import { SpinnerComponent } from "../spinner/spinner.component.js";
 export class IconButtonComponent {
   protected readonly domResources: typeof DomResources = DomResources;
 
-  public readonly icon = input.required<string>();
+  public readonly icon = input.required<IconName>();
   public readonly label = input.required<string>();
   public readonly pressed = input<boolean>();
   public readonly filled = input<boolean>(false);

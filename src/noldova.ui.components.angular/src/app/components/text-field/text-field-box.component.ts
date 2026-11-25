@@ -8,6 +8,7 @@
 
 import { Component, ElementRef, type Signal, ViewEncapsulation, afterRenderEffect, contentChild, inject, input } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { TextFieldBoxResources } from "./text-field-box.resources.js";
 import { TextFieldEndDirective } from "./text-field-end.directive.js";
 
@@ -24,7 +25,7 @@ export class TextFieldBoxComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly end: Signal<ElementRef<HTMLElement> | undefined> = contentChild(TextFieldEndDirective, { descendants: false, read: ElementRef });
 
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
 
   public constructor() {
     afterRenderEffect(onCleanup => this.measureEnd(onCleanup));

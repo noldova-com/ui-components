@@ -28,6 +28,7 @@ import type { ILinkReferenceSource } from "../../interfaces/i-link-reference-sou
 import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import { ByteSize } from "../../models/byte-size.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
+import type { IconName } from "../../models/icon-name.js";
 import type { LinkMenuEvent } from "../../models/link-menu-event.js";
 import type { LinkOpenEvent } from "../../models/link-open-event.js";
 import { ListenedEvents } from "../../models/listened-events.js";
@@ -154,7 +155,7 @@ export class MessageComponent {
   protected readonly label: Signal<string> = computed(() => MessageResources.formatMessageLabel(this.author().name, this.absoluteTime(), this.selected()));
   protected readonly errorText: Signal<string> = computed(() => this.error() ?? MessageResources.messageDefaultError);
   protected readonly retries: ListenedEvents<void> = new ListenedEvents<void>();
-  protected readonly copyGlyph: Signal<string> = computed(() => Resources.copyGlyphs[this.copyState()]);
+  protected readonly copyGlyph: Signal<IconName> = computed(() => Resources.copyGlyphs[this.copyState()]);
   protected readonly copyLabel: Signal<string> = computed(() => MessageResources.messageCopyLabels[this.copyState()]);
   protected readonly collapsedLength: Signal<string | null> = computed(() => {
     const height = this.collapsedHeight();

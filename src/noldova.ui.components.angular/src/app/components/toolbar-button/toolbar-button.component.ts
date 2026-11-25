@@ -8,6 +8,7 @@
 
 import { Component, ElementRef, inject, input } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { BusyGuard } from "../../services/busy-guard.js";
 import { DomResources } from "../../../dom-resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
@@ -35,7 +36,7 @@ export class ToolbarButtonComponent {
   protected readonly partResources: typeof ToolbarButtonResources = ToolbarButtonResources;
 
   public readonly label = input.required<string>();
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly isShowingLabel = input<boolean>(false);
   public readonly pressed = input<boolean>();
   public readonly hasMenu = input<boolean>(false);
