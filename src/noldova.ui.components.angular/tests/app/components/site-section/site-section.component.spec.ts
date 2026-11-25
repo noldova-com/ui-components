@@ -88,28 +88,30 @@ describe("SiteSectionComponent", () => {
     for (const width of [1280, 375])
       it(`draws projected copy, with its markup, where and as the string copy is at ${String(width)} pixels, ${mode}`, async () => {
         await page.viewport(width, 800);
+        const read = (root: HTMLElement): { readonly copy: HTMLElement; readonly text: string; readonly lines: string[][]; readonly places: number[][] } => {
+          const block = DomFixture.one(root, "section").getBoundingClientRect();
+          const copy = DomFixture.one(root, ".nol-site-section-copy");
+          const lines = DomFixture.all(root, ".nol-site-section-copy-line");
+          const places = [copy, ...lines, DomFixture.one(root, ".body")].map(t => {
+            const box = t.getBoundingClientRect();
+            return [box.left - block.left, box.top - block.top, box.width, box.height];
+          });
+          return { copy, text: copy.innerText, lines: lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content]), places };
+        };
         await renderAsync(t => t.eyebrow.set(null), mode);
+        const own = read(section());
+        fixture.destroy();
         const projected = TestBed.createComponent(SiteSectionProjectedHostComponent);
         projected.detectChanges();
         await projected.whenStable();
-        const other = DomFixture.one(DomFixture.host(projected), "nol-site-section");
-        const place = (root: HTMLElement, element: Element): number[] => {
-          const block = DomFixture.one(root, "section").getBoundingClientRect();
-          const box = element.getBoundingClientRect();
-          return [box.left - block.left, box.top - block.top, box.width, box.height];
-        };
-        const copy = DomFixture.one(other, ".nol-site-section-copy");
-        const lines = DomFixture.all(other, ".nol-site-section-copy-line");
-        const ownLines = DomFixture.all(section(), ".nol-site-section-copy-line");
+        const other = read(DomFixture.one(DomFixture.host(projected), "nol-site-section"));
 
-        expect([DomFixture.one(copy, "[nolSiteSectionCopy]").parentElement === copy, DomFixture.one(copy, ".key").textContent, copy.innerText, getComputedStyle(copy).color])
-          .toEqual([true, "final", part(".nol-site-section-copy").innerText, color(mode, "text-muted")]);
-        expect(lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content])).toEqual(ownLines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content]));
-        for (const [index, measured] of [copy, ...lines, DomFixture.one(other, ".body")].map(t => place(other, t)).entries()) {
-          const own = place(section(), DomFixture.at([part(".nol-site-section-copy"), ...ownLines, part(".body")], index));
-          for (const [axis, value] of measured.entries())
-            AppearanceFixture.expectPixels(value, DomFixture.at(own, axis));
-        }
+        expect([DomFixture.one(other.copy, "[nolSiteSectionCopy]").parentElement === other.copy, DomFixture.one(other.copy, ".key").textContent, other.text, getComputedStyle(other.copy).color])
+          .toEqual([true, "final", own.text, color(mode, "text-muted")]);
+        expect(other.lines).toEqual(own.lines);
+        for (const [index, place] of other.places.entries())
+          for (const [axis, value] of place.entries())
+            AppearanceFixture.expectPixels(value, DomFixture.at(DomFixture.at(own.places, index), axis));
         projected.destroy();
       });
 
