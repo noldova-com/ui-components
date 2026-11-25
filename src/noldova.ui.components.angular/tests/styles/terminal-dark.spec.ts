@@ -10,19 +10,19 @@ import { onTestFinished } from "vitest";
 
 import { ThemeMode } from "../../src/app/enums/theme-mode";
 import type { Theme } from "../../src/app/models/theme";
-import { Resources } from "../../src/resources";
+import { DomResources } from "../../src/dom-resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { ForcedColorsFixture } from "../fixtures/forced-colors.fixture";
 
 describe("the dark terminal scope", () => {
-  const terminal = Resources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-") && !t.variable.startsWith("--nol-terminal-dark-"));
+  const terminal = DomResources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-") && !t.variable.startsWith("--nol-terminal-dark-"));
   const dark = terminal.map(t => t.variable.replace("--nol-terminal-", "--nol-terminal-dark-"));
   const system: ReadonlyMap<string, string> = new Map([
     ["--nol-terminal-background", "Canvas"], ["--nol-terminal-selection", "Highlight"], ["--nol-terminal-selection-foreground", "HighlightText"]
   ]);
   const read = (element: Element, variables: readonly string[]): string[] => variables.map(t => getComputedStyle(element).getPropertyValue(t).trim());
   const darkColor = (theme: Theme, mode: ThemeMode, variable: string): string | undefined =>
-    Resources.colorTokens.find(t => t.variable === variable.replace("--nol-terminal-", "--nol-terminal-dark-"))?.resolve(theme, mode);
+    DomResources.colorTokens.find(t => t.variable === variable.replace("--nol-terminal-", "--nol-terminal-dark-"))?.resolve(theme, mode);
 
   function probe(parent: HTMLElement): HTMLElement {
     const element = parent.appendChild(document.createElement("div"));
@@ -48,7 +48,7 @@ describe("the dark terminal scope", () => {
   });
 
   it("maps every terminal token to a dark twin the theme carries", () => {
-    expect([terminal.length, dark.every(t => Resources.colorTokens.some(u => u.variable === t))]).toEqual([21, true]);
+    expect([terminal.length, dark.every(t => DomResources.colorTokens.some(u => u.variable === t))]).toEqual([21, true]);
   });
 
   for (const theme of AppearanceFixture.themes)

@@ -8,7 +8,7 @@
 
 import "@noldova/context.core";
 
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 import { ColorSwatch } from "../enums/color-swatch.js";
 import { ThemeMode } from "../enums/theme-mode.js";
 import { ColorChoicesResources } from "./color-choices.resources.js";
@@ -46,7 +46,7 @@ export class ColorChoices {
     const color = Object.isNull(custom) ? null : RgbColor.fromHex(custom);
     if (Object.isNull(color))
       return [];
-    const surfaces = Resources.colorTokens.filter(t => ColorChoicesResources.contrastSurfaceKeys.includes(t.key));
+    const surfaces = DomResources.colorTokens.filter(t => ColorChoicesResources.contrastSurfaceKeys.includes(t.key));
     return [ThemeMode.Light, ThemeMode.Dark].filter(mode => surfaces.some(token => {
       const surface = ColorChoices.readColor(token.resolve(theme, mode));
       return !Object.isNull(surface) && color.contrastWith(surface) < ColorChoicesResources.minimumContrast;

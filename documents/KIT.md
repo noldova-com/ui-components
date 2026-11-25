@@ -209,6 +209,7 @@ These tokens derive from the theme's colors rather than having keys of their own
 | `--nol-text-placeholder` | The muted text color | Placeholder of a prose input |
 | `--nol-added-background`, `--nol-removed-background` | The added or removed color at 10% over the surface below it | Diff backgrounds of changed lines; plain code text on them keeps 4.5:1 |
 | `--nol-added-change`, `--nol-removed-change` | The added or removed color mixed into the code surface, 22% in light mode and 30% in dark | The characters a changed line changes; plain code text on them keeps 4.5:1 |
+| `--nol-brand-mark` | Pure black, #000000, in light mode and pure white, #FFFFFF, in dark, in every theme | A third-party brand mark whose owner allows it only in black or white, such as a site's GitHub or X link |
 | `--nol-button-danger-hover` | The error color with 10% of `--nol-button-danger-text` mixed in | A danger button's hover fill |
 
 The table gives normal-state colors.

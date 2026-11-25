@@ -43,6 +43,8 @@ export class SiteHeaderComponent {
   public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
+  public readonly icon = input<string | null>(null);
+  public readonly iconDark = input<string | null>(null);
   public readonly version = input<string | null>(null);
   public readonly versionHref = input<string | null>(null);
   public readonly links = input<readonly SiteLink[]>([]);

@@ -24,6 +24,7 @@ Under forced colors the checked pill is filled in `Highlight` with `HighlightTex
 Pills the owner makes icon-only draw each option's icon alone, such as the [site header's](site-header.md#theme-switch) theme switch.
 
 - Each is a square at the pill's minimum height with no padding, its Material Symbols glyph centered at the `icon` size in `icon-color`.
+- An owner that sets `--nol-choice-pill-target` larger than an icon pill makes each pill's box that size, with its face, the fill, hover, selection and focus outline, drawn at the pill size centred in it, so the boxes are the hit areas and never cover each other.
 - It is named and tooltipped by the option's title, and its glyph is hidden from screen readers.
 - An option without an icon keeps its title pill.
 - Under forced colors the glyph takes its pill's text color: `HighlightText` when checked, `GrayText` when disabled.

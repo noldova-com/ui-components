@@ -12,6 +12,7 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { ThemeMode } from "../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../src/app/models/default-theme";
 import { ThemePainter } from "../../src/app/services/theme-painter";
+import { DomResources } from "../../src/dom-resources";
 import { Resources } from "../../src/resources";
 import { ForcedColorsFixture } from "../fixtures/forced-colors.fixture";
 
@@ -25,7 +26,7 @@ class ThemeStylesheetHostComponent {
 
 describe("theme stylesheet", () => {
   const modeAttribute = "data-nol-theme-mode";
-  const lookVariables = Resources.lookTokens.map(t => Resources.formatLookVariable(t));
+  const lookVariables = Resources.lookTokens.map(t => DomResources.formatLookVariable(t));
   let fixture: ComponentFixture<ThemeStylesheetHostComponent>;
 
   function painted(mode: ThemeMode): Map<string, string> {
@@ -110,7 +111,7 @@ describe("theme stylesheet", () => {
     const root = document.documentElement;
     const scope = document.createElement("div");
     const painter = new ThemePainter(DefaultTheme.theme);
-    const terminal = Resources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-")).map(t => t.variable);
+    const terminal = DomResources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-")).map(t => t.variable);
     const read = (element: Element): string[] => terminal.map(t => getComputedStyle(element).getPropertyValue(t).trim());
     const system: ReadonlyMap<string, string> = new Map([
       ["--nol-terminal-background", "Canvas"], ["--nol-terminal-selection", "Highlight"], ["--nol-terminal-selection-foreground", "HighlightText"]

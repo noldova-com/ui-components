@@ -24,6 +24,7 @@ import { DefaultTheme } from "../../src/app/models/default-theme";
 import { Typography } from "../../src/app/models/typography";
 import { ThemePainter } from "../../src/app/services/theme-painter";
 import { TypographyPainter } from "../../src/app/services/typography-painter";
+import { DomResources } from "../../src/dom-resources";
 import { Resources } from "../../src/resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../fixtures/dom-change.fixture";
@@ -435,7 +436,7 @@ describe("kit styles in forced colors", () => {
     const root = document.documentElement;
     const scope = document.body.appendChild(document.createElement("div"));
     const painter = new ThemePainter(DefaultTheme.theme);
-    const terminal = Resources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-")).map(t => t.variable);
+    const terminal = DomResources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-")).map(t => t.variable);
     const system: ReadonlyMap<string, string> = new Map([
       ["--nol-terminal-background", "Canvas"], ["--nol-terminal-selection", "Highlight"], ["--nol-terminal-selection-foreground", "HighlightText"]
     ]);

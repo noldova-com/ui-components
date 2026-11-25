@@ -1,7 +1,7 @@
 # @noldova/ui.components.angular
 
 Noldova's interface kit: the design tokens, the fonts and the Angular components that Noldova's products build their interfaces from.
-Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/button`, `@noldova/ui.components.angular/code-block`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery`, `@noldova/ui.components.angular/markdown`, `@noldova/ui.components.angular/testing` and `@noldova/ui.components.angular/typography`.
+Its public API is everything the package exports through its entries: `@noldova/ui.components.angular`, `@noldova/ui.components.angular/button`, `@noldova/ui.components.angular/code-block`, `@noldova/ui.components.angular/code-highlighting`, `@noldova/ui.components.angular/code-highlighting/worker`, `@noldova/ui.components.angular/gallery`, `@noldova/ui.components.angular/markdown`, `@noldova/ui.components.angular/site`, `@noldova/ui.components.angular/testing` and `@noldova/ui.components.angular/typography`.
 Its type declarations carry the documentation of every export and public member, which editors show on hover and in completions.
 
 ## What an app needs
@@ -42,6 +42,7 @@ So the start imports from entries that hold only what it needs, and a lazy page 
 |---|---|
 | `@noldova/ui.components.angular/button` | The button, `ButtonComponent`, with `ButtonSize` and `ButtonVariant`. |
 | `@noldova/ui.components.angular/typography` | The typography, `Typography` and `TypographyPainter`, with `TypographySizing` and `ThemeMode`. |
+| `@noldova/ui.components.angular/site` | The website header and footer every Noldova website shares, `SiteHeaderComponent` (`nol-site-header`) and `SiteFooterComponent` (`nol-site-footer`), with their links, `SiteLink`, `SiteLinkGroup` and `SiteSocialLink`, and the search slot, `SiteSearchDirective`. A website's start, which shows them on every page, imports them from here. |
 | `@noldova/ui.components.angular/code-block` | The code block, `CodeBlockComponent` (`nol-code-block`), with what an app binds on it: `ShellRunOutputDirective`, `ShellRun`, `ShellRunState` and `IShellRunOutputContext`. |
 
 The code block, its toolbar and its tooltips then come in that page's chunk of the app's build.

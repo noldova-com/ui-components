@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
   <span class="nol-switch-text"><ng-content /></span>
   <span class="nol-switch-control">
     <input #track type="checkbox" role="switch" class="nol-switch-track" [checked]="checked()" [attr.aria-label]="label()"
-      [attr.aria-disabled]="disabled() ? resources.trueValue : null" [attr.aria-describedby]="shownReason() === null ? null : reasonId"
+      [attr.aria-disabled]="disabled() ? domResources.trueValue : null" [attr.aria-describedby]="shownReason() === null ? null : reasonId"
       (click)="refuse($event)" (change)="askOwnerToToggle(track)" />
     <span class="nol-switch-knob" aria-hidden="true"></span>
   </span>

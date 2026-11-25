@@ -24,7 +24,7 @@ import { TooltipDefaults } from "../../models/tooltip-defaults.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { OverlayBoundsService } from "../../services/overlay-bounds.service.js";
 import { TooltipPace } from "../../services/tooltip-pace.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { TooltipDirectiveResources } from "./tooltip-directive.resources.js";
 import { TooltipComponent } from "./tooltip.component.js";
 
@@ -66,16 +66,16 @@ export class TooltipDirective {
     const describer = inject(AriaDescriber);
     const focus = inject(FocusMonitor);
     const dismissOnEscape = (event: KeyboardEvent): void => {
-      if (event.key !== Resources.escapeKey)
+      if (event.key !== DomResources.escapeKey)
         return;
       if (this.isShown)
         event.preventDefault();
       if (!this.isShown || !(event.target instanceof Node) || !this.host.contains(event.target))
         this.hide();
     };
-    this.document.addEventListener(Resources.keydownEvent, dismissOnEscape, { capture: true });
+    this.document.addEventListener(DomResources.keydownEvent, dismissOnEscape, { capture: true });
     const subscription = focus.monitor(this.host).subscribe(origin => {
-      if (origin === Resources.keyboardFocusOrigin)
+      if (origin === DomResources.keyboardFocusOrigin)
         this.show();
       else if (Object.isNull(origin))
         this.hide();
@@ -113,7 +113,7 @@ export class TooltipDirective {
         this.hide();
     });
     inject(DestroyRef).onDestroy(() => {
-      this.document.removeEventListener(Resources.keydownEvent, dismissOnEscape, { capture: true });
+      this.document.removeEventListener(DomResources.keydownEvent, dismissOnEscape, { capture: true });
       subscription.unsubscribe();
       opened.unsubscribe();
       focus.stopMonitoring(this.host);
@@ -183,7 +183,7 @@ export class TooltipDirective {
 
   private createOverlay(): AnchoredOverlay {
     const overlay = new AnchoredOverlay(this.injector, TooltipDirectiveResources.tooltipPaneClass);
-    overlay.element.addEventListener(Resources.pointerLeaveEvent, event => this.leave(event, overlay, false));
+    overlay.element.addEventListener(DomResources.pointerLeaveEvent, event => this.leave(event, overlay, false));
     overlay.detachments.subscribe(() => this.tooltip = null);
     overlay.originLost.subscribe(() => this.hide());
     this.overlay = overlay;
@@ -235,8 +235,8 @@ export class TooltipDirective {
       else if (!area.contains(TooltipDirective.pointOf(moved)))
         this.scheduleHide();
     };
-    this.document.addEventListener(Resources.pointermoveEvent, move, { capture: true, passive: true });
-    this.stopGrace = () => this.document.removeEventListener(Resources.pointermoveEvent, move, { capture: true });
+    this.document.addEventListener(DomResources.pointermoveEvent, move, { capture: true, passive: true });
+    this.stopGrace = () => this.document.removeEventListener(DomResources.pointermoveEvent, move, { capture: true });
   }
 
   private watchName(names: MutationObserver): void {
@@ -266,7 +266,7 @@ export class TooltipDirective {
   }
 
   private static labelsOf(host: HTMLElement): HTMLElement[] {
-    const ids = host.getAttribute(TooltipDirectiveResources.ariaLabelledByAttribute)?.split(Resources.ariaIdSeparator) ?? [];
+    const ids = host.getAttribute(TooltipDirectiveResources.ariaLabelledByAttribute)?.split(DomResources.ariaIdSeparator) ?? [];
     return ids.map(id => host.ownerDocument.getElementById(id)).filter(t => t instanceof HTMLElement);
   }
 
@@ -277,7 +277,7 @@ export class TooltipDirective {
   private static nameOf(host: HTMLElement): string {
     const labels = TooltipDirective.labelsOf(host);
     if (labels.length > 0)
-      return TooltipDirective.plain(labels.map(t => TooltipDirective.textOf(t)).join(Resources.ariaIdSeparator));
+      return TooltipDirective.plain(labels.map(t => TooltipDirective.textOf(t)).join(DomResources.ariaIdSeparator));
     const label = TooltipDirective.plain(host.getAttribute(TooltipDirectiveResources.ariaLabelAttribute) ?? String.empty);
     return label.length > 0 ? label : TooltipDirective.plain(TooltipDirective.textOf(host));
   }
@@ -285,12 +285,12 @@ export class TooltipDirective {
   private static textOf(node: Node): string {
     if (node instanceof Text)
       return node.data;
-    if (node instanceof Element && node.getAttribute(Resources.ariaHiddenAttribute) === Resources.trueValue)
+    if (node instanceof Element && node.getAttribute(DomResources.ariaHiddenAttribute) === DomResources.trueValue)
       return String.empty;
     return [...node.childNodes].map(t => TooltipDirective.textOf(t)).join(String.empty);
   }
 
   private static plain(text: string): string {
-    return text.replace(TooltipDirectiveResources.tooltipSpacePattern, Resources.ariaIdSeparator).trim();
+    return text.replace(TooltipDirectiveResources.tooltipSpacePattern, DomResources.ariaIdSeparator).trim();
   }
 }

@@ -13,6 +13,7 @@ import { ComposingKey } from "../../models/composing-key.js";
 import type { TabMarker } from "../../models/tab-marker.js";
 import type { TabStatus } from "../../models/tab-status.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
 import { TabResources } from "./tab.resources.js";
@@ -142,7 +143,7 @@ export class TabComponent {
       event.preventDefault();
       this.keep();
     }
-    else if (event.key === Resources.escapeKey) {
+    else if (event.key === DomResources.escapeKey) {
       event.preventDefault();
       this.settle(() => this.labelCancelled.emit());
     }

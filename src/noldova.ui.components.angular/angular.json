@@ -245,6 +245,26 @@
         }
       }
     },
+    "bundle-site": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-site",
+            "browser": "tests/fixtures/kit-bundles/site-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.site.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
     "bundle-lazy-code-block": {
       "projectType": "application",
       "root": "",

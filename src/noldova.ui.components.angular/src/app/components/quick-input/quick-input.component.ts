@@ -19,6 +19,7 @@ import { QuickInputGroup } from "../../models/quick-input-group.js";
 import type { QuickInputItem } from "../../models/quick-input-item.js";
 import { QuickInputResources } from "./quick-input.resources.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 
 @Component({
@@ -136,7 +137,7 @@ export class QuickInputComponent {
       event.preventDefault();
       this.chooseActive();
     }
-    else if (event.key === Resources.escapeKey && !event.defaultPrevented) {
+    else if (event.key === DomResources.escapeKey && !event.defaultPrevented) {
       event.preventDefault();
       this.choosingQuery.set(null);
       this.dismissed.emit();

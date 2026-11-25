@@ -8,10 +8,12 @@
 
 :host {
   --nol-choice-pill: var(--nol-site-theme-pill);
-  --nol-choice-pill-gap: var(--nol-space-half);
+  --nol-choice-pill-target: var(--nol-pointer-target);
+  --nol-site-theme-reach: max(0px, calc((var(--nol-pointer-target) - var(--nol-site-theme-pill)) / 2));
+  --nol-choice-pill-gap: max(0px, calc(var(--nol-space-half) - 2 * var(--nol-site-theme-reach)));
 
   display: inline-flex;
-  padding: var(--nol-space-half);
+  padding: max(0px, calc(var(--nol-space-half) - var(--nol-site-theme-reach)));
   border-radius: var(--nol-radius-medium);
   background-color: var(--nol-window);
 }

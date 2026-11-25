@@ -10,7 +10,7 @@ import { DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { DestroyRef, Injectable, PLATFORM_ID, inject } from "@angular/core";
 
 import { OverlayBounds } from "../models/overlay-bounds.js";
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 import { OverlayBoundsServiceResources } from "./overlay-bounds-service.resources.js";
 
 @Injectable({ providedIn: "root" })
@@ -36,7 +36,7 @@ export class OverlayBoundsService {
     const top = edge === OverlayBoundsServiceResources.topChrome ? gap : this.look(OverlayBoundsServiceResources.windowRowLook, this.windowRowProbe) + gap;
     const bottom = view.clientHeight - (edge === OverlayBoundsServiceResources.bottomChrome ? gap : this.look(OverlayBoundsServiceResources.statusBarLook, this.statusBarProbe) + gap);
     const side = Object.isNullOrUndefined(edge) ? gap : this.look(OverlayBoundsServiceResources.panelMarginLook, this.panelMarginProbe);
-    return new OverlayBounds(top, view.clientWidth - side, bottom, side, origin.matches(Resources.rightToLeftSelector));
+    return new OverlayBounds(top, view.clientWidth - side, bottom, side, origin.matches(DomResources.rightToLeftSelector));
   }
 
   private watchChanges(): MutationObserver | null {
@@ -46,10 +46,10 @@ export class OverlayBoundsService {
     const changes = new MutationObserver(clear);
     changes.observe(this.document.documentElement, { attributes: true });
     changes.observe(this.document.body, { attributes: true });
-    window.addEventListener(Resources.resizeEvent, clear);
+    window.addEventListener(DomResources.resizeEvent, clear);
     inject(DestroyRef).onDestroy(() => {
       changes.disconnect();
-      window.removeEventListener(Resources.resizeEvent, clear);
+      window.removeEventListener(DomResources.resizeEvent, clear);
       this.holder.remove();
     });
     return changes;
@@ -70,7 +70,7 @@ export class OverlayBoundsService {
     const holder = this.document.createElement("div");
     holder.style.position = "fixed";
     holder.style.visibility = "hidden";
-    holder.setAttribute(Resources.ariaHiddenAttribute, String(true));
+    holder.setAttribute(DomResources.ariaHiddenAttribute, String(true));
     if (this.isInBrowser)
       this.document.body.appendChild(holder);
     return holder;
@@ -78,7 +78,7 @@ export class OverlayBoundsService {
 
   private placeProbe(look: string): HTMLElement {
     const probe = this.document.createElement("div");
-    probe.style.height = `var(${Resources.formatLookVariable(look)})`;
+    probe.style.height = `var(${DomResources.formatLookVariable(look)})`;
     this.holder.appendChild(probe);
     return probe;
   }

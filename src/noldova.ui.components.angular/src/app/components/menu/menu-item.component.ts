@@ -16,6 +16,7 @@ import { map, merge, startWith, switchMap, tap } from "rxjs";
 
 import "@noldova/context.core";
 
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { ChipKind } from "../../enums/chip-kind.js";
 import { OverlaySide } from "../../models/overlay-side.js";
@@ -68,7 +69,7 @@ export class MenuItemComponent {
     const focus = inject(FocusMonitor);
     const modality = inject(InputModalityDetector);
     const subscription = focus.monitor(host).subscribe(origin => {
-      const byKey = origin === Resources.keyboardFocusOrigin
+      const byKey = origin === DomResources.keyboardFocusOrigin
         || (origin === Resources.programFocusOrigin && modality.mostRecentModality === Resources.keyboardModality);
       this.isKeyFocused.set(byKey);
       if (byKey)

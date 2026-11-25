@@ -8,7 +8,7 @@
 
 import { Component, input, output } from "@angular/core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 
 @Component({
   selector: "nol-checkbox",
@@ -19,7 +19,7 @@ import { Resources } from "../../../resources.js";
   }
 })
 export class CheckboxComponent {
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
 
   public readonly checked = input<boolean>(false);
   public readonly disabled = input<boolean>(false);

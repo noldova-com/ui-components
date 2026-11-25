@@ -20,6 +20,8 @@
 }
 
 .nol-choice-pill {
+  --nol-choice-pill-reach: 0px;
+
   box-sizing: border-box;
   max-width: 100%;
   min-height: var(--nol-choice-pill);
@@ -38,12 +40,16 @@
 }
 
 .nol-choice-pill-icon {
+  --nol-choice-pill-reach: max(0px, calc((var(--nol-choice-pill-target, 0px) - var(--nol-choice-pill)) / 2));
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--nol-choice-pill);
-  height: var(--nol-choice-pill);
-  padding: 0;
+  width: calc(var(--nol-choice-pill) + 2 * var(--nol-choice-pill-reach));
+  height: calc(var(--nol-choice-pill) + 2 * var(--nol-choice-pill-reach));
+  padding: var(--nol-choice-pill-reach);
+  border-radius: calc(var(--nol-radius-small) + var(--nol-choice-pill-reach));
+  background-clip: content-box;
 }
 
 .nol-choice-pill-glyph {
@@ -60,7 +66,7 @@
 
   @media (forced-colors: active) {
     outline: var(--nol-border-width) dashed Highlight;
-    outline-offset: calc(var(--nol-border-width) * -1);
+    outline-offset: calc(var(--nol-border-width) * -1 - var(--nol-choice-pill-reach));
   }
 }
 
@@ -101,10 +107,10 @@
 
 .nol-choice-pill:is(:focus-visible, [data-nol-state="Focus"]) {
   outline: var(--nol-border-width) solid var(--nol-accent);
-  outline-offset: calc(var(--nol-border-width) * -1);
+  outline-offset: calc(var(--nol-border-width) * -1 - var(--nol-choice-pill-reach));
 
   @media (forced-colors: active) {
     outline: calc(var(--nol-border-width) * 2) solid Highlight;
-    outline-offset: calc(var(--nol-border-width) * 2);
+    outline-offset: calc(var(--nol-border-width) * 2 - var(--nol-choice-pill-reach));
   }
 }

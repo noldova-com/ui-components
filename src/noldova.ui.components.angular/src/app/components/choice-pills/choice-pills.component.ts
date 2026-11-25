@@ -11,7 +11,7 @@ import { Component, type Signal, computed, inject, input, output } from "@angula
 
 import "@noldova/context.core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import type { SelectOption } from "../../models/select-option.js";
 import { ElementDirectionality } from "../../services/element-directionality.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
@@ -35,7 +35,7 @@ export class ChoicePillsComponent {
   public readonly iconOnly = input<boolean>(false);
   public readonly valueChange = output<string>();
 
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   private readonly directionality: Directionality = inject(Directionality);
   protected readonly tabStop: Signal<string | undefined> = computed(() =>
     (this.options().find(t => t.value === this.value()) ?? this.options().find(t => !t.isDisabled) ?? this.options()[0])?.value);
@@ -49,7 +49,7 @@ export class ChoicePillsComponent {
     if (!(event.target instanceof HTMLButtonElement) || event.altKey || event.ctrlKey || event.metaKey)
       return;
     const pills = [...group.querySelectorAll<HTMLButtonElement>(ChoicePillsResources.choicePillSelector)];
-    const key = this.directionality.value === Resources.rightToLeftDirection ? ChoicePillsResources.choicePillMirroredKeys.get(event.key) ?? event.key : event.key;
+    const key = this.directionality.value === DomResources.rightToLeftDirection ? ChoicePillsResources.choicePillMirroredKeys.get(event.key) ?? event.key : event.key;
     const to = ChoicePillsResources.choicePillTargets.get(key);
     const direction = ChoicePillsResources.choicePillDirections.get(key);
     if (Object.isUndefined(to) || Object.isUndefined(direction))

@@ -39,6 +39,7 @@ import { TooltipTokens } from "../../../../src/app/models/tooltip-tokens";
 import { Typography } from "../../../../src/app/models/typography";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { TypographyPainter } from "../../../../src/app/services/typography-painter";
+import { DomResources } from "../../../../src/dom-resources";
 import { Resources } from "../../../../src/resources";
 import { LinkReferenceChipResources } from "../../../../src/app/components/link-reference/link-reference-chip.resources";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -215,7 +216,7 @@ describe("LinkReferenceChipComponent", () => {
 
   async function hoverAsync(): Promise<HTMLElement> {
     await userEvent.hover(chip());
-    clock.advance(Resources.tooltipRestDelay);
+    clock.advance(DomResources.tooltipRestDelay);
     return shownAsync();
   }
 
@@ -486,7 +487,7 @@ describe("LinkReferenceChipComponent", () => {
   it("shows the card once the pointer rests on the chip, and hides it when the pointer leaves for elsewhere, on Escape and on a press", async () => {
     await renderAsync(itemOf());
     await userEvent.hover(chip());
-    clock.advance(Resources.tooltipRestDelay - 1);
+    clock.advance(DomResources.tooltipRestDelay - 1);
     await fixture.whenStable();
     const isShownBefore = !Object.isNull(card());
     clock.advance(1);
@@ -510,7 +511,7 @@ describe("LinkReferenceChipComponent", () => {
     chip().dispatchEvent(new PointerEvent("pointerleave"));
     const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
     document.body.dispatchEvent(escape);
-    clock.advance(Resources.tooltipRestDelay);
+    clock.advance(DomResources.tooltipRestDelay);
     await fixture.whenStable();
 
     expect([card(), escape.defaultPrevented]).toEqual([null, false]);
@@ -585,7 +586,7 @@ describe("LinkReferenceChipComponent", () => {
     const readingColor = getComputedStyle(part("icon")).backgroundColor;
     chip().focus();
     await userEvent.hover(chip());
-    clock.advance(Resources.tooltipRestDelay);
+    clock.advance(DomResources.tooltipRestDelay);
     await fixture.whenStable();
     const readingCard = card();
     await changeAsync(() => item.set(itemOf()));
@@ -1179,7 +1180,7 @@ describe("LinkReferenceChipComponent", () => {
     DomFixture.host(fixture).after(after);
     onTestFinished(() => after.remove());
     await userEvent.hover(chip());
-    clock.advance(Resources.tooltipRestDelay);
+    clock.advance(DomResources.tooltipRestDelay);
     await fixture.whenStable();
     const isHoverCardless = Object.isNull(card());
     await tabToChipAsync(fixture);
@@ -1332,7 +1333,7 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
   it("opens the item's card below it on hover, and gives the app a link the person opens in the card, closing the card", async () => {
     await renderAsync(itemOf());
     await userEvent.hover(chip());
-    clock.advance(Resources.tooltipRestDelay);
+    clock.advance(DomResources.tooltipRestDelay);
     await DomChangeFixture.untilAsync(() => expect(card()).not.toBeNull());
     await fixture.whenStable();
     const shown = card();

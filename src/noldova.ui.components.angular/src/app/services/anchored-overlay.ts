@@ -18,7 +18,7 @@ import { ClockTokens } from "../models/clock-tokens.js";
 import { ContentMovedEvent } from "../models/content-moved-event.js";
 import type { OverlayAnchoring } from "../models/overlay-anchoring.js";
 import type { OverlayPlacement } from "../models/overlay-placement.js";
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 import { AnchoredOverlayResources } from "./anchored-overlay.resources.js";
 import { OverlayBoundsService } from "./overlay-bounds.service.js";
 import { OverlayOriginsService } from "./overlay-origins.service.js";
@@ -155,18 +155,18 @@ export class AnchoredOverlay {
         this.originAt = originAt;
       }
     }, { injector: this.injector }));
-    window.addEventListener(Resources.resizeEvent, reposition);
-    document.addEventListener(Resources.scrollEvent, scrolled, { capture: true, passive: true });
-    document.addEventListener(Resources.contentMovedEvent, moved, { capture: true });
+    window.addEventListener(DomResources.resizeEvent, reposition);
+    document.addEventListener(DomResources.scrollEvent, scrolled, { capture: true, passive: true });
+    document.addEventListener(DomResources.contentMovedEvent, moved, { capture: true });
     this.cleanups.push(
       () => resize.disconnect(),
       () => this.changes.disconnect(),
       () => rendered.destroy(),
       () => hidden.disconnect(),
       () => cancelFrame?.(),
-      () => window.removeEventListener(Resources.resizeEvent, reposition),
-      () => document.removeEventListener(Resources.scrollEvent, scrolled, { capture: true }),
-      () => document.removeEventListener(Resources.contentMovedEvent, moved, { capture: true }));
+      () => window.removeEventListener(DomResources.resizeEvent, reposition),
+      () => document.removeEventListener(DomResources.scrollEvent, scrolled, { capture: true }),
+      () => document.removeEventListener(DomResources.contentMovedEvent, moved, { capture: true }));
     this.reposition();
   }
 
@@ -174,7 +174,7 @@ export class AnchoredOverlay {
     if (Object.isNull(this.origin) || Object.isNull(this.anchoring))
       return;
     const element = this.element;
-    const direction = this.origin.matches(Resources.rightToLeftSelector) ? Resources.rightToLeftDirection : Resources.leftToRightDirection;
+    const direction = this.origin.matches(DomResources.rightToLeftSelector) ? DomResources.rightToLeftDirection : DomResources.leftToRightDirection;
     if (direction !== this.direction) {
       this.overlay.setDirection(direction);
       this.direction = direction;

@@ -94,6 +94,7 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--nol-pointer-target);
+  min-inline-size: var(--nol-pointer-target);
   border-radius: var(--nol-radius-small);
   color: var(--nol-text);
   font-size: var(--nol-text-panel);
@@ -102,9 +103,17 @@
 }
 
 .nol-site-footer-owner {
+  position: relative;
   border-radius: var(--nol-radius-small);
   color: inherit;
   text-decoration: none;
+}
+
+.nol-site-footer-owner::before {
+  content: "";
+  position: absolute;
+  inset-block: min(0px, calc(50% - var(--nol-pointer-target) / 2));
+  inset-inline: min(0px, calc(50% - var(--nol-pointer-target) / 2));
 }
 
 :is(.nol-site-footer-link, .nol-site-footer-owner):is(:hover, [data-nol-state="Hover"]) {

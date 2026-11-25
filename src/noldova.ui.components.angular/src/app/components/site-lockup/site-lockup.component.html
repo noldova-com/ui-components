@@ -7,7 +7,13 @@ LICENSE file in the root directory of this source tree.
 -->
 
 <a class="nol-site-lockup-link" [href]="href()" [attr.aria-label]="accessibleName()"
-  ><span class="nol-site-wordmark" aria-hidden="true" [style.mask-image]="mask()"><img class="nol-site-wordmark-size" [src]="wordmark()" alt="" [style.aspect-ratio]="reservedRatio()" /></span>
+  >@if (icon(); as iconFile) {
+    <img class="nol-site-lockup-icon" [class.nol-site-lockup-icon-light]="hasDarkIcon()" [src]="iconFile" alt="" />
+  }
+  @if (darkIcon(); as darkFile) {
+    <img class="nol-site-lockup-icon nol-site-lockup-icon-dark" [src]="darkFile" alt="" />
+  }
+  <span class="nol-site-wordmark" aria-hidden="true" [style.mask-image]="mask()"><img class="nol-site-wordmark-size" [src]="wordmark()" alt="" [style.aspect-ratio]="reservedRatio()" /></span>
   @if (shownName(); as productName) {
     <span class="nol-site-lockup-name" aria-hidden="true" data-truncates>{{ productName }}</span>
   }

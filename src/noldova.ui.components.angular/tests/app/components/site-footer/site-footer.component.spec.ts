@@ -18,6 +18,7 @@ import { SiteLinkGroup } from "../../../../src/app/models/site-link-group";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { PointerTargetFixture } from "../../../fixtures/pointer-target.fixture";
 
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 3'%3E%3Crect width='20' height='3'/%3E%3C/svg%3E";
 
@@ -156,6 +157,15 @@ describe("SiteFooterComponent", () => {
 
     expect([...hovered, getComputedStyle(owner).outlineColor]).toEqual(["underline", color("text-strong"), color("accent")]);
   });
+
+  for (const width of [1280, 375])
+    it(`makes every target at least the pointer target in both directions on a ${width}px window, a one-letter link and the notice's link too, the notice's line keeping its height`, async () => {
+      await page.viewport(width, 800);
+      await renderAsync(t => t.groups.update(u => [...u, new SiteLinkGroup("Follow", [new SiteLink("X", "#x")])]));
+
+      PointerTargetFixture.expectTargets(footer(), ["TeamRun home", "Download", "X", "Noldova"]);
+      AppearanceFixture.expectPixels(box(".nol-site-footer-notice").height, Number.parseFloat(getComputedStyle(part(".nol-site-footer-notice")).lineHeight));
+    });
 
   it("says the notice it is given, with projected content at the bottom row's end", async () => {
     await renderAsync(t => t.notice.set("Made by Noldova"));

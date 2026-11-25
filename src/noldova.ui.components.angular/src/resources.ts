@@ -13,180 +13,8 @@ import "@noldova/context.core";
 import { CopyState } from "./app/enums/copy-state.js";
 import { DiffSide } from "./app/enums/diff-side.js";
 import { MarkdownNodeKind } from "./app/enums/markdown-node-kind.js";
-import { ColorToken } from "./app/models/color-token.js";
 
 export class Resources {
-  public static readonly colorTokens: readonly ColorToken[] = [
-    Resources.color("window"),
-    Resources.color("panel"),
-    Resources.color("raised"),
-    Resources.color("card", "raised"),
-    Resources.color("code", "window"),
-    Resources.color("code-header", "raised"),
-    Resources.color("code-header-raised", "code-header"),
-    Resources.color("attachment", "raised"),
-    Resources.color("code-comment"),
-    Resources.color("code-keyword"),
-    Resources.color("code-control"),
-    Resources.color("code-string"),
-    Resources.color("code-number"),
-    Resources.color("code-type"),
-    Resources.color("code-function"),
-    Resources.color("code-variable"),
-    Resources.color("code-regex"),
-    Resources.color("code-meta"),
-    Resources.color("text-selection"),
-    Resources.color("text-selection-foreground"),
-    Resources.color("terminal-background", "panel"),
-    Resources.color("terminal-foreground", "text"),
-    Resources.color("terminal-cursor", "accent"),
-    Resources.color("terminal-selection", "selected"),
-    Resources.color("terminal-selection-foreground", "text"),
-    Resources.color("terminal-ansi-black"),
-    Resources.color("terminal-ansi-red"),
-    Resources.color("terminal-ansi-green"),
-    Resources.color("terminal-ansi-yellow"),
-    Resources.color("terminal-ansi-blue"),
-    Resources.color("terminal-ansi-magenta"),
-    Resources.color("terminal-ansi-cyan"),
-    Resources.color("terminal-ansi-white"),
-    Resources.color("terminal-ansi-bright-black"),
-    Resources.color("terminal-ansi-bright-red"),
-    Resources.color("terminal-ansi-bright-green"),
-    Resources.color("terminal-ansi-bright-yellow"),
-    Resources.color("terminal-ansi-bright-blue"),
-    Resources.color("terminal-ansi-bright-magenta"),
-    Resources.color("terminal-ansi-bright-cyan"),
-    Resources.color("terminal-ansi-bright-white"),
-    Resources.color("terminal-dark-background"),
-    Resources.color("terminal-dark-foreground"),
-    Resources.color("terminal-dark-cursor"),
-    Resources.color("terminal-dark-selection"),
-    Resources.color("terminal-dark-selection-foreground"),
-    Resources.color("terminal-dark-ansi-black"),
-    Resources.color("terminal-dark-ansi-red"),
-    Resources.color("terminal-dark-ansi-green"),
-    Resources.color("terminal-dark-ansi-yellow"),
-    Resources.color("terminal-dark-ansi-blue"),
-    Resources.color("terminal-dark-ansi-magenta"),
-    Resources.color("terminal-dark-ansi-cyan"),
-    Resources.color("terminal-dark-ansi-white"),
-    Resources.color("terminal-dark-ansi-bright-black"),
-    Resources.color("terminal-dark-ansi-bright-red"),
-    Resources.color("terminal-dark-ansi-bright-green"),
-    Resources.color("terminal-dark-ansi-bright-yellow"),
-    Resources.color("terminal-dark-ansi-bright-blue"),
-    Resources.color("terminal-dark-ansi-bright-magenta"),
-    Resources.color("terminal-dark-ansi-bright-cyan"),
-    Resources.color("terminal-dark-ansi-bright-white"),
-    Resources.color("text"),
-    Resources.color("text-strong", "text"),
-    Resources.color("text-muted"),
-    Resources.color("icon-color", "text"),
-    Resources.color("card-border", "widget-border"),
-    Resources.color("border"),
-    Resources.color("accent"),
-    Resources.color("sash-active", "accent"),
-    Resources.color("link"),
-    Resources.color("mention", "accent"),
-    Resources.color("hover"),
-    Resources.color("selected", "list-active"),
-    Resources.color("toolbar-hover"),
-    Resources.color("scrollbar"),
-    Resources.color("scrollbar-active", "scrollbar"),
-    Resources.color("title-bar"),
-    Resources.color("title-bar-text"),
-    Resources.color("input"),
-    Resources.color("input-border"),
-    Resources.color("input-text"),
-    Resources.color("placeholder"),
-    Resources.color("button"),
-    Resources.color("button-text"),
-    Resources.color("button-hover"),
-    Resources.color("button-secondary"),
-    Resources.color("button-secondary-text"),
-    Resources.color("button-secondary-hover"),
-    Resources.color("button-danger-text", "panel"),
-    Resources.color("dropdown", "input"),
-    Resources.color("dropdown-border", "input-border"),
-    Resources.color("dropdown-list", "input"),
-    Resources.color("list-active"),
-    Resources.color("list-active-text"),
-    Resources.color("list-highlight"),
-    Resources.color("button-border"),
-    Resources.color("setting-title", "text"),
-    Resources.color("hover-widget", "raised"),
-    Resources.color("hover-widget-border", "widget-border"),
-    Resources.color("quick-input", "raised"),
-    Resources.color("quick-input-key-border", "widget-border"),
-    Resources.color("menu-separator", "widget-border"),
-    Resources.color("widget-shadow"),
-    Resources.color("widget-border", "card-border"),
-    Resources.color("dialog", "raised"),
-    Resources.color("menu"),
-    Resources.color("menu-text"),
-    Resources.color("menu-border"),
-    Resources.color("checkbox"),
-    Resources.color("checkbox-border"),
-    Resources.color("switch-knob"),
-    Resources.color("badge"),
-    Resources.color("badge-text"),
-    Resources.color("progress", "accent"),
-    Resources.color("notification"),
-    Resources.color("notification-border"),
-    Resources.color("error"),
-    Resources.color("removed", "error"),
-    Resources.color("added"),
-    Resources.color("status-ok"),
-    Resources.color("status-failed"),
-    Resources.color("warning"),
-    Resources.color("warning-background"),
-    Resources.color("error-background"),
-    Resources.color("docking-preview", "selected"),
-    Resources.color("docking-preview-border", "accent"),
-    Resources.color("author-1", "accent"),
-    Resources.color("author-2", "accent"),
-    Resources.color("author-3", "accent"),
-    Resources.color("author-4", "accent"),
-    Resources.color("author-5", "accent"),
-    Resources.color("author-6", "accent"),
-    Resources.color("author-7", "accent"),
-    Resources.color("author-8", "accent"),
-    Resources.color("swatch-blue", "author-1"),
-    Resources.color("swatch-teal", "author-2"),
-    Resources.color("swatch-green", "author-3"),
-    Resources.color("swatch-amber", "author-4"),
-    Resources.color("swatch-orange", "author-5"),
-    Resources.color("swatch-red", "author-6"),
-    Resources.color("swatch-magenta", "author-7"),
-    Resources.color("swatch-purple", "author-8"),
-    Resources.color("avatar-default", "selected"),
-    Resources.color("avatar-default-text", "text"),
-    Resources.color("avatar-teal", "avatar-default"),
-    Resources.color("avatar-teal-text", "avatar-default-text"),
-    Resources.color("avatar-green", "avatar-default"),
-    Resources.color("avatar-green-text", "avatar-default-text"),
-    Resources.color("avatar-lime", "avatar-default"),
-    Resources.color("avatar-lime-text", "avatar-default-text"),
-    Resources.color("avatar-amber", "avatar-default"),
-    Resources.color("avatar-amber-text", "avatar-default-text"),
-    Resources.color("avatar-orange", "avatar-default"),
-    Resources.color("avatar-orange-text", "avatar-default-text"),
-    Resources.color("avatar-red", "avatar-default"),
-    Resources.color("avatar-red-text", "avatar-default-text"),
-    Resources.color("avatar-rose", "avatar-default"),
-    Resources.color("avatar-rose-text", "avatar-default-text"),
-    Resources.color("avatar-pink", "avatar-default"),
-    Resources.color("avatar-pink-text", "avatar-default-text"),
-    Resources.color("avatar-purple", "avatar-default"),
-    Resources.color("avatar-purple-text", "avatar-default-text"),
-    Resources.color("avatar-violet", "avatar-default"),
-    Resources.color("avatar-violet-text", "avatar-default-text"),
-    Resources.color("avatar-indigo", "avatar-default"),
-    Resources.color("avatar-indigo-text", "avatar-default-text"),
-    Resources.color("avatar-cyan", "avatar-default"),
-    Resources.color("avatar-cyan-text", "avatar-default-text")
-  ];
   public static readonly lookTokens: readonly string[] = [
     "radius-hover",
     "radius-small",
@@ -267,6 +95,7 @@ export class Resources {
     "site-padding-inline",
     "site-padding-inline-phone",
     "site-wordmark",
+    "site-icon",
     "site-search-width",
     "site-footer-padding-block",
     "site-footer-padding-block-phone",
@@ -413,25 +242,16 @@ export class Resources {
   public static readonly badgeLimit: number = 99;
   public static readonly badgeOverflow: string = "99+";
   public static readonly horizontalOrientation: string = "horizontal";
-  public static readonly tooltipRestDelay: number = 500;
-  public static readonly resizeEvent: string = "resize";
-  public static readonly pointerLeaveEvent: "pointerleave" = "pointerleave";
-  public static readonly scrollEvent: string = "scroll";
-  public static readonly contentMovedEvent: string = "nol-content-moved";
   public static readonly focusInEvent: string = "focusin";
-  public static readonly keyboardFocusOrigin: FocusOrigin = "keyboard";
   public static readonly mouseFocusOrigin: FocusOrigin = "mouse";
   public static readonly programFocusOrigin: FocusOrigin = "program";
   public static readonly keyboardModality: InputModality = "keyboard";
   public static readonly menuPaneClass: string = "nol-menu-pane";
-  public static readonly ariaHiddenAttribute: string = "aria-hidden";
-  public static readonly ariaIdSeparator: string = " ";
   public static readonly dropdownPaneClass: string = "nol-dropdown-pane";
   public static readonly nearestEdge: ScrollLogicalPosition = "nearest";
   public static readonly tabKey: string = "Tab";
   public static readonly spaceKey: string = " ";
   public static readonly twistieGlyph: string = "chevron_right";
-  public static readonly trueValue: string = "true";
   public static readonly arrowDownKey: string = "ArrowDown";
   public static readonly arrowUpKey: string = "ArrowUp";
   public static readonly homeKey: string = "Home";
@@ -439,9 +259,7 @@ export class Resources {
   public static readonly pageDownKey: string = "PageDown";
   public static readonly pageUpKey: string = "PageUp";
   public static readonly enterKey: string = "Enter";
-  public static readonly escapeKey: string = "Escape";
   public static readonly inputMethodKeyCode: number = 229;
-  public static readonly keydownEvent: "keydown" = "keydown";
   public static readonly wordWrapGlyph: string = "wrap_text";
   public static readonly wordWrapLabel: string = "Word wrap";
   public static readonly codeBlockHeaderClass: string = "nol-code-block-header";
@@ -546,7 +364,6 @@ export class Resources {
   public static readonly menuKey: string = "F10";
   public static readonly clickEvent: string = "click";
   public static readonly mousedownEvent: "mousedown" = "mousedown";
-  public static readonly pointermoveEvent: "pointermove" = "pointermove";
   public static readonly secondaryButton: number = 2;
   public static readonly middleButton: number = 1;
   public static readonly primaryButton: number = 0;
@@ -559,7 +376,6 @@ export class Resources {
   public static readonly focusableSelector: string = "a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], [contenteditable=\"true\"]";
   public static readonly forcedColorsQuery: string = "(forced-colors: active)";
   public static readonly reducedMotionQuery: string = "(prefers-reduced-motion: reduce)";
-  public static readonly rightToLeftSelector: string = ":dir(rtl)";
   public static readonly runningClockInterval: number = 1000;
   public static readonly toolCallLineBreak: string = "\n";
   public static readonly permissionAllowOnceId: string = "allow-once";
@@ -568,16 +384,10 @@ export class Resources {
   public static readonly permissionDenyId: string = "deny";
   public static readonly permissionDenyLabel: string = "Deny";
   public static readonly permissionLineBreak: string = "\n";
-  public static readonly rightToLeftDirection: "rtl" = "rtl";
-  public static readonly leftToRightDirection: "ltr" = "ltr";
   public static readonly diffSideNames: Readonly<Record<DiffSide, string>> = {
     [DiffSide.Old]: "old",
     [DiffSide.New]: "new"
   };
-
-  public static formatLookVariable(name: string): string {
-    return `--nol-${name}`;
-  }
 
   public static formatShapeAttribute(control: string): string {
     return `data-nol-${control}-shape`;
@@ -674,7 +484,4 @@ export class Resources {
     return minutes > 0 ? `${minutes}m ${whole % Resources.secondsPerMinute}s` : `${whole}s`;
   }
 
-  private static color(key: string, fallbackKey: string | null = null): ColorToken {
-    return new ColorToken(`--nol-${key}`, key, fallbackKey);
-  }
 }

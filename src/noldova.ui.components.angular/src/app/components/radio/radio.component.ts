@@ -10,7 +10,7 @@ import { Component, type Signal, computed, inject, input, output } from "@angula
 
 import "@noldova/context.core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { RadioGroupComponent } from "./radio-group.component.js";
 
 @Component({
@@ -30,7 +30,7 @@ export class RadioComponent {
   public readonly label = input<string | null>(null);
   public readonly checkedChange = output<boolean>();
 
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly name: string | null = this.group?.name ?? null;
   protected readonly isChecked: Signal<boolean> = computed(() => Object.isNull(this.group) ? this.checked() : this.group.value() === this.value());
   protected readonly tabIndex: Signal<number | null> = computed(() => {

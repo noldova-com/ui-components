@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 -->
 
 <div #group class="nol-color-chooser-group" role="radiogroup" [attr.aria-label]="label()" [attr.aria-describedby]="descriptions()"
-  [attr.aria-disabled]="disabled() ? resources.trueValue : null" (keydown)="move($event, group)">
+  [attr.aria-disabled]="disabled() ? domResources.trueValue : null" (keydown)="move($event, group)">
   @for (item of items(); track $index; let index = $index) {
     @if (item.kind === kinds.Custom && !disabled()) {
       <button type="button" role="radio" class="nol-color-chooser-item" [class.nol-color-chooser-item-checked]="isChecked(item)" [attr.aria-checked]="isChecked(item)"
@@ -22,7 +22,7 @@ LICENSE file in the root directory of this source tree.
       </button>
     } @else {
       <button type="button" role="radio" class="nol-color-chooser-item" [class.nol-color-chooser-item-checked]="isChecked(item)" [attr.aria-checked]="isChecked(item)"
-        [attr.aria-label]="item.label" [nolTooltip]="item.label" [attr.aria-disabled]="disabled() ? resources.trueValue : null"
+        [attr.aria-label]="item.label" [nolTooltip]="item.label" [attr.aria-disabled]="disabled() ? domResources.trueValue : null"
         [attr.tabindex]="index === tabStop() ? 0 : -1" (click)="choose(item)">
         @if (fill(item); as color) {
           <span class="nol-color-chooser-fill" [style.background-color]="color"></span>

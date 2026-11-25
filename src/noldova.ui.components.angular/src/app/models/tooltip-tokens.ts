@@ -8,10 +8,10 @@
 
 import { InjectionToken } from "@angular/core";
 
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 import { TooltipTokensResources } from "./tooltip-tokens.resources.js";
 
 export class TooltipTokens {
   public static readonly restDelay: InjectionToken<number> =
-    new InjectionToken<number>(TooltipTokensResources.tooltipRestDelayToken, { providedIn: "root", factory: () => Resources.tooltipRestDelay });
+    new InjectionToken<number>(TooltipTokensResources.tooltipRestDelayToken, { providedIn: "root", factory: () => DomResources.tooltipRestDelay });
 }

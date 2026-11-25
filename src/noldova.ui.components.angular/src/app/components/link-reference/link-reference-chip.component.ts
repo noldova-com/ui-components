@@ -26,6 +26,7 @@ import { PointerGraceArea } from "../../models/pointer-grace-area.js";
 import { TooltipTokens } from "../../models/tooltip-tokens.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { OverlayBoundsService } from "../../services/overlay-bounds.service.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { LinkReferenceCardComponent } from "./link-reference-card.component.js";
 import { LinkReferenceChipResources } from "./link-reference-chip.resources.js";
@@ -77,14 +78,14 @@ export class LinkReferenceChipComponent {
   public constructor() {
     const focus = this.focus;
     const dismissOnEscape = (event: KeyboardEvent): void => {
-      if (event.key !== Resources.escapeKey || !this.isShown)
+      if (event.key !== DomResources.escapeKey || !this.isShown)
         return;
       event.preventDefault();
       this.hide();
     };
-    this.document.addEventListener(Resources.keydownEvent, dismissOnEscape, { capture: true });
+    this.document.addEventListener(DomResources.keydownEvent, dismissOnEscape, { capture: true });
     const subscription = focus.monitor(this.host).subscribe(origin => {
-      if (origin === Resources.keyboardFocusOrigin)
+      if (origin === DomResources.keyboardFocusOrigin)
         this.show();
     });
     effect(() => {
@@ -95,7 +96,7 @@ export class LinkReferenceChipComponent {
         this.setCard(reference, reference.state);
     });
     inject(DestroyRef).onDestroy(() => {
-      this.document.removeEventListener(Resources.keydownEvent, dismissOnEscape, { capture: true });
+      this.document.removeEventListener(DomResources.keydownEvent, dismissOnEscape, { capture: true });
       subscription.unsubscribe();
       focus.stopMonitoring(this.host);
       this.cancelPending();
@@ -142,7 +143,7 @@ export class LinkReferenceChipComponent {
     if (event.key !== Resources.tabKey || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey || Object.isUndefined(first))
       return;
     event.preventDefault();
-    this.focus.focusVia(first, Resources.keyboardFocusOrigin);
+    this.focus.focusVia(first, DomResources.keyboardFocusOrigin);
   }
 
   protected leaveFocus(event: FocusEvent): void {
@@ -176,7 +177,7 @@ export class LinkReferenceChipComponent {
   }
 
   private keepFocusRoute(overlay: AnchoredOverlay): void {
-    overlay.element.addEventListener(Resources.keydownEvent, event => {
+    overlay.element.addEventListener(DomResources.keydownEvent, event => {
       if (event.key !== Resources.tabKey || event.altKey || event.ctrlKey || event.metaKey)
         return;
       const links = this.linkElements();
@@ -185,7 +186,7 @@ export class LinkReferenceChipComponent {
         return;
       if (event.shiftKey) {
         event.preventDefault();
-        this.focus.focusVia(this.host, Resources.keyboardFocusOrigin);
+        this.focus.focusVia(this.host, DomResources.keyboardFocusOrigin);
       }
       else
         this.focus.focusVia(this.host, Resources.programFocusOrigin);
@@ -201,7 +202,7 @@ export class LinkReferenceChipComponent {
 
   private createOverlay(): AnchoredOverlay {
     const overlay = new AnchoredOverlay(this.injector, LinkReferenceChipResources.linkReferenceCardPaneClass);
-    overlay.element.addEventListener(Resources.pointerLeaveEvent, event => {
+    overlay.element.addEventListener(DomResources.pointerLeaveEvent, event => {
       if (!this.hasFocusInCard())
         this.leave(event, overlay.element, this.host);
     });
@@ -228,8 +229,8 @@ export class LinkReferenceChipComponent {
       else if (!area.contains(LinkReferenceChipComponent.pointOf(moved)))
         this.hide();
     };
-    this.document.addEventListener(Resources.pointermoveEvent, move, { capture: true, passive: true });
-    this.stopGrace = () => this.document.removeEventListener(Resources.pointermoveEvent, move, { capture: true });
+    this.document.addEventListener(DomResources.pointermoveEvent, move, { capture: true, passive: true });
+    this.stopGrace = () => this.document.removeEventListener(DomResources.pointermoveEvent, move, { capture: true });
   }
 
   private cancelPending(): void {

@@ -52,6 +52,7 @@ import { Announcer } from "../../services/announcer.js";
 import { ClipboardWriter } from "../../services/clipboard-writer.js";
 import type { ClockTicker } from "../../services/clock-ticker.js";
 import { SharedClock } from "../../services/shared-clock.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { AvatarComponent } from "../avatar/avatar.component.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -287,7 +288,7 @@ export class MessageComponent {
     if (event.defaultPrevented)
       return;
     event.preventDefault();
-    const origin = event.button === Resources.secondaryButton ? Resources.mouseFocusOrigin : Resources.keyboardFocusOrigin;
+    const origin = event.button === Resources.secondaryButton ? Resources.mouseFocusOrigin : DomResources.keyboardFocusOrigin;
     this.contextMenuRequest.emit(new MessageMenuRequest(new DOMRect(event.clientX, event.clientY, 0, 0), origin, this.focusedPart(), event, this.attachmentOf(event)));
   }
 
@@ -303,7 +304,7 @@ export class MessageComponent {
     const bounds = target.getBoundingClientRect();
     if (target.matches(MessageResources.markdownLinkSelector) && !this.openLinkMenuAheadOfKeysOwn(target, bounds))
       return;
-    this.contextMenuRequest.emit(new MessageMenuRequest(new DOMRect(bounds.left, bounds.bottom, 0, 0), Resources.keyboardFocusOrigin, target, event, this.attachmentOf(event)));
+    this.contextMenuRequest.emit(new MessageMenuRequest(new DOMRect(bounds.left, bounds.bottom, 0, 0), DomResources.keyboardFocusOrigin, target, event, this.attachmentOf(event)));
   }
 
   protected releaseMenuKey(event: KeyboardEvent): void {
