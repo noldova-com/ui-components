@@ -24,12 +24,13 @@ import { PointerTargetFixture } from "../../../fixtures/pointer-target.fixture";
 const formatWordmark = (width: number, height: number): string =>
   `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}'/%3E%3C/svg%3E`;
 const unreadable = "data:image/svg+xml,unreadable";
+const darkIcon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Crect width='2' height='2'/%3E%3C/svg%3E";
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteHeaderComponent, SiteSearchDirective],
   template: `
-    <nol-site-header [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
+    <nol-site-header [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [icon]="productIcon()" [iconDark]="productIconDark()" [name]="name()" [version]="version()" [versionHref]="versionHref()" [links]="links()" [social]="social()"
       [downloadHref]="downloadHref()" [downloadLabel]="downloadLabel()" [wide]="wide()" [contentId]="contentId()" [(menuOpen)]="menuOpen" [(searchOpen)]="searchOpen">
       @if (hasSearch()) {
         <input nolSiteSearch type="search" aria-label="Search" />
@@ -41,6 +42,8 @@ const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 class SiteHeaderHostComponent {
   public readonly wordmark = signal(formatWordmark(20, 3));
   public readonly wordmarkRatio = signal(20 / 3);
+  public readonly productIcon = signal<string | null>(null);
+  public readonly productIconDark = signal<string | null>(null);
   public readonly name = signal<string | null>("TeamRun");
   public readonly version = signal<string | null>(null);
   public readonly versionHref = signal<string | null>(null);
@@ -90,6 +93,10 @@ describe("SiteHeaderComponent", () => {
 
   async function phoneAsync(): Promise<void> {
     await page.viewport(375, 812);
+  }
+
+  async function narrowAsync(): Promise<void> {
+    await page.viewport(600, 812);
   }
 
   async function openAsync(): Promise<void> {
@@ -321,6 +328,89 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(box(".nol-site-download").right, contentRight());
   });
 
+  it("draws no icon, and no box for one, without the product's icon", async () => {
+    await renderAsync();
+
+    expect([maybe(".nol-site-lockup-icon"), box(".nol-site-wordmark").left - box(".nol-site-lockup-link").left]).toEqual([null, 0]);
+  });
+
+  for (const width of [1280, 600, 390])
+    it(`draws the product's icon at the site icon size a space-3 step before the wordmark, centred on it, inside the lockup's link, on a ${width}px window`, async () => {
+      await page.viewport(width, 800);
+      await renderAsync(t => t.productIcon.set(icon));
+      const mark = DomFixture.oneOf(header(), "img.nol-site-lockup-icon", HTMLImageElement);
+      const glyph = mark.getBoundingClientRect();
+      const word = box(".nol-site-wordmark");
+      const link = box(".nol-site-lockup-link");
+      const size = AppearanceFixture.measureLook("site-icon");
+
+      AppearanceFixture.expectPixels(glyph.width, size);
+      AppearanceFixture.expectPixels(glyph.height, size);
+      AppearanceFixture.expectPixels(word.left - glyph.right, AppearanceFixture.measureLook("space-3"));
+      AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, word.top + word.height / 2);
+      expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "TeamRun home"]);
+      expect([glyph.left >= link.left - 1 / 32, word.right <= link.right + 1 / 32]).toEqual([true, true]);
+    });
+
+  it("holds the icon's box before its file loads, so the wordmark doesn't move when it does", async () => {
+    await renderAsync(t => t.productIcon.set(unreadable));
+    const glyph = box(".nol-site-lockup-icon");
+
+    AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-icon"));
+    AppearanceFixture.expectPixels(box(".nol-site-wordmark").left - glyph.right, AppearanceFixture.measureLook("space-3"));
+  });
+
+  for (const mode of ["Light", "Dark"])
+    it(`draws the ${mode === "Dark" ? "dark" : "light"} icon alone when the site passes both and the page is in ${mode} mode, and the one icon in either mode without a dark one`, async () => {
+      await renderAsync(t => {
+        t.productIcon.set(icon);
+        t.productIconDark.set(darkIcon);
+      });
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
+      const drawn = all(".nol-site-lockup-icon").filter(t => getComputedStyle(t).display !== "none").map(t => t.getAttribute("src"));
+      fixture.destroy();
+      await renderAsync(t => t.productIcon.set(icon));
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
+      const single = all(".nol-site-lockup-icon").filter(t => getComputedStyle(t).display !== "none").map(t => t.getAttribute("src"));
+
+      expect([drawn, single]).toEqual([[mode === "Dark" ? darkIcon : icon], [icon]]);
+    });
+
+  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark and nothing in the bar overlapping, and Download in the open menu", async () => {
+    await page.viewport(390, 800);
+    await renderAsync(t => {
+      t.productIcon.set(icon);
+      t.wordmark.set(formatWordmark(26, 3));
+      t.wordmarkRatio.set(26 / 3);
+    });
+    const link = box(".nol-site-lockup-link");
+    const parts = [box(".nol-site-lockup-icon"), box(".nol-site-wordmark")];
+    const bar = all(".nol-site-header-bar > *").filter(t => getComputedStyle(t).display !== "none" && t.getBoundingClientRect().width > 0).map(t => t.getBoundingClientRect());
+    const overlaps = bar.flatMap((t, i) => bar.slice(i + 1).filter(u => t.left < u.right - 1 / 32 && u.left < t.right - 1 / 32 && t.top < u.bottom - 1 / 32 && u.top < t.bottom - 1 / 32));
+
+    expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download")]).toEqual([true, 0, false]);
+    AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 26 / 3);
+    await openAsync();
+
+    expect([shown(".nol-site-download"), box(".nol-site-download").top > box(".nol-site-header-tools").bottom]).toEqual([true, true]);
+  });
+
+  it("never shrinks the lockup below its icon and whole wordmark when the bar is too tight for them, on a 480px window with Download in the bar", async () => {
+    await page.viewport(480, 800);
+    await renderAsync(t => {
+      t.productIcon.set(icon);
+      t.wordmark.set(formatWordmark(24, 1));
+      t.wordmarkRatio.set(24);
+    });
+    const link = box(".nol-site-lockup-link");
+    const parts = [box(".nol-site-lockup-icon"), box(".nol-site-wordmark")];
+    const marks = AppearanceFixture.measureLook("site-icon") + AppearanceFixture.measureLook("space-3") + AppearanceFixture.measureLook("site-wordmark") * 24;
+
+    expect([shown(".nol-site-download"), parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), box("nol-site-lockup").width >= marks - 1 / 32])
+      .toEqual([true, true, true]);
+    AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 24);
+  });
+
   it("draws each social link as an icon button in the strong text color, named and tooltipped by its label, its icon a mask at the icon size", async () => {
     await renderAsync();
     const links = all(".nol-site-social");
@@ -358,7 +448,7 @@ describe("SiteHeaderComponent", () => {
       expect(drawn).toEqual(drawn.map(() => expected));
     });
 
-  it("makes every target in the bar at least the pointer target in both directions, the theme switch's pills through hit areas that don't cover each other", async () => {
+  it("makes every target in the bar at least the pointer target in both directions, the theme switch's pills boxes that hold their faces centred and don't cover each other, the switch centred on the social links", async () => {
     await page.viewport(1280, 800);
     await renderAsync(t => {
       t.version.set("v0.4.2");
@@ -366,7 +456,21 @@ describe("SiteHeaderComponent", () => {
     });
 
     PointerTargetFixture.expectTargets(header(), ["v0.4.2", "Features", "GitHub", "X", "Light", "Dark", "System", "Download"]);
-    AppearanceFixture.expectPixels(box("nol-site-theme-switch .nol-choice-pill").height, AppearanceFixture.measureLook("site-theme-pill"));
+    const pills = all("nol-site-theme-switch .nol-choice-pill");
+    const size = AppearanceFixture.measureLook("site-theme-pill");
+    const target = AppearanceFixture.measureLook("pointer-target");
+    const centre = (rectangle: DOMRect): number => rectangle.top + rectangle.height / 2;
+
+    for (const pill of pills) {
+      const rectangle = pill.getBoundingClientRect();
+      const padding = Number.parseFloat(getComputedStyle(pill).paddingTop);
+      AppearanceFixture.expectPixels(rectangle.height, target);
+      AppearanceFixture.expectPixels(rectangle.height - padding * 2, size);
+    }
+    for (const [index, pill] of pills.slice(1).entries())
+      expect(pill.getBoundingClientRect().left >= DomFixture.at(pills, index).getBoundingClientRect().right - 1 / 32).toBe(true);
+    AppearanceFixture.expectPixels(box("nol-site-theme-switch").height, target);
+    AppearanceFixture.expectPixels(centre(box("nol-site-theme-switch")), centre(box(".nol-site-social")));
   });
 
   it("makes every target in the open phone menu at least the pointer target in both directions", async () => {
@@ -441,8 +545,8 @@ describe("SiteHeaderComponent", () => {
   });
 
   for (const theme of AppearanceFixture.themes)
-    it(`keeps the lockup, Download and a closed menu button a menu row high on a phone, its glyph at the content's end, hiding the rest, with the ${theme.id} theme`, async () => {
-      await phoneAsync();
+    it(`keeps the lockup, Download and a closed menu button a menu row high on a 600px window, its glyph at the content's end, hiding the rest, with the ${theme.id} theme`, async () => {
+      await narrowAsync();
       await renderAsync(t => t.hasSearch.set(true), theme);
       const panel = DomFixture.one(document, `#${menuButton().getAttribute("aria-controls")}`);
       const row = AppearanceFixture.measureLook("site-menu-row");
@@ -466,7 +570,7 @@ describe("SiteHeaderComponent", () => {
       AppearanceFixture.expectPixels(icon.left - download.getBoundingClientRect().left, AppearanceFixture.measureLook("space-3") - AppearanceFixture.measureLook("space-half"));
     });
 
-  it("opens the links in rows and the tools under the bar on a phone, the theme switch at the end, without the search", async () => {
+  it("opens the links in rows, the tools and Download under the bar on a phone, the theme switch at the end, without the search", async () => {
     await phoneAsync();
     await renderAsync(t => t.hasSearch.set(true));
     await openAsync();
@@ -484,7 +588,9 @@ describe("SiteHeaderComponent", () => {
     expect(shown(".nol-site-header-search")).toBe(false);
     AppearanceFixture.expectPixels(DomFixture.at(rows, 0).top - bar().getBoundingClientRect().top - AppearanceFixture.measureLook("site-header-height"), AppearanceFixture.measureLook("space-1"));
     AppearanceFixture.expectPixels(box(".nol-site-header-tools").top - DomFixture.at(rows, rows.length - 1).bottom, AppearanceFixture.measureLook("space-3"));
-    AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-header-tools").bottom, AppearanceFixture.measureLook("space-4"));
+    AppearanceFixture.expectPixels(box(".nol-site-download").top - box(".nol-site-header-tools").bottom, AppearanceFixture.measureLook("space-3"));
+    AppearanceFixture.expectPixels(box(".nol-site-download").width, edges().width - inset * 2);
+    AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-download").bottom, AppearanceFixture.measureLook("space-4"));
     for (const target of [...all(".nol-site-social").map(t => t.getBoundingClientRect()), ...pills]) {
       AppearanceFixture.expectPixels(target.width, rowHeight);
       AppearanceFixture.expectPixels(target.height, rowHeight);
@@ -499,10 +605,10 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(box("nol-site-theme-switch").right, edges().right - inset);
   });
 
-  it("hides the search button on a desktop window and on a phone without a search", async () => {
+  it("hides the search button on a desktop window and on a 600px window without a search", async () => {
     await renderAsync(t => t.hasSearch.set(true));
     const desktop = shown(".nol-site-search-button");
-    await phoneAsync();
+    await narrowAsync();
     host.hasSearch.set(false);
     fixture.detectChanges();
 
@@ -686,10 +792,10 @@ describe("SiteHeaderComponent", () => {
     await userEvent.keyboard("{Escape}");
     await fixture.whenStable();
     const closed = [menuButton().getAttribute("aria-expanded"), document.activeElement === menuButton(), shown(".nol-site-header-nav")];
-    part(".nol-site-download").focus();
+    part(".nol-site-lockup-link").focus();
     await userEvent.keyboard("{Escape}");
 
-    expect([closed, document.activeElement === part(".nol-site-download")]).toEqual([["false", true, false], true]);
+    expect([closed, document.activeElement === part(".nol-site-lockup-link")]).toEqual([["false", true, false], true]);
   });
 
   it("closes the menu when a link in it is followed", async () => {

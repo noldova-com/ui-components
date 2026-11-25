@@ -11871,10 +11871,7 @@ export declare class SelectOption {
    * @param icon The Material Symbols icon a select draws before its title;
    * none when left out or null.
    * @param iconColor The icon's color, a kit swatch name or a `#rrggbb` or
-   * `#rgb` color; the text color when left out or null.
-   * @throws ArgumentException synchronously when the icon isn't a name of
-   * {@link IconNames.all}, or the icon color is neither a swatch name nor a
-   * `#rrggbb` or `#rgb` color.
+   * `#rgb` color; the text color when left out or null, or when it is neither.
    * @example
    * ```ts
    * import { Component, type WritableSignal, signal } from "@angular/core";
@@ -12309,6 +12306,16 @@ export declare class SiteHeaderComponent {
    * Where the wordmark links; `/` when not bound.
    */
   public readonly homeHref: InputSignal<string>;
+
+  /**
+   * The product's icon, drawn in its own colors before the wordmark, 1.75rem square (`--nol-site-icon`) and 0.75rem from it; none when not bound. The image is decorative, so the link's name stays the product's home.
+   */
+  public readonly icon: InputSignal<string | null>;
+
+  /**
+   * The icon to draw in dark mode in place of `icon`; `icon` in both modes when not bound.
+   */
+  public readonly iconDark: InputSignal<string | null>;
 
   /**
    * A version drawn after the wordmark in small muted text, such as

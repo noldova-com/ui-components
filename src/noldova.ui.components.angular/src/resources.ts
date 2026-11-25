@@ -95,6 +95,7 @@ export class Resources {
     "site-padding-inline",
     "site-padding-inline-phone",
     "site-wordmark",
+    "site-icon",
     "site-search-width",
     "site-footer-padding-block",
     "site-footer-padding-block-phone",

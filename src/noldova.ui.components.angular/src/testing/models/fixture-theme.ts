@@ -428,6 +428,7 @@ export class FixtureTheme {
     ["site-padding-inline", "2rem"],
     ["site-padding-inline-phone", "1.25rem"],
     ["site-wordmark", "1rem"],
+    ["site-icon", "2rem"],
     ["site-search-width", "18rem"],
     ["site-footer-padding-block", "3.5rem"],
     ["site-footer-padding-block-phone", "2.25rem"],
