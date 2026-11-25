@@ -12,7 +12,7 @@ import { page, userEvent } from "vitest/browser";
 
 import { SiteHeaderComponent } from "../../../../src/app/components/site-header/site-header.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
-import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { Theme } from "../../../../src/app/models/theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteSocialLink } from "../../../../src/app/models/site-social-link";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
@@ -84,8 +84,8 @@ describe("SiteHeaderComponent while the page scrolls", () => {
   const white = new Rgba(255, 255, 255, 1);
   let fixture: ComponentFixture<SiteHeaderScrollHostComponent>;
 
-  async function renderAsync(mode: ThemeMode = ThemeMode.Light): Promise<void> {
-    AppearanceFixture.apply(DefaultTheme.theme, mode);
+  async function renderAsync(theme: Theme, mode: ThemeMode): Promise<void> {
+    AppearanceFixture.apply(theme, mode);
     fixture = TestBed.createComponent(SiteHeaderScrollHostComponent);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -103,14 +103,14 @@ describe("SiteHeaderComponent while the page scrolls", () => {
   const header = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-site-header");
   const background = (): Rgba => Rgba.parse(getComputedStyle(header()).backgroundColor);
   const blur = (): string => getComputedStyle(header()).backdropFilter;
-  const panel = (mode: ThemeMode): Rgba => Rgba.parse(AppearanceFixture.readColor(DefaultTheme.theme, mode, "panel"));
+  const panel = (theme: Theme, mode: ThemeMode): Rgba => Rgba.parse(AppearanceFixture.readColor(theme, mode, "panel"));
   const rem = (value: number): number => AppearanceFixture.toPixels(value);
-  const expectOpaque = (mode: ThemeMode): void => {
-    expect([getComputedStyle(header()).backgroundColor, blur()]).toEqual([AppearanceFixture.readColor(DefaultTheme.theme, mode, "panel"), "none"]);
+  const expectOpaque = (theme: Theme, mode: ThemeMode): void => {
+    expect([getComputedStyle(header()).backgroundColor, blur()]).toEqual([AppearanceFixture.readColor(theme, mode, "panel"), "none"]);
   };
-  const expectTranslucent = (mode: ThemeMode): void => {
+  const expectTranslucent = (theme: Theme, mode: ThemeMode): void => {
     const shown = background();
-    const own = panel(mode);
+    const own = panel(theme, mode);
 
     expect([shown.red, shown.green, shown.blue].map(Math.round)).toEqual([own.red, own.green, own.blue]);
     expect(shown.alpha).toBeCloseTo(0.92, 3);
@@ -130,84 +130,86 @@ describe("SiteHeaderComponent while the page scrolls", () => {
     await page.viewport(viewport.width, viewport.height);
   });
 
-  for (const mode of AppearanceFixture.modes) {
-    it(`draws on the opaque panel color, with no blur, at the top of the page, ${mode}`, async () => {
-      await renderAsync(mode);
+  for (const theme of AppearanceFixture.themes) {
+    for (const mode of AppearanceFixture.modes) {
+      it(`draws on the opaque panel color, with no blur, at the top of the page, ${theme.id} theme, ${mode}`, async () => {
+        await renderAsync(theme, mode);
 
-      expect(header().classList.contains("nol-site-header-scrolled")).toBe(false);
-      expectOpaque(mode);
-    });
-
-    it(`stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${mode}`, async () => {
-      await renderAsync(mode);
-      await scrollToAsync(400);
-
-      AppearanceFixture.expectPixels(header().getBoundingClientRect().top, 0);
-      expect(DomFixture.one(DomFixture.host(fixture), ".page").getBoundingClientRect().top).toBeLessThan(0);
-      expectTranslucent(mode);
-    });
-
-    it(`turns opaque again when the page scrolls back to the top, ${mode}`, async () => {
-      await renderAsync(mode);
-      await scrollToAsync(400);
-      await scrollToAsync(0);
-
-      expectOpaque(mode);
-    });
-
-    it(`starts translucent on a page opened part way down, ${mode}`, async () => {
-      // The page is scrolled before the header renders, as when a link leads into it or it reloads there.
-      const before = document.body.appendChild(document.createElement("div"));
-      before.style.height = "300vh";
-      try {
-        const scrolled = new Promise(resolve => window.addEventListener("scroll", resolve, { once: true }));
-        window.scrollTo(0, 400);
-        await scrolled;
-        await renderAsync(mode);
-
-        expectTranslucent(mode);
-      }
-      finally {
-        before.remove();
-      }
-    });
-
-    it(`stays opaque while scrolled when the visitor asks for reduced transparency, ${mode}`, async () => {
-      await EmulatedMediaFixture.emulateAsync("prefers-reduced-transparency", "reduce");
-      await renderAsync(mode);
-      await scrollToAsync(400);
-
-      expect(header().classList.contains("nol-site-header-scrolled")).toBe(true);
-      expectOpaque(mode);
-    });
-
-    it(`stays opaque while scrolled with its phone menu open, ${mode}`, async () => {
-      await page.viewport(375, 812);
-      await renderAsync(mode);
-      await scrollToAsync(400);
-      await userEvent.click(DomFixture.one(header(), ".nol-site-menu-button"));
-      await fixture.whenStable();
-
-      expectOpaque(mode);
-    });
-
-    for (const ink of [
-      new HeaderInk("the current link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link-current")).color, 4.5),
-      new HeaderInk("another link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link:not(.nol-site-nav-link-current)")).color, 4.5),
-      new HeaderInk("the version", t => getComputedStyle(DomFixture.one(t, ".nol-site-version")).color, 4.5),
-      new HeaderInk("the product's name", t => getComputedStyle(DomFixture.one(t, ".nol-site-lockup-name")).color, 4.5),
-      new HeaderInk("a social icon", t => getComputedStyle(DomFixture.one(t, ".nol-site-social-icon")).backgroundColor, 3),
-      new HeaderInk("the focus ring", () => AppearanceFixture.readColor(DefaultTheme.theme, mode, "accent"), 3)
-    ]) {
-      it(`keeps ${ink.name} at least ${ink.least}:1 on the translucent header over black or white content, ${mode}`, async () => {
-        await renderAsync(mode);
-        await scrollToAsync(400);
-        const shown = background();
-
-        expect(shown.alpha).toBeLessThan(1);
-        for (const backdrop of [black, white])
-          expect(AppearanceFixture.contrast(ink.read(header()), shown.over(backdrop))).toBeGreaterThanOrEqual(ink.least);
+        expect(header().classList.contains("nol-site-header-scrolled")).toBe(false);
+        expectOpaque(theme, mode);
       });
+
+      it(`stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${theme.id} theme, ${mode}`, async () => {
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+
+        AppearanceFixture.expectPixels(header().getBoundingClientRect().top, 0);
+        expect(DomFixture.one(DomFixture.host(fixture), ".page").getBoundingClientRect().top).toBeLessThan(0);
+        expectTranslucent(theme, mode);
+      });
+
+      it(`turns opaque again when the page scrolls back to the top, ${theme.id} theme, ${mode}`, async () => {
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+        await scrollToAsync(0);
+
+        expectOpaque(theme, mode);
+      });
+
+      it(`starts translucent on a page opened part way down, ${theme.id} theme, ${mode}`, async () => {
+        // The page is scrolled before the header renders, as when a link leads into it or it reloads there.
+        const before = document.body.appendChild(document.createElement("div"));
+        before.style.height = "300vh";
+        try {
+          const scrolled = new Promise(resolve => window.addEventListener("scroll", resolve, { once: true }));
+          window.scrollTo(0, 400);
+          await scrolled;
+          await renderAsync(theme, mode);
+
+          expectTranslucent(theme, mode);
+        }
+        finally {
+          before.remove();
+        }
+      });
+
+      it(`stays opaque while scrolled when the visitor asks for reduced transparency, ${theme.id} theme, ${mode}`, async () => {
+        await EmulatedMediaFixture.emulateAsync("prefers-reduced-transparency", "reduce");
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+
+        expect(header().classList.contains("nol-site-header-scrolled")).toBe(true);
+        expectOpaque(theme, mode);
+      });
+
+      it(`stays opaque while scrolled with its phone menu open, ${theme.id} theme, ${mode}`, async () => {
+        await page.viewport(375, 812);
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+        await userEvent.click(DomFixture.one(header(), ".nol-site-menu-button"));
+        await fixture.whenStable();
+
+        expectOpaque(theme, mode);
+      });
+
+      for (const ink of [
+        new HeaderInk("the current link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link-current")).color, 4.5),
+        new HeaderInk("another link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link:not(.nol-site-nav-link-current)")).color, 4.5),
+        new HeaderInk("the version", t => getComputedStyle(DomFixture.one(t, ".nol-site-version")).color, 4.5),
+        new HeaderInk("the product's name", t => getComputedStyle(DomFixture.one(t, ".nol-site-lockup-name")).color, 4.5),
+        new HeaderInk("a social icon", t => getComputedStyle(DomFixture.one(t, ".nol-site-social-icon")).backgroundColor, 3),
+        new HeaderInk("the focus ring", () => AppearanceFixture.readColor(theme, mode, "accent"), 3)
+      ]) {
+        it(`keeps ${ink.name} at least ${ink.least}:1 on the translucent header over black or white content, ${theme.id} theme, ${mode}`, async () => {
+          await renderAsync(theme, mode);
+          await scrollToAsync(400);
+          const shown = background();
+
+          expect(shown.alpha).toBeLessThan(1);
+          for (const backdrop of [black, white])
+            expect(AppearanceFixture.contrast(ink.read(header()), shown.over(backdrop))).toBeGreaterThanOrEqual(ink.least);
+        });
+      }
     }
   }
 
