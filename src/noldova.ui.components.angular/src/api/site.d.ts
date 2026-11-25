@@ -230,6 +230,12 @@ export declare class SiteHeaderComponent {
    * bar.
    */
   public readonly searchOpen: ModelSignal<boolean>;
+
+  /**
+   * Creates the header, which reads the page's scroll once it renders and on
+   * each scroll of the window after. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**
