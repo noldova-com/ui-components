@@ -129,6 +129,33 @@ describe("LazyTooltipDirective", () => {
     expect([describe.mock.calls.length, gone.getAttribute("aria-describedby"), tooltip()]).toEqual([0, null, null]);
   });
 
+  it("hides on a press of its anchor, and on Escape while its anchor has the keyboard's focus, keeping that focus, as the tooltip does", async () => {
+    await renderAsync();
+    await DomChangeFixture.untilAsync(() => expect(anchor().getAttribute("aria-describedby")).not.toBeNull());
+    await userEvent.hover(anchor());
+    await shownAsync();
+    anchor().dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    const pressed = tooltip();
+    DomFixture.one(DomFixture.host(fixture), ".before").focus();
+    await userEvent.keyboard("{Tab}");
+    await shownAsync();
+    await userEvent.keyboard("{Escape}");
+
+    expect([pressed, tooltip(), document.activeElement]).toEqual([null, null, anchor()]);
+  });
+
+  it("takes a press of its anchor and Escape before the engine arrives, and shows nothing for them once it does", async () => {
+    const arrive = holdEngine();
+    await renderAsync();
+    anchor().dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    anchor().dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await arrive();
+    await DomChangeFixture.untilAsync(() => expect(anchor().getAttribute("aria-describedby")).not.toBeNull());
+    await fixture.whenStable();
+
+    expect(tooltip()).toBeNull();
+  });
+
   it("reports an engine that can't load to the error handler and leaves its anchor without a tooltip", async () => {
     const failure = new Error("The tooltip engine's chunk did not load.");
     vi.spyOn(statics, "loadAsync").mockRejectedValue(failure);
