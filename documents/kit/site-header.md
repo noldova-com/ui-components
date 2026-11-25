@@ -26,6 +26,9 @@ The version: small, in `text-muted`.
 ## Surface and behavior
 
 The page's `banner` landmark, on the panel color, with no border or line; it stays at the top of the page as it scrolls.
+Once the page scrolls under it, the panel color turns 92% opaque over a `saturate(180%) blur(1.25rem)` backdrop, so the page shows through, blurred, and every text, icon and focus ring on it keeps its contrast over black or white content in both modes; back at the top it is opaque again.
+It stays opaque with its phone menu or search open, when the visitor asks for reduced transparency, and where the browser can't blur what is behind it.
+It reads the page's own scroll, the document's.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
 The lockup is one link home named for the product's home, such as `TeamRun home`, or `Noldova home` without a product's name, or by the site's `homeLabel`, such as `UI Components docs home`; a site whose wordmark or icon already shows the product's name passes no `name`, so it isn't drawn twice, and names the link with `homeLabel`; the site passes the wordmark's file, which is drawn as a mask in the text color, so the package ships no wordmark.
 The current page's link is marked `aria-current="page"`; a hovered link takes the toolbar hover fill and `text-strong`, and keyboard focus is an accent outline inside it.
