@@ -12,6 +12,7 @@ import { page, userEvent } from "vitest/browser";
 
 import { SiteHeaderComponent } from "../../../../src/app/components/site-header/site-header.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteSocialLink } from "../../../../src/app/models/site-social-link";
@@ -132,15 +133,9 @@ describe("SiteHeaderComponent while the page scrolls", () => {
 
   for (const theme of AppearanceFixture.themes) {
     for (const mode of AppearanceFixture.modes) {
-      it(`draws on the opaque panel color, with no blur, at the top of the page, ${theme.id} theme, ${mode}`, async () => {
+      it(`draws on the opaque panel color at the top of the page, then stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${theme.id} theme, ${mode}`, async () => {
         await renderAsync(theme, mode);
-
-        expect(header().classList.contains("nol-site-header-scrolled")).toBe(false);
         expectOpaque(theme, mode);
-      });
-
-      it(`stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${theme.id} theme, ${mode}`, async () => {
-        await renderAsync(theme, mode);
         await scrollToAsync(400);
 
         AppearanceFixture.expectPixels(header().getBoundingClientRect().top, 0);
@@ -151,8 +146,10 @@ describe("SiteHeaderComponent while the page scrolls", () => {
       it(`turns opaque again when the page scrolls back to the top, ${theme.id} theme, ${mode}`, async () => {
         await renderAsync(theme, mode);
         await scrollToAsync(400);
+        expectTranslucent(theme, mode);
         await scrollToAsync(0);
 
+        expect(header().classList.contains("nol-site-header-scrolled")).toBe(false);
         expectOpaque(theme, mode);
       });
 
@@ -186,30 +183,36 @@ describe("SiteHeaderComponent while the page scrolls", () => {
         await page.viewport(375, 812);
         await renderAsync(theme, mode);
         await scrollToAsync(400);
+        expectTranslucent(theme, mode);
         await userEvent.click(DomFixture.one(header(), ".nol-site-menu-button"));
         await fixture.whenStable();
 
+        expect(header().classList.contains("nol-site-header-scrolled")).toBe(true);
         expectOpaque(theme, mode);
       });
+    }
+  }
 
-      for (const ink of [
-        new HeaderInk("the current link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link-current")).color, 4.5),
-        new HeaderInk("another link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link:not(.nol-site-nav-link-current)")).color, 4.5),
-        new HeaderInk("the version", t => getComputedStyle(DomFixture.one(t, ".nol-site-version")).color, 4.5),
-        new HeaderInk("the product's name", t => getComputedStyle(DomFixture.one(t, ".nol-site-lockup-name")).color, 4.5),
-        new HeaderInk("a social icon", t => getComputedStyle(DomFixture.one(t, ".nol-site-social-icon")).backgroundColor, 3),
-        new HeaderInk("the focus ring", () => AppearanceFixture.readColor(theme, mode, "accent"), 3)
-      ]) {
-        it(`keeps ${ink.name} at least ${ink.least}:1 on the translucent header over black or white content, ${theme.id} theme, ${mode}`, async () => {
-          await renderAsync(theme, mode);
-          await scrollToAsync(400);
-          const shown = background();
+  // The contrast holds for the kit's own colors; the fixture theme's colors only tell its tokens apart.
+  for (const mode of AppearanceFixture.modes) {
+    const theme = DefaultTheme.theme;
+    for (const ink of [
+      new HeaderInk("the current link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link-current")).color, 4.5),
+      new HeaderInk("another link", t => getComputedStyle(DomFixture.one(t, ".nol-site-nav-link:not(.nol-site-nav-link-current)")).color, 4.5),
+      new HeaderInk("the version", t => getComputedStyle(DomFixture.one(t, ".nol-site-version")).color, 4.5),
+      new HeaderInk("the product's name", t => getComputedStyle(DomFixture.one(t, ".nol-site-lockup-name")).color, 4.5),
+      new HeaderInk("a social icon", t => getComputedStyle(DomFixture.one(t, ".nol-site-social-icon")).backgroundColor, 3),
+      new HeaderInk("the focus ring", () => AppearanceFixture.readColor(theme, mode, "accent"), 3)
+    ]) {
+      it(`keeps ${ink.name} at least ${ink.least}:1 on the translucent header over black or white content, ${mode}`, async () => {
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+        const shown = background();
 
-          expect(shown.alpha).toBeLessThan(1);
-          for (const backdrop of [black, white])
-            expect(AppearanceFixture.contrast(ink.read(header()), shown.over(backdrop))).toBeGreaterThanOrEqual(ink.least);
-        });
-      }
+        expect(shown.alpha).toBeLessThan(1);
+        for (const backdrop of [black, white])
+          expect(AppearanceFixture.contrast(ink.read(header()), shown.over(backdrop))).toBeGreaterThanOrEqual(ink.least);
+      });
     }
   }
 
