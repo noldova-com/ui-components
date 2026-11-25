@@ -34,7 +34,11 @@ export class TooltipDirective implements ITooltipSource {
   public readonly isTruncatedOnly = input<boolean>(this.defaults.isTruncatedOnly, { alias: "nolTooltipTruncated" });
   public readonly besideSelector = input<string | null>(null, { alias: "nolTooltipBeside" });
 
-  private readonly engine: TooltipEngine = new TooltipEngine(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, this);
+  private readonly engine: TooltipEngine;
+
+  public constructor() {
+    this.engine = new TooltipEngine(inject<ElementRef<HTMLElement>>(ElementRef).nativeElement, this);
+  }
 
   public get isShown(): boolean {
     return this.engine.isShown;

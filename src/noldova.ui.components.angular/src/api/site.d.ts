@@ -512,7 +512,7 @@ export declare class SiteHeroComponent {
 }
 
 /**
- * A link of a {@link SiteHeaderComponent} or of a {@link SiteLinkGroup}.
+ * A link of the site entry's header, `SiteHeaderComponent`, or of a {@link SiteLinkGroup}.
  */
 export declare class SiteLink {
   /**
@@ -550,7 +550,7 @@ export declare class SiteLink {
 }
 
 /**
- * A titled column of links in a {@link SiteFooterComponent}.
+ * A titled column of links in the site entry's footer, `SiteFooterComponent`.
  */
 export declare class SiteLinkGroup {
   /**
@@ -708,7 +708,7 @@ export declare class SiteShot {
 }
 
 /**
- * A social link of a {@link SiteHeaderComponent}, drawn as an icon button.
+ * A social link of the site entry's header, `SiteHeaderComponent`, drawn as an icon button.
  */
 export declare class SiteSocialLink {
   /**
@@ -738,7 +738,7 @@ export declare class SiteSocialLink {
 }
 
 /**
- * The size of a {@link SiteHeaderComponent}'s wordmark.
+ * The size of the wordmark of the site entry's header and footer, `SiteHeaderComponent` and `SiteFooterComponent`.
  */
 export declare enum SiteWordmarkSize {
   /**
