@@ -51,3 +51,19 @@
   letter-spacing: 0.075em;
   text-transform: uppercase;
 }
+
+/* A line of a section's copy, the section's own or the site's projected copy: one under another beside the title, and
+ * running together under it on a phone. */
+.nol-site-section-copy-line {
+  display: block;
+}
+
+@container (width < 47.5rem) {
+  .nol-site-section-copy-line {
+    display: inline;
+  }
+
+  .nol-site-section-copy-line + .nol-site-section-copy-line::before {
+    content: " ";
+  }
+}

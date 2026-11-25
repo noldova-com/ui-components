@@ -12,3 +12,27 @@
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 }
+
+/* With columns set: that many on a wide screen, two on a tablet and one on a phone, as the site's pages break, the last
+ * card spanning what its row leaves. */
+:host(.nol-site-card-grid-fixed) {
+  --nol-site-card-grid-last-span: var(--nol-site-card-grid-last-wide);
+
+  grid-template-columns: repeat(var(--nol-site-card-grid-columns), minmax(0, 1fr));
+}
+
+@media (width < 75rem) {
+  :host(.nol-site-card-grid-fixed) {
+    --nol-site-card-grid-last-span: var(--nol-site-card-grid-last-tablet);
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width < 47.5rem) {
+  :host(.nol-site-card-grid-fixed) {
+    --nol-site-card-grid-last-span: 1;
+
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -39,6 +39,34 @@ class SiteCardHostComponent {
   public readonly text = signal<string | null>("Each agent reads the same chat.");
 }
 
+// Seven cards in a grid of four columns, as a site's features: four and three on a wide screen.
+@Component({
+  imports: [SiteCardComponent, SiteCardGridComponent],
+  template: `
+    <nol-site-card-grid [columns]="4">
+      @for (card of cards; track card) {
+        <nol-site-card [title]="card" />
+      }
+    </nol-site-card-grid>
+  `
+})
+class SiteCardColumnsHostComponent {
+  public readonly cards: readonly string[] = ["One", "Two", "Three", "Four", "Five", "Six", "Seven"];
+}
+
+// A window width, the columns a four-column grid sets that wide and the columns its seventh card spans.
+class GridWidth {
+  public readonly width: number;
+  public readonly columns: number;
+  public readonly lastSpan: number;
+
+  public constructor(width: number, columns: number, lastSpan: number) {
+    this.width = width;
+    this.columns = columns;
+    this.lastSpan = lastSpan;
+  }
+}
+
 describe("SiteCardComponent", () => {
   const viewport = { width: window.innerWidth, height: window.innerHeight };
   let fixture: ComponentFixture<SiteCardHostComponent>;
@@ -63,6 +91,28 @@ describe("SiteCardComponent", () => {
     AppearanceFixture.reset();
     await page.viewport(viewport.width, viewport.height);
   });
+
+  for (const size of [new GridWidth(1280, 4, 2), new GridWidth(900, 2, 2), new GridWidth(375, 1, 1)]) {
+    it(`sets seven cards in ${size.columns} equal columns 1.25rem apart, the last spanning ${size.lastSpan} to its row's end, in a four-column grid at ${size.width} pixels`, async () => {
+      await page.viewport(size.width, 800);
+      AppearanceFixture.apply(DefaultTheme.theme, ThemeMode.Light);
+      const other = TestBed.createComponent(SiteCardColumnsHostComponent);
+      other.detectChanges();
+      await other.whenStable();
+      const area = DomFixture.one(DomFixture.host(other), "nol-site-card-grid").getBoundingClientRect();
+      const boxes = DomFixture.all(DomFixture.host(other), "nol-site-card").map(t => t.getBoundingClientRect());
+      const column = (area.width - rem(1.25) * (size.columns - 1)) / size.columns;
+      const last = DomFixture.at(boxes, boxes.length - 1);
+
+      expect(new Set(boxes.map(t => Math.round(t.left))).size).toBe(size.columns);
+      for (const box of boxes.slice(0, -1))
+        AppearanceFixture.expectPixels(box.width, column);
+      AppearanceFixture.expectPixels(last.width, column * size.lastSpan + rem(1.25) * (size.lastSpan - 1));
+      AppearanceFixture.expectPixels(last.right, area.right);
+      AppearanceFixture.expectPixels(last.top, DomFixture.at(boxes, (boxes.length - 1) - ((boxes.length - 1) % size.columns)).top);
+      other.destroy();
+    });
+  }
 
   it("draws each card as an article with its icon, index, title, text and content, the icon hidden from assistive tech", async () => {
     await renderAsync();

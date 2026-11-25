@@ -51,8 +51,8 @@
   text-wrap: pretty;
 }
 
-.nol-site-section-copy-line {
-  display: block;
+.nol-site-section-copy:empty {
+  display: none;
 }
 
 @container (width < 47.5rem) {
@@ -68,13 +68,5 @@
 
   .nol-site-section-copy {
     margin-top: 1.4375rem;
-  }
-
-  .nol-site-section-copy-line {
-    display: inline;
-  }
-
-  .nol-site-section-copy-line + .nol-site-section-copy-line::before {
-    content: " ";
   }
 }

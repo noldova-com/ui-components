@@ -12099,6 +12099,13 @@ export declare class SiteCardComponent {
  * is narrower.
  */
 export declare class SiteCardGridComponent {
+  /**
+   * The columns on a wide screen, 75rem and wider, such as 4 for seven cards
+   * set four and three; two columns on a tablet and one on a phone, below
+   * 47.5rem, and the last card spans what its row leaves. Null, the default,
+   * for as many 18rem columns as fit.
+   */
+  public readonly columns: InputSignal<number | null>;
 }
 
 /**
@@ -12636,9 +12643,12 @@ export declare class SiteSectionComponent {
   public readonly title: InputSignal<string>;
 
   /**
-   * The muted line beside the title; null, the default, for none. Each line
-   * break in it starts a new line beside the title, and becomes a space
-   * below 47.5em.
+   * The muted line beside the title. Each line break in it starts a new line
+   * beside the title, and becomes a space below 47.5em. Null, the default, for
+   * the content projected with the `nolSiteSectionCopy` attribute, which then
+   * takes the copy's place and style, such as a line holding markup of its
+   * own; each of its elements with the `nol-site-section-copy-line` class is
+   * one of those lines. With neither, the section has no copy.
    */
   public readonly copy: InputSignal<string | null>;
 
