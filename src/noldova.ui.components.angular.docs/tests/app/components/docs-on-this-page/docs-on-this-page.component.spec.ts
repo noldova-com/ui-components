@@ -53,7 +53,7 @@ describe("DocsOnThisPageComponent", () => {
 
   const levelOf = (heading: HTMLElement): number => heading.tagName === "H2" ? 2 : heading.tagName === "H3" ? 3 : Number(heading.getAttribute("aria-level")) + 1;
 
-  const headerBottom = (host: HTMLElement): number => DocsFixture.one(host, ".nol-docs-header").getBoundingClientRect().bottom;
+  const headerBottom = (host: HTMLElement): number => DocsFixture.one(host, "nol-site-header").getBoundingClientRect().bottom;
 
   const current = (host: HTMLElement): readonly (string | undefined)[] => links(host).filter(t => t.getAttribute("aria-current") === "location").map(t => t.textContent?.trim());
 

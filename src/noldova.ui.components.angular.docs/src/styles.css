@@ -7,7 +7,6 @@
  */
 
 :root {
-  --nol-docs-brand-mark: #000000;
   scroll-padding-block-start: var(--nol-docs-header-height, 0px);
 }
 
@@ -121,13 +120,11 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-nol-theme-mode="Light"]) {
-    --nol-docs-brand-mark: #FFFFFF;
     --nol-docs-code: #121212;
   }
 }
 
 :root[data-nol-theme-mode="Dark"] {
-  --nol-docs-brand-mark: #FFFFFF;
   --nol-docs-code: #121212;
 }
 

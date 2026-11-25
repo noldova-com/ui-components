@@ -18,9 +18,11 @@ LICENSE file in the root directory of this source tree.
     <meta name="description" content="The components, tokens, fonts and icons of Noldova's interface kit, with live examples and their API." />
     <script>
       try {
-        const mode = localStorage.getItem("nol-docs-theme");
-        if (mode === "Light" || mode === "Dark")
-          document.documentElement.setAttribute("data-nol-theme-mode", mode);
+        const theme = localStorage.getItem("noldova-theme");
+        if (theme === "light")
+          document.documentElement.setAttribute("data-nol-theme-mode", "Light");
+        if (theme === "dark")
+          document.documentElement.setAttribute("data-nol-theme-mode", "Dark");
       }
       catch {
       }
