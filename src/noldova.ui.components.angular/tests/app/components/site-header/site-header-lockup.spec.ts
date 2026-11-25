@@ -12,6 +12,8 @@ import { page } from "vitest/browser";
 
 import { SiteHeaderComponent } from "../../../../src/app/components/site-header/site-header.component";
 import { SiteWordmarkSize } from "../../../../src/app/enums/site-wordmark-size";
+import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
@@ -49,7 +51,11 @@ describe("SiteHeaderComponent's lockup", () => {
   let fixture: ComponentFixture<SiteHeaderLockupHostComponent>;
 
   async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
-    AppearanceFixture.apply(AppearanceFixture.themes[0], AppearanceFixture.modes[0]);
+    await renderInAsync(ThemeMode.Light, change);
+  }
+
+  async function renderInAsync(mode: ThemeMode, change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
+    AppearanceFixture.apply(DefaultTheme.theme, mode);
     fixture = TestBed.createComponent(SiteHeaderLockupHostComponent);
     change(fixture.componentInstance);
     fixture.detectChanges();
@@ -66,6 +72,14 @@ describe("SiteHeaderComponent's lockup", () => {
     AppearanceFixture.reset();
     await page.viewport(viewport.width, viewport.height);
   });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the wordmark in the setting title color and the product's name in the strong text color in ${mode} mode`, async () => {
+      await renderInAsync(mode, t => t.name.set("Commitline"));
+
+      expect([getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).backgroundColor, getComputedStyle(DomFixture.one(header(), ".nol-site-lockup-name")).color])
+        .toEqual([AppearanceFixture.readColor(DefaultTheme.theme, mode, "setting-title"), AppearanceFixture.readColor(DefaultTheme.theme, mode, "text-strong")]);
+    });
 
   it("names the home link with the label the site gives, such as a documentation site's", async () => {
     await renderAsync(t => {

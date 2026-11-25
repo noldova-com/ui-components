@@ -91,7 +91,7 @@
 .nol-site-wordmark {
   flex: none;
   height: var(--nol-site-lockup-wordmark);
-  background-color: currentColor;
+  background-color: var(--nol-setting-title);
   mask-position: center;
   mask-repeat: no-repeat;
   mask-size: contain;
