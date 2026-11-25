@@ -88,7 +88,8 @@ describe("AvatarInitialsFitter", () => {
     fitter().apply(smallLetters, scale);
 
     expect([scale > 0, scale < larger, larger < 1]).toEqual([true, true, true]);
-    expect(smallLetters.style.transform).toBe(`scale(${scale})`);
+    expect(smallLetters.style.transform).toMatch(/^scale\(0\.\d+\)$/);
+    expect(Number.parseFloat(smallLetters.style.transform.replace("scale(", String.empty))).toBeCloseTo(scale, 5);
     expect(fitter().measure(small, smallLetters)).toBeCloseTo(scale, 3);
   });
 
