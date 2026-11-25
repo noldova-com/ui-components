@@ -16,6 +16,24 @@
   color: var(--nol-text);
 }
 
+/* Once the page scrolls under it, the header lets the page show through, blurred, where the browser can blur it and the
+ * visitor hasn't asked for less transparency; an open menu or search stays opaque. The panel keeps 92% of its color, so
+ * every text, icon and focus ring on it keeps its contrast over black or white content in both modes. The opaque case
+ * is keyed on a reduced-transparency request, so a browser that doesn't know the feature shows the translucent one. */
+@supports (backdrop-filter: blur(1px)) {
+  :host(.nol-site-header-scrolled:not(.nol-site-header-open, .nol-site-header-searching)) {
+    background-color: color-mix(in srgb, var(--nol-panel) 92%, transparent);
+    backdrop-filter: saturate(180%) blur(1.25rem);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    :host(.nol-site-header-scrolled:not(.nol-site-header-open, .nol-site-header-searching)) {
+      background-color: var(--nol-panel);
+      backdrop-filter: none;
+    }
+  }
+}
+
 .nol-site-skip {
   position: absolute;
   top: var(--nol-space-2);
@@ -333,6 +351,23 @@ nol-site-theme-switch {
   }
 
   :host(.nol-site-header-open.nol-site-header-wide) .nol-site-download {
+    --nol-icon: var(--nol-site-download-glyph-phone);
+
+    display: inline-flex;
+    justify-self: stretch;
+    margin-block-start: var(--nol-space-3);
+    margin-inline-start: 0;
+    font-size: var(--nol-site-menu-download-text);
+  }
+}
+
+@container (width < 30rem) {
+  .nol-site-download {
+    display: none;
+    grid-area: action;
+  }
+
+  :host(.nol-site-header-open) .nol-site-download {
     --nol-icon: var(--nol-site-download-glyph-phone);
 
     display: inline-flex;

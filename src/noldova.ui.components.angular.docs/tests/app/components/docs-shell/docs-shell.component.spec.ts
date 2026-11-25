@@ -364,13 +364,14 @@ describe("DocsShellComponent", () => {
 
     afterEach(() => window.scrollTo(0, 0));
 
-    it("keeps the header at the top of the window, at its height and in front of the page", async () => {
+    it("keeps the header at the top of the window, at its height and in front of the page, which shows through it blurred", async () => {
       const { header, height: before } = await scrolledAsync("/components/radio");
       const box = header.getBoundingClientRect();
 
       expect(box.top).toBe(0);
       expect(box.height).toBeCloseTo(before, 1);
-      expect(getComputedStyle(header).backgroundColor).toMatch(/^rgb\(/u);
+      expect(getComputedStyle(header).backgroundColor).toMatch(/ \/ 0\.92\)$/u);
+      expect(getComputedStyle(header).backdropFilter).toContain("blur(");
       expect(header.contains(document.elementFromPoint(box.left + box.width / 2, box.bottom - 1))).toBe(true);
       expect(header.contains(document.elementFromPoint(box.left + 1, box.top + 1))).toBe(true);
     });

@@ -31,12 +31,12 @@ export class PointerTargetFixture {
 
   public static nameOf(target: HTMLElement): string {
     const label = target.getAttribute("aria-label");
-    if (label !== null)
+    if (!Object.isNull(label))
       return label;
     const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
     const parts: string[] = [];
-    for (let node = walker.nextNode(); node !== null; node = walker.nextNode())
-      if (node.parentElement?.closest(PointerTargetFixture.HIDDEN) === null)
+    for (let node = walker.nextNode(); !Object.isNull(node); node = walker.nextNode())
+      if (Object.isNull(node.parentElement?.closest(PointerTargetFixture.HIDDEN)))
         parts.push(node.textContent ?? "");
     return parts.join("").trim();
   }

@@ -7382,6 +7382,15 @@ export declare class LinkReferenceChipComponent {
   public readonly reference: InputSignal<LinkReference>;
 
   /**
+   * Whether the chip flows as text in its line, for a line cut with an
+   * ellipsis, such as a list row's: the line's "…" then cuts inside the chip's
+   * text as the line narrows, rather than hiding the chip's text. The chip
+   * looks the same while it fits, but isn't held to its own 27.5rem. False
+   * when not bound.
+   */
+  public readonly isInline: InputSignal<boolean>;
+
+  /**
    * Whether the chip's card is open.
    */
   public get isShown(): boolean;
@@ -11871,10 +11880,7 @@ export declare class SelectOption {
    * @param icon The Material Symbols icon a select draws before its title;
    * none when left out or null.
    * @param iconColor The icon's color, a kit swatch name or a `#rrggbb` or
-   * `#rgb` color; the text color when left out or null.
-   * @throws ArgumentException synchronously when the icon isn't a name of
-   * {@link IconNames.all}, or the icon color is neither a swatch name nor a
-   * `#rrggbb` or `#rgb` color.
+   * `#rgb` color; the text color when left out or null, or when it is neither.
    * @example
    * ```ts
    * import { Component, type WritableSignal, signal } from "@angular/core";
@@ -12108,6 +12114,11 @@ export declare class SiteFooterComponent {
  * tap put it. Opening the menu moves the focus to its first link, and Tab
  * follows the parts in the order they are drawn at either width.
  *
+ * Once the page scrolls under it, the header turns translucent, its panel
+ * color 92% opaque over a blur of what is behind it, and opaque again back
+ * at the top. It stays opaque with its menu or search open, when the
+ * visitor asks for reduced transparency, and where the browser can't blur.
+ *
  * @example
  * ```ts
  * import { Component } from "@angular/core";
@@ -12151,6 +12162,16 @@ export declare class SiteHeaderComponent {
    * Where the wordmark links; `/` when not bound.
    */
   public readonly homeHref: InputSignal<string>;
+
+  /**
+   * The product's icon, drawn in its own colors before the wordmark, 1.75rem square (`--nol-site-icon`) and 0.75rem from it; none when not bound. The image is decorative, so the link's name stays the product's home.
+   */
+  public readonly icon: InputSignal<string | null>;
+
+  /**
+   * The icon to draw in dark mode in place of `icon`; `icon` in both modes when not bound.
+   */
+  public readonly iconDark: InputSignal<string | null>;
 
   /**
    * A version drawn after the wordmark in small muted text, such as
@@ -12217,6 +12238,12 @@ export declare class SiteHeaderComponent {
    * bar.
    */
   public readonly searchOpen: ModelSignal<boolean>;
+
+  /**
+   * Creates the header, which reads the page's scroll once it renders and on
+   * each scroll of the window after. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**
