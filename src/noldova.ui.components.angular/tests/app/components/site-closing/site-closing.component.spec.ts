@@ -132,15 +132,16 @@ describe("SiteClosingComponent", () => {
         for (const selector of [".nol-site-closing-mark", ".nol-site-closing-mark img", "h2", ".nol-site-closing-note"]) {
           AppearanceFixture.expectPixels(middle(box(selector)), middle(block));
         }
-        console.log("PROBE", width, mode, box(".nol-site-eyebrow").top - mark.bottom, rem(1), link.top - box("a[nol-button]").bottom, link.height, box("h2").height);
+        AppearanceFixture.expectPixels(box(".nol-site-eyebrow").top - mark.bottom, rem(1.75));
         AppearanceFixture.expectPixels(box("h2").top - box(".nol-site-eyebrow").bottom, rem(1.3125));
         AppearanceFixture.expectPixels(box(".nol-site-closing-actions").top - box("h2").bottom, rem(1.9375));
         AppearanceFixture.expectPixels(box(".nol-site-closing-note").top - box(".nol-site-closing-actions").bottom, rem(1.4375));
         AppearanceFixture.expectPixels(box("a[nol-button]").height, rem(2.5));
-        expect(link.height).toBeGreaterThanOrEqual(rem(1.5) - 1 / 32);
+        AppearanceFixture.expectPixels(link.height, rem(1.5));
         AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part("h2")).fontSize), Math.min(Math.max(rem(2.4375), outer.width * 0.05), rem(3.8125)));
         if (phone) {
-          expect(link.top).toBeGreaterThanOrEqual(box("a[nol-button]").bottom);
+          // The link wraps under the button, the row's gap and its own phone margin apart.
+          AppearanceFixture.expectPixels(link.top - box("a[nol-button]").bottom, rem(1) + rem(0.3125));
         } else {
           AppearanceFixture.expectPixels(link.left - box("a[nol-button]").right, rem(1));
           AppearanceFixture.expectPixels(middle(box(".nol-site-closing-actions")), middle(block));
