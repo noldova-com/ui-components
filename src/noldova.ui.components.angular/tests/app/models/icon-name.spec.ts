@@ -27,42 +27,46 @@ import { TabStatus } from "../../../src/app/models/tab-status";
 import { TreeNode } from "../../../src/app/models/tree.node";
 
 type ValueOf<T> = T extends ModelSignal<infer V> ? V : T extends InputSignal<infer V> ? V : never;
-type Takes<T, V> = [V] extends [T] ? true : false;
-type TakenBy<V> = [
-  Takes<ValueOf<IconButtonComponent["icon"]>, V>,
-  Takes<ValueOf<MenuItemComponent["icon"]>, V>,
-  Takes<ValueOf<QuickInputComponent["icon"]>, V>,
-  Takes<ValueOf<SectionHeaderComponent["icon"]>, V>,
-  Takes<ValueOf<SplitButtonComponent["icon"]>, V>,
-  Takes<ValueOf<TabComponent["icon"]>, V>,
-  Takes<ValueOf<TabComponent["imageGlyph"]>, V>,
-  Takes<ValueOf<TextFieldBoxComponent["icon"]>, V>,
-  Takes<ValueOf<ToolbarButtonComponent["icon"]>, V>,
-  Takes<ValueOf<IconChooserComponent["value"]>, V>,
-  Takes<ValueOf<IconChooserComponent["names"]>, readonly V[]>,
-  Takes<ConstructorParameters<typeof SelectOption>[4], V>,
-  Takes<SelectOption["icon"], V>,
-  Takes<ConstructorParameters<typeof QuickInputItem>[2], V>,
-  Takes<ConstructorParameters<typeof TreeNode>[2], V>,
-  Takes<Parameters<typeof TreeNode.open>[2], V>,
-  Takes<ConstructorParameters<typeof LinkReferenceAction>[2], V>,
-  Takes<ConstructorParameters<typeof TabMarker>[0], V>,
-  Takes<ConstructorParameters<typeof TabStatus>[0], V>,
-  Takes<(typeof IconNames.all)[number], V>
-];
+type Takes<T, V> = V extends T ? true : false;
+
+class TypeCheck {
+  public static takesNames<T>(known: Takes<T, "folder">, misspelt: Takes<T, "foldr">, text: Takes<T, string>): boolean {
+    return known && !misspelt && !text;
+  }
+}
 
 describe("IconName", () => {
   it("is a name of the icon list, and a misspelt name or any text is not", () => {
     const names: readonly IconName[] = IconNames.all;
-    const shown: [Takes<IconName, "folder">, Takes<IconName, "foldr">, Takes<IconName, string>] = [true, false, false];
 
-    expect([names.includes("folder"), ...shown]).toEqual([true, true, false, false]);
+    expect(names.includes("folder")).toBe(true);
+    expect(TypeCheck.takesNames<IconName>(true, false, false)).toBe(true);
+    expect(TypeCheck.takesNames<(typeof IconNames.all)[number]>(true, false, false)).toBe(true);
   });
 
   it("is what every input, model and constructor that takes an icon takes, so a misspelt name fails the type check", () => {
-    const known: TakenBy<"folder"> = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true];
-    const misspelt: TakenBy<"foldr"> = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+    const taken: readonly boolean[] = [
+      TypeCheck.takesNames<ValueOf<IconButtonComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<MenuItemComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<QuickInputComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<SectionHeaderComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<SplitButtonComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<TabComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<TabComponent["imageGlyph"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<TextFieldBoxComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<ToolbarButtonComponent["icon"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<IconChooserComponent["value"]>>(true, false, false),
+      TypeCheck.takesNames<ValueOf<IconChooserComponent["names"]>[number]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof SelectOption>[4]>(true, false, false),
+      TypeCheck.takesNames<SelectOption["icon"]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof QuickInputItem>[2]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof TreeNode>[2]>(true, false, false),
+      TypeCheck.takesNames<Parameters<typeof TreeNode.open>[2]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof LinkReferenceAction>[2]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof TabMarker>[0]>(true, false, false),
+      TypeCheck.takesNames<ConstructorParameters<typeof TabStatus>[0]>(true, false, false)
+    ];
 
-    expect([known.every(t => t), misspelt.some(t => t)]).toEqual([true, false]);
+    expect(taken.every(t => t)).toBe(true);
   });
 });

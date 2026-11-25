@@ -17,7 +17,8 @@ export class LinkReferenceAction {
   public readonly glyph: IconName;
 
   public constructor(label: string, href: string, glyph: IconName = Resources.linkReferenceActionGlyph) {
-    for (const [subject, value] of [[LinkReferenceActionResources.linkReferenceActionLabelSubject, label], [LinkReferenceActionResources.linkReferenceActionHrefSubject, href]] as const)
+    for (const [subject, value] of [[LinkReferenceActionResources.linkReferenceActionLabelSubject, label], [LinkReferenceActionResources.linkReferenceActionHrefSubject, href],
+      [LinkReferenceActionResources.linkReferenceActionGlyphSubject, glyph]] as const)
       if (value.trim().length === 0)
         throw new LinkReferenceException(Resources.formatLinkReferenceTextEmpty(subject));
 

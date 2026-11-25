@@ -6960,8 +6960,8 @@ export declare class LinkReferenceAction {
    * @param label The pill's text.
    * @param href The address it activates.
    * @param glyph The glyph before the label, `open_in_new` when left out.
-   * @throws LinkReferenceException synchronously when the label or the
-   * address is empty or only white space.
+   * @throws LinkReferenceException synchronously when the label, the address
+   * or the glyph is empty or only white space.
    * @example
    * ```ts
    * import { LinkReferenceAction } from "@noldova/ui.components.angular";

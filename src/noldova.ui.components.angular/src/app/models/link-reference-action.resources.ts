@@ -9,4 +9,5 @@
 export class LinkReferenceActionResources {
   public static readonly linkReferenceActionLabelSubject: string = "An action's label";
   public static readonly linkReferenceActionHrefSubject: string = "An action's address";
+  public static readonly linkReferenceActionGlyphSubject: string = "An action's glyph";
 }
