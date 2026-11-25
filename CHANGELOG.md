@@ -4,6 +4,15 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.33
+
+- `@noldova/ui.components.angular`: a `site` entry, `@noldova/ui.components.angular/site`, holds the site header and footer and the parts they show, so a website that takes them from it starts without the rest of the kit, such as the code block and its highlighter (#118).
+- `@noldova/ui.components.angular`: the site header takes an optional `icon`, and `iconDark` for dark mode, drawn before the wordmark, 1.75rem square and 0.75rem from it; below 30rem it hides Download from the bar, and the open phone menu still shows it. Each social mark is pure black in light mode and pure white in dark, and every target in the header and footer is at least 1.5rem, the theme switch's pills 1.5rem boxes drawing their 1.25rem faces (#118).
+- `@noldova/ui.components.angular`: the site header stays opaque at the top of the page and turns translucent once the page scrolls under it, its panel color 92% opaque over a blurred backdrop, so every color on it keeps its contrast, as measured in the kit's default theme; it stays opaque with its phone menu or search open, when the visitor asks for reduced transparency, and where the browser can't blur. `SiteHeaderComponent` gains a documented public constructor (#124).
+- `@noldova/ui.components.angular`: `SelectOption` no longer checks its icon against the kit's icon list, or its icon color, when it is made, so the list, about 71 kB, leaves a website's start. Where it threw before, it now takes the value with no error: an icon name outside the list draws as its name, and an icon color that is neither a swatch nor `#rrggbb` or `#rgb` draws in the text color (#118).
+- `@noldova/ui.components.angular`: the link reference chip has an in-line variant for a line cut with an ellipsis, `isInline`: the chip flows as text in the line, so the line's ellipsis cuts inside the chip's text (#113).
+- Internal, with no change to the packages: the workflows' pins move to .github's v2.50.0 (#115).
+
 ## 0.0.32
 
 - `@noldova/ui.components.angular`: the site header and footer every Noldova website shares, `nol-site-header` and `nol-site-footer`, in the company, product and documentation variants, at desktop and phone widths, in light and dark: the header is the page's sticky banner with a skip link, the lockup, the site's links, its search (`SiteSearchDirective`), its social links, a Light, Dark and System theme switch saved under `noldova-theme` and a Download button, and a menu at phone width; the footer is the page's content info with the lockup, the link groups and the notice. Their links are `SiteLink`, `SiteLinkGroup` and `SiteSocialLink`, and the choice pills gain `iconOnly`, which draws each choice as its icon with its title as the tooltip. A site sets `data-nol-theme-mode` from `noldova-theme` in its own head script, as the specifications say (#98).
