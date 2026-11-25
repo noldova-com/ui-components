@@ -43,9 +43,12 @@ describe("LazyTooltipDirective", () => {
 
   beforeEach(() => AppearanceFixture.apply());
 
+  // The engine's import, held or failed, goes back to the real one, so no later spec meets a stand-in.
   afterEach(() => {
     fixture.destroy();
     AppearanceFixture.reset();
+    vi.restoreAllMocks();
+    statics.module = null;
   });
 
   async function renderAsync(): Promise<void> {
