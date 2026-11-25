@@ -441,7 +441,7 @@ export class FixtureTheme {
     ["site-theme-pill", "2.25rem"],
     ["site-menu-text", "1.0625rem"],
     ["site-menu-icon", "1.375rem"],
-    ["site-menu-glyph", "1.625rem"],
+    ["site-menu-glyph", "1.125rem"],
     ["site-download-glyph-phone", "1.25rem"],
     ["site-menu-download-text", "0.9375rem"],
     ["site-header-height-phone", "4.5rem"],

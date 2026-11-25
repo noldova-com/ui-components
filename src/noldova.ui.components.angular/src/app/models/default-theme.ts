@@ -442,7 +442,7 @@ export class DefaultTheme {
       ["site-theme-pill", "2rem"],
       ["site-menu-text", "1rem"],
       ["site-menu-icon", "1.25rem"],
-      ["site-menu-glyph", "1.5rem"],
+      ["site-menu-glyph", "1rem"],
       ["site-download-glyph-phone", "1.125rem"],
       ["site-menu-download-text", "0.875rem"],
       ["site-header-height-phone", "4.25rem"],
