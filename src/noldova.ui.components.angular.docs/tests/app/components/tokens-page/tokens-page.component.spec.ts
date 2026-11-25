@@ -21,6 +21,18 @@ import { DocsShellComponent } from "../../../../src/app/components/docs-shell/do
 import { DocsFixture } from "../../../fixtures/docs.fixture.js";
 import { DomChangeFixture } from "../../../../../noldova.ui.components.angular/tests/fixtures/dom-change.fixture.js";
 
+class ShownToken {
+  public readonly name: string;
+  public readonly light: string | undefined;
+  public readonly dark: string | undefined;
+
+  public constructor(name: string, light: string | undefined, dark: string | undefined) {
+    this.name = name;
+    this.light = light;
+    this.dark = dark;
+  }
+}
+
 describe("TokensPageComponent", () => {
   const renderAsync = async (url: string): Promise<HTMLElement> => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes, withComponentInputBinding()), provideMarkdown()] });
@@ -36,23 +48,29 @@ describe("TokensPageComponent", () => {
 
   const span = (cell: HTMLElement): number => Number(cell.getAttribute("colspan") ?? 1);
 
-  const modeValues = (row: HTMLElement): readonly string[] => {
+  const shownToken = (row: HTMLElement): ShownToken => {
     const light = cellText(row, "td:nth-of-type(1)");
-    return span(DocsFixture.one(row, "td")) === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
+    return new ShownToken(cellText(row, "th"), light, span(DocsFixture.one(row, "td")) === 2 ? light : cellText(row, "td:nth-of-type(2)"));
   };
 
-  const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> =>
-    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), modeValues(t)]));
+  const shownValues = (host: HTMLElement): ReadonlyMap<string, ShownToken> => {
+    const values = new Map<string, ShownToken>();
+    for (const row of DocsFixture.all(host, "main tbody tr")) {
+      const token = shownToken(row);
+      values.set(token.name, token);
+    }
+    return values;
+  };
 
   const shownNames = (host: HTMLElement): readonly string[] => DocsFixture.all(host, "main tbody th").map(t => t.textContent?.trim() ?? "");
 
   const lookVariables = (): readonly string[] => KitResources.lookTokens.map(t => KitDomResources.formatLookVariable(t));
 
   const rulesOf = (sheet: CSSStyleSheet): readonly CSSRule[] =>
-    [...sheet.cssRules].flatMap(t => t instanceof CSSImportRule && t.styleSheet !== null ? rulesOf(t.styleSheet) : [t]);
+    [...sheet.cssRules].flatMap(t => t instanceof CSSImportRule && !Object.isNull(t.styleSheet) ? rulesOf(t.styleSheet) : [t]);
 
   const rootTokenNames = (): readonly string[] => [...document.styleSheets]
-    .filter(t => t.href === null || new URL(t.href).origin === location.origin)
+    .filter(t => Object.isNull(t.href) || new URL(t.href).origin === location.origin)
     .flatMap(t => rulesOf(t))
     .filter(t => t instanceof CSSStyleRule)
     .filter(t => t.selectorText.split(",").map(u => u.trim()).includes(":root"))
@@ -75,8 +93,8 @@ describe("TokensPageComponent", () => {
     const shown = shownValues(host);
     const theme = DefaultTheme.theme;
 
-    expect(KitDomResources.colorTokens.map(t => [t.variable, ...shown.get(t.variable) ?? []]))
-      .toEqual(KitDomResources.colorTokens.map(t => [t.variable, t.resolve(theme, ThemeMode.Light), t.resolve(theme, ThemeMode.Dark)]));
+    expect(KitDomResources.colorTokens.map(t => shown.get(t.variable)))
+      .toEqual(KitDomResources.colorTokens.map(t => new ShownToken(t.variable, t.resolve(theme, ThemeMode.Light), t.resolve(theme, ThemeMode.Dark))));
   });
 
   it("shows each look token's value from the default theme in both modes", async () => {
@@ -84,17 +102,17 @@ describe("TokensPageComponent", () => {
     const shown = shownValues(host);
     const theme = DefaultTheme.theme;
 
-    expect(lookVariables().map(t => [t, ...shown.get(t) ?? []]))
-      .toEqual(KitResources.lookTokens.map(t => [KitDomResources.formatLookVariable(t), theme.readLook(t), theme.readLook(t)]));
+    expect(lookVariables().map(t => shown.get(t)))
+      .toEqual(KitResources.lookTokens.map(t => new ShownToken(KitDomResources.formatLookVariable(t), theme.readLook(t), theme.readLook(t))));
   });
 
   it("shows each token of the kit's base styles with the value its declaration gives, in both modes", async () => {
     const host = await renderAsync("/tokens");
     const themed = new Set([...KitDomResources.colorTokens.map(t => t.variable), ...lookVariables()]);
-    const base = [...shownValues(host)].filter(([name]) => !themed.has(name));
+    const base = [...shownValues(host).values()].filter(t => !themed.has(t.name));
 
-    expect(base.map(([name]) => name)).toEqual(expect.arrayContaining(["--nol-font-sans", "--nol-text-panel", "--nol-line-panel", "--nol-weight-emphasis", "--nol-text-tab"]));
-    expect(base.filter(([name, values]) => values[0] !== values[1] || !kitBaseStyles.includes(`${name}: ${values[0] ?? ""};`)).map(([name]) => name)).toEqual([]);
+    expect(base.map(t => t.name)).toEqual(expect.arrayContaining(["--nol-font-sans", "--nol-text-panel", "--nol-line-panel", "--nol-weight-emphasis", "--nol-text-tab"]));
+    expect(base.filter(t => t.light !== t.dark || !kitBaseStyles.includes(`${t.name}: ${t.light ?? ""};`)).map(t => t.name)).toEqual([]);
   });
 
   it("shows a value the two modes share once, in one cell across both columns, and a value that changes in a cell for each mode", async () => {
@@ -137,7 +155,7 @@ describe("TokensPageComponent", () => {
   it("paints a swatch of each color's value in each mode, inside its cell, and none for other tokens", async () => {
     const host = await renderAsync("/tokens");
     const colors = DocsFixture.byText(host, "main h2", "Colors").closest("section");
-    if (colors === null)
+    if (Object.isNull(colors))
       throw new TypeError("The Colors heading is outside a section.");
     const cells = DocsFixture.all(colors, "tbody td");
     const swatches = DocsFixture.all(colors, ".nol-docs-token-swatch");

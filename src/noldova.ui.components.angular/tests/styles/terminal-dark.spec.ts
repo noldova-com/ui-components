@@ -14,6 +14,16 @@ import { DomResources } from "../../src/dom-resources";
 import { AppearanceFixture } from "../../src/testing/services/appearance-fixture";
 import { ForcedColorsFixture } from "../fixtures/forced-colors.fixture";
 
+class TerminalProbes {
+  public readonly inside: HTMLElement;
+  public readonly outside: HTMLElement;
+
+  public constructor(inside: HTMLElement, outside: HTMLElement) {
+    this.inside = inside;
+    this.outside = outside;
+  }
+}
+
 describe("the dark terminal scope", () => {
   const terminal = DomResources.colorTokens.filter(t => t.variable.startsWith("--nol-terminal-") && !t.variable.startsWith("--nol-terminal-dark-"));
   const dark = terminal.map(t => t.variable.replace("--nol-terminal-", "--nol-terminal-dark-"));
@@ -32,7 +42,7 @@ describe("the dark terminal scope", () => {
     return element;
   }
 
-  function render(): [HTMLElement, HTMLElement] {
+  function render(): TerminalProbes {
     const scope = document.body.appendChild(document.createElement("div"));
     scope.classList.add("nol-terminal-dark");
     const outside = probe(document.body);
@@ -40,7 +50,7 @@ describe("the dark terminal scope", () => {
       scope.remove();
       outside.remove();
     });
-    return [probe(scope), outside];
+    return new TerminalProbes(probe(scope), outside);
   }
 
   afterEach(() => {
@@ -55,7 +65,7 @@ describe("the dark terminal scope", () => {
     for (const mode of AppearanceFixture.modes)
       it(`gives a terminal inside the scope the theme's dark set, and one outside it the theme's own colors, with the ${theme.id} theme in ${mode} mode`, () => {
         AppearanceFixture.apply(theme, mode);
-        const [inside, outside] = render();
+        const { inside, outside } = render();
 
         expect(read(inside, terminal.map(t => t.variable))).toEqual(terminal.map(t => darkColor(theme, mode, t.variable)));
         expect(read(outside, terminal.map(t => t.variable))).toEqual(terminal.map(t => t.resolve(theme, mode)));
@@ -65,7 +75,7 @@ describe("the dark terminal scope", () => {
 
   it("draws the default theme's dark terminal inside the scope in light mode, the colors the dark mode's terminal has outside it", () => {
     AppearanceFixture.apply(undefined, ThemeMode.Dark);
-    const [inside, outside] = render();
+    const { inside, outside } = render();
     const darkTerminal = read(outside, terminal.map(t => t.variable));
     AppearanceFixture.apply(undefined, ThemeMode.Light);
 
@@ -76,7 +86,7 @@ describe("the dark terminal scope", () => {
   for (const theme of AppearanceFixture.themes)
     it(`keeps the system's colors inside the scope in forced colors, for the terminal tokens and their dark twins, with the ${theme.id} theme`, async () => {
       AppearanceFixture.apply(theme, ThemeMode.Light);
-      const [inside] = render();
+      const { inside } = render();
       await ForcedColorsFixture.activateAsync();
       try {
         const expected = terminal.map(t => system.get(t.variable) ?? "CanvasText");
