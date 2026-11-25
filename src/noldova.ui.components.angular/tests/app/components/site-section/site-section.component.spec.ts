@@ -39,6 +39,22 @@ with you in charge." headingId="projected-title"><span nolSiteSectionCopy><span 
 })
 class SiteSectionProjectedHostComponent {}
 
+// What a section's copy shows: the paragraph, its rendered text, each line's display and separator, and the boxes of the
+// paragraph, each line and the content, from the section's block.
+class CopyReading {
+  public readonly copy: HTMLElement;
+  public readonly text: string;
+  public readonly lines: readonly (readonly string[])[];
+  public readonly places: readonly (readonly number[])[];
+
+  public constructor(copy: HTMLElement, text: string, lines: readonly (readonly string[])[], places: readonly (readonly number[])[]) {
+    this.copy = copy;
+    this.text = text;
+    this.lines = lines;
+    this.places = places;
+  }
+}
+
 describe("SiteSectionComponent", () => {
   const viewport = { width: window.innerWidth, height: window.innerHeight };
   let fixture: ComponentFixture<SiteSectionHostComponent>;
@@ -88,7 +104,7 @@ describe("SiteSectionComponent", () => {
     for (const width of [1280, 375])
       it(`draws projected copy, with its markup, where and as the string copy is at ${String(width)} pixels, ${mode}`, async () => {
         await page.viewport(width, 800);
-        const read = (root: HTMLElement): { readonly copy: HTMLElement; readonly text: string; readonly lines: string[][]; readonly places: number[][] } => {
+        const read = (root: HTMLElement): CopyReading => {
           const block = DomFixture.one(root, "section").getBoundingClientRect();
           const copy = DomFixture.one(root, ".nol-site-section-copy");
           const lines = DomFixture.all(root, ".nol-site-section-copy-line");
@@ -96,7 +112,7 @@ describe("SiteSectionComponent", () => {
             const box = t.getBoundingClientRect();
             return [box.left - block.left, box.top - block.top, box.width, box.height];
           });
-          return { copy, text: copy.innerText, lines: lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content]), places };
+          return new CopyReading(copy, copy.innerText, lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content]), places);
         };
         await renderAsync(t => t.eyebrow.set(null), mode);
         const own = read(section());
