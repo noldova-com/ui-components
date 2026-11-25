@@ -47,6 +47,6 @@ export class SiteLockupComponent {
   protected readonly isLarge: Signal<boolean> = computed(() => this.wordmarkSize() === SiteWordmarkSize.Large);
   protected readonly accessibleName: Signal<string> = computed(() => {
     const label = this.label();
-    return String.isNullOrWhitespace(label) ? SiteLockupResources.formatName(this.name()) : label;
+    return Object.isNull(label) || String.isNullOrWhitespace(label) ? SiteLockupResources.formatName(this.name()) : label;
   });
 }
