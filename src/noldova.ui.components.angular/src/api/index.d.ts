@@ -7377,7 +7377,7 @@ export declare class LinkReferenceChipComponent {
   /**
    * Whether the chip flows as text in its line, for a line cut with an
    * ellipsis, such as a list row's: the line's "…" then cuts inside the chip's
-   * text as the line narrows, rather than hiding the chip whole. The chip
+   * text as the line narrows, rather than hiding the chip's text. The chip
    * looks the same while it fits, but isn't held to its own 27.5rem. False
    * when not bound.
    */
