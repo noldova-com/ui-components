@@ -61,6 +61,7 @@ describe("SiteClosingComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
+    document.documentElement.removeAttribute("data-nol-theme-mode");
     await page.viewport(viewport.width, viewport.height);
   });
 
@@ -93,6 +94,7 @@ describe("SiteClosingComponent", () => {
   for (const mode of AppearanceFixture.modes) {
     it(`draws the dark mark in dark mode and the mark in light mode, one at a time, 2.3125rem square in the frame's middle, ${mode}`, async () => {
       await renderAsync(t => t.markDark.set(markDark), mode);
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
       const shown = DomFixture.all(closing(), ".nol-site-closing-mark img").filter(t => getComputedStyle(t).display !== "none");
       const frame = box(".nol-site-closing-mark");
       const glyph = shown[0]?.getBoundingClientRect() ?? frame;
@@ -110,6 +112,7 @@ describe("SiteClosingComponent", () => {
       t.mark.set(null);
       t.markDark.set(markDark);
     }, ThemeMode.Dark);
+    document.documentElement.setAttribute("data-nol-theme-mode", ThemeMode.Dark);
 
     expect(DomFixture.maybe(closing(), ".nol-site-closing-mark")).toBeNull();
 

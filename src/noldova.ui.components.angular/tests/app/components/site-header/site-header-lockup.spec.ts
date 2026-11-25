@@ -139,7 +139,7 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const width of [360, 320]) {
-    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark narrowed in its file's proportions, in a header ${width} pixels wide`, async () => {
+    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark's box narrowed and drawn inside it in its file's proportions, in a header ${width} pixels wide`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => {
         t.wordmark.set(longWordmark);
@@ -151,9 +151,9 @@ describe("SiteHeaderComponent's lockup", () => {
 
       expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
-      expect(mark().height).toBeLessThanOrEqual(rem(1.0625) + 1 / 32);
-      expect(mark().height).toBeGreaterThan(0);
-      expect(mark().width / mark().height).toBeCloseTo(longRatio, 1);
+      AppearanceFixture.expectPixels(mark().height, rem(1.0625));
+      expect(mark().width).toBeLessThan(rem(1.0625) * longRatio - 1);
+      expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
     });
   }

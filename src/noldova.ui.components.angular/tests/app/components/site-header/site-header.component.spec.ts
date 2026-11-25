@@ -389,7 +389,7 @@ describe("SiteHeaderComponent", () => {
       expect([drawn, single]).toEqual([[mode === "Dark" ? darkIcon : icon], [icon]]);
     });
 
-  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark and nothing in the bar overlapping, and Download in the open menu", async () => {
+  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark, the phone gap before the theme switch and nothing in the bar overlapping, and Download in the open menu", async () => {
     await page.viewport(390, 800);
     await renderAsync(t => {
       t.productIcon.set(icon);
@@ -402,13 +402,14 @@ describe("SiteHeaderComponent", () => {
     const overlaps = bar.flatMap((t, i) => bar.slice(i + 1).filter(u => t.left < u.right - 1 / 32 && u.left < t.right - 1 / 32 && t.top < u.bottom - 1 / 32 && u.top < t.bottom - 1 / 32));
 
     expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download")]).toEqual([true, 0, false]);
+    expect(box("nol-site-theme-switch").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
     AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 26 / 3);
     await openAsync();
 
     expect([shown(".nol-site-download"), box(".nol-site-download").top > box(".nol-site-header-social").bottom]).toEqual([true, true]);
   });
 
-  it("never shrinks the lockup below its icon and whole wordmark when the bar is too tight for them, on a 520px window with Download in the bar", async () => {
+  it("narrows the wordmark, its icon whole, rather than running into the theme switch when the bar is too tight for them, on a 520px window with Download in the bar", async () => {
     await page.viewport(520, 800);
     await renderAsync(t => {
       t.productIcon.set(icon);
@@ -417,11 +418,14 @@ describe("SiteHeaderComponent", () => {
     });
     const link = box(".nol-site-lockup-link");
     const parts = [box(".nol-site-lockup-icon"), box(".nol-site-wordmark")];
-    const marks = AppearanceFixture.measureLook("site-icon") + AppearanceFixture.measureLook("space-3") + AppearanceFixture.measureLook("site-wordmark") * 24;
+    const wordmark = DomFixture.at(parts, 1);
 
-    expect([shown(".nol-site-download"), parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), box("nol-site-lockup").width >= marks - 1 / 32])
-      .toEqual([true, true, true]);
-    AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 24);
+    expect([shown(".nol-site-download"), parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32)]).toEqual([true, true]);
+    expect(box("nol-site-theme-switch").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
+    AppearanceFixture.expectPixels(DomFixture.at(parts, 0).width, AppearanceFixture.measureLook("site-icon"));
+    AppearanceFixture.expectPixels(wordmark.height, AppearanceFixture.measureLook("site-wordmark"));
+    expect(wordmark.width).toBeLessThan(AppearanceFixture.measureLook("site-wordmark") * 24 - 1);
+    expect(getComputedStyle(part(".nol-site-wordmark")).maskSize).toBe("contain");
   });
 
   it("draws each social link in the strong text color, named by its label with the label as its title, its box the theme pill size, its icon a mask at the header icon size", async () => {
