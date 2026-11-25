@@ -616,8 +616,8 @@ The docs site, which isn't published as a package, also shows two marks that are
 
 | What | Where | License | Obligations |
 |---|---|---|---|
-| The GitHub mark, `icons/mark-github-16.svg` of Primer Octicons 19.42.0 | drawn inline by the docs site's `docs-brand-mark` component | MIT License, which the site serves as `assets/licenses/OCTICONS-LICENSE.txt` | The site keeps the license text with the mark. GitHub is a trademark of GitHub, Inc. |
-| The X logo, `logo.svg` from X's brand toolkit | drawn inline by the docs site's `docs-brand-mark` component | X's Trademark Guidelines | Its paths unchanged, in black or white, the two colors the toolkit ships it in, and linking only to Noldova's X account. X is a trademark of X Corp. |
+| The GitHub mark (Invertocat), `GitHub_Invertocat_Black.svg` from GitHub's brand page | the docs site's `public/brand/github.svg`, drawn by the site header | GitHub's logo terms, https://brand.github.com | Unchanged, and linking only to Noldova's GitHub account. GitHub is a trademark of GitHub, Inc. |
+| The X logo, `logo.svg` from X's brand toolkit | the docs site's `public/brand/x.svg`, drawn by the site header | X's Trademark Guidelines | Unchanged, and linking only to Noldova's X account. X is a trademark of X Corp. |
 
 ## Trademarks
 

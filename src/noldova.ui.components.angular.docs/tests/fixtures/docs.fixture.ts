@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "@noldova/context.core";
+
 import type { ComponentFixture } from "@angular/core/testing";
 import type { Router } from "@angular/router";
 import { page } from "vitest/browser";
@@ -18,7 +20,7 @@ export class DocsFixture {
   public static readonly PHONE_WIDTH: number = 375;
   public static readonly PHONE_HEIGHT: number = 812;
   public static readonly MODE_ATTRIBUTE: string = "data-nol-theme-mode";
-  public static readonly STORAGE_KEY: string = "nol-docs-theme";
+  public static readonly STORAGE_KEY: string = "noldova-theme";
 
   public static host(fixture: ComponentFixture<unknown>): HTMLElement {
     const host: unknown = fixture.nativeElement;
@@ -40,16 +42,20 @@ export class DocsFixture {
 
   public static byText(root: ParentNode, selector: string, text: string): HTMLElement {
     const element = DocsFixture.all(root, selector).find(t => t.textContent?.trim() === text);
-    if (element === undefined)
+    if (Object.isUndefined(element))
       throw new TypeError(`No ${selector} reads ${text}.`);
     return element;
   }
 
   public static setMode(mode: string | null): void {
-    if (mode === null)
+    if (Object.isNull(mode)) {
       document.documentElement.removeAttribute(DocsFixture.MODE_ATTRIBUTE);
-    else
+      localStorage.removeItem(DocsFixture.STORAGE_KEY);
+    }
+    else {
       document.documentElement.setAttribute(DocsFixture.MODE_ATTRIBUTE, mode);
+      localStorage.setItem(DocsFixture.STORAGE_KEY, mode.toLowerCase());
+    }
   }
 
   public static async viewAsync(width: number, height: number): Promise<void> {
