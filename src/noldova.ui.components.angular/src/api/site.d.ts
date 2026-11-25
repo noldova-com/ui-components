@@ -182,7 +182,7 @@ export declare class SiteClosingComponent {
  * @example
  * ```ts
  * import { Component } from "@angular/core";
- * import { SiteFooterComponent, SiteLink, SiteLinkGroup } from "@noldova/ui.components.angular";
+ * import { SiteFooterComponent, SiteLink, SiteLinkGroup } from "@noldova/ui.components.angular/site";
  *
  * @Component({
  *   selector: "nol-page-footer",
@@ -297,7 +297,7 @@ export declare class SiteFooterComponent {
  * @example
  * ```ts
  * import { Component } from "@angular/core";
- * import { SiteHeaderComponent, SiteLink, SiteSocialLink } from "@noldova/ui.components.angular";
+ * import { SiteHeaderComponent, SiteLink, SiteSocialLink } from "@noldova/ui.components.angular/site";
  *
  * @Component({
  *   selector: "nol-page-header",
@@ -580,7 +580,7 @@ export declare class SiteLinkGroup {
  * @example
  * ```ts
  * import { Component } from "@angular/core";
- * import { SiteHeaderComponent, SiteSearchDirective } from "@noldova/ui.components.angular";
+ * import { SiteHeaderComponent, SiteSearchDirective } from "@noldova/ui.components.angular/site";
  *
  * @Component({
  *   selector: "nol-docs-header",
