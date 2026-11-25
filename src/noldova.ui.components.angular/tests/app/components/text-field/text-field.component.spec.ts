@@ -227,7 +227,7 @@ describe("TextFieldComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`takes the quiet look in the ${theme.id} theme in ${mode} mode: a transparent border of the field's width on the window fill, the plain field's size and text inset, the accent border while focused, the error border while invalid and dimmed while disabled`, () => {
+      it(`takes the quiet look in the ${theme.id} theme in ${mode} mode: a transparent border of the field's width on the window fill, its placeholder in the muted text color at 4.5:1 or more on that fill, the plain field's size and text inset, the accent border while focused, the error border while invalid and dimmed while disabled`, () => {
         render(theme, mode);
         const style = getComputedStyle(field("quiet"));
         const sides = [style.borderTopColor, style.borderRightColor, style.borderBottomColor, style.borderLeftColor];
@@ -240,7 +240,9 @@ describe("TextFieldComponent", () => {
         expect(field("search").classList.contains("nol-text-field-quiet")).toBe(false);
         expect(sides).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"]);
         expect([fill, style.color]).toEqual([AppearanceFixture.readColor(theme, mode, "window"), AppearanceFixture.readColor(theme, mode, "input-text")]);
-        expect(getComputedStyle(field("quiet"), "::placeholder").color).toBe(AppearanceFixture.readColor(theme, mode, "placeholder"));
+        const placeholder = getComputedStyle(field("quiet"), "::placeholder").color;
+        expect(placeholder).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        expect(AppearanceFixture.contrast(placeholder, fill)).toBeGreaterThanOrEqual(4.5);
         AppearanceFixture.expectPixels(parseFloat(style.borderTopWidth), AppearanceFixture.measureLook("border-width"));
         expectPlace(place("quiet"), place("search"));
         expect(focused).toBe(AppearanceFixture.readColor(theme, mode, "accent"));

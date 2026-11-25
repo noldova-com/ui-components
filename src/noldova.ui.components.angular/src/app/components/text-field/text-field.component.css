@@ -45,6 +45,12 @@
   }
 }
 
+:host(.nol-text-field-quiet)::placeholder {
+  @media not (forced-colors: active) {
+    color: var(--nol-text-muted);
+  }
+}
+
 :host(:is(:focus, [data-nol-state="Focus"])) {
   border-color: var(--nol-accent);
   outline: none;

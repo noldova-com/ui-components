@@ -12832,8 +12832,8 @@ export declare class TextFieldComponent {
   /**
    * The quiet look, for a search field in a site's header, such as a docs
    * site's: no visible border, its 1px width kept so the text and any glyph
-   * stay where they are, and the theme's `window` fill instead of `input`;
-   * the focus, invalid and disabled looks are the field's own, so focus
+   * stay where they are, the theme's `window` fill instead of `input`, and
+   * its placeholder in `text-muted`, which keeps 4.5:1 on that fill; the focus, invalid and disabled looks are the field's own, so focus
    * shows the accent border. Under forced colors it is the plain field. A
    * leading search glyph comes from a {@link TextFieldBoxComponent}'s
    * `icon`; false when not bound.
