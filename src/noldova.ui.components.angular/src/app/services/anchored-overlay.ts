@@ -18,6 +18,7 @@ import { ClockTokens } from "../models/clock-tokens.js";
 import { ContentMovedEvent } from "../models/content-moved-event.js";
 import type { OverlayAnchoring } from "../models/overlay-anchoring.js";
 import type { OverlayPlacement } from "../models/overlay-placement.js";
+import { PlacedBoxes } from "../models/placed-boxes.js";
 import { DomResources } from "../../dom-resources.js";
 import { AnchoredOverlayResources } from "./anchored-overlay.resources.js";
 import { OverlayBoundsService } from "./overlay-bounds.service.js";
@@ -39,7 +40,7 @@ export class AnchoredOverlay {
   private placementValue: OverlayPlacement | null = null;
   private placedWidth: number | null = null;
   private placedHeight: number = 0;
-  private placedBoxesValue: readonly [DOMRectReadOnly, DOMRectReadOnly] | null = null;
+  private placedBoxesValue: PlacedBoxes | null = null;
   private readonly changes: MutationObserver = new MutationObserver(() => {
     this.isChanged = true;
   });
@@ -75,7 +76,7 @@ export class AnchoredOverlay {
     return this.placementValue;
   }
 
-  public get placedBoxes(): readonly [DOMRectReadOnly, DOMRectReadOnly] | null {
+  public get placedBoxes(): PlacedBoxes | null {
     return this.placedBoxesValue;
   }
 
@@ -194,7 +195,7 @@ export class AnchoredOverlay {
     const height = Object.isNull(placement.maxHeight) ? size.height : Math.min(size.height, placement.maxHeight);
     this.placedWidth = size.width;
     this.placedHeight = height;
-    this.placedBoxesValue = [DOMRectReadOnly.fromRect(originAt), new DOMRectReadOnly(size.left + placement.left, size.top + placement.top, size.width, height)];
+    this.placedBoxesValue = new PlacedBoxes(DOMRectReadOnly.fromRect(originAt), new DOMRectReadOnly(size.left + placement.left, size.top + placement.top, size.width, height));
     this.isReset = false;
     this.changes.takeRecords();
     this.isChanged = false;

@@ -2025,7 +2025,7 @@ export declare class AnchoredOverlay {
    * place it again, such as the origin moving with no scroll, they may
    * differ from the page.
    */
-  public get placedBoxes(): readonly [DOMRectReadOnly, DOMRectReadOnly] | null;
+  public get placedBoxes(): PlacedBoxes | null;
 
   /**
    * Emits each time the content leaves the pane, by
@@ -10330,6 +10330,38 @@ export declare class PermissionRequester {
    * ```
    */
   public constructor(name: string, kind?: string | null);
+}
+
+/**
+ * The boxes an {@link AnchoredOverlay}'s last placement measured, as its
+ * {@link AnchoredOverlay.placedBoxes} gives them: the origin's and the
+ * pane's, in viewport CSS pixels.
+ */
+export declare class PlacedBoxes {
+  /**
+   * The origin's box, a read-only copy.
+   */
+  public readonly origin: DOMRectReadOnly;
+
+  /**
+   * The pane's box, its height limited to the room it has, a read-only copy.
+   */
+  public readonly pane: DOMRectReadOnly;
+
+  /**
+   * Creates the boxes. {@link AnchoredOverlay} creates them when it places
+   * its pane; a test double creates its own.
+   *
+   * @param origin The origin's box.
+   * @param pane The pane's box.
+   * @example
+   * ```ts
+   * import { PlacedBoxes } from "@noldova/ui.components.angular";
+   *
+   * export const below: PlacedBoxes = new PlacedBoxes(new DOMRectReadOnly(120, 40, 80, 32), new DOMRectReadOnly(120, 76, 240, 160));
+   * ```
+   */
+  public constructor(origin: DOMRectReadOnly, pane: DOMRectReadOnly);
 }
 
 /**

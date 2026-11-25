@@ -205,9 +205,8 @@ export class PopoverTriggerDirective {
       this.scheduleHide();
       return;
     }
-    const [anchor, pane] = boxes;
     const point = PopoverTriggerDirective.pointOf(event);
-    const area = isFromTrigger ? new PointerGraceArea(point, anchor, pane) : new PointerGraceArea(point, pane, anchor);
+    const area = isFromTrigger ? new PointerGraceArea(point, boxes.origin, boxes.pane) : new PointerGraceArea(point, boxes.pane, boxes.origin);
     if (!area.contains(point)) {
       this.scheduleHide();
       return;

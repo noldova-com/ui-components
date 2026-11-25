@@ -14,6 +14,8 @@ import type { Writable } from "node:stream";
 import "@noldova/context.core";
 
 import type { ProcessRunner } from "../processes/process-runner.ts";
+import { ChunkFile } from "./chunk-file.ts";
+import { ChunkPart } from "./chunk-part.ts";
 import type { IBundleOutput } from "./interfaces/i-bundle-output.ts";
 import type { ICheck } from "./interfaces/i-check.ts";
 
@@ -119,10 +121,11 @@ export class KitBundleCheck implements ICheck {
         return Object.isString(target) ? [path.posix.basename(target)] : [];
       });
       const entryPoint = KitBundleCheck.field(value, "entryPoint");
-      const inputBytes = new Map(Object.entries(inputs).map(([t, u]): [string, number] => {
-        const bytes = KitBundleCheck.field(u, "bytesInOutput");
-        return [t, Object.isNumber(bytes) ? bytes : 0];
-      }));
+      const inputBytes = new Map<string, number>();
+      for (const [file, input] of Object.entries(inputs)) {
+        const bytes = KitBundleCheck.field(input, "bytesInOutput");
+        inputBytes.set(file, Object.isNumber(bytes) ? bytes : 0);
+      }
       read.set(path.posix.basename(name), { inputs: Object.keys(inputs), inputBytes, staticImports, imports: allImports, entryPoint: Object.isString(entryPoint) ? entryPoint : "" });
     }
     return read;
@@ -168,12 +171,12 @@ export class KitBundleCheck implements ICheck {
     if (project !== KitBundleCheck.SITE_BUNDLE)
       return [];
     const parts = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => t.inputs.filter(u => u.includes(KitBundleCheck.KIT_COMPONENTS))
-      .map(u => ({ chunk: name, part: KitBundleCheck.componentOf(u) })));
+      .map(u => new ChunkPart(name, KitBundleCheck.componentOf(u))));
     const others = new Map(parts.filter(t => !KitBundleCheck.SITE_COMPONENTS.includes(t.part)).map(t => [t.part, t.chunk]));
     const findings = [...others].map(([part, chunk]) => `${project}: its initial chunk ${chunk} holds the kit's ${part}; ${KitBundleCheck.SITE_RULE}`);
     if (!parts.some(t => t.part === "site-header") || !parts.some(t => t.part === "site-footer"))
       findings.push(`${project}: its initial chunks hold no site header or no site footer, though its start shows both; ${KitBundleCheck.SITE_RULE}`);
-    const start = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => [...t.inputBytes].map(([u, bytes]) => ({ chunk: name, file: u, bytes })));
+    const start = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => [...t.inputBytes].map(([u, bytes]) => new ChunkFile(name, u, bytes)));
     findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.SHARED_STRINGS))
       .map(t => `${project}: its initial chunk ${t.chunk} holds the kit's shared strings, ${t.file}; ${KitBundleCheck.SITE_RULE}`));
     findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.ICON_LIST))
@@ -211,7 +214,7 @@ export class KitBundleCheck implements ICheck {
     if (project !== KitBundleCheck.BUTTON_BUNDLE)
       return [];
     const strings = [...outputs].flatMap(([name, t]) => [...t.inputBytes].filter(([u]) => u.includes(KitBundleCheck.KIT_FILES) && u.endsWith(KitBundleCheck.STRINGS_FILE))
-      .map(([u, bytes]) => ({ chunk: name, file: u, bytes })));
+      .map(([u, bytes]) => new ChunkFile(name, u, bytes)));
     const findings = strings.filter(t => !KitBundleCheck.BUTTON_STRINGS.some(u => t.file.endsWith(u)))
       .map(t => `${project}: its chunk ${t.chunk} holds ${t.file}, the strings of a class the button doesn't reach; ${KitBundleCheck.STRINGS_RULE}`);
     const bytes = strings.filter(t => initial.has(t.chunk)).reduce((sum, t) => sum + t.bytes, 0);

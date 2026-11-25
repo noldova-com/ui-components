@@ -119,13 +119,13 @@ describe("AnchoredOverlay", () => {
     content.instance.height.set(5000);
     content.changeDetectorRef.detectChanges();
     overlay.reposition();
-    const limited = overlay.placedBoxes?.[1];
+    const limited = overlay.placedBoxes?.pane;
     const pane = overlay.element.getBoundingClientRect();
     const limit = overlay.placement?.maxHeight;
     overlay.close();
 
-    expect(placed?.map(sides)).toEqual(boxes.map(sides));
-    expect(placed?.map(t => Object.getPrototypeOf(t) === DOMRectReadOnly.prototype)).toEqual([true, true]);
+    expect([sides(placed?.origin), sides(placed?.pane)]).toEqual(boxes.map(sides));
+    expect([placed?.origin, placed?.pane].map(t => Object.getPrototypeOf(t) === DOMRectReadOnly.prototype)).toEqual([true, true]);
     expect([sides(limited), limit]).toEqual([sides(pane), pane.height]);
     expect(overlay.placedBoxes).toBeNull();
   });
