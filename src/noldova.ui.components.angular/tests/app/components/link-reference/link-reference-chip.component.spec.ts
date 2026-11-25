@@ -1441,6 +1441,30 @@ describe("LinkReferenceChipComponent in-line in a line cut with an ellipsis", ()
       AppearanceFixture.expectPixels(centreOf(mark).y, box.top + box.height / 2);
     });
 
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps a pending mark's dashed square where the default chip has it, 0.25rem before the icon and centred on the line, in ${mode} mode`, async () => {
+      await renderAsync(itemOf({ isMarkPending: true, mark: null }), mode);
+      const placesOf = (): number[] => {
+        const origin = line().getBoundingClientRect();
+        const slot = part("slot").getBoundingClientRect();
+        const icon = part("icon").getBoundingClientRect();
+        return [slot.left - origin.left, slot.top - origin.top, slot.width, slot.height, icon.left - origin.left, icon.top - origin.top];
+      };
+      await changeAsync(host => host.isInline.set(false));
+      const flex = placesOf();
+      await changeAsync(host => host.isInline.set(true));
+      const inline = placesOf();
+      const box = line().getBoundingClientRect();
+      const slot = part("slot").getBoundingClientRect();
+      const icon = part("icon").getBoundingClientRect();
+
+      expect([chip().classList.contains("nol-link-reference-chip-inline"), inline.length]).toEqual([true, flex.length]);
+      inline.forEach((value, index) => AppearanceFixture.expectPixels(value, DomFixture.at(flex, index)));
+      expect([slot.width, slot.height]).toEqual([pixels(0.875), pixels(0.875)]);
+      AppearanceFixture.expectPixels(icon.left - slot.right, pixels(0.25));
+      AppearanceFixture.expectPixels(centreOf(slot).y, box.top + box.height / 2);
+    });
+
   it("isn't held to 27.5rem, so a long title runs to the line's width", async () => {
     await renderAsync(itemOf({ title: `${title}, and a second clause long enough to pass the default chip's width` }));
     const box = line().getBoundingClientRect();
