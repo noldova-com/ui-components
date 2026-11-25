@@ -754,8 +754,9 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark: 1.375rem high, 1.25rem in a header at most
-   * 47.5rem wide and 1.0625rem in one at most 22.5rem wide.
+   * A product's own wordmark, as high as TeamRun's header draws its
+   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
+   * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"
 }

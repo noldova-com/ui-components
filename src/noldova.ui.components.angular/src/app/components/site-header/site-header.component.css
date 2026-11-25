@@ -241,7 +241,6 @@ nol-site-theme-switch {
 }
 
 .nol-site-download {
-  --nol-button-edge-width: 0px;
   --nol-button-padding-inline: var(--nol-site-download-padding-inline);
 
   flex: none;
