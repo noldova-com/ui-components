@@ -182,7 +182,9 @@ describe("DocsShellComponent", () => {
       expect(footer.top).toBeGreaterThanOrEqual(DocsFixture.one(host, ".nol-docs-body").getBoundingClientRect().bottom - 0.5);
       expect([footer.left, footer.right]).toEqual([0, document.documentElement.clientWidth]);
       expect(Math.abs(wordmark.left - header.left) / unit).toBeLessThanOrEqual(0.01);
-      expect(wordmark.width / unit).toBeCloseTo(header.width / unit, 2);
+      // A phone's header narrows its wordmark, here by under a pixel, to keep its gap before the theme switch.
+      expect((wordmark.width - header.width) / unit).toBeGreaterThanOrEqual(-0.01);
+      expect((wordmark.width - header.width) / unit).toBeLessThanOrEqual(0.0625);
     });
   });
 
