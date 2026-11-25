@@ -222,7 +222,7 @@ describe("TextFieldComponent", () => {
 
   const expectPlace = (actual: number[], expected: number[]): void => {
     for (const [index, value] of actual.entries())
-      AppearanceFixture.expectPixels(value, expected[index] as number);
+      AppearanceFixture.expectPixels(value, expected[index] ?? Number.NaN);
   };
 
   for (const mode of AppearanceFixture.modes)

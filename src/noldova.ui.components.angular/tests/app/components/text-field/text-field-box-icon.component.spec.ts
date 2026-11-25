@@ -106,7 +106,7 @@ describe("TextFieldBoxComponent's leading icon", () => {
   const expectOffsets = (actual: Placement, expected: Placement): void => {
     const want = offsets(expected);
     for (const [index, value] of offsets(actual).entries())
-      AppearanceFixture.expectPixels(value, want[index] as number);
+      AppearanceFixture.expectPixels(value, want[index] ?? Number.NaN);
   };
 
   for (const mode of AppearanceFixture.modes)
