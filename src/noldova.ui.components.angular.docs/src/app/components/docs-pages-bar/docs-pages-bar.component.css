@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: var(--nol-site-header-height);
+  min-height: 3.5rem;
   padding-inline: calc(var(--nol-site-padding-inline-phone) - var(--nol-space-2));
   border-block: var(--nol-border-width) solid var(--nol-border);
   background-color: var(--nol-panel);

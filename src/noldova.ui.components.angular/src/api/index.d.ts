@@ -12026,7 +12026,7 @@ export declare class SiteAction {
    * The Material Symbols name of the icon drawn after the label, such as
    * `download`; null for none.
    */
-  public readonly icon: string | null;
+  public readonly icon: IconName | null;
 
   /**
    * The button's look: `ButtonVariant.Primary` for the main action,
@@ -12042,7 +12042,7 @@ export declare class SiteAction {
    * @param icon The icon after the label; none when left out.
    * @param variant The button's look; `ButtonVariant.Primary` when left out.
    */
-  public constructor(label: string, href: string, icon?: string | null, variant?: ButtonVariant);
+  public constructor(label: string, href: string, icon?: IconName | null, variant?: ButtonVariant);
 }
 
 /**
@@ -12070,7 +12070,7 @@ export declare class SiteCardComponent {
    * The Material Symbols name of the icon at the card's top left; null, the
    * default, for none.
    */
-  public readonly icon: InputSignal<string | null>;
+  public readonly icon: InputSignal<IconName | null>;
 
   /**
    * The short mark at the card's top right, such as `01`; null, the default,
