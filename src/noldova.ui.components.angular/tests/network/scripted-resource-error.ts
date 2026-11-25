@@ -8,6 +8,8 @@
 
 import { randomUUID } from "node:crypto";
 
+import "@noldova/context.core";
+
 import type { ISocketCensus } from "./interfaces/i-socket-census.ts";
 import { ClosedPort } from "./closed-port.ts";
 import { FailedModuleRequests } from "./failed-module-requests.ts";
@@ -33,7 +35,7 @@ export class ScriptedResourceError {
 
   public readonly print: (context: unknown, census: string, errorText: string, count?: number) => Promise<readonly string[]> = async (_context, census, errorText, count = 1) => {
     const create = ScriptedResourceError.CENSUSES.get(census);
-    if (create === undefined)
+    if (Object.isUndefined(create))
       throw new Error(`No scripted census is named "${census}"; the names are ${[...ScriptedResourceError.CENSUSES.keys()].join(", ")}.`);
     const port = await new ClosedPort().find();
     const page = new RecordedPage();

@@ -8,8 +8,11 @@
 
 import { execFile } from "node:child_process";
 
+import "@noldova/context.core";
+
 import type { ISocketCensus } from "./interfaces/i-socket-census.ts";
 import { LoopLimit } from "./loop-limit.ts";
+import { ValueCount } from "./value-count.ts";
 
 // Takes the machine's socket census once the browser fails a request for lack of resources, which on Windows is what a connect gets once the system
 // runs out of ports or socket buffers (WSAENOBUFS), so the run names what held them: Windows' own listings, `netstat -ano -p tcp` for each socket's
@@ -56,14 +59,15 @@ export class SocketCensus implements ISocketCensus {
       throw netstat.reason;
     const sockets = netstat.value.split(SocketCensus.LINES).map(t => t.trim().split(SocketCensus.SPACES))
       .filter(t => t[0] === SocketCensus.TCP && t.length === SocketCensus.SOCKET_FIELDS);
-    const names = new Map(SocketCensus.valueOf(tasklist).split(SocketCensus.LINES).map(t => [...t.matchAll(SocketCensus.CSV_FIELD)].map(u => u[1] ?? ""))
-      .map(([name = "", pid = ""]): [string, string] => [pid, name]));
-    const states = SocketCensus.counted(sockets.map(t => t[3] ?? "")).map(([state, count]) => `${state} ${count}`);
+    const names = new Map<string, string>();
+    for (const fields of SocketCensus.valueOf(tasklist).split(SocketCensus.LINES).map(t => [...t.matchAll(SocketCensus.CSV_FIELD)].map(u => u[1] ?? "")))
+      names.set(fields[1] ?? "", fields[0] ?? "");
+    const states = SocketCensus.counted(sockets.map(t => t[3] ?? "")).map(t => t.toString());
     const holders = SocketCensus.counted(sockets.map(t => names.get(t[4] ?? "") ?? SocketCensus.UNKNOWN)).slice(0, SocketCensus.LISTED_HOLDERS)
-      .map(([name, count]) => `${name} ${count}`);
+      .map(t => t.toString());
     const start = SocketCensus.START_PORT.exec(SocketCensus.valueOf(netsh))?.[1];
     const count = SocketCensus.PORT_COUNT.exec(SocketCensus.valueOf(netsh))?.[1];
-    const range = start === undefined || count === undefined ? SocketCensus.UNKNOWN : `${start}-${Number(start) + Number(count) - 1} (${count} ports)`;
+    const range = Object.isUndefined(start) || Object.isUndefined(count) ? SocketCensus.UNKNOWN : `${start}-${Number(start) + Number(count) - 1} (${count} ports)`;
     const unread = [tasklist, netsh].flatMap(t => t.status === "rejected" ? [t.reason instanceof Error ? t.reason.message : String(t.reason)] : []);
     const notRead = unread.length === 0 ? "" : `; not read: ${unread.join(", ")}`;
     return `TCP sockets ${sockets.length}: ${states.join(", ")}; most held by ${holders.join(", ")}; dynamic ports ${range}${notRead}`;
@@ -74,11 +78,11 @@ export class SocketCensus implements ISocketCensus {
   }
 
   // Each value with how often it comes, most often first.
-  private static counted(values: readonly string[]): [string, number][] {
+  private static counted(values: readonly string[]): ValueCount[] {
     const counts = new Map<string, number>();
     for (const value of values)
       counts.set(value, (counts.get(value) ?? 0) + 1);
-    return [...counts].sort((a, b) => b[1] - a[1]);
+    return [...counts].map(([value, count]) => new ValueCount(value, count)).sort((a, b) => b.count - a.count);
   }
 
   private static listAsync(command: string, args: readonly string[]): Promise<string> {
@@ -87,7 +91,7 @@ export class SocketCensus implements ISocketCensus {
     return new Promise((resolve, reject) => {
       execFile(command, args, { windowsHide: true, signal: stop.signal, maxBuffer: SocketCensus.LISTING_BUFFER }, (error, stdout) => {
         limit.stop();
-        if (error === null)
+        if (Object.isNull(error))
           resolve(stdout);
         else
           reject(new Error(`${command} failed: ${error.message}`));
