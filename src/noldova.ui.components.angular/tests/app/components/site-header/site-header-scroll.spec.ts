@@ -11,6 +11,7 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page, userEvent } from "vitest/browser";
 
 import { SiteHeaderComponent } from "../../../../src/app/components/site-header/site-header.component";
+import { SiteSearchDirective } from "../../../../src/app/components/site-header/site-search.directive";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import type { Theme } from "../../../../src/app/models/theme";
@@ -24,9 +25,11 @@ const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
-  imports: [SiteHeaderComponent],
+  imports: [SiteHeaderComponent, SiteSearchDirective],
   template: `
-    <nol-site-header [wordmark]="wordmark" name="TeamRun" version="v0.0.9" [links]="links" [social]="social" downloadHref="#download" [(menuOpen)]="menuOpen" />
+    <nol-site-header [wordmark]="wordmark" name="TeamRun" version="v0.0.9" [links]="links" [social]="social" downloadHref="#download" [(menuOpen)]="menuOpen">
+      <input nolSiteSearch type="search" aria-label="Search" />
+    </nol-site-header>
     <main class="page">Content</main>
   `,
   styles: [".page { display: block; height: 300vh; background: linear-gradient(#000, #fff); }"]
@@ -79,8 +82,20 @@ class HeaderInk {
   }
 }
 
+// A stylesheet rule for the scrolled header, and the conditions of the rules it sits in, outermost first.
+class ScrolledRule {
+  public readonly rule: CSSStyleRule;
+  public readonly conditions: readonly string[];
+
+  public constructor(rule: CSSStyleRule, conditions: readonly string[]) {
+    this.rule = rule;
+    this.conditions = conditions;
+  }
+}
+
 describe("SiteHeaderComponent while the page scrolls", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
   const black = new Rgba(0, 0, 0, 1);
   const white = new Rgba(255, 255, 255, 1);
   let fixture: ComponentFixture<SiteHeaderScrollHostComponent>;
@@ -128,7 +143,7 @@ describe("SiteHeaderComponent while the page scrolls", () => {
     }
     AppearanceFixture.reset();
     await EmulatedMediaFixture.resetAsync();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(viewportWidth, viewportHeight);
   });
 
   for (const theme of AppearanceFixture.themes) {
@@ -190,6 +205,18 @@ describe("SiteHeaderComponent while the page scrolls", () => {
         expect(header().classList.contains("nol-site-header-scrolled")).toBe(true);
         expectOpaque(theme, mode);
       });
+
+      it(`stays opaque while scrolled with its search open, ${theme.id} theme, ${mode}`, async () => {
+        await page.viewport(375, 812);
+        await renderAsync(theme, mode);
+        await scrollToAsync(400);
+        expectTranslucent(theme, mode);
+        await userEvent.click(DomFixture.one(header(), ".nol-site-search-button"));
+        await fixture.whenStable();
+
+        expect(["nol-site-header-scrolled", "nol-site-header-searching"].map(t => header().classList.contains(t))).toEqual([true, true]);
+        expectOpaque(theme, mode);
+      });
     }
   }
 
@@ -216,14 +243,35 @@ describe("SiteHeaderComponent while the page scrolls", () => {
     }
   }
 
-  it("draws the translucent background only where the browser supports the blur, so the header stays opaque where it doesn't", () => {
+  // The stylesheet's rules for the scrolled header.
+  function scrolledRules(): ScrolledRule[] {
     TestBed.createComponent(SiteHeaderScrollHostComponent).detectChanges();
-    const rules = [...document.styleSheets].flatMap(t => [...t.cssRules]);
-    const translucent = (rule: CSSRule): boolean => rule instanceof CSSStyleRule && rule.selectorText.includes("nol-site-header-scrolled");
-    const nested = (rule: CSSRule): CSSRule[] => rule instanceof CSSGroupingRule ? [...rule.cssRules].flatMap(t => [t, ...nested(t)]) : [];
-    const supports = rules.filter(t => t instanceof CSSSupportsRule && t.conditionText.includes("backdrop-filter"));
+    const found: ScrolledRule[] = [];
+    const visit = (rule: CSSRule, conditions: readonly string[]): void => {
+      if (rule instanceof CSSStyleRule && rule.selectorText.includes("nol-site-header-scrolled"))
+        found.push(new ScrolledRule(rule, conditions));
+      else if (rule instanceof CSSConditionRule)
+        for (const child of rule.cssRules)
+          visit(child, [...conditions, rule.conditionText]);
+    };
+    for (const sheet of document.styleSheets)
+      for (const rule of sheet.cssRules)
+        visit(rule, []);
+    return found;
+  }
 
-    expect(rules.some(translucent)).toBe(false);
-    expect(supports.flatMap(nested).filter(translucent).map(t => t instanceof CSSStyleRule && t.style.backdropFilter.length > 0)).toEqual([true]);
+  it("draws the translucent background only where the browser supports the blur, so the header stays opaque where it doesn't", () => {
+    const translucent = scrolledRules().filter(t => t.rule.style.backgroundColor.includes("color-mix"));
+
+    expect(translucent.map(t => t.conditions.length === 1 && t.conditions.at(0)?.includes("backdrop-filter") === true)).toEqual([true]);
+  });
+
+  it("keys the opaque case on a reduced-transparency request, so a browser that doesn't know the feature shows the translucent header", () => {
+    const rules = scrolledRules();
+    const translucent = rules.filter(t => t.rule.style.backgroundColor.includes("color-mix"));
+    const reduced = rules.filter(t => t.conditions.some(c => c.includes("prefers-reduced-transparency")));
+
+    expect(translucent.flatMap(t => t.conditions).filter(c => c.includes("prefers-reduced-transparency"))).toEqual([]);
+    expect(reduced.map(t => [t.conditions.at(-1), t.rule.selectorText === translucent[0]?.rule.selectorText, t.rule.style.backdropFilter])).toEqual([["(prefers-reduced-transparency: reduce)", true, "none"]]);
   });
 });
