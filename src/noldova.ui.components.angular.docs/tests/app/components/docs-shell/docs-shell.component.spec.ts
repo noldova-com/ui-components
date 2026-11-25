@@ -730,7 +730,7 @@ describe("DocsShellComponent", () => {
         expect(own).toBeLessThan(kit);
     });
 
-    it("lays the menu, the page and the list across at most 108rem centered in the window, in from its sides alike from 48rem wide, the page filling the space between them", async () => {
+    it("lays the menu, the page and the list across at most 108rem and the site's inset on each side, as the header's content, centered in the window, in from its sides alike from 48rem wide, the page filling the space between them", async () => {
       const host = await pageAsync("/components/button");
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const body = DocsFixture.one(host, ".nol-docs-body");
@@ -739,7 +739,7 @@ describe("DocsShellComponent", () => {
       const page = edges(host);
       const start = Number.parseFloat(style.paddingInlineStart);
 
-      expect(box.width / rem).toBeLessThanOrEqual(108 + 0.01);
+      expect(box.width / rem).toBeLessThanOrEqual(108 + 2 * tokenRem("--nol-site-padding-inline") + 0.01);
       expect(Math.abs(box.left - (document.documentElement.clientWidth - box.right)) / rem).toBeLessThanOrEqual(0.01);
       expect([start > 0, Number.parseFloat(style.paddingInlineEnd)]).toEqual([width >= 48 * rem, start]);
       expect([Math.abs(page.page.left - page.start) / rem <= 0.01, Math.abs(page.end - page.page.right) / rem <= 0.01]).toEqual([true, true]);

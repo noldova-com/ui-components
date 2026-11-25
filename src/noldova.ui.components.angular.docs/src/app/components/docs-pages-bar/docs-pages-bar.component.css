@@ -9,11 +9,12 @@
 :host {
   position: sticky;
   z-index: 0;
-  inset-block-start: calc(var(--nol-docs-header-height, calc(var(--nol-site-header-height) * 2)) - var(--nol-site-header-height));
+  --nol-docs-pages-bar-height: 3.5rem;
+  inset-block-start: calc(var(--nol-docs-header-height, calc(var(--nol-site-header-height) + var(--nol-docs-pages-bar-height))) - var(--nol-docs-pages-bar-height));
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  min-height: 3.5rem;
+  min-height: var(--nol-docs-pages-bar-height);
   padding-inline: calc(var(--nol-site-padding-inline-phone) - var(--nol-space-2));
   border-block: var(--nol-border-width) solid var(--nol-border);
   background-color: var(--nol-panel);
