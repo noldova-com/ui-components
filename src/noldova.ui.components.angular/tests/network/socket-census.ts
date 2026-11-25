@@ -15,7 +15,8 @@ import { LoopLimit } from "./loop-limit.ts";
 // runs out of ports or socket buffers (WSAENOBUFS), so the run names what held them: Windows' own listings, `netstat -ano -p tcp` for each socket's
 // state and owning process, `tasklist /fo csv /nh` for each process's name, by which the holders are counted and named without their ids, and `netsh int ipv4 show dynamicport tcp` for the ports connections
 // are given, read into one line. Only Windows gives that error, so only Windows lists. Each listing is stopped at the limit, so a census that hangs
-// ends within it.
+// ends within it; a loaded machine can take longer than that over tasklist or netsh, so the census then reads the rest and names what it couldn't
+// read, while without netstat's sockets there is no census.
 export class SocketCensus implements ISocketCensus {
   // ConnectionProbe's limit, so the run's close, which waits for the census, ends well within Vitest's 10 s teardown limit.
   private static readonly LIMIT: number = 5_000;
@@ -46,22 +47,30 @@ export class SocketCensus implements ISocketCensus {
   public async takeAsync(): Promise<string> {
     if (this.platform !== SocketCensus.WINDOWS)
       return SocketCensus.WINDOWS_ONLY;
-    const [netstat, tasklist, netsh] = await Promise.all([
+    const [netstat, tasklist, netsh] = await Promise.allSettled([
       this.list("netstat", ["-ano", "-p", "tcp"]),
       this.list("tasklist", ["/fo", "csv", "/nh"]),
       this.list("netsh", ["int", "ipv4", "show", "dynamicport", "tcp"])
     ]);
-    const sockets = netstat.split(SocketCensus.LINES).map(t => t.trim().split(SocketCensus.SPACES))
+    if (netstat.status === "rejected")
+      throw netstat.reason;
+    const sockets = netstat.value.split(SocketCensus.LINES).map(t => t.trim().split(SocketCensus.SPACES))
       .filter(t => t[0] === SocketCensus.TCP && t.length === SocketCensus.SOCKET_FIELDS);
-    const names = new Map(tasklist.split(SocketCensus.LINES).map(t => [...t.matchAll(SocketCensus.CSV_FIELD)].map(u => u[1] ?? ""))
+    const names = new Map(SocketCensus.valueOf(tasklist).split(SocketCensus.LINES).map(t => [...t.matchAll(SocketCensus.CSV_FIELD)].map(u => u[1] ?? ""))
       .map(([name = "", pid = ""]): [string, string] => [pid, name]));
     const states = SocketCensus.counted(sockets.map(t => t[3] ?? "")).map(([state, count]) => `${state} ${count}`);
     const holders = SocketCensus.counted(sockets.map(t => names.get(t[4] ?? "") ?? SocketCensus.UNKNOWN)).slice(0, SocketCensus.LISTED_HOLDERS)
       .map(([name, count]) => `${name} ${count}`);
-    const start = SocketCensus.START_PORT.exec(netsh)?.[1];
-    const count = SocketCensus.PORT_COUNT.exec(netsh)?.[1];
+    const start = SocketCensus.START_PORT.exec(SocketCensus.valueOf(netsh))?.[1];
+    const count = SocketCensus.PORT_COUNT.exec(SocketCensus.valueOf(netsh))?.[1];
     const range = start === undefined || count === undefined ? SocketCensus.UNKNOWN : `${start}-${Number(start) + Number(count) - 1} (${count} ports)`;
-    return `TCP sockets ${sockets.length}: ${states.join(", ")}; most held by ${holders.join(", ")}; dynamic ports ${range}`;
+    const unread = [tasklist, netsh].flatMap(t => t.status === "rejected" ? [t.reason instanceof Error ? t.reason.message : String(t.reason)] : []);
+    const notRead = unread.length === 0 ? "" : `; not read: ${unread.join(", ")}`;
+    return `TCP sockets ${sockets.length}: ${states.join(", ")}; most held by ${holders.join(", ")}; dynamic ports ${range}${notRead}`;
+  }
+
+  private static valueOf(listing: PromiseSettledResult<string>): string {
+    return listing.status === "fulfilled" ? listing.value : "";
   }
 
   // Each value with how often it comes, most often first.

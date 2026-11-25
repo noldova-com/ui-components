@@ -20,11 +20,13 @@ import { SocketCensus } from "./socket-census.ts";
 
 // The browser command that has a recorder of its own see module requests fail with the network error the spec names, with the socket census it
 // names in place of the run's, and gives the lines it printed once its run closed: Windows' listings of a machine short of ports, listings that
-// fail, this machine's own, or another platform's, none of which the browser can be made to give on cue. Its lines go to its own run.
+// fail, some stopped at the limit as on a loaded machine, this machine's own, or another platform's, none of which the browser can be made to give on cue. Its lines go to its own run.
 export class ScriptedResourceError {
   private static readonly CENSUSES: ReadonlyMap<string, () => ISocketCensus> = new Map<string, () => ISocketCensus>([
     ["sample", () => new SocketCensus("win32", SampleListings.listAsync)],
     ["failing", () => new SocketCensus("win32", command => Promise.reject(new Error(`${command} failed: scripted`)))],
+    ["partly stopped", () => new SocketCensus("win32", command => command === "netstat" ? SampleListings.listAsync(command)
+      : Promise.reject(new Error(`${command} failed: The operation was aborted`)))],
     ["this machine", () => new SocketCensus()],
     ["elsewhere", () => new SocketCensus("linux")]
   ]);
