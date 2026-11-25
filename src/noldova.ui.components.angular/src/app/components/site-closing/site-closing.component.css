@@ -107,6 +107,10 @@
   &[data-nol-state="Focus"] {
     outline: 2px solid var(--nol-accent);
     outline-offset: 5px;
+
+    @media (forced-colors: active) {
+      outline: calc(var(--nol-border-width) * 2) solid Highlight;
+    }
   }
 }
 
