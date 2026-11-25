@@ -8,7 +8,10 @@ LICENSE file in the root directory of this source tree.
 
 <section class="nol-site-closing-block nol-site-shell" [attr.aria-labelledby]="headingId()">
   @if (mark(); as markFile) {
-    <div class="nol-site-closing-mark"><img [src]="markFile" width="37" height="37" alt="" loading="lazy" /></div>
+    <div class="nol-site-closing-mark"
+      ><img [class.nol-site-closing-mark-light]="hasDarkMark()" [src]="markFile" width="37" height="37" alt="" loading="lazy" />@if (darkMark(); as darkFile) {<img
+        class="nol-site-closing-mark-dark" [src]="darkFile" width="37" height="37" alt="" loading="lazy" />}</div
+    >
   }
   @if (eyebrow(); as eyebrowText) {
     <p class="nol-site-eyebrow nol-site-closing-eyebrow">{{ eyebrowText }}</p>

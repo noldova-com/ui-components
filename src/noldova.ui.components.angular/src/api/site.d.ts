@@ -137,6 +137,12 @@ export declare class SiteClosingComponent {
   public readonly mark: InputSignal<string | null>;
 
   /**
+   * The mark to draw in dark mode in place of `mark`, such as a light glyph for
+   * a dark one; `mark` in both modes when not bound.
+   */
+  public readonly markDark: InputSignal<string | null>;
+
+  /**
    * The line above the title, drawn in capitals; null, the default, for
    * none.
    */
