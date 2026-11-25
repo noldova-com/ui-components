@@ -33,18 +33,21 @@ LICENSE file in the root directory of this source tree.
     <div #searchPanel class="nol-site-header-search" [id]="searchId">
       <ng-content select="[nolSiteSearch]" />
     </div>
-    <div class="nol-site-header-tools">
-      @for (link of social(); track link.href) {
-        <a class="nol-site-social" [href]="link.href" [attr.aria-label]="link.label" [nolTooltip]="link.label"
-          ><span class="nol-site-social-icon" aria-hidden="true" [style.mask-image]="maskOf(link)"></span
-        ></a>
-      }
-      <nol-site-theme-switch />
-    </div>
+    <nol-site-theme-switch />
+    @if (social().length > 0) {
+      <div class="nol-site-header-social">
+        @for (link of social(); track link.href) {
+          <a class="nol-site-social" [href]="link.href" [attr.aria-label]="link.label" [attr.title]="link.label"
+            ><span class="nol-site-social-icon" aria-hidden="true" [style.mask-image]="maskOf(link)"></span
+            ><span class="nol-site-social-label" aria-hidden="true">{{ link.label }}</span></a
+          >
+        }
+      </div>
+    }
   </div>
   @if (downloadHref(); as download) {
     <a nol-button class="nol-site-download" [href]="download"
-      ><span nolButtonIcon class="material-symbols-rounded nol-site-download-icon" aria-hidden="true">{{ partResources.downloadGlyph }}</span>{{ downloadLabel() }}</a
+      ><span class="nol-site-download-label">{{ downloadLabel() }}<span class="material-symbols-rounded nol-site-download-icon" aria-hidden="true">{{ partResources.downloadGlyph }}</span></span></a
     >
   }
   <button #searchButton type="button" nol-icon-button class="nol-site-search-button" [icon]="partResources.searchGlyph" [label]="partResources.searchLabel"

@@ -12,7 +12,7 @@
   container: nol-site-header / inline-size;
   top: 0;
   z-index: 1;
-  background-color: var(--nol-panel);
+  background-color: var(--nol-window);
   color: var(--nol-text);
 }
 
@@ -22,13 +22,13 @@
  * is keyed on a reduced-transparency request, so a browser that doesn't know the feature shows the translucent one. */
 @supports (backdrop-filter: blur(1px)) {
   :host(.nol-site-header-scrolled:not(.nol-site-header-open, .nol-site-header-searching)) {
-    background-color: color-mix(in srgb, var(--nol-panel) 92%, transparent);
+    background-color: color-mix(in srgb, var(--nol-window) 92%, transparent);
     backdrop-filter: saturate(180%) blur(1.25rem);
   }
 
   @media (prefers-reduced-transparency: reduce) {
     :host(.nol-site-header-scrolled:not(.nol-site-header-open, .nol-site-header-searching)) {
-      background-color: var(--nol-panel);
+      background-color: var(--nol-window);
       backdrop-filter: none;
     }
   }
@@ -57,19 +57,20 @@
   }
 }
 
+/* The bar keeps its content to the site's content width, with the site's gutter at each side: the lockup at one end,
+ * the links centred between it and the actions, and the theme switch, the social links and Download at the other. */
 .nol-site-header-bar {
   display: flex;
   align-items: center;
-  gap: var(--nol-space-2);
   box-sizing: border-box;
-  max-width: var(--nol-site-content-width);
+  max-width: calc(var(--nol-site-content-width) + 2 * var(--nol-site-padding-inline));
   min-height: var(--nol-site-header-height);
   margin-inline: auto;
-  padding-inline: var(--nol-site-padding-inline);
+  padding: var(--nol-space-4) var(--nol-site-padding-inline);
 }
 
 :host(.nol-site-header-wide) .nol-site-header-bar {
-  max-width: var(--nol-site-content-width-wide);
+  max-width: calc(var(--nol-site-content-width-wide) + 2 * var(--nol-site-padding-inline));
 }
 
 .nol-site-header-brand {
@@ -113,9 +114,10 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: flex;
   flex: 1 1 auto;
   align-items: center;
-  gap: var(--nol-space-2);
+  justify-content: center;
+  gap: var(--nol-site-nav-gap);
   min-width: 0;
-  margin-inline-start: var(--nol-space-4);
+  margin-inline: var(--nol-space-2);
   order: 1;
 }
 
@@ -123,16 +125,24 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: inline-flex;
   align-items: center;
   min-height: var(--nol-pointer-target);
-  padding-inline: var(--nol-space-2);
   border-radius: var(--nol-radius-small);
-  color: var(--nol-text-muted);
-  font-size: var(--nol-text-panel);
-  line-height: var(--nol-line-panel);
+  color: var(--nol-text);
+  font-size: var(--nol-site-nav-text);
+  line-height: var(--nol-site-line-height);
   text-decoration: none;
   white-space: nowrap;
 }
 
-.nol-site-nav-link:is(:hover, [data-nol-state="Hover"]),
+.nol-site-nav-link:is(:hover, [data-nol-state="Hover"]) {
+  color: var(--nol-text-strong);
+  text-decoration: underline;
+
+  @media (forced-colors: active) {
+    outline: var(--nol-border-width) dashed Highlight;
+    outline-offset: var(--nol-border-width);
+  }
+}
+
 .nol-site-social:is(:hover, [data-nol-state="Hover"]) {
   background-color: var(--nol-toolbar-hover);
   color: var(--nol-text-strong);
@@ -152,7 +162,15 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   }
 }
 
-.nol-site-nav-link:is(:focus-visible, [data-nol-state="Focus"]),
+.nol-site-nav-link:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+  outline-offset: var(--nol-border-width);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
 .nol-site-social:is(:focus-visible, [data-nol-state="Focus"]) {
   outline: var(--nol-border-width) solid var(--nol-accent);
   outline-offset: calc(var(--nol-border-width) * -1);
@@ -171,34 +189,42 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   display: block;
   flex: none;
   width: var(--nol-site-search-width);
-  margin-inline: auto var(--nol-space-2);
+  margin-inline-end: var(--nol-site-actions-gap);
 }
 
-.nol-site-header-tools {
-  display: flex;
+/* The actions, the site's gap apart: the theme switch, then the social links, then Download. Without links, the
+ * switch's margin takes the free space, so the actions keep to the bar's end. */
+nol-site-theme-switch {
   flex: none;
-  align-items: center;
-  gap: var(--nol-space-2);
+  margin-inline-start: auto;
   order: 3;
 }
 
-:host(:not(.nol-site-header-with-search)) .nol-site-header-tools {
-  margin-inline-start: auto;
+.nol-site-header-social {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--nol-site-actions-gap);
+  margin-inline-start: var(--nol-site-actions-gap);
+  order: 4;
 }
 
 .nol-site-social {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--nol-icon-button-target);
-  height: var(--nol-icon-button-target);
+  gap: var(--nol-space-2);
+  min-width: var(--nol-site-theme-pill);
+  min-height: var(--nol-site-theme-pill);
   border-radius: var(--nol-radius-small);
   color: var(--nol-text-strong);
+  text-decoration: none;
 }
 
 .nol-site-social-icon {
-  width: var(--nol-icon);
-  height: var(--nol-icon);
+  flex: none;
+  width: var(--nol-site-header-icon);
+  height: var(--nol-site-header-icon);
   background-color: var(--nol-brand-mark);
   mask-position: center;
   mask-repeat: no-repeat;
@@ -210,36 +236,42 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
   }
 }
 
-nol-site-theme-switch {
-  margin-inline-start: var(--nol-space-2);
+.nol-site-social-label {
+  display: none;
 }
 
 .nol-site-download {
   --nol-button-edge-width: 0px;
+  --nol-button-padding-inline: var(--nol-site-download-padding-inline);
 
   flex: none;
-  margin-inline-start: var(--nol-space-2);
-  font-size: var(--nol-text-panel);
-  font-weight: var(--nol-weight-emphasis);
-  line-height: var(--nol-line-panel);
-  order: 4;
+  min-height: var(--nol-site-download-height);
+  margin-inline-start: var(--nol-site-actions-gap);
+  font-size: var(--nol-site-download-text);
+  line-height: var(--nol-site-download-line);
+  order: 5;
+}
+
+.nol-site-download-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
 }
 
 .nol-site-download-icon {
-  margin-inline-start: calc(-1 * var(--nol-space-half));
+  width: 1em;
+  height: 1em;
+  font-size: 1.25em;
+  line-height: 1;
 }
 
 .nol-site-search-button,
 .nol-site-menu-button {
   --nol-icon: var(--nol-site-menu-glyph);
-  --nol-icon-button: var(--nol-site-menu-row);
+  --nol-icon-button: var(--nol-site-menu-button);
   --nol-icon-button-face-radius: var(--nol-radius-medium);
 
   display: none;
-}
-
-.nol-site-menu-button {
-  margin-inline-end: calc((var(--nol-site-menu-glyph) - var(--nol-site-menu-row)) / 2);
 }
 
 :host(.nol-site-header-open) .nol-site-menu-button:not(:hover, [data-nol-state="Hover"])::before,
@@ -247,50 +279,85 @@ nol-site-theme-switch {
   background-color: var(--nol-selected);
 }
 
-@container (width < 48rem) {
+/* On a tablet the links and actions draw closer, and the social links leave the bar. */
+@container (width <= 62.5rem) {
+  .nol-site-header-nav {
+    gap: var(--nol-site-nav-gap-tablet);
+  }
+
+  :host(.nol-site-header-with-search) .nol-site-header-search {
+    margin-inline-end: var(--nol-site-actions-gap-tablet);
+  }
+
+  .nol-site-download {
+    margin-inline-start: var(--nol-site-actions-gap-tablet);
+  }
+
+  .nol-site-header-social {
+    display: none;
+  }
+}
+
+/* On a phone the bar keeps the lockup, the theme switch, Download, a search button and the menu button; the links,
+ * the social links and, on a documentation site, Download move into the menu. */
+@container (width <= 47.5rem) {
   .nol-site-header-bar {
     display: grid;
     grid-template-areas:
-      "brand download find menu"
-      "search search search search"
-      "nav nav nav nav"
-      "tools tools tools tools"
-      "action action action action";
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
-    grid-template-rows: var(--nol-site-header-height);
-    column-gap: 0;
-    row-gap: 0;
-    min-height: 0;
-    padding-inline: var(--nol-site-padding-inline-phone);
+      "brand theme download find menu"
+      "search search search search search"
+      "nav nav nav nav nav"
+      "social social social social social"
+      "action action action action action";
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+    grid-template-rows: calc(var(--nol-site-header-height-phone) - 2 * var(--nol-space-3));
+    gap: 0;
+    min-height: var(--nol-site-header-height-phone);
+    padding: var(--nol-space-3) var(--nol-site-padding-inline-phone);
   }
 
   .nol-site-header-brand {
     grid-area: brand;
   }
 
-  .nol-site-download {
-    --nol-button-padding-inline: var(--nol-space-3);
-    --nol-icon: var(--nol-site-download-glyph-phone);
+  nol-site-theme-switch {
+    grid-area: theme;
+    margin-inline-start: var(--nol-site-actions-gap-phone);
+  }
 
+  .nol-site-download {
     grid-area: download;
-    min-height: var(--nol-site-menu-row);
+    margin-inline-start: var(--nol-site-actions-gap-phone);
   }
 
   .nol-site-menu-button {
     display: inline-grid;
     grid-area: menu;
-    margin-inline-start: var(--nol-space-2);
+    margin-inline-start: var(--nol-site-actions-gap-phone);
   }
 
   :host(.nol-site-header-with-search) .nol-site-search-button {
     display: inline-grid;
     grid-area: find;
-    margin-inline-start: var(--nol-space-2);
+    margin-inline-start: var(--nol-site-actions-gap-phone);
+  }
+
+  /* The bar's buttons take taps at least a menu row tall and wide, drawn nowhere, so a thumb that lands just beside one
+   * still presses it. */
+  :is(.nol-site-download, .nol-site-search-button, .nol-site-menu-button) {
+    position: relative;
+  }
+
+  :is(.nol-site-download, .nol-site-search-button, .nol-site-menu-button)::after {
+    content: "";
+    position: absolute;
+    inset-block: min(0px, calc(50% - var(--nol-site-menu-row) / 2));
+    inset-inline: min(0px, calc(50% - var(--nol-site-menu-row) / 2));
   }
 
   :host(.nol-site-header-with-search) .nol-site-header-search,
   .nol-site-header-nav,
-  .nol-site-header-tools {
+  .nol-site-header-social {
     display: none;
   }
 
@@ -303,11 +370,12 @@ nol-site-theme-switch {
     display: block;
     grid-area: search;
     width: auto;
-    margin-inline: 0;
+    margin-block-start: var(--nol-space-3);
+    margin-inline-end: 0;
   }
 
   :host(:is(.nol-site-header-open, .nol-site-header-searching)) .nol-site-header-bar {
-    padding-block-end: var(--nol-space-4);
+    padding-block-end: var(--nol-space-6);
   }
 
   :host(.nol-site-header-open) .nol-site-header-nav {
@@ -315,65 +383,75 @@ nol-site-theme-switch {
     grid-area: nav;
     flex-direction: column;
     align-items: stretch;
+    justify-content: flex-start;
     gap: 0;
-    margin: var(--nol-space-1) 0 0;
+    margin: var(--nol-space-3) 0 0;
   }
 
   :host(.nol-site-header-open) .nol-site-nav-link {
     min-height: var(--nol-site-menu-row);
-    padding-inline: 0;
+    font-size: var(--nol-site-menu-text);
+  }
+
+  :host(.nol-site-header-open) .nol-site-header-social {
+    display: flex;
+    grid-area: social;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin-inline-start: 0;
+  }
+
+  :host(.nol-site-header-open) .nol-site-social {
+    justify-content: flex-start;
+    min-height: var(--nol-site-menu-row);
     color: var(--nol-text);
     font-size: var(--nol-site-menu-text);
   }
 
-  :host(.nol-site-header-open) .nol-site-nav-link-current {
-    color: var(--nol-text-strong);
+  :host(.nol-site-header-open) .nol-site-social-icon {
+    width: var(--nol-site-menu-icon);
+    height: var(--nol-site-menu-icon);
   }
 
-  :host(.nol-site-header-open) .nol-site-header-tools {
-    --nol-icon: var(--nol-site-menu-icon);
-    --nol-site-theme-pill: var(--nol-site-menu-row);
-
-    display: flex;
-    grid-area: tools;
-    gap: var(--nol-space-1);
-    margin: var(--nol-space-3) 0 0;
-  }
-
-  :host(.nol-site-header-open) .nol-site-social {
-    width: var(--nol-site-menu-row);
-    height: var(--nol-site-menu-row);
-    border-radius: var(--nol-radius-medium);
-  }
-
-  :host(.nol-site-header-open) nol-site-theme-switch {
-    margin-inline-start: auto;
+  :host(.nol-site-header-open) .nol-site-social-label {
+    display: inline;
   }
 
   :host(.nol-site-header-open.nol-site-header-wide) .nol-site-download {
-    --nol-icon: var(--nol-site-download-glyph-phone);
-
     display: inline-flex;
     justify-self: stretch;
+    min-height: var(--nol-site-menu-row);
     margin-block-start: var(--nol-space-3);
     margin-inline-start: 0;
     font-size: var(--nol-site-menu-download-text);
   }
+
+  :host(.nol-site-header-open.nol-site-header-wide) .nol-site-download-icon {
+    width: var(--nol-site-download-glyph-phone);
+    height: var(--nol-site-download-glyph-phone);
+    font-size: var(--nol-site-download-glyph-phone);
+  }
 }
 
-@container (width < 30rem) {
+@container (width <= 30rem) {
   .nol-site-download {
     display: none;
     grid-area: action;
   }
 
   :host(.nol-site-header-open) .nol-site-download {
-    --nol-icon: var(--nol-site-download-glyph-phone);
-
     display: inline-flex;
     justify-self: stretch;
+    min-height: var(--nol-site-menu-row);
     margin-block-start: var(--nol-space-3);
     margin-inline-start: 0;
     font-size: var(--nol-site-menu-download-text);
+  }
+
+  :host(.nol-site-header-open) .nol-site-download-icon {
+    width: var(--nol-site-download-glyph-phone);
+    height: var(--nol-site-download-glyph-phone);
+    font-size: var(--nol-site-download-glyph-phone);
   }
 }

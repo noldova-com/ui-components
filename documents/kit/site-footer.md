@@ -8,27 +8,28 @@ A website's start imports the footer from its own entry, `@noldova/ui.components
 
 ## Default geometry
 
-The content keeps to the [site header's](site-header.md) width and insets, 3rem from the footer's top and bottom (`--nol-site-footer-padding-block`).
-The lockup, with an optional line 0.75rem under it and at most 18rem wide (`--nol-site-footer-line-width`), takes two fifths of the row, and the link groups share the other three fifths as equal columns; the parts are 2rem apart (`--nol-site-footer-gap`), the last column ending at the content's end.
-Each group's links are 0.25rem apart and each is at least the pointer target high and wide, so a one-letter link such as X is a whole target, the first one's text 0.75rem under its title as on a 1.25rem line.
-The bottom row is the same 2rem under the groups, with the notice at its start and any content the site projects at its end.
-When the footer is narrower than 48rem, as on a phone, the content takes the phone insets and is 2rem from the top and bottom (`--nol-site-footer-padding-block-phone`); the lockup takes its own row, the groups fall into two columns 1rem apart, and the rows, the bottom row included, are 1.5rem apart (`--nol-site-footer-gap-phone`).
-There each link is a row 2.75rem high (`--nol-site-menu-row`), with no space between, 0.25rem under its title.
+Every site's footer has one look, TeamRun's.
+The content keeps to the [site header's](site-header.md) width and insets, 3.875rem from the footer's top (`--nol-site-footer-padding-block`) and 3.4375rem from its bottom (`--nol-site-footer-padding-end`).
+At the start, the lockup, with the site's `wordmarkSize`, then an optional line 1.125rem under it (`--nol-site-footer-line-gap`), then the notice 3.5rem under that (`--nol-site-footer-notice-gap`), both at most 18rem wide (`--nol-site-footer-line-width`), then any content the site projects.
+At the end, the link groups, 3rem apart (`--nol-site-footer-group-gap`), the last one ending at the content's end; when the footer is too narrow for both, the groups wrap under the lockup, 2rem from it (`--nol-site-footer-gap`).
+Each group's title is 0.5rem above its links, and the links are 0.625rem apart (`--nol-site-footer-link-gap`); each is at least the pointer target high and wide, so a one-letter link such as X is a whole target.
+A link the site gives an `icon` draws it first, as a mask as high as its text, 0.5rem from its label, in `--nol-brand-mark` as the header's social marks are.
+When the footer is at most 47.5rem wide, as on a phone, the content takes the phone insets, 2.75rem from the top (`--nol-site-footer-padding-block-phone`), and the groups are 2.5rem apart (`--nol-site-footer-group-gap-phone`).
 
 ## Text roles
 
 The product's name: as in the [site header](site-header.md), 1rem on a 1.25rem line at the emphasis weight, in `text-strong`.
-The line: panel, in `text-muted`.
-The links: panel, in `text`.
-Group titles: small, at the emphasis weight, in capitals spaced by `--nol-letter-spacing-caps`, in `text-muted`.
-The notice: small, in `text-muted`.
+The line: message, on a line 1.7 times its size (`--nol-site-footer-line-height`), in `text-muted`; its line breaks are kept.
+The links: message, on the site's line (`--nol-site-line-height`), in `text`.
+Group titles: message, on a line 1.6 times its size (`--nol-site-line-height`), in the mono font and capitals, in `text-muted`.
+The notice: as the line.
 
 ## Surface and behavior
 
-The page's `contentinfo` landmark, on the panel color, with no border or line.
+The page's `contentinfo` landmark, on the window color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is the site header's: one link home named for the product's home, such as `TeamRun home`, its wordmark the file the site passes, drawn as a mask.
+The lockup is the site header's: one link home named for the product's home, such as `TeamRun home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
 The notice is `© <year> Noldova`, with `Noldova` linking to https://noldova.com in the notice's color, unless the site gives its own as plain text; the link takes clicks and taps across at least the pointer target high, drawn nowhere, so the notice's line keeps its height.
 A hovered link, the notice's included, is underlined in `text-strong`, and keyboard focus is an accent outline outside it.
-Under forced colors the wordmark and the product's name are `LinkText`, and keyboard focus is a 2px `Highlight` outline.
+Under forced colors the wordmark, the product's name and the links' icons are `LinkText`, and keyboard focus is a 2px `Highlight` outline.

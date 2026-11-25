@@ -223,8 +223,22 @@ export declare class SiteFooterComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
-   * A short line under the wordmark, such as what the product does; null,
-   * the default, for none.
+   * The lockup link's accessible name, such as `TeamRun home`; null, the
+   * default, names it from `name`, or `Noldova home` without one. A site that
+   * draws its own wordmark passes no `name` and names the link here.
+   */
+  public readonly homeLabel: InputSignal<string | null>;
+
+  /**
+   * The wordmark's size, as in the header: `SiteWordmarkSize.Small`, the
+   * default, or `SiteWordmarkSize.Large` for a product's own wordmark.
+   */
+  public readonly wordmarkSize: InputSignal<SiteWordmarkSize>;
+
+  /**
+   * A short line under the wordmark, such as what the product does, its
+   * line breaks kept; null, the default, for none. The notice follows it,
+   * 3.5rem lower.
    */
   public readonly line: InputSignal<string | null>;
 
@@ -518,13 +532,21 @@ export declare class SiteLink {
   public readonly isCurrent: boolean;
 
   /**
+   * The address of an SVG drawn before the label in the link's color, such as
+   * a brand's mark on a footer link to it; null, the default, for none. The
+   * header's links draw no icon.
+   */
+  public readonly icon: string | null;
+
+  /**
    * Creates the link.
    *
    * @param label The text it shows.
    * @param href Where it leads.
    * @param isCurrent Whether it leads to the current page; false when left out.
+   * @param icon The address of an SVG drawn before the label; none when left out.
    */
-  public constructor(label: string, href: string, isCurrent?: boolean);
+  public constructor(label: string, href: string, isCurrent?: boolean, icon?: string | null);
 }
 
 /**

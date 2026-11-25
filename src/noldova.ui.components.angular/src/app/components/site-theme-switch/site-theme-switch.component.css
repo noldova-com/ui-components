@@ -9,11 +9,17 @@
 :host {
   --nol-choice-pill: var(--nol-site-theme-pill);
   --nol-choice-pill-target: var(--nol-pointer-target);
+  --nol-choice-pill-radius: var(--nol-radius-medium);
+  --nol-choice-pill-selected: var(--nol-panel);
+  --nol-choice-pill-selected-icon: var(--nol-accent);
+  --nol-choice-pill-selected-shadow: 0 0.0625rem 0.1875rem var(--nol-widget-shadow);
+  --nol-icon: var(--nol-site-header-icon);
+  --nol-icon-color: var(--nol-text-muted);
   --nol-site-theme-reach: max(0px, calc((var(--nol-pointer-target) - var(--nol-site-theme-pill)) / 2));
   --nol-choice-pill-gap: max(0px, calc(var(--nol-space-half) - 2 * var(--nol-site-theme-reach)));
 
   display: inline-flex;
-  padding: max(0px, calc(var(--nol-space-half) - var(--nol-site-theme-reach)));
-  border-radius: var(--nol-radius-medium);
-  background-color: var(--nol-window);
+  padding: max(0px, calc(var(--nol-site-theme-switch-padding) - var(--nol-site-theme-reach)));
+  border-radius: var(--nol-radius-large);
+  background-color: var(--nol-raised);
 }

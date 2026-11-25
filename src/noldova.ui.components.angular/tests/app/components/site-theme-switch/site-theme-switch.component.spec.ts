@@ -147,21 +147,21 @@ describe("SiteThemeSwitchComponent", () => {
   });
 
   for (const mode of AppearanceFixture.modes)
-    for (const theme of AppearanceFixture.themes)
-      it(`sits on the window color with the ${theme.id} theme's medium radius, its pills at least pointer targets, each with a face at the site theme pill size centred in it, the faces a half space from its edge and apart or as close as the targets allow, in ${mode} mode`, async () => {
+    for (const theme of AppearanceFixture.themes) {
+      it(`sits on the raised color with the ${theme.id} theme's large radius, its pills at least pointer targets, each with a face at the site theme pill size centred in it, the faces the switch's padding from its edge and a half space apart or as close as the targets allow, in ${mode} mode`, async () => {
         await renderAsync(theme, mode);
         const style = getComputedStyle(switchHost());
         const size = AppearanceFixture.measureLook("site-theme-pill");
         const target = Math.max(size, AppearanceFixture.measureLook("pointer-target"));
         const reach = (target - size) / 2;
         const half = AppearanceFixture.measureLook("space-half");
-        const inset = Math.max(0, half - reach);
+        const inset = Math.max(0, AppearanceFixture.measureLook("site-theme-switch-padding") - reach);
         const gap = Math.max(0, half - reach * 2);
         const outer = switchHost().getBoundingClientRect();
         const boxes = pills().map(t => t.getBoundingClientRect());
 
-        expect(style.backgroundColor).toBe(AppearanceFixture.readColor(theme, mode, "window"));
-        AppearanceFixture.expectLook(style.borderTopLeftRadius, theme, "radius-medium", "border-top-left-radius");
+        expect(style.backgroundColor).toBe(AppearanceFixture.readColor(theme, mode, "raised"));
+        AppearanceFixture.expectLook(style.borderTopLeftRadius, theme, "radius-large", "border-top-left-radius");
         expect(style.borderTopWidth).toBe("0px");
         for (const pill of pills()) {
           const box = pill.getBoundingClientRect();
@@ -179,4 +179,19 @@ describe("SiteThemeSwitchComponent", () => {
         AppearanceFixture.expectPixels(DomFixture.at(boxes, 1).left - DomFixture.at(boxes, 0).right, gap);
         AppearanceFixture.expectPixels(DomFixture.at(boxes, 2).left - DomFixture.at(boxes, 1).right, gap);
       });
+
+      it(`draws the chosen pill on the panel color with a shadow and the medium radius, its icon in the accent color, and the others' icons muted at the header icon size, with the ${theme.id} theme in ${mode} mode`, async () => {
+        await renderAsync(theme, mode);
+        const chosen = DomFixture.one(DomFixture.host(fixture), ".nol-choice-pill-selected");
+        const others = pills().filter(t => t !== chosen);
+        const glyph = (pill: Element): CSSStyleDeclaration => getComputedStyle(DomFixture.one(pill, ".nol-choice-pill-glyph"));
+        const face = getComputedStyle(chosen);
+
+        expect([face.backgroundColor, glyph(chosen).color, face.boxShadow === "none"]).toEqual([AppearanceFixture.readColor(theme, mode, "panel"), AppearanceFixture.readColor(theme, mode, "accent"), false]);
+        AppearanceFixture.expectLook(face.borderTopLeftRadius, theme, "radius-medium", "border-top-left-radius");
+        expect(others.map(t => glyph(t).color)).toEqual(others.map(() => AppearanceFixture.readColor(theme, mode, "text-muted")));
+        for (const pill of pills())
+          AppearanceFixture.expectPixels(Number.parseFloat(glyph(pill).fontSize), AppearanceFixture.measureLook("site-header-icon"));
+      });
+    }
 });

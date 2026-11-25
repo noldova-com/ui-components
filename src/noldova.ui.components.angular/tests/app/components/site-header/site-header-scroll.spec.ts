@@ -119,14 +119,14 @@ describe("SiteHeaderComponent while the page scrolls", () => {
   const header = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-site-header");
   const background = (): Rgba => Rgba.parse(getComputedStyle(header()).backgroundColor);
   const blur = (): string => getComputedStyle(header()).backdropFilter;
-  const panel = (theme: Theme, mode: ThemeMode): Rgba => Rgba.parse(AppearanceFixture.readColor(theme, mode, "panel"));
+  const windowColor = (theme: Theme, mode: ThemeMode): Rgba => Rgba.parse(AppearanceFixture.readColor(theme, mode, "window"));
   const rem = (value: number): number => AppearanceFixture.toPixels(value);
   const expectOpaque = (theme: Theme, mode: ThemeMode): void => {
-    expect([getComputedStyle(header()).backgroundColor, blur()]).toEqual([AppearanceFixture.readColor(theme, mode, "panel"), "none"]);
+    expect([getComputedStyle(header()).backgroundColor, blur()]).toEqual([AppearanceFixture.readColor(theme, mode, "window"), "none"]);
   };
   const expectTranslucent = (theme: Theme, mode: ThemeMode): void => {
     const shown = background();
-    const own = panel(theme, mode);
+    const own = windowColor(theme, mode);
 
     expect([shown.red, shown.green, shown.blue].map(Math.round)).toEqual([own.red, own.green, own.blue]);
     expect(shown.alpha).toBeCloseTo(0.92, 3);
@@ -148,7 +148,7 @@ describe("SiteHeaderComponent while the page scrolls", () => {
 
   for (const theme of AppearanceFixture.themes) {
     for (const mode of AppearanceFixture.modes) {
-      it(`draws on the opaque panel color at the top of the page, then stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${theme.id} theme, ${mode}`, async () => {
+      it(`draws on the opaque window color at the top of the page, then stays at the top of the window and turns translucent over a blur once the page scrolls under it, ${theme.id} theme, ${mode}`, async () => {
         await renderAsync(theme, mode);
         expectOpaque(theme, mode);
         await scrollToAsync(400);

@@ -17,7 +17,6 @@ import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { SiteLockupComponent } from "../site-lockup/site-lockup.component.js";
 import { SiteLockupResources } from "../site-lockup/site-lockup.resources.js";
 import { SiteThemeSwitchComponent } from "../site-theme-switch/site-theme-switch.component.js";
-import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { SiteHeaderResources } from "./site-header.resources.js";
 import { SiteSearchDirective } from "./site-search.directive.js";
 
@@ -25,7 +24,7 @@ import { SiteSearchDirective } from "./site-search.directive.js";
   selector: "nol-site-header",
   templateUrl: "./site-header.component.html",
   styleUrl: "./site-header.component.css",
-  imports: [ButtonComponent, IconButtonComponent, SiteLockupComponent, SiteThemeSwitchComponent, TooltipDirective],
+  imports: [ButtonComponent, IconButtonComponent, SiteLockupComponent, SiteThemeSwitchComponent],
   host: {
     "class": "nol-site-header",
     "role": "banner",
