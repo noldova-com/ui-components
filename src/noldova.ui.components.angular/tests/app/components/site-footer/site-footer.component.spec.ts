@@ -11,6 +11,7 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page } from "vitest/browser";
 
 import { SiteFooterComponent } from "../../../../src/app/components/site-footer/site-footer.component";
+import { SiteWordmarkSize } from "../../../../src/app/enums/site-wordmark-size";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
@@ -21,6 +22,7 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { PointerTargetFixture } from "../../../fixtures/pointer-target.fixture";
 
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 3'%3E%3Crect width='20' height='3'/%3E%3C/svg%3E";
+const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteFooterComponent],
@@ -28,7 +30,7 @@ const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     @if (notice(); as text) {
       <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/teamrun" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
     } @else {
-      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [line]="line()" [groups]="groups()" [wide]="wide()" />
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" [line]="line()" [groups]="groups()" [wide]="wide()" />
     }
   `
 })
@@ -36,6 +38,8 @@ class SiteFooterHostComponent {
   public readonly wordmark = signal(wordmark);
   public readonly wordmarkRatio = signal(20 / 3);
   public readonly name = signal<string | null>("TeamRun");
+  public readonly homeLabel = signal<string | null>(null);
+  public readonly size = signal(SiteWordmarkSize.Small);
   public readonly line = signal<string | null>("Run a team of agents.");
   public readonly groups = signal<readonly SiteLinkGroup[]>([
     new SiteLinkGroup("Product", [new SiteLink("Download", "#download"), new SiteLink("Releases", "#releases", true)]),
@@ -84,20 +88,37 @@ describe("SiteFooterComponent", () => {
     AppearanceFixture.expectPixels(size.width, size.height * 4);
   });
 
-  it("is the page's content information, on the panel color with no border", async () => {
+  it("is the page's content information, on the window color with no border", async () => {
     await renderAsync();
     const style = getComputedStyle(footer());
 
-    expect([footer().getAttribute("role"), style.backgroundColor, style.borderTopWidth]).toEqual(["contentinfo", color("panel"), "0px"]);
+    expect([footer().getAttribute("role"), style.backgroundColor, style.borderTopWidth]).toEqual(["contentinfo", color("window"), "0px"]);
   });
 
-  it("links the lockup home, named for the product's home, with the line under it", async () => {
-    await renderAsync();
+  it("links the lockup home, named for the product's home, with the line under it, muted at the message size with its line breaks", async () => {
+    await renderAsync(t => t.line.set("Less copying between agents.\nMore work done."));
     const link = part(".nol-site-lockup-link");
+    const line = getComputedStyle(part(".nol-site-footer-line"));
+    const ratio = Number.parseFloat(DefaultTheme.theme.readLook("site-footer-line-height") ?? "");
 
-    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "TeamRun home", "Run a team of agents."]);
-    AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("space-3"));
-    expect(getComputedStyle(part(".nol-site-footer-line")).color).toBe(color("text-muted"));
+    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "TeamRun home", "Less copying between agents.\nMore work done."]);
+    AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("site-footer-line-gap"));
+    expect([line.color, line.whiteSpace]).toEqual([color("text-muted"), "pre-line"]);
+    AppearanceFixture.expectPixels(Number.parseFloat(line.fontSize), AppearanceFixture.measureLook("text-message"));
+    AppearanceFixture.expectPixels(Number.parseFloat(line.lineHeight), Number.parseFloat(line.fontSize) * ratio);
+    AppearanceFixture.expectPixels(box(".nol-site-footer-line").height, Number.parseFloat(line.lineHeight) * 2);
+  });
+
+  it("names the lockup's link with the label the site gives, and draws a product's own wordmark at the large size", async () => {
+    await renderAsync(t => {
+      t.name.set(null);
+      t.homeLabel.set("TeamRun home");
+      t.size.set(SiteWordmarkSize.Large);
+    });
+
+    expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["TeamRun home", null]);
+    // As high as TeamRun's header draws its wordmark, 9.125rem wide in its proportions.
+    AppearanceFixture.expectPixels(box(".nol-site-wordmark").height, AppearanceFixture.toPixels(9.125 * 201.396 / 1335.64));
   });
 
   it("links the lockup where it is told, and draws no line without one", async () => {
@@ -118,16 +139,37 @@ describe("SiteFooterComponent", () => {
       .toEqual([["Download", "#download", null], ["Releases", "#releases", "page"], ["Docs", "#docs", null], ["About", "#about", null], ["Contact", "#contact", null]]);
   });
 
-  it("draws the titles muted in small spaced capitals and the links in the text color, each link at least a pointer target high", async () => {
+  it("draws the titles muted in monospace capitals and the links in the text color, both at the message size on the site's line, each link at least a pointer target high", async () => {
     await renderAsync();
     const title = getComputedStyle(part(".nol-site-footer-title"));
-    const small = AppearanceFixture.measureLook("text-small");
+    const link = getComputedStyle(part(".nol-site-footer-link"));
+    const mono = getComputedStyle(document.documentElement).getPropertyValue("--nol-font-mono").trim();
 
-    expect([title.color, title.textTransform, getComputedStyle(part(".nol-site-footer-link")).color]).toEqual([color("text-muted"), "uppercase", color("text")]);
-    AppearanceFixture.expectPixels(Number.parseFloat(title.fontSize), small);
-    AppearanceFixture.expectPixels(Number.parseFloat(title.letterSpacing), small * 0.05);
-    for (const link of all(".nol-site-footer-link"))
-      expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("pointer-target") - 1 / 32);
+    expect([title.color, title.textTransform, title.fontFamily, link.color]).toEqual([color("text-muted"), "uppercase", mono, color("text")]);
+    AppearanceFixture.expectPixels(Number.parseFloat(title.fontSize), AppearanceFixture.measureLook("text-message"));
+    AppearanceFixture.expectPixels(part(".nol-site-footer-title").getBoundingClientRect().height, Number.parseFloat(title.fontSize) * Number.parseFloat(DefaultTheme.theme.readLook("site-line-height") ?? String.empty));
+    AppearanceFixture.expectPixels(Number.parseFloat(link.fontSize), AppearanceFixture.measureLook("text-message"));
+    AppearanceFixture.expectPixels(Number.parseFloat(link.lineHeight), Number.parseFloat(link.fontSize) * Number.parseFloat(DefaultTheme.theme.readLook("site-line-height") ?? String.empty));
+    for (const each of all(".nol-site-footer-link"))
+      expect(each.getBoundingClientRect().height).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("pointer-target") - 1 / 32);
+  });
+
+  it("draws a link's icon before its label, a mask pure black in light mode, as the header's social marks, as high as its text, a space step from the label, its name still the label", async () => {
+    await renderAsync(t => t.groups.set([new SiteLinkGroup("Connect", [new SiteLink("GitHub", "#github", false, mark), new SiteLink("Privacy", "#privacy")])]));
+    const [github, privacy] = all(".nol-site-footer-link");
+    const link = DomFixture.present(github);
+    const icon = DomFixture.one(link, ".nol-site-footer-link-icon");
+    const style = getComputedStyle(icon);
+    const iconBox = icon.getBoundingClientRect();
+    const text = document.createRange();
+    text.selectNodeContents(link.lastChild ?? link);
+
+    expect([icon.getAttribute("aria-hidden"), style.maskImage.includes("data:image/svg+xml"), style.backgroundColor, link.textContent?.trim()])
+      .toEqual(["true", true, "rgb(0, 0, 0)", "GitHub"]);
+    AppearanceFixture.expectPixels(iconBox.width, Number.parseFloat(getComputedStyle(link).fontSize));
+    AppearanceFixture.expectPixels(iconBox.height, Number.parseFloat(getComputedStyle(link).fontSize));
+    AppearanceFixture.expectPixels(text.getBoundingClientRect().left - iconBox.right, AppearanceFixture.measureLook("space-2"));
+    expect(DomFixture.maybe(DomFixture.present(privacy), ".nol-site-footer-link-icon")).toBeNull();
   });
 
   it("underlines a hovered link in the strong text color, and outlines a focused one in the accent color", async () => {
@@ -167,99 +209,93 @@ describe("SiteFooterComponent", () => {
       AppearanceFixture.expectPixels(box(".nol-site-footer-notice").height, Number.parseFloat(getComputedStyle(part(".nol-site-footer-notice")).lineHeight));
     });
 
-  it("says the notice it is given, with projected content at the bottom row's end", async () => {
+  it("says the notice it is given under the line, with projected content under it, from the lockup's edge", async () => {
     await renderAsync(t => t.notice.set("Made by Noldova"));
-    const bottom = box(".nol-site-footer-bottom");
 
     expect([part(".nol-site-footer-notice").textContent?.trim(), DomFixture.maybe(footer(), ".nol-site-footer-owner")]).toEqual(["Made by Noldova", null]);
-    AppearanceFixture.expectPixels(box(".extra").right, bottom.right);
-    AppearanceFixture.expectPixels(box(".nol-site-footer-notice").left, bottom.left);
+    AppearanceFixture.expectPixels(box(".nol-site-footer-notice").top - box(".nol-site-footer-line").bottom, AppearanceFixture.measureLook("site-footer-notice-gap"));
+    AppearanceFixture.expectPixels(box(".nol-site-footer-notice").left, box("nol-site-lockup").left);
+    AppearanceFixture.expectPixels(box(".extra").left, box("nol-site-lockup").left);
+    expect(box(".extra").top).toBeGreaterThanOrEqual(box(".nol-site-footer-notice").bottom - 1 / 32);
   });
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`takes its insets, gaps and content width from the ${theme.id} theme in ${mode} mode, as far from its bottom as from its top`, async () => {
+      it(`takes its insets and content width from the ${theme.id} theme in ${mode} mode, the site's gutter at each side`, async () => {
         await page.viewport(1920, 1000);
         await renderAsync(() => undefined, theme, mode);
         const inner = part(".nol-site-footer-inner");
         const style = getComputedStyle(inner);
-        const width = AppearanceFixture.measureLook("site-content-width");
-        const padding = AppearanceFixture.measureLook("site-footer-padding-block");
+        const inset = AppearanceFixture.measureLook("site-padding-inline");
+        const width = AppearanceFixture.measureLook("site-content-width") + inset * 2;
+        const groups = all(".nol-site-footer-group").map(t => t.getBoundingClientRect());
 
         AppearanceFixture.expectLook(style.paddingTop, theme, "site-footer-padding-block", "padding-top");
+        AppearanceFixture.expectLook(style.paddingBottom, theme, "site-footer-padding-end", "padding-bottom");
         AppearanceFixture.expectLook(style.paddingLeft, theme, "site-padding-inline", "padding-left");
         AppearanceFixture.expectPixels(inner.getBoundingClientRect().width, width);
         AppearanceFixture.expectPixels(inner.getBoundingClientRect().left - edges().left, (edges().width - width) / 2);
-        AppearanceFixture.expectPixels(box(".nol-site-footer-top").top - edges().top, padding);
-        AppearanceFixture.expectPixels(box(".nol-site-footer-bottom").top - box(".nol-site-footer-top").bottom, AppearanceFixture.measureLook("site-footer-gap"));
-        AppearanceFixture.expectPixels(box(".nol-site-footer-bottom").height, box(".nol-site-footer-notice").height);
-        AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-footer-bottom").bottom, padding);
+        AppearanceFixture.expectPixels(box(".nol-site-footer-brand").top - edges().top, AppearanceFixture.measureLook("site-footer-padding-block"));
+        AppearanceFixture.expectPixels(edges().bottom - Math.max(box(".nol-site-footer-brand").bottom, ...groups.map(t => t.bottom)), AppearanceFixture.measureLook("site-footer-padding-end"));
       });
 
-  it("gives the lockup two fifths of the row and the groups the rest as equal columns, each part a gap apart, the last at the content's end", async () => {
-    await page.viewport(1920, 1000);
-    await renderAsync();
-    const groups = all(".nol-site-footer-group").map(t => t.getBoundingClientRect());
-    const inner = part(".nol-site-footer-inner");
-    const start = inner.getBoundingClientRect().left + Number.parseFloat(getComputedStyle(inner).paddingLeft);
-    const end = inner.getBoundingClientRect().right - Number.parseFloat(getComputedStyle(inner).paddingRight);
-    const gap = AppearanceFixture.measureLook("site-footer-gap");
-    const shared = end - start - gap;
+  for (const theme of AppearanceFixture.themes)
+    it(`puts the lockup's column at the content's start and the groups at its end, on one row, a group gap apart, with the ${theme.id} theme`, async () => {
+      await page.viewport(1920, 1000);
+      await renderAsync(() => undefined, theme);
+      const groups = all(".nol-site-footer-group").map(t => t.getBoundingClientRect());
+      const inner = part(".nol-site-footer-inner");
+      const start = inner.getBoundingClientRect().left + Number.parseFloat(getComputedStyle(inner).paddingLeft);
+      const end = inner.getBoundingClientRect().right - Number.parseFloat(getComputedStyle(inner).paddingRight);
 
-    expect(new Set(groups.map(t => Math.round(t.top))).size).toBe(1);
-    AppearanceFixture.expectPixels(box(".nol-site-footer-brand").left, start);
-    AppearanceFixture.expectPixels(box(".nol-site-footer-brand").width, shared * 2 / 5);
-    AppearanceFixture.expectPixels(DomFixture.at(groups, 0).left - box(".nol-site-footer-brand").right, gap);
-    for (const group of groups)
-      AppearanceFixture.expectPixels(group.width, (shared * 3 / 5 - gap * 2) / 3);
-    AppearanceFixture.expectPixels(DomFixture.at(groups, 1).left - DomFixture.at(groups, 0).right, gap);
-    AppearanceFixture.expectPixels(DomFixture.at(groups, 2).right, end);
-  });
+      AppearanceFixture.expectPixels(box(".nol-site-footer-brand").left, start);
+      for (const group of groups)
+        AppearanceFixture.expectPixels(group.top, box(".nol-site-footer-brand").top);
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 1).left - DomFixture.at(groups, 0).right, AppearanceFixture.measureLook("site-footer-group-gap"));
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 2).left - DomFixture.at(groups, 1).right, AppearanceFixture.measureLook("site-footer-group-gap"));
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 2).right, end);
+    });
 
   for (const theme of AppearanceFixture.themes)
-    it(`keeps the line to the ${theme.id} theme's line width, and puts each group's links a quarter space apart, the first one's middle 1.375rem under its title`, async () => {
+    it(`keeps the line to the ${theme.id} theme's line width, and puts each group's title and links a link gap apart, the title a space step further`, async () => {
       await page.viewport(1920, 1000);
       await renderAsync(t => t.line.set("Run a team of agents, each in its own worktree, and review what they change before it lands."), theme);
       const links = all(".nol-site-footer-link").map(t => t.getBoundingClientRect());
       const first = DomFixture.at(links, 0);
+      const gap = AppearanceFixture.measureLook("site-footer-link-gap");
 
       AppearanceFixture.expectPixels(box(".nol-site-footer-line").width, AppearanceFixture.measureLook("site-footer-line-width"));
-      AppearanceFixture.expectPixels(first.top + first.height / 2 - box(".nol-site-footer-title").bottom, AppearanceFixture.measureLook("space-2") + AppearanceFixture.measureLook("space-half") + AppearanceFixture.measureLook("pointer-target") / 2);
-      AppearanceFixture.expectPixels(DomFixture.at(links, 1).top - first.bottom, AppearanceFixture.measureLook("space-1"));
+      AppearanceFixture.expectPixels(first.top - box(".nol-site-footer-title").bottom, AppearanceFixture.measureLook("space-2") + gap);
+      AppearanceFixture.expectPixels(DomFixture.at(links, 1).top - first.bottom, gap);
     });
 
   it("widens to the wide content width on a documentation site", async () => {
     await page.viewport(1920, 1000);
     await renderAsync(t => t.wide.set(true));
 
-    AppearanceFixture.expectPixels(box(".nol-site-footer-inner").width, Math.min(edges().width, AppearanceFixture.measureLook("site-content-width-wide")));
+    AppearanceFixture.expectPixels(box(".nol-site-footer-inner").width, Math.min(edges().width, AppearanceFixture.measureLook("site-content-width-wide") + AppearanceFixture.measureLook("site-padding-inline") * 2));
   });
 
   for (const theme of AppearanceFixture.themes)
-    it(`puts the lockup on its own row, the groups in two columns and the links in menu rows on a phone, with the ${theme.id} theme's phone insets and gaps`, async () => {
+    it(`puts the groups under the lockup's column on a phone, from its edge, a phone group gap apart, with the ${theme.id} theme's phone insets`, async () => {
       await page.viewport(375, 812);
-      await renderAsync(() => undefined, theme);
+      await renderAsync(t => t.groups.set([
+        new SiteLinkGroup("Product", [new SiteLink("Download", "#download"), new SiteLink("Releases", "#releases")]),
+        new SiteLinkGroup("Connect", [new SiteLink("GitHub", "#github", false, mark), new SiteLink("Privacy", "#privacy")])
+      ]), theme);
       const inset = AppearanceFixture.measureLook("site-padding-inline-phone");
-      const padding = AppearanceFixture.measureLook("site-footer-padding-block-phone");
-      const gap = AppearanceFixture.measureLook("site-footer-gap-phone");
       const groups = all(".nol-site-footer-group").map(t => t.getBoundingClientRect());
       const links = all(".nol-site-footer-link").map(t => t.getBoundingClientRect());
-      const half = (edges().width - inset * 2 - AppearanceFixture.measureLook("space-4")) / 2;
 
-      AppearanceFixture.expectPixels(box(".nol-site-footer-brand").top - edges().top, padding);
+      AppearanceFixture.expectPixels(box(".nol-site-footer-brand").top - edges().top, AppearanceFixture.measureLook("site-footer-padding-block-phone"));
       AppearanceFixture.expectPixels(box(".nol-site-footer-brand").left, edges().left + inset);
-      AppearanceFixture.expectPixels(box(".nol-site-footer-brand").width, edges().width - inset * 2);
-      AppearanceFixture.expectPixels(DomFixture.at(groups, 0).top - box(".nol-site-footer-brand").bottom, gap);
-      AppearanceFixture.expectPixels(DomFixture.at(groups, 0).width, half);
-      AppearanceFixture.expectPixels(DomFixture.at(groups, 1).left, edges().right - inset - half);
-      AppearanceFixture.expectPixels(DomFixture.at(groups, 2).left, edges().left + inset);
-      AppearanceFixture.expectPixels(DomFixture.at(groups, 2).top - Math.max(DomFixture.at(groups, 0).bottom, DomFixture.at(groups, 1).bottom), gap);
-      AppearanceFixture.expectPixels(DomFixture.at(links, 0).top - box(".nol-site-footer-title").bottom, AppearanceFixture.measureLook("space-1"));
-      AppearanceFixture.expectPixels(DomFixture.at(links, 1).top, DomFixture.at(links, 0).bottom);
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 0).left, edges().left + inset);
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 0).top - box(".nol-site-footer-brand").bottom, AppearanceFixture.measureLook("site-footer-gap"));
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 1).top, DomFixture.at(groups, 0).top);
+      AppearanceFixture.expectPixels(DomFixture.at(groups, 1).left - DomFixture.at(groups, 0).right, AppearanceFixture.measureLook("site-footer-group-gap-phone"));
       for (const link of links)
-        AppearanceFixture.expectPixels(link.height, AppearanceFixture.measureLook("site-menu-row"));
-      AppearanceFixture.expectPixels(box(".nol-site-footer-bottom").top - DomFixture.at(groups, 2).bottom, gap);
-      AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-footer-bottom").bottom, padding);
+        expect(link.height).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("pointer-target") - 1 / 32);
+      AppearanceFixture.expectPixels(edges().bottom - Math.max(...groups.map(t => t.bottom)), AppearanceFixture.measureLook("site-footer-padding-end"));
     });
 
   for (const mode of AppearanceFixture.modes)

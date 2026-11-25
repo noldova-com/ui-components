@@ -1,0 +1,53 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/* The site parts' type scale and spacing, which a website loads after the kit's styles and its own pages use too. They
+ * are the parts' own properties, not the kit's tokens: each size follows the message text the page's typography sets. */
+:root {
+  --nol-site-text-small: var(--nol-text-message);
+  --nol-site-text: calc(var(--nol-text-message) * 8 / 7);
+  --nol-site-text-large: calc(var(--nol-text-message) * 9 / 7);
+  --nol-site-line: 1.6;
+  --nol-site-title-size: clamp(2rem, 4cqi, 3.125rem);
+  --nol-site-title-line: 1.12;
+  --nol-site-title-tracking: -0.045em;
+  --nol-site-hero-title-size: clamp(3rem, 5.7cqi, 4.9375rem);
+  --nol-site-hero-title-line: 1.06;
+  --nol-site-card-title-size: 1.5rem;
+  --nol-site-section-space: 6.875rem;
+  --nol-site-shell-gutter: 2.5rem;
+  --nol-site-surface: var(--nol-panel);
+  --nol-site-radius: 0.75rem;
+}
+
+/* A page's own blocks take the phone's spacing by the window's width; the parts take it by their own. */
+@media (max-width: 47.5em) {
+  :root {
+    --nol-site-shell-gutter: 1.25rem;
+    --nol-site-section-space: 4.375rem;
+  }
+}
+
+/* The block every part and page keeps to: the content width, with a gutter at each side. */
+.nol-site-shell {
+  width: min(var(--nol-site-content-width), calc(100% - 2 * var(--nol-site-shell-gutter)));
+  margin-inline: auto;
+}
+
+/* The small monospace line above a headline, in the accent color. */
+.nol-site-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  color: var(--nol-accent);
+  font-family: var(--nol-font-mono);
+  font-size: var(--nol-site-text-small);
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}

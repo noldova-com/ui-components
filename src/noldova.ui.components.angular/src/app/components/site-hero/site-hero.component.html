@@ -1,0 +1,38 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<section class="nol-site-hero-intro nol-site-shell" [attr.aria-labelledby]="titleId()">
+  @if (eyebrow(); as eyebrowText) {
+    <p class="nol-site-eyebrow">{{ eyebrowText }}</p>
+  }
+  <div class="nol-site-hero-grid">
+    <h1 class="nol-site-hero-title" [id]="titleId()">{{ title() }}@if (accent(); as accentText) {<span class="nol-site-hero-accent">{{ accentText }}</span>}</h1>
+    <p class="nol-site-hero-copy"><ng-content />@if (closing(); as closingText) {<strong class="nol-site-hero-closing">{{ closingText }}</strong>}</p>
+  </div>
+  @if (actions().length > 0) {
+    <div class="nol-site-hero-actions">
+      @for (action of actions(); track action.href) {
+        <a nol-button class="nol-site-hero-action" [variant]="action.variant" [href]="action.href"
+          ><span class="nol-site-hero-action-label">{{ action.label }}@if (action.icon; as glyph) {<span class="material-symbols-rounded nol-site-hero-action-icon" aria-hidden="true">{{ glyph }}</span>}</span></a
+        >
+      }
+    </div>
+  }
+</section>
+@if (shot(); as picture) {
+  <div class="nol-site-hero-shot nol-site-shell" [attr.id]="shotId()">
+    <picture class="nol-site-hero-shot-frame nol-site-hero-shot-light">
+      <img [src]="picture.light" [attr.srcset]="partResources.formatSources(picture.light, picture.lightLarge, picture)" [attr.sizes]="partResources.shotSizes"
+        [width]="picture.width" [height]="picture.height" [alt]="picture.alt" [style.aspect-ratio]="picture.width + ' / ' + picture.height" loading="lazy" decoding="async" />
+    </picture>
+    <picture class="nol-site-hero-shot-frame nol-site-hero-shot-dark">
+      <img [src]="picture.dark" [attr.srcset]="partResources.formatSources(picture.dark, picture.darkLarge, picture)" [attr.sizes]="partResources.shotSizes"
+        [width]="picture.width" [height]="picture.height" [alt]="picture.alt" [style.aspect-ratio]="picture.width + ' / ' + picture.height" loading="lazy" decoding="async" />
+    </picture>
+  </div>
+}

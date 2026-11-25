@@ -45,6 +45,23 @@ describe("DocsStyleSheet", () => {
     ]);
   });
 
+  it("reads a root rule after a comment, and none inside a media query, where a token takes another value", () => {
+    const sheet = [
+      "/* The sizes, which a site's pages use too, each from the message text. */",
+      ":root {",
+      "  --nol-site-gutter: 2.5rem;",
+      "}",
+      "",
+      "@media (max-width: 47.5em) {",
+      "  :root {",
+      "    --nol-site-gutter: 1.25rem;",
+      "  }",
+      "}"
+    ].join("\n");
+
+    expect(new DocsStyleSheet(sheet, prefixes).tokens.map(t => [t.variable, t.light])).toEqual([["--nol-site-gutter", "2.5rem"]]);
+  });
+
   it("reads no token from a sheet without a root rule", () => {
     expect(new DocsStyleSheet("body {\n  --nol-body-only: 1px;\n}", prefixes).tokens).toEqual([]);
   });

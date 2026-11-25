@@ -72,6 +72,8 @@ describe("DocsShellComponent", () => {
     Math.max(...["nol-site-header", ".nol-docs-pages-bar"].map(t => DocsFixture.one(host, t).getBoundingClientRect()).filter(t => t.height > 0).map(t => t.bottom));
 
   const rootRem = (): number => Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // A kit length token's value in rem, as the kit's theme declares it.
+  const tokenRem = (name: string): number => Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
 
   const changelogLink = `https://github.com/noldova-com/ui-components/blob/main/CHANGELOG.md#${versionFile.version.replaceAll(".", "")}`;
 
@@ -125,19 +127,21 @@ describe("DocsShellComponent", () => {
   });
 
   describe.each([
-    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, 1.5],
-    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, 1.5],
-    ["Light", 1920, 1080, 1.5],
-    ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, 1],
-    ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, 1]
-  ])("in the %s mode at %i by %i CSS pixels, the site's header and footer", (mode, width, height, inset) => {
+    ["Light", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, ""],
+    ["Dark", DocsFixture.DESKTOP_WIDTH, DocsFixture.DESKTOP_HEIGHT, ""],
+    ["Light", 1920, 1080, ""],
+    ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, "-phone"],
+    ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT, "-phone"]
+  ])("in the %s mode at %i by %i CSS pixels, the site's header and footer", (mode, width, height, size) => {
     const renderSiteAsync = async (url: string): Promise<HTMLElement> => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       return DocsFixture.host(await renderAsync(url));
     };
 
-    const contentStart = (): number => Math.max(0, (document.documentElement.clientWidth - 108 * rootRem()) / 2);
+    // The header's content keeps to 108rem, centered, with the site's inset outside it.
+    const contentStart = (): number =>
+      Math.max(tokenRem(`--nol-site-padding-inline${size}`) * rootRem(), (document.documentElement.clientWidth - 108 * rootRem()) / 2);
 
     const linksOf = (root: HTMLElement, selector: string): readonly FrameLink[] =>
       DocsFixture.all(root, selector).map(t => new FrameLink(t.textContent?.trim() ?? null, t.getAttribute("href"), t.getAttribute("aria-current")));
@@ -170,24 +174,24 @@ describe("DocsShellComponent", () => {
       expect(linksOf(DocsFixture.one(host, "nol-site-footer"), "a.nol-site-footer-link").filter(t => t.current === "page").map(t => t.text)).toEqual(Object.isNull(current) ? [] : [current]);
     });
 
-    it("lays the header 3.5rem high across the window at its top, its wordmark at the site's inset inside 108rem and its parts centered on its line", async () => {
+    it("lays the header at the kit's header height across the window at its top, its wordmark and its last part at the site's inset outside 108rem and its parts centered on its line", async () => {
       const host = await renderSiteAsync("/");
       const unit = rootRem();
       const header = DocsFixture.one(host, "nol-site-header");
       const box = header.getBoundingClientRect();
       const edge = document.documentElement.clientWidth;
       const wordmark = DocsFixture.one(header, ".nol-site-header-bar .nol-site-wordmark").getBoundingClientRect();
-      const end = DocsFixture.one(header, width === DocsFixture.PHONE_WIDTH ? ".nol-site-menu-button" : "nol-site-theme-switch").getBoundingClientRect();
+      const end = DocsFixture.one(header, width === DocsFixture.PHONE_WIDTH ? ".nol-site-menu-button" : ".nol-site-header-social").getBoundingClientRect();
       const middle = box.top + box.height / 2;
 
-      expect(box.height / unit).toBeCloseTo(3.5, 2);
+      expect(box.height / unit).toBeCloseTo(tokenRem(`--nol-site-header-height${size}`), 2);
       expect([box.top, box.left, box.right]).toEqual([0, 0, edge]);
-      expect((wordmark.left - contentStart()) / unit).toBeCloseTo(inset, 2);
+      expect(wordmark.left / unit).toBeCloseTo(contentStart() / unit, 2);
       expect(Math.abs(wordmark.top + wordmark.height / 2 - middle) / unit).toBeLessThanOrEqual(0.05);
       expect(Math.abs(end.top + end.height / 2 - middle) / unit).toBeLessThanOrEqual(0.05);
       expect(end.right).toBeLessThanOrEqual(edge - contentStart());
       if (width !== DocsFixture.PHONE_WIDTH)
-        expect((edge - contentStart() - end.right) / unit).toBeCloseTo(inset, 2);
+        expect((edge - end.right) / unit).toBeCloseTo(contentStart() / unit, 2);
       expect(DocsFixture.overflowWidth()).toBe(0);
     });
 
@@ -202,7 +206,9 @@ describe("DocsShellComponent", () => {
       expect(footer.top).toBeGreaterThanOrEqual(DocsFixture.one(host, ".nol-docs-body").getBoundingClientRect().bottom - 0.5);
       expect([footer.left, footer.right]).toEqual([0, document.documentElement.clientWidth]);
       expect(Math.abs(wordmark.left - header.left) / unit).toBeLessThanOrEqual(0.01);
-      expect(wordmark.width / unit).toBeCloseTo(header.width / unit, 2);
+      // A phone's header narrows its wordmark to keep its gap before the theme switch, by at most that gap.
+      expect((wordmark.width - header.width) / unit).toBeGreaterThanOrEqual(-0.01);
+      expect((wordmark.width - header.width) / unit).toBeLessThanOrEqual(tokenRem("--nol-site-actions-gap-phone") + 0.01);
     });
   });
 
@@ -323,8 +329,8 @@ describe("DocsShellComponent", () => {
       await DomChangeFixture.untilAsync(() => expect(document.activeElement).toBe(field));
       const box = DocsFixture.one(header, "nol-docs-search").getBoundingClientRect();
 
-      expect(box.left / unit).toBeCloseTo(1, 2);
-      expect((document.documentElement.clientWidth - box.right) / unit).toBeCloseTo(1, 2);
+      expect(box.left / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 2);
+      expect((document.documentElement.clientWidth - box.right) / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 2);
       await userEvent.fill(field, "variant");
       await userEvent.click(await DomChangeFixture.untilAsync(() => DocsFixture.byText(header, ".nol-docs-search-result", "Button")));
 
@@ -347,7 +353,7 @@ describe("DocsShellComponent", () => {
       expect(bar.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2))).toBe(true);
     });
 
-    it("puts the pages bar right under the header, 3.5rem high, its button centered on it with its glyph at the site's 1rem inset", async () => {
+    it("puts the pages bar right under the header, 3.5rem high, its button centered on it with its glyph at the site's phone inset", async () => {
       const host = await phoneAsync();
       const unit = rootRem();
       const bar = DocsFixture.one(host, ".nol-docs-pages-bar").getBoundingClientRect();
@@ -357,7 +363,7 @@ describe("DocsShellComponent", () => {
 
       expect(bar.top).toBe(DocsFixture.one(host, "nol-site-header").getBoundingClientRect().bottom);
       expect(bar.height / unit).toBeCloseTo(3.5, 2);
-      expect(icon.left / unit).toBeCloseTo(1, 1);
+      expect(icon.left / unit).toBeCloseTo(tokenRem("--nol-site-padding-inline-phone"), 1);
       expect(button.textContent?.trim()).toContain("Pages");
       expect(Math.abs(box.top + box.height / 2 - (bar.top + bar.height / 2)) / unit).toBeLessThanOrEqual(0.05);
     });
@@ -750,7 +756,7 @@ describe("DocsShellComponent", () => {
         expect(own).toBeLessThan(kit);
     });
 
-    it("lays the menu, the page and the list across at most 108rem centered in the window, in from its sides alike from 48rem wide, the page filling the space between them", async () => {
+    it("lays the menu, the page and the list across at most 108rem and the site's inset on each side, as the header's content, centered in the window, in from its sides alike from 48rem wide, the page filling the space between them", async () => {
       const host = await pageAsync("/components/button");
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const body = DocsFixture.one(host, ".nol-docs-body");
@@ -759,7 +765,7 @@ describe("DocsShellComponent", () => {
       const page = edges(host);
       const start = Number.parseFloat(style.paddingInlineStart);
 
-      expect(box.width / rem).toBeLessThanOrEqual(108 + 0.01);
+      expect(box.width / rem).toBeLessThanOrEqual(108 + 2 * tokenRem("--nol-site-padding-inline") + 0.01);
       expect(Math.abs(box.left - (document.documentElement.clientWidth - box.right)) / rem).toBeLessThanOrEqual(0.01);
       expect([start > 0, Number.parseFloat(style.paddingInlineEnd)]).toEqual([width >= 48 * rem, start]);
       expect([Math.abs(page.page.left - page.start) / rem <= 0.01, Math.abs(page.end - page.page.right) / rem <= 0.01]).toEqual([true, true]);
@@ -781,14 +787,14 @@ describe("DocsShellComponent", () => {
       return host;
     };
 
-    it("starts the header's wordmark and the footer's where the menu's text starts, and ends the header's theme switch where the list's links end", async () => {
+    it("starts the header's wordmark and the footer's where the menu's text starts, and ends the header's last part, its social links, where the list's links end", async () => {
       const host = await deskAsync();
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       const range = document.createRange();
       range.selectNodeContents(DocsFixture.one(host, ".nol-docs-menu-link"));
       const menuText = range.getBoundingClientRect().left;
       const list = DocsFixture.one(host, ".nol-docs-outline-list");
-      const theme = DocsFixture.one(host, "nol-site-header nol-site-theme-switch").getBoundingClientRect();
+      const theme = DocsFixture.one(host, "nol-site-header .nol-site-header-social").getBoundingClientRect();
 
       expect(Math.abs(DocsFixture.one(host, "nol-site-header .nol-site-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);
       expect(Math.abs(DocsFixture.one(host, "nol-site-footer .nol-site-wordmark").getBoundingClientRect().left - menuText) / rem).toBeLessThanOrEqual(0.01);

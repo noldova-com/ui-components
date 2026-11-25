@@ -132,8 +132,13 @@ export class DocsCatalog {
     "GallerySpecimenComponent",
     "PermissionCardComponent",
     "PlanComponent",
+    "SiteCardComponent",
+    "SiteCardGridComponent",
+    "SiteClosingComponent",
     "SiteFooterComponent",
     "SiteHeaderComponent",
+    "SiteHeroComponent",
+    "SiteSectionComponent",
     "ToolCallComponent"
   ]);
   public static readonly componentPages: readonly DocsPage[] = ApiReference.components.flatMap(t => DocsCatalog.writtenPages.filter(u => u.componentName === t.name));

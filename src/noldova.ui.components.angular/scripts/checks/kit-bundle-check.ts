@@ -39,8 +39,8 @@ export class KitBundleCheck implements ICheck {
   private static readonly KIT_FILES: string = "/@noldova/ui.components.angular/";
   private static readonly SITE_BUNDLE: string = "bundle-site";
   private static readonly KIT_COMPONENTS: string = "/@noldova/ui.components.angular/app/components/";
-  private static readonly SITE_COMPONENTS: readonly string[] = ["button", "choice-pills", "icon-button", "progress", "site-footer", "site-header", "site-lockup", "site-theme-switch", "spinner",
-    "tooltip"];
+  private static readonly SITE_COMPONENTS: readonly string[] = ["button", "choice-pills", "icon-button", "progress", "site-card", "site-closing", "site-footer", "site-header", "site-hero", "site-lockup",
+    "site-section", "site-theme-switch", "spinner", "tooltip"];
   private static readonly CODE_BLOCK: string = "/@noldova/ui.components.angular/app/components/code-block/";
   private static readonly SHARED_STRINGS: string = "/@noldova/ui.components.angular/resources.js";
   private static readonly ICON_LIST: string = "/@noldova/ui.components.angular/app/models/icon-names.js";
@@ -66,7 +66,7 @@ export class KitBundleCheck implements ICheck {
   private static readonly WORKER_RULE: string = "an app's highlighting worker holds every grammar the kit knows and imports no other chunk, since Angular's build leaves out the chunks a worker's lazy imports share, as src/noldova.ui.components.angular/README.md, Code highlighting, says.";
   private static readonly STRINGS_RULE: string = `an app that imports ButtonComponent alone ships only the shared strings and those of the classes it reaches, at most ${KitBundleCheck.STRINGS_LIMIT} bytes, since each class keeps its own strings in its own file, as documents/ARCHITECTURE.md, Code, says.`;
   private static readonly CODE_BLOCK_RULE: string = "an app whose start imports only the button and typography entries, never the main one, ships the code block, its toolbar and its tooltip in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
-  private static readonly SITE_RULE: string = "an app whose start imports only the site entry ships in its start only the site's header and footer and the parts they show, the button, the icon button, the tooltip, the choice pills, the spinner and the progress bar, none of the kit's shared strings in src/resources.ts, nor its icon list, and the code block in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
+  private static readonly SITE_RULE: string = "an app whose start imports only the site entry ships in its start only the site's header and footer and the parts they show, the site hero, sections, cards and closing, the button, the icon button, the tooltip, the choice pills, the spinner and the progress bar, none of the kit's shared strings in src/resources.ts, nor its icon list, and the code block in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
   private static readonly PARSER_RULE: string = "an app without provideMarkdown() ships no markdown-it, and an app with it loads it lazily, as src/noldova.ui.components.angular/README.md, Markdown, says.";
 
   private readonly root: string;

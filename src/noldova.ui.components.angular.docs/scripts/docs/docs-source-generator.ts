@@ -17,7 +17,11 @@ export class DocsSourceGenerator {
 
   private static readonly COMPONENTS_FOLDER: string = "src/noldova.ui.components.angular.docs/src/app/components";
   private static readonly INDEX_FILE: string = "src/noldova.ui.components.angular.docs/src/index.html";
-  private static readonly BASE_STYLES_FILE: string = "src/noldova.ui.components.angular/src/styles/base.css";
+  // The kit's stylesheets that declare tokens on the root, which the tokens page lists.
+  private static readonly BASE_STYLES_FILES: readonly string[] = [
+    "src/noldova.ui.components.angular/src/styles/base.css",
+    "src/noldova.ui.components.angular/src/styles/site.css"
+  ];
   private static readonly KIT_DOCUMENTS_FOLDER: string = "documents/kit";
   private static readonly EXAMPLES_FOLDER: string = "examples";
   private static readonly DOCUMENTS_FOLDER: string = "documents";
@@ -75,9 +79,9 @@ export class DocsSourceGenerator {
   }
 
   public async writeBaseStylesAsync(): Promise<void> {
-    const styles = await readFile(path.join(this.root, DocsSourceGenerator.BASE_STYLES_FILE), DocsSourceGenerator.TEXT_ENCODING);
+    const styles = await Promise.all(DocsSourceGenerator.BASE_STYLES_FILES.map(t => readFile(path.join(this.root, t), DocsSourceGenerator.TEXT_ENCODING)));
     await this.writer.writeAsync(DocsSourceGenerator.locate(DocsSourceGenerator.BASE_STYLES_MODULE), DocsSourceGenerator.BASE_STYLES_EXPORT,
-      styles.replace(DocsSourceGenerator.LICENSE_HEADER, "").trimEnd());
+      styles.map(t => t.replace(DocsSourceGenerator.LICENSE_HEADER, "").trimEnd()).join("\n\n"));
   }
 
   private static locate(...parts: readonly string[]): string {

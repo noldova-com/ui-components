@@ -26,14 +26,22 @@ class EntrySiteHostComponent {
 }
 
 describe("the kit's site entry", () => {
-  it("publishes the site header and footer and their links, the same classes as the kit's API", () => {
+  it("publishes the site header and footer, their links and the page parts, the same classes as the kit's API", () => {
     expect({ ...site }).toEqual({
+      SiteAction: kit.SiteAction,
+      SiteCardComponent: kit.SiteCardComponent,
+      SiteCardGridComponent: kit.SiteCardGridComponent,
+      SiteClosingComponent: kit.SiteClosingComponent,
       SiteFooterComponent: kit.SiteFooterComponent,
       SiteHeaderComponent: kit.SiteHeaderComponent,
+      SiteHeroComponent: kit.SiteHeroComponent,
       SiteLink: kit.SiteLink,
       SiteLinkGroup: kit.SiteLinkGroup,
       SiteSearchDirective: kit.SiteSearchDirective,
-      SiteSocialLink: kit.SiteSocialLink
+      SiteSectionComponent: kit.SiteSectionComponent,
+      SiteShot: kit.SiteShot,
+      SiteSocialLink: kit.SiteSocialLink,
+      SiteWordmarkSize: kit.SiteWordmarkSize
     });
   });
 

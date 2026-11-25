@@ -1,0 +1,33 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+<section class="nol-site-closing-block nol-site-shell" [attr.aria-labelledby]="headingId()">
+  @if (mark(); as markFile) {
+    <div class="nol-site-closing-mark"
+      ><img [class.nol-site-closing-mark-light]="hasDarkMark()" [src]="markFile" width="37" height="37" alt="" loading="lazy" />@if (darkMark(); as darkFile) {<img
+        class="nol-site-closing-mark-dark" [src]="darkFile" width="37" height="37" alt="" loading="lazy" />}</div
+    >
+  }
+  @if (eyebrow(); as eyebrowText) {
+    <p class="nol-site-eyebrow nol-site-closing-eyebrow">{{ eyebrowText }}</p>
+  }
+  <h2 class="nol-site-closing-title" [id]="headingId()">@if (title(); as titleText) {<ng-container>{{ titleText }}</ng-container>} @else {<ng-content select="[nolSiteClosingTitle]" />}</h2>
+  @if (hasActions()) {
+    <div class="nol-site-closing-actions">
+      @if (action(); as primary) {
+        <a nol-button class="nol-site-closing-action" [variant]="primary.variant" [href]="primary.href"
+          ><span class="nol-site-closing-action-label">{{ primary.label }}@if (primary.icon; as glyph) {<span class="material-symbols-rounded nol-site-closing-action-icon" aria-hidden="true">{{ glyph }}</span>}</span></a
+        >
+      }
+      @if (link(); as textLink) {
+        <a class="nol-site-closing-link" [href]="textLink.href">{{ textLink.label }}@if (textLink.icon; as glyph) {<span class="material-symbols-rounded nol-site-closing-link-icon" aria-hidden="true">{{ glyph }}</span>}</a>
+      }
+    </div>
+  }
+  <p class="nol-site-closing-note"><ng-content /></p>
+</section>

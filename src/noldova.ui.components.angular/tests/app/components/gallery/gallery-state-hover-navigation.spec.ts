@@ -12,13 +12,14 @@ import { GalleryNavigationComponent } from "../../../../src/app/components/galle
 import { GallerySectionHeaderComponent } from "../../../../src/app/components/gallery/gallery-section-header.component";
 import { GallerySiteFooterComponent } from "../../../../src/app/components/gallery/gallery-site-footer.component";
 import { GallerySiteHeaderComponent } from "../../../../src/app/components/gallery/gallery-site-header.component";
+import { GallerySitePartsComponent } from "../../../../src/app/components/gallery/gallery-site-parts.component";
 import { GalleryTabComponent } from "../../../../src/app/components/gallery/gallery-tab.component";
 import { GalleryToolbarButtonComponent } from "../../../../src/app/components/gallery/gallery-toolbar-button.component";
 import { GalleryState } from "../../../../src/app/enums/gallery-state";
 import { GalleryStateFixture } from "../../../fixtures/gallery-state.fixture";
 
 describe("GalleryStateDirective Hover cells of the navigation section", () => {
-  const specimens = [GalleryFeedComponent, GalleryGroupHeaderComponent, GallerySectionHeaderComponent, GallerySiteFooterComponent, GallerySiteHeaderComponent, GalleryTabComponent, GalleryToolbarButtonComponent];
+  const specimens = [GalleryFeedComponent, GalleryGroupHeaderComponent, GallerySectionHeaderComponent, GallerySiteFooterComponent, GallerySiteHeaderComponent, GallerySitePartsComponent, GalleryTabComponent, GalleryToolbarButtonComponent];
 
   it.each(GalleryStateFixture.specimens(specimens))("shows in each of the Hover cells of $name the look its control has when the pointer is really over it", async ({ specimen }) => {
     await GalleryStateFixture.expectHoverCellsShowTheirLookAsync(specimen);

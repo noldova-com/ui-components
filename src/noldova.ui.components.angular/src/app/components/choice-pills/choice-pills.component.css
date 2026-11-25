@@ -48,13 +48,21 @@
   width: calc(var(--nol-choice-pill) + 2 * var(--nol-choice-pill-reach));
   height: calc(var(--nol-choice-pill) + 2 * var(--nol-choice-pill-reach));
   padding: var(--nol-choice-pill-reach);
-  border-radius: calc(var(--nol-radius-small) + var(--nol-choice-pill-reach));
+  border-radius: calc(var(--nol-choice-pill-radius, var(--nol-radius-small)) + var(--nol-choice-pill-reach));
   background-clip: content-box;
 }
 
 .nol-choice-pill-glyph {
   font-size: var(--nol-icon);
   color: var(--nol-icon-color);
+
+  @media (forced-colors: active) {
+    color: inherit;
+  }
+}
+
+.nol-choice-pill-selected .nol-choice-pill-glyph {
+  color: var(--nol-choice-pill-selected-icon, var(--nol-icon-color));
 
   @media (forced-colors: active) {
     color: inherit;
@@ -72,7 +80,8 @@
 
 .nol-choice-pill.nol-choice-pill-selected {
   --nol-text-muted: var(--nol-text);
-  background-color: var(--nol-selected);
+  background-color: var(--nol-choice-pill-selected, var(--nol-selected));
+  box-shadow: var(--nol-choice-pill-selected-shadow, none);
 
   @media (forced-colors: active) {
     --nol-text: HighlightText;

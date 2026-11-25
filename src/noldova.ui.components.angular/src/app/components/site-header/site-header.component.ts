@@ -9,6 +9,7 @@
 import { Component, DOCUMENT, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, signal,
   viewChild } from "@angular/core";
 
+import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -16,7 +17,6 @@ import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { SiteLockupComponent } from "../site-lockup/site-lockup.component.js";
 import { SiteLockupResources } from "../site-lockup/site-lockup.resources.js";
 import { SiteThemeSwitchComponent } from "../site-theme-switch/site-theme-switch.component.js";
-import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { SiteHeaderResources } from "./site-header.resources.js";
 import { SiteSearchDirective } from "./site-search.directive.js";
 
@@ -24,7 +24,7 @@ import { SiteSearchDirective } from "./site-search.directive.js";
   selector: "nol-site-header",
   templateUrl: "./site-header.component.html",
   styleUrl: "./site-header.component.css",
-  imports: [ButtonComponent, IconButtonComponent, SiteLockupComponent, SiteThemeSwitchComponent, TooltipDirective],
+  imports: [ButtonComponent, IconButtonComponent, SiteLockupComponent, SiteThemeSwitchComponent],
   host: {
     "class": "nol-site-header",
     "role": "banner",
@@ -45,6 +45,8 @@ export class SiteHeaderComponent {
   public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
+  public readonly homeLabel = input<string | null>(null);
+  public readonly wordmarkSize = input<SiteWordmarkSize>(SiteWordmarkSize.Small);
   public readonly icon = input<string | null>(null);
   public readonly iconDark = input<string | null>(null);
   public readonly version = input<string | null>(null);
