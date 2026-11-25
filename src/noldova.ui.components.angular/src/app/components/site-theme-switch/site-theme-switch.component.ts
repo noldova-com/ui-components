@@ -6,7 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DOCUMENT, afterNextRender, inject, signal } from "@angular/core";
+import { isPlatformBrowser } from "@angular/common";
+import { Component, DOCUMENT, PLATFORM_ID, type Signal, ViewEncapsulation, afterNextRender, computed, inject, signal } from "@angular/core";
 
 import { ModePreference } from "../../enums/mode-preference.js";
 import { ThemeMode } from "../../enums/theme-mode.js";
@@ -19,8 +20,10 @@ import { SiteThemeSwitchResources } from "./site-theme-switch.resources.js";
   templateUrl: "./site-theme-switch.component.html",
   styleUrl: "./site-theme-switch.component.css",
   imports: [ChoicePillsComponent],
+  encapsulation: ViewEncapsulation.None,
   host: {
-    "class": "nol-site-theme-switch"
+    "class": "nol-site-theme-switch",
+    "[class.nol-site-theme-switch-pending]": "!isInBrowser"
   }
 })
 export class SiteThemeSwitchComponent {
@@ -28,6 +31,8 @@ export class SiteThemeSwitchComponent {
   protected readonly options: readonly SelectOption[] = SiteThemeSwitchResources.order.map(t =>
     new SelectOption(t, SiteThemeSwitchResources.titles[t], null, false, SiteThemeSwitchResources.glyphs[t]));
   protected readonly preference = signal<ModePreference>(ModePreference.System);
+  protected readonly isInBrowser: boolean = isPlatformBrowser(inject(PLATFORM_ID));
+  protected readonly shown: Signal<string> = computed(() => this.isInBrowser ? this.preference() : SiteThemeSwitchResources.pendingValue);
   private readonly document: Document = inject(DOCUMENT);
 
   public constructor() {

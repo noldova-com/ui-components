@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-:host {
+.nol-site-theme-switch {
   --nol-choice-pill: var(--nol-site-theme-pill);
   --nol-choice-pill-target: var(--nol-pointer-target);
   --nol-choice-pill-radius: var(--nol-radius-medium);
@@ -22,4 +22,21 @@
   padding: max(0px, calc(var(--nol-site-theme-switch-padding) - var(--nol-site-theme-reach)));
   border-radius: var(--nol-radius-large);
   background-color: var(--nol-raised);
+}
+
+:root[data-nol-theme-mode="Light"] .nol-site-theme-switch-pending .nol-choice-pill[data-nol-value="Light"],
+:root[data-nol-theme-mode="Dark"] .nol-site-theme-switch-pending .nol-choice-pill[data-nol-value="Dark"],
+:root:not([data-nol-theme-mode]) .nol-site-theme-switch-pending .nol-choice-pill[data-nol-value="System"] {
+  --nol-text-muted: var(--nol-text);
+  --nol-icon-color: var(--nol-choice-pill-selected-icon);
+  background-color: var(--nol-choice-pill-selected);
+  box-shadow: var(--nol-choice-pill-selected-shadow);
+
+  @media (forced-colors: active) {
+    --nol-icon-color: HighlightText;
+
+    color: HighlightText;
+    forced-color-adjust: none;
+    background-color: Highlight;
+  }
 }
