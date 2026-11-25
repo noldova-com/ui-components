@@ -41,18 +41,22 @@ describe("TokensPageComponent", () => {
     return span(DocsFixture.one(row, "td")) === 2 ? [light, light] : [light, cellText(row, "td:nth-of-type(2)")];
   };
 
-  const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> =>
-    new Map(DocsFixture.all(host, "main tbody tr").map((t): [string, readonly string[]] => [cellText(t, "th"), modeValues(t)]));
+  const shownValues = (host: HTMLElement): ReadonlyMap<string, readonly string[]> => {
+    const values = new Map<string, readonly string[]>();
+    for (const row of DocsFixture.all(host, "main tbody tr"))
+      values.set(cellText(row, "th"), modeValues(row));
+    return values;
+  };
 
   const shownNames = (host: HTMLElement): readonly string[] => DocsFixture.all(host, "main tbody th").map(t => t.textContent?.trim() ?? "");
 
   const lookVariables = (): readonly string[] => KitResources.lookTokens.map(t => KitDomResources.formatLookVariable(t));
 
   const rulesOf = (sheet: CSSStyleSheet): readonly CSSRule[] =>
-    [...sheet.cssRules].flatMap(t => t instanceof CSSImportRule && t.styleSheet !== null ? rulesOf(t.styleSheet) : [t]);
+    [...sheet.cssRules].flatMap(t => t instanceof CSSImportRule && !Object.isNull(t.styleSheet) ? rulesOf(t.styleSheet) : [t]);
 
   const rootTokenNames = (): readonly string[] => [...document.styleSheets]
-    .filter(t => t.href === null || new URL(t.href).origin === location.origin)
+    .filter(t => Object.isNull(t.href) || new URL(t.href).origin === location.origin)
     .flatMap(t => rulesOf(t))
     .filter(t => t instanceof CSSStyleRule)
     .filter(t => t.selectorText.split(",").map(u => u.trim()).includes(":root"))
@@ -137,7 +141,7 @@ describe("TokensPageComponent", () => {
   it("paints a swatch of each color's value in each mode, inside its cell, and none for other tokens", async () => {
     const host = await renderAsync("/tokens");
     const colors = DocsFixture.byText(host, "main h2", "Colors").closest("section");
-    if (colors === null)
+    if (Object.isNull(colors))
       throw new TypeError("The Colors heading is outside a section.");
     const cells = DocsFixture.all(colors, "tbody td");
     const swatches = DocsFixture.all(colors, ".nol-docs-token-swatch");

@@ -21,6 +21,36 @@ import { DomResources } from "../../../../src/dom-resources";
 import { Resources } from "../../../../src/resources";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
+class MenuKey {
+  public readonly name: string;
+  public readonly init: KeyboardEventInit;
+
+  public constructor(name: string, init: KeyboardEventInit) {
+    this.name = name;
+    this.init = init;
+  }
+}
+
+class MouseEventPoint {
+  public readonly x: number;
+  public readonly y: number;
+
+  public constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class MenuKeyPress {
+  public readonly isKeyPrevented: boolean;
+  public readonly isRightClickPrevented: boolean;
+
+  public constructor(isKeyPrevented: boolean, isRightClickPrevented: boolean) {
+    this.isKeyPrevented = isKeyPrevented;
+    this.isRightClickPrevented = isRightClickPrevented;
+  }
+}
+
 @Component({
   imports: [MessageComponent],
   template: `<nol-message [author]="author" [time]="time" [blocks]="blocks" (linkActivate)="links.push($event)" (linkOpen)="opens.push($event)" (linkMenu)="showLinkMenu($event)"
@@ -81,16 +111,16 @@ describe("MessageComponent's link gestures", () => {
     ]);
   });
 
-  const menuKeys: readonly (readonly [string, KeyboardEventInit])[] = [["the ContextMenu key", { key: "ContextMenu" }], ["Shift+F10", { key: "F10", shiftKey: true }]];
+  const menuKeys: readonly MenuKey[] = [new MenuKey("the ContextMenu key", { key: "ContextMenu" }), new MenuKey("Shift+F10", { key: "F10", shiftKey: true })];
 
-  const asMouseEventPoint = (x: number, y: number): readonly [number, number] => {
+  const asMouseEventPoint = (x: number, y: number): MouseEventPoint => {
     const event = new MouseEvent("contextmenu", { clientX: x, clientY: y });
-    return [event.clientX, event.clientY];
+    return new MouseEventPoint(event.clientX, event.clientY);
   };
 
   const padToHalfPixel = (value: number): number => ((0.5 - (value - Math.floor(value))) % 1 + 1) % 1;
 
-  it.each(menuKeys)("gives one menu for %s on a focused link: the app's link menu at the link's bottom-left as a right-click holds it, or else the message's, and none for the browser's right-click that follows", async (_name, init) => {
+  it.each(menuKeys)("gives one menu for $name on a focused link: the app's link menu at the link's bottom-left as a right-click holds it, or else the message's, and none for the browser's right-click that follows", async key => {
     const hostElement = DomFixture.host(fixture);
     hostElement.style.display = "block";
     const unpadded = link().getBoundingClientRect();
@@ -99,23 +129,24 @@ describe("MessageComponent's link gestures", () => {
     const target = link();
     target.focus();
     const bounds = target.getBoundingClientRect();
-    const press = (): [boolean, boolean] => {
-      const down = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+    const press = (): MenuKeyPress => {
+      const down = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...key.init });
       target.dispatchEvent(down);
-      target.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, ...init }));
+      target.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, ...key.init }));
       const following = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 1, clientY: 1 });
       target.dispatchEvent(following);
-      return [down.defaultPrevented, following.defaultPrevented];
+      return new MenuKeyPress(down.defaultPrevented, following.defaultPrevented);
     };
     const shown = press();
     const shownMenus = host.linkMenus.map(t => [t.url, t.event.type, t.event.clientX, t.event.clientY, t.event.defaultPrevented]);
     host.showsLinkMenu.set(false);
     await fixture.whenStable();
     const left = press();
+    const point = asMouseEventPoint(bounds.left, bounds.bottom);
 
     expect([[bounds.left, bounds.bottom].map(t => Number.isInteger(t)), shown, left, shownMenus, host.linkMenus.length,
       host.menus.map(t => [t.point.x, t.point.y, t.origin, t.target === target, t.event.type])]).toEqual([
-      [false, false], [true, true], [true, true], [["https://example.com/docs", "contextmenu", ...asMouseEventPoint(bounds.left, bounds.bottom), true]], 2,
+      [false, false], new MenuKeyPress(true, true), new MenuKeyPress(true, true), [["https://example.com/docs", "contextmenu", point.x, point.y, true]], 2,
       [[bounds.left, bounds.bottom, DomResources.keyboardFocusOrigin, true, "keydown"]]
     ]);
   });
