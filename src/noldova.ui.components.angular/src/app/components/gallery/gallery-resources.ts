@@ -81,6 +81,8 @@ export class GalleryResources {
   public static readonly focusedSiteLink: string = ".nol-site-nav-link-current";
   public static readonly hoveredFooterLink: string = ".nol-site-footer-link";
   public static readonly focusedFooterLink: string = ".nol-site-footer-link[aria-current]";
+  public static readonly heroAction: string = ".nol-site-hero-action";
+  public static readonly siteShot: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23808080'/%3E%3C/svg%3E";
   public static readonly messageActionsTop: string = "var(--nol-space-2)";
   public static readonly messageActionsEnd: string = "var(--nol-space-4)";
   public static readonly referenceIcons = {
@@ -565,6 +567,26 @@ export class GalleryResources {
     siteGroups: [["Product", ["Download", "Releases", "Docs"]], ["Company", ["About", "Contact"]], ["Legal", ["Privacy", "Terms"]]],
     siteLongName: "A product whose name is far too long for the header",
     siteLongLine: "A line under the wordmark that is far too long to fit on one line of a narrow footer",
+    siteHero: "Site hero",
+    siteSection: "Site section",
+    siteCards: "Site cards",
+    siteHeroEyebrow: "Your agents. One team.",
+    siteHeroTitle: "Your AI agents,",
+    siteHeroAccent: "working as one team.",
+    siteHeroCopy: "Put your agents in the same chat and approve what they do.",
+    siteHeroClosing: "Less copying between agents.\nMore work done.",
+    siteHeroActions: ["Download", "Get started"],
+    siteHeroIcons: ["download", "keyboard_arrow_right"],
+    siteHeroAlt: "A shot of the product.",
+    siteHeroLongTitle: "A headline far too long to stand on one line of a narrow hero,",
+    siteSectionEyebrow: "One team. Your rules.",
+    siteSectionTitle: "Agents that work together,\nwith you in charge.",
+    siteSectionCopy: "From the first question to the final review,\nevery step stays in front of you.",
+    siteSectionLongTitle: "A section title far too long to stand on one line of a narrow section",
+    siteCardIcons: ["forum", "group", "difference"],
+    siteCardTitles: ["One chat,\nevery agent.", "The right teammate\nfor the task.", "See the changes.\nKeep the control."],
+    siteCardTexts: ["Each agent reads the same chat.", "Give an agent a name and a role.", "Approve what they do."],
+    siteCardLongTitle: "A card title far too long to stand on one line of a narrow card",
     sectionRecent: "Recent",
     sectionOlder: "Older",
     sectionRowNotes: "Meeting notes",
