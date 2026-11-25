@@ -12,6 +12,9 @@ import type { DocsTokenPrefixes } from "./docs-token-prefixes.js";
 
 export class DocsStyleSheet {
   private static readonly RULE: RegExp = /([^{}]*)\{([^{}]*)\}/gu;
+  private static readonly COMMENT: RegExp = /\/\*[\s\S]*?\*\//gu;
+  private static readonly BLOCK_OPEN: string = "{";
+  private static readonly BLOCK_CLOSE: string = "}";
   private static readonly DECLARATION: RegExp = /(--nol-[a-z0-9-]+)\s*:\s*([^;]+);/gu;
   private static readonly SELECTOR_SEPARATOR: string = ",";
   private static readonly ROOT_SELECTOR: string = ":root";
@@ -19,8 +22,17 @@ export class DocsStyleSheet {
 
   public readonly tokens: readonly DocsToken[];
 
+  // Only the root rules at the sheet's top level hold tokens; one inside a media query, such as a phone's value, changes a token
+  // the top level already declares. Comments are dropped first, so one above a rule doesn't read as part of its selector.
   public constructor(text: string, rootPrefixes: DocsTokenPrefixes) {
-    this.tokens = [...text.matchAll(DocsStyleSheet.RULE)].flatMap(t => DocsStyleSheet.readRule(String(t[1]), String(t[2]), rootPrefixes));
+    const code = text.replace(DocsStyleSheet.COMMENT, "");
+    this.tokens = [...code.matchAll(DocsStyleSheet.RULE)]
+      .filter(t => DocsStyleSheet.isTopLevel(code.slice(0, t.index)))
+      .flatMap(t => DocsStyleSheet.readRule(String(t[1]), String(t[2]), rootPrefixes));
+  }
+
+  private static isTopLevel(before: string): boolean {
+    return before.split(DocsStyleSheet.BLOCK_OPEN).length === before.split(DocsStyleSheet.BLOCK_CLOSE).length;
   }
 
   private static readRule(selector: string, body: string, rootPrefixes: DocsTokenPrefixes): readonly DocsToken[] {

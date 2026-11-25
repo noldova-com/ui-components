@@ -96,6 +96,11 @@
 
   &:is(:hover, [data-nol-state="Hover"]) {
     color: var(--nol-text);
+
+    @media (forced-colors: active) {
+      outline: var(--nol-border-width) dashed Highlight;
+      outline-offset: var(--nol-border-width);
+    }
   }
 
   &:focus-visible,

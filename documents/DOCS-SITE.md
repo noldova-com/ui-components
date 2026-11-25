@@ -29,7 +29,7 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 | `examples/<example>.ts` | `scripts/docs/docs-source-generator.ts`, from each `src/app/components/*-example/` folder: the template, class and stylesheet the page shows under the example, without the license header. |
 | `documents/<component>.ts` | The same, from `documents/kit/<component>.md`, without its title and with its relative links pointing at the repository. |
 | `index-page.ts` | The same, from `src/index.html`, so that the tests check the page shell's mode script. |
-| `kit-base-styles.ts` | The same, from the kit's `src/styles/base.css`, without its license header, so that the theme tokens page lists the tokens it declares. |
+| `kit-base-styles.ts` | The same, from the kit's `src/styles/base.css` and `src/styles/site.css`, without their license headers, so that the theme tokens page lists the tokens their root rules declare at the top level. |
 
 ## Pages
 
@@ -61,7 +61,7 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
   Its route hands the content to the page as the `page` input, through the router's component input binding.
 - A page's states are the Gallery's own specimen of the component, taken out of the Gallery's section into a section component of its own that the section renders in its place.
 - The theme tokens page lists every token the kit defines, each once, in tables by group, with its CSS custom property and its value in the default theme's Light and Dark modes, and a swatch for each color; stacked, each value is labelled with its mode, or with both where the modes share it.
-  It reads the values from the kit's sources, never a copy: the color tokens and the theme's look from `Resources.colorTokens`, `Resources.lookTokens` and `DefaultTheme`, and the text roles, fonts and tokens built from other tokens from the generated copy of `base.css`.
+  It reads the values from the kit's sources, never a copy: the color tokens and the theme's look from `Resources.colorTokens`, `Resources.lookTokens` and `DefaultTheme`, and the text roles, fonts, the site parts' properties and tokens built from other tokens from the generated copy of `base.css` and `site.css`.
   Its spec compares the page with the tokens the loaded stylesheets declare on the root and with those sources.
 - The site adds the kit's `provideCodeHighlighting()`, so every example's code is colored, shows the API's descriptions through the kit's Markdown view, so their inline code reads as code, and shows a component's selector and import in the kit's inline code.
 - Every table, the API, accessibility and tokens tables alike, takes the kit's Markdown table look: lines around every cell, start-aligned cells, names, key names, code in a Markdown table and each part of a union type kept on one line, a type breaking only before a `|`, and columns as wide as their longest word, so a table too wide for the page would scroll sideways in its holder rather than break a word. No table on the site does: an API, accessibility or tokens table stacks where it doesn't fit, and a Markdown table keeps every column but the last on one line from 48rem wide, and on a phone lets its columns wrap between words.
