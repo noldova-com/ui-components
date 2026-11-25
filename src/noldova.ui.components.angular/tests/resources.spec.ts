@@ -56,7 +56,7 @@ describe("Resources", () => {
   });
 
   it("falls back only to another color's key, and leaves raised and muted text without a fallback", () => {
-    const fallbacks = Object.fromEntries(DomResources.colorTokens.filter(t => t.fallbackKey !== null).map(t => [t.key, t.fallbackKey]));
+    const fallbacks = Object.fromEntries(DomResources.colorTokens.filter(t => !Object.isNull(t.fallbackKey)).map(t => [t.key, t.fallbackKey]));
 
     expect(fallbacks).toEqual({
       "code": "window",

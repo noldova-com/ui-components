@@ -51,6 +51,36 @@
   white-space: nowrap;
 }
 
+:host(.nol-link-reference-chip-inline) {
+  display: inline;
+  max-width: none;
+}
+
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-slot {
+  display: inline-block;
+}
+
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-mark,
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-slot {
+  margin-block: calc((1lh - var(--nol-reference-mark)) / 2);
+}
+
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-mark,
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-slot,
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-icon {
+  vertical-align: top;
+  margin-inline-end: var(--nol-space-1);
+}
+
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-icon {
+  margin-block: calc((1lh - var(--nol-icon)) / 2);
+}
+
+:host(.nol-link-reference-chip-inline) .nol-link-reference-chip-text {
+  overflow: visible;
+  text-overflow: clip;
+}
+
 @media (forced-colors: active) {
   :host {
     color: LinkText;
