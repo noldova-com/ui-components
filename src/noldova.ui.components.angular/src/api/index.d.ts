@@ -12001,6 +12001,98 @@ export declare class ShellRunOutputDirective {
 }
 
 /**
+ * A call to action of a {@link SiteHeroComponent}: a button link with its
+ * label and an optional Material Symbols icon after it.
+ */
+export declare class SiteAction {
+  /**
+   * The text the button shows.
+   */
+  public readonly label: string;
+
+  /**
+   * Where the button leads.
+   */
+  public readonly href: string;
+
+  /**
+   * The Material Symbols name of the icon drawn after the label, such as
+   * `download`; null for none.
+   */
+  public readonly icon: string | null;
+
+  /**
+   * The button's look: `ButtonVariant.Primary` for the main action,
+   * `ButtonVariant.Secondary` for the others.
+   */
+  public readonly variant: ButtonVariant;
+
+  /**
+   * Creates the action.
+   *
+   * @param label The text it shows.
+   * @param href Where it leads.
+   * @param icon The icon after the label; none when left out.
+   * @param variant The button's look; `ButtonVariant.Primary` when left out.
+   */
+  public constructor(label: string, href: string, icon?: string | null, variant?: ButtonVariant);
+}
+
+/**
+ * A card of a {@link SiteCardGridComponent}, `nol-site-card`, an `article`:
+ * an optional row with a Material Symbols icon in the accent color and an
+ * index such as `01` in the monospace font, a title, a muted paragraph and
+ * any content projected after it, such as a small picture of the feature.
+ * It draws on the panel color with a border and the site parts' radius.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { SiteCardComponent, SiteCardGridComponent } from "@noldova/ui.components.angular/site";
+ *
+ * @Component({
+ *   selector: "nol-features",
+ *   imports: [SiteCardComponent, SiteCardGridComponent],
+ *   template: "<nol-site-card-grid><nol-site-card icon=\"forum\" index=\"01\" title=\"One chat, every agent.\" text=\"Each agent reads the same chat.\" /></nol-site-card-grid>"
+ * })
+ * export class FeaturesComponent {}
+ * ```
+ */
+export declare class SiteCardComponent {
+  /**
+   * The Material Symbols name of the icon at the card's top left; null, the
+   * default, for none.
+   */
+  public readonly icon: InputSignal<string | null>;
+
+  /**
+   * The short mark at the card's top right, such as `01`; null, the default,
+   * for none. With neither an icon nor an index, the card starts with its
+   * title.
+   */
+  public readonly index: InputSignal<string | null>;
+
+  /**
+   * The card's title, a level-3 heading; a line break in it starts a new line.
+   */
+  public readonly title: InputSignal<string>;
+
+  /**
+   * The paragraph under the title, in the muted color; null, the default, for
+   * none.
+   */
+  public readonly text: InputSignal<string | null>;
+}
+
+/**
+ * A grid of {@link SiteCardComponent}s, `nol-site-card-grid`: as many
+ * columns of at least 18rem as fit share each row, one column when the grid
+ * is narrower.
+ */
+export declare class SiteCardGridComponent {
+}
+
+/**
  * A website's footer, `nol-site-footer`, the page's `contentinfo` landmark: the
  * Noldova wordmark, with a product's name after it, linking home, an optional
  * line under it, a column of links for each {@link SiteLinkGroup}, the
@@ -12220,6 +12312,80 @@ export declare class SiteHeaderComponent {
 }
 
 /**
+ * A website's hero, `nol-site-hero`, the top of its home page: an optional
+ * line in the monospace font and the accent color, the page's level-1
+ * headline, its second line in the accent color, the side text beside it,
+ * the calls to action under them and, under all of them, an optional shot of
+ * the product, framed, in the theme the page shows. The side text is the
+ * content projected into it, with an optional closing line under it in the
+ * text color. It keeps to the site's content width. Below 68.75em the side
+ * text narrows and below 47.5em it goes under the headline, without its
+ * closing line; below 26.25em the actions stand one under another. It needs
+ * the site parts' styles, `styles/site.css`.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { SiteAction, SiteHeroComponent } from "@noldova/ui.components.angular/site";
+ *
+ * @Component({
+ *   selector: "nol-home-hero",
+ *   imports: [SiteHeroComponent],
+ *   template: "<nol-site-hero eyebrow=\"Your agents. One team.\" title=\"Your AI agents,\" accent=\"working as one team.\" [actions]=\"actions\">Put your agents in the same chat.</nol-site-hero>"
+ * })
+ * export class HomeHeroComponent {
+ *   protected readonly actions: readonly SiteAction[] = [new SiteAction("Download", "/download/", "download")];
+ * }
+ * ```
+ */
+export declare class SiteHeroComponent {
+  /**
+   * The line above the headline, drawn in capitals; null, the default, for
+   * none.
+   */
+  public readonly eyebrow: InputSignal<string | null>;
+
+  /**
+   * The headline's first line.
+   */
+  public readonly title: InputSignal<string>;
+
+  /**
+   * The headline's second line, in the accent color; null, the default, for
+   * none.
+   */
+  public readonly accent: InputSignal<string | null>;
+
+  /**
+   * The words under the side text, in the text color, where each line break
+   * starts a new line; null, the default, for none. A phone leaves them out.
+   */
+  public readonly closing: InputSignal<string | null>;
+
+  /**
+   * The headline's id, which names the hero's region;
+   * `nol-site-hero-title` when not bound.
+   */
+  public readonly titleId: InputSignal<string>;
+
+  /**
+   * The calls to action under the headline, in order; none by default.
+   */
+  public readonly actions: InputSignal<readonly SiteAction[]>;
+
+  /**
+   * The shot of the product under the hero; null, the default, for none.
+   */
+  public readonly shot: InputSignal<SiteShot | null>;
+
+  /**
+   * The shot's id, so that a link such as `/#product` leads to it; null, the
+   * default, for none.
+   */
+  public readonly shotId: InputSignal<string | null>;
+}
+
+/**
  * A link of a {@link SiteHeaderComponent} or of a {@link SiteLinkGroup}.
  */
 export declare class SiteLink {
@@ -12296,6 +12462,115 @@ export declare class SiteSearchDirective {
    * Moves the focus to the marked field.
    */
   public focus(): void;
+}
+
+/**
+ * A section of a website's page, `nol-site-section`: an optional line in the
+ * monospace font and the accent color over its level-2 title, with an
+ * optional muted line beside the title, at its foot, and the section's
+ * content projected under them. It keeps to the site's content width, with
+ * the site parts' space above and below. Below 47.5em the copy goes under
+ * the title and its lines run together. It needs the site parts' styles,
+ * `styles/site.css`.
+ *
+ * @example
+ * ```ts
+ * import { Component } from "@angular/core";
+ * import { SiteSectionComponent } from "@noldova/ui.components.angular/site";
+ *
+ * @Component({
+ *   selector: "nol-workflow",
+ *   imports: [SiteSectionComponent],
+ *   template: "<nol-site-section eyebrow=\"One team. Your rules.\" title=\"Agents that work together.\" headingId=\"workflow-title\">...</nol-site-section>"
+ * })
+ * export class WorkflowComponent {}
+ * ```
+ */
+export declare class SiteSectionComponent {
+  /**
+   * The line above the title, drawn in capitals; null, the default, for
+   * none.
+   */
+  public readonly eyebrow: InputSignal<string | null>;
+
+  /**
+   * The section's title; a line break in it starts a new line.
+   */
+  public readonly title: InputSignal<string>;
+
+  /**
+   * The muted line beside the title; null, the default, for none. Each line
+   * break in it starts a new line beside the title, and becomes a space
+   * below 47.5em.
+   */
+  public readonly copy: InputSignal<string | null>;
+
+  /**
+   * The title's id, which names the section's region.
+   */
+  public readonly headingId: InputSignal<string>;
+
+  /**
+   * The section's id, so that a link can lead to it; null, the default, for
+   * none.
+   */
+  public readonly sectionId: InputSignal<string | null>;
+}
+
+/**
+ * The shot of a product a {@link SiteHeroComponent} shows: a file for each
+ * theme, each with an optional one at twice the size for sharper screens,
+ * the files' size and their text alternative.
+ */
+export declare class SiteShot {
+  /**
+   * The light theme's file.
+   */
+  public readonly light: string;
+
+  /**
+   * The light theme's file at twice the size; null for none.
+   */
+  public readonly lightLarge: string | null;
+
+  /**
+   * The dark theme's file.
+   */
+  public readonly dark: string;
+
+  /**
+   * The dark theme's file at twice the size; null for none.
+   */
+  public readonly darkLarge: string | null;
+
+  /**
+   * The files' width in pixels, which, with their height, reserves the
+   * shot's room before it loads.
+   */
+  public readonly width: number;
+
+  /**
+   * The files' height in pixels.
+   */
+  public readonly height: number;
+
+  /**
+   * What the shot shows, for those who can't see it.
+   */
+  public readonly alt: string;
+
+  /**
+   * Creates the shot.
+   *
+   * @param light The light theme's file.
+   * @param dark The dark theme's file.
+   * @param width The files' width in pixels.
+   * @param height The files' height in pixels.
+   * @param alt What the shot shows.
+   * @param lightLarge The light file at twice the size; none when left out.
+   * @param darkLarge The dark file at twice the size; none when left out.
+   */
+  public constructor(light: string, dark: string, width: number, height: number, alt: string, lightLarge?: string | null, darkLarge?: string | null);
 }
 
 /**

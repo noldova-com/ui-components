@@ -1,0 +1,169 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+}
+
+.nol-site-hero-intro {
+  padding-block: 4.3125rem 2.8125rem;
+}
+
+.nol-site-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 18.75rem);
+  gap: 3rem;
+  align-items: end;
+  margin-top: 1.5625rem;
+}
+
+.nol-site-hero-title {
+  margin: 0;
+  color: var(--nol-setting-title);
+  font-size: var(--nol-site-hero-title-size);
+  font-weight: var(--nol-weight-emphasis);
+  line-height: var(--nol-site-hero-title-line);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.nol-site-hero-accent {
+  display: block;
+  color: var(--nol-accent);
+}
+
+.nol-site-hero-copy {
+  margin-bottom: 0.3125rem;
+  color: var(--nol-text-muted);
+  font-size: var(--nol-site-text);
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* The side text's closing words stand under it in the text color, each line on its own. */
+.nol-site-hero-closing {
+  display: block;
+  margin-top: 0.9375rem;
+  color: var(--nol-text);
+  font-weight: 400;
+  white-space: pre-line;
+}
+
+.nol-site-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nol-space-4);
+  margin-top: 1.9375rem;
+}
+
+.nol-site-hero-action {
+  --nol-button-height: 2.5rem;
+  --nol-button-padding-inline: 1.25rem;
+
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.nol-site-hero-action-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nol-space-2);
+  white-space: normal;
+  text-align: center;
+}
+
+.nol-site-hero-action-icon {
+  width: 1em;
+  height: 1em;
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.nol-site-hero-shot-frame {
+  display: block;
+  overflow: hidden;
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-site-radius);
+  background: var(--nol-site-surface);
+}
+
+.nol-site-hero-shot-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Each theme shows its own shot: the system's mode, unless the page sets one. */
+.nol-site-hero-shot-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nol-site-hero-shot-light {
+    display: none;
+  }
+
+  .nol-site-hero-shot-dark {
+    display: block;
+  }
+}
+
+:host-context([data-nol-theme-mode="Light"]) .nol-site-hero-shot-light,
+:host-context([data-nol-theme-mode="Dark"]) .nol-site-hero-shot-dark {
+  display: block;
+}
+
+:host-context([data-nol-theme-mode="Light"]) .nol-site-hero-shot-dark,
+:host-context([data-nol-theme-mode="Dark"]) .nol-site-hero-shot-light {
+  display: none;
+}
+
+@media (max-width: 68.75em) {
+  .nol-site-hero-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 15.3125rem);
+    gap: 1.5625rem;
+  }
+
+  .nol-site-hero-copy {
+    font-size: var(--nol-site-text-small);
+  }
+}
+
+@media (max-width: 47.5em) {
+  .nol-site-hero-intro {
+    padding-block: 2.6875rem 1.9375rem;
+  }
+
+  .nol-site-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 1.4375rem;
+    margin-top: 1.3125rem;
+  }
+
+  .nol-site-hero-copy {
+    max-width: 25.625rem;
+    font-size: var(--nol-site-text);
+  }
+
+  .nol-site-hero-closing {
+    display: none;
+  }
+
+  .nol-site-hero-actions {
+    gap: var(--nol-space-3);
+    margin-top: var(--nol-space-6);
+  }
+}
+
+@media (max-width: 26.25em) {
+  .nol-site-hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

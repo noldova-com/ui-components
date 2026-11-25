@@ -39,8 +39,8 @@ export class KitBundleCheck implements ICheck {
   private static readonly KIT_FILES: string = "/@noldova/ui.components.angular/";
   private static readonly SITE_BUNDLE: string = "bundle-site";
   private static readonly KIT_COMPONENTS: string = "/@noldova/ui.components.angular/app/components/";
-  private static readonly SITE_COMPONENTS: readonly string[] = ["button", "choice-pills", "icon-button", "progress", "site-footer", "site-header", "site-lockup", "site-theme-switch", "spinner",
-    "tooltip"];
+  private static readonly SITE_COMPONENTS: readonly string[] = ["button", "choice-pills", "icon-button", "progress", "site-card", "site-footer", "site-header", "site-hero", "site-lockup",
+    "site-section", "site-theme-switch", "spinner", "tooltip"];
   private static readonly CODE_BLOCK: string = "/@noldova/ui.components.angular/app/components/code-block/";
   private static readonly SHARED_STRINGS: string = "/@noldova/ui.components.angular/resources.js";
   private static readonly ICON_LIST: string = "/@noldova/ui.components.angular/app/models/icon-names.js";

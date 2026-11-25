@@ -1,0 +1,74 @@
+/**
+ * @license
+ * Copyright (c) Noldova.
+ *
+ * This source code is licensed under the license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+:host {
+  display: block;
+}
+
+.nol-site-section-block {
+  padding-block: var(--nol-site-section-space);
+}
+
+.nol-site-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.875rem;
+  margin-bottom: 2.625rem;
+}
+
+.nol-site-section-titles {
+  min-width: 0;
+}
+
+.nol-site-section-eyebrow {
+  margin-bottom: 1em;
+}
+
+.nol-site-section-title {
+  margin: 0;
+  color: var(--nol-setting-title);
+  font-size: var(--nol-site-title-size);
+  font-weight: var(--nol-weight-emphasis);
+  letter-spacing: var(--nol-site-title-tracking);
+  line-height: var(--nol-site-title-line);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.nol-site-section-copy {
+  margin: 0 0 0.25rem;
+  color: var(--nol-text-muted);
+  font-size: var(--nol-site-text);
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.nol-site-section-copy-line {
+  display: block;
+}
+
+@media (max-width: 47.5em) {
+  .nol-site-section-heading {
+    display: block;
+    margin-bottom: 1.8125rem;
+  }
+
+  .nol-site-section-copy {
+    margin-top: 1.4375rem;
+  }
+
+  .nol-site-section-copy-line {
+    display: inline;
+  }
+
+  .nol-site-section-copy-line + .nol-site-section-copy-line::before {
+    content: " ";
+  }
+}

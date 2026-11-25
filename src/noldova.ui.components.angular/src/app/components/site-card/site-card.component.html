@@ -1,0 +1,23 @@
+<!--
+@license
+Copyright (c) Noldova.
+
+This source code is licensed under the license found in the
+LICENSE file in the root directory of this source tree.
+-->
+
+@if (hasHead()) {
+  <div class="nol-site-card-head">
+    @if (icon(); as glyph) {
+      <span class="material-symbols-rounded nol-site-card-icon" aria-hidden="true">{{ glyph }}</span>
+    }
+    @if (index(); as indexText) {
+      <span class="nol-site-card-index">{{ indexText }}</span>
+    }
+  </div>
+}
+<h3 class="nol-site-card-title">{{ title() }}</h3>
+@if (text(); as bodyText) {
+  <p class="nol-site-card-text">{{ bodyText }}</p>
+}
+<ng-content />
