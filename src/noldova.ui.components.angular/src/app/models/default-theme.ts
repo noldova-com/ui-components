@@ -429,6 +429,7 @@ export class DefaultTheme {
       ["site-padding-inline", "1.5rem"],
       ["site-padding-inline-phone", "1rem"],
       ["site-wordmark", "0.8125rem"],
+      ["site-icon", "1.75rem"],
       ["site-search-width", "16rem"],
       ["site-footer-padding-block", "3rem"],
       ["site-footer-padding-block-phone", "2rem"],

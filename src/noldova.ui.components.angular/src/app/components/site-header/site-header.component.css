@@ -342,3 +342,20 @@ nol-site-theme-switch {
     font-size: var(--nol-site-menu-download-text);
   }
 }
+
+@container (width < 30rem) {
+  .nol-site-download {
+    display: none;
+    grid-area: action;
+  }
+
+  :host(.nol-site-header-open) .nol-site-download {
+    --nol-icon: var(--nol-site-download-glyph-phone);
+
+    display: inline-flex;
+    justify-self: stretch;
+    margin-block-start: var(--nol-space-3);
+    margin-inline-start: 0;
+    font-size: var(--nol-site-menu-download-text);
+  }
+}

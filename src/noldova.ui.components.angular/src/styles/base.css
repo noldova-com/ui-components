@@ -46,7 +46,7 @@
   --nol-removed-background: color-mix(in srgb, var(--nol-removed) 10%, transparent);
   --nol-added-change: light-dark(color-mix(in srgb, var(--nol-added) 22%, var(--nol-code)), color-mix(in srgb, var(--nol-added) 30%, var(--nol-code)));
   --nol-removed-change: light-dark(color-mix(in srgb, var(--nol-removed) 22%, var(--nol-code)), color-mix(in srgb, var(--nol-removed) 30%, var(--nol-code)));
-  --nol-brand-mark: light-dark(#000000, #FFFFFF);
+  --nol-brand-mark: light-dark(black, white);
   --nol-button-danger-hover: color-mix(in srgb, var(--nol-error) 90%, var(--nol-button-danger-text));
 }
 

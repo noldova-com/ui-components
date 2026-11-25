@@ -15,7 +15,9 @@ import { SiteLockupResources } from "./site-lockup.resources.js";
   templateUrl: "./site-lockup.component.html",
   styleUrl: "./site-lockup.component.css",
   host: {
-    "class": "nol-site-lockup"
+    "class": "nol-site-lockup",
+    "[class.nol-site-lockup-with-icon]": "hasIcon()",
+    "[style.--nol-site-lockup-ratio]": "wordmarkRatio()"
   }
 })
 export class SiteLockupComponent {
@@ -23,6 +25,8 @@ export class SiteLockupComponent {
   public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly href = input<string>(SiteLockupResources.homeHref);
+  public readonly icon = input<string | null>(null);
+  public readonly iconDark = input<string | null>(null);
 
   protected readonly mask: Signal<string> = computed(() => SiteLockupResources.formatMask(this.wordmark()));
   protected readonly shownName: Signal<string | null> = computed(() => {
@@ -30,5 +34,11 @@ export class SiteLockupComponent {
     return String.isNullOrWhitespace(name) ? null : name;
   });
   protected readonly reservedRatio: Signal<string> = computed(() => SiteLockupResources.formatRatio(this.wordmarkRatio()));
+  protected readonly hasIcon: Signal<boolean> = computed(() => !String.isNullOrWhitespace(this.icon()));
+  protected readonly darkIcon: Signal<string | null> = computed(() => {
+    const dark = this.iconDark();
+    return this.hasIcon() && !String.isNullOrWhitespace(dark) ? dark : null;
+  });
+  protected readonly hasDarkIcon: Signal<boolean> = computed(() => !Object.isNull(this.darkIcon()));
   protected readonly accessibleName: Signal<string> = computed(() => SiteLockupResources.formatName(this.name()));
 }
