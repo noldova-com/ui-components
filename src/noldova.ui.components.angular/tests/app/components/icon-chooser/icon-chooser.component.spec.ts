@@ -12,6 +12,7 @@ import { FormField, disabled, form } from "@angular/forms/signals";
 import { userEvent } from "vitest/browser";
 
 import { IconChooserComponent } from "../../../../src/app/components/icon-chooser/icon-chooser.component";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { IconNames } from "../../../../src/app/models/icon-names";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -26,14 +27,14 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
   `
 })
 class IconChooserHostComponent {
-  public readonly names = signal<readonly string[]>(["folder", "folder_open", "home", "zoom_in", "zoom_out", "zoom_out_map"]);
+  public readonly names = signal<readonly IconName[]>(["folder", "folder_open", "home", "zoom_in", "zoom_out", "zoom_out_map"]);
   public readonly allowNone = signal(true);
   public readonly disabled = signal(false);
-  public readonly value = signal<string | null>("home");
+  public readonly value = signal<IconName | null>("home");
 }
 
 interface IIconSettings {
-  readonly icon: string | null;
+  readonly icon: IconName | null;
   readonly locked: boolean;
 }
 
@@ -42,7 +43,7 @@ interface IIconSettings {
   template: `<nol-icon-chooser label="Folder icon" [names]="names" [formField]="settings.icon" /><button type="button" class="after">After</button>`
 })
 class IconChooserFormHostComponent {
-  public readonly names: readonly string[] = ["folder", "home", "zoom_in"];
+  public readonly names: readonly IconName[] = ["folder", "home", "zoom_in"];
   public readonly model = signal<IIconSettings>({ icon: "home", locked: false });
   public readonly settings = form(this.model, path => disabled(path.icon, ({ valueOf }) => valueOf(path.locked)));
 }
@@ -217,7 +218,7 @@ describe("IconChooserComponent", () => {
     AppearanceFixture.apply(AppearanceFixture.themes[0], AppearanceFixture.modes[0]);
     fixture = TestBed.createComponent(IconChooserHostComponent);
     host = fixture.componentInstance;
-    const last = IconNames.all.at(-1) ?? "";
+    const last = DomFixture.at(IconNames.all, IconNames.all.length - 1);
     host.names.set(IconNames.all);
     host.value.set(last);
     await settleAsync();
@@ -232,7 +233,7 @@ describe("IconChooserComponent", () => {
     AppearanceFixture.apply(AppearanceFixture.themes[0], AppearanceFixture.modes[0]);
     fixture = TestBed.createComponent(IconChooserHostComponent);
     host = fixture.componentInstance;
-    const last = IconNames.all.at(-1) ?? "";
+    const last = DomFixture.at(IconNames.all, IconNames.all.length - 1);
     host.names.set(IconNames.all);
     host.value.set(last);
     root().style.display = "none";

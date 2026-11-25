@@ -14,6 +14,7 @@ import { TabComponent } from "../../../../src/app/components/tab/tab.component";
 import { TabTone } from "../../../../src/app/enums/tab-tone";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { TabMarker } from "../../../../src/app/models/tab-marker";
 import { TabStatus } from "../../../../src/app/models/tab-status";
 import { TabResources } from "../../../../src/app/components/tab/tab.resources";
@@ -39,14 +40,14 @@ const broken = "data:image/png;base64,AAAA";
 })
 class TabHostComponent {
   public readonly label = signal("Plans and pricing");
-  public readonly icon = signal<string | undefined>(undefined);
+  public readonly icon = signal<IconName | undefined>(undefined);
   public readonly selected = signal(false);
   public readonly working = signal(false);
   public readonly waiting = signal(false);
   public readonly closable = signal(true);
   public readonly badge = signal<string | null>(null);
   public readonly image = signal<string | null>(null);
-  public readonly imageGlyph = signal<string | null>(null);
+  public readonly imageGlyph = signal<IconName | null>(null);
   public readonly status = signal<TabStatus | null>(null);
   public readonly leadingSpinner = signal(false);
   public readonly marker = signal<TabMarker | null>(null);

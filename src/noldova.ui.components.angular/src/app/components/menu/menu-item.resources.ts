@@ -6,9 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class MenuItemResources {
-  public static readonly submenuGlyph: string = "chevron_right";
-  public static readonly checkedGlyph: string = "check";
+  public static readonly submenuGlyph: IconName = "chevron_right";
+  public static readonly checkedGlyph: IconName = "check";
   public static readonly menuSelector: string = "nol-menu";
   public static readonly menuItemRole: string = "menuitem";
   public static readonly menuItemRadioRole: string = "menuitemradio";

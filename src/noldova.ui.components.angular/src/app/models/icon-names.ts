@@ -6,8 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "./icon-name.js";
+
 export class IconNames {
-  public static readonly all: readonly string[] = [
+  public static readonly all: readonly IconName[] = [
     "123", "360", "10k", "10mp", "11mp", "12mp", "13mp", "14mp", "15mp", "16mp", "17mp", "18_up_rating", "18mp", "19mp", "1k", "1k_plus", "1x_mobiledata",
     "1x_mobiledata_badge", "20mp", "21mp", "22mp", "23mp", "24fps_select", "24mp", "2d", "2d_2", "2k", "2k_plus", "2mp", "30fps", "30fps_select", "3d", "3d_2",
     "3d_rotation", "3g_mobiledata", "3g_mobiledata_badge", "3k", "3k_plus", "3mp", "3p", "4g_mobiledata", "4g_mobiledata_badge", "4g_plus_mobiledata", "4k",

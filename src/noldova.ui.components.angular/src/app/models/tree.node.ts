@@ -6,14 +6,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "./icon-name.js";
+
 export class TreeNode {
   public readonly id: string;
   public readonly label: string;
-  public readonly icon: string | null;
+  public readonly icon: IconName | null;
   public readonly children: readonly TreeNode[];
   public readonly startsOpen: boolean;
 
-  public constructor(id: string, label: string, icon: string | null = null, children: readonly TreeNode[] = [], startsOpen: boolean = false) {
+  public constructor(id: string, label: string, icon: IconName | null = null, children: readonly TreeNode[] = [], startsOpen: boolean = false) {
     this.id = id;
     this.label = label;
     this.icon = icon;
@@ -21,7 +23,7 @@ export class TreeNode {
     this.startsOpen = startsOpen;
   }
 
-  public static open(id: string, label: string, icon: string | null, children: readonly TreeNode[]): TreeNode {
+  public static open(id: string, label: string, icon: IconName | null, children: readonly TreeNode[]): TreeNode {
     return new TreeNode(id, label, icon, children, true);
   }
 

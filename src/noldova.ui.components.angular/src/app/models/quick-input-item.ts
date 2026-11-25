@@ -9,19 +9,20 @@
 import "@noldova/context.core";
 import { ArgumentException } from "@noldova/context.exceptions";
 
+import type { IconName } from "./icon-name.js";
 import { TitleSegment } from "./title-segment.js";
 
 export class QuickInputItem {
   public readonly id: string;
   public readonly title: string;
-  public readonly icon: string | null;
+  public readonly icon: IconName | null;
   public readonly detail: string | null;
   public readonly keyLabel: string | null;
   public readonly matches: readonly number[];
   public readonly detailMatches: readonly number[];
   public readonly section: string | null;
 
-  public constructor(id: string, title: string, icon: string | null, detail: string | null, keyLabel: string | null, matches: readonly number[] = [],
+  public constructor(id: string, title: string, icon: IconName | null, detail: string | null, keyLabel: string | null, matches: readonly number[] = [],
     detailMatches: readonly number[] = [], section: string | null = null) {
     ArgumentException.throwIfNullOrWhitespace(id, "id");
     ArgumentException.throwIfNullOrWhitespace(title, "title");

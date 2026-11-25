@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { ColorSwatch } from "../../enums/color-swatch.js";
 import { ThemeMode } from "../../enums/theme-mode.js";
 
@@ -14,8 +15,8 @@ export class ColorChooserResources {
   public static readonly colorChooserNoneLabel: string = "None";
   public static readonly colorChooserCustomLabel: string = "Custom color";
   public static readonly colorChooserPickerLabel: string = "Custom color";
-  public static readonly colorChooserCustomGlyph: string = "palette";
-  public static readonly colorChooserNoneGlyph: string = "block";
+  public static readonly colorChooserCustomGlyph: IconName = "palette";
+  public static readonly colorChooserNoneGlyph: IconName = "block";
   public static readonly colorChooserIdPrefix: string = "nol-color-chooser-";
   public static readonly colorChooserWarningSuffix: string = "-warning";
   public static readonly colorChooserPickerSuffix: string = "-picker";

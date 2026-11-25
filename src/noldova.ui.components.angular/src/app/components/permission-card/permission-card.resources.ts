@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { PermissionEffect } from "../../enums/permission-effect.js";
 import { PermissionRisk } from "../../enums/permission-risk.js";
 import { PermissionScope } from "../../enums/permission-scope.js";
@@ -21,8 +22,8 @@ export class PermissionCardResources {
     [PermissionRisk.Medium]: "Medium risk",
     [PermissionRisk.High]: "High risk"
   };
-  public static readonly permissionGlyph: string = "gavel";
-  public static readonly permissionRiskGlyphs: Readonly<Record<PermissionRisk, string>> = {
+  public static readonly permissionGlyph: IconName = "gavel";
+  public static readonly permissionRiskGlyphs: Readonly<Record<PermissionRisk, IconName>> = {
     [PermissionRisk.Low]: "info",
     [PermissionRisk.Medium]: "warning",
     [PermissionRisk.High]: "report"
@@ -36,17 +37,17 @@ export class PermissionCardResources {
     [PermissionEffect.Allow]: { [PermissionScope.Once]: "Allowed once", [PermissionScope.Always]: "Always allowed" },
     [PermissionEffect.Deny]: { [PermissionScope.Once]: "Denied", [PermissionScope.Always]: "Always denied" }
   };
-  public static readonly permissionDecidedGlyphs: Readonly<Record<PermissionEffect, string>> = {
+  public static readonly permissionDecidedGlyphs: Readonly<Record<PermissionEffect, IconName>> = {
     [PermissionEffect.Allow]: "check_circle",
     [PermissionEffect.Deny]: "block"
   };
   public static readonly permissionExpiredLabel: string = "Expired";
-  public static readonly permissionExpiredGlyph: string = "timer_off";
+  public static readonly permissionExpiredGlyph: IconName = "timer_off";
   public static readonly permissionWithdrawnLabel: string = "Withdrawn";
-  public static readonly permissionWithdrawnGlyph: string = "undo";
+  public static readonly permissionWithdrawnGlyph: IconName = "undo";
   public static readonly permissionSending: string = "Sending your answer";
   public static readonly permissionSendFailed: string = "Your answer couldn't be sent.";
-  public static readonly permissionSendFailedGlyph: string = "error";
+  public static readonly permissionSendFailedGlyph: IconName = "error";
   public static readonly permissionOptionsLabel: string = "Answer";
   public static readonly permissionConfirmToolbarLabels: Readonly<Record<PermissionScope, string>> = {
     [PermissionScope.Once]: "Confirm allow once",

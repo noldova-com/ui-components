@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { DockingDirection } from "../../enums/docking-direction.js";
 
 export class DockingGuideResources {
-  public static readonly dockingGlyphs: Readonly<Record<DockingDirection, string>> = {
+  public static readonly dockingGlyphs: Readonly<Record<DockingDirection, IconName>> = {
     [DockingDirection.Center]: "tab",
     [DockingDirection.Left]: "arrow_back",
     [DockingDirection.Right]: "arrow_forward",

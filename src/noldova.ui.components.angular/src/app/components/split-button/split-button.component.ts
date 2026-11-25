@@ -9,6 +9,7 @@
 import { Component, ElementRef, type TemplateRef, inject, input, output } from "@angular/core";
 
 import { OverlayAlignment } from "../../enums/overlay-alignment.js";
+import type { IconName } from "../../models/icon-name.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
 import { BusyGuard } from "../../services/busy-guard.js";
@@ -32,7 +33,7 @@ export class SplitButtonComponent {
   protected readonly domResources: typeof DomResources = DomResources;
   protected readonly partResources: typeof SplitButtonResources = SplitButtonResources;
 
-  public readonly icon = input.required<string>();
+  public readonly icon = input.required<IconName>();
   public readonly label = input.required<string>();
   public readonly tooltip = input<string | null>(null);
   public readonly menuLabel = input.required<string>();

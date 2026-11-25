@@ -19,6 +19,7 @@ import "@noldova/context.core";
 import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { ChipKind } from "../../enums/chip-kind.js";
+import type { IconName } from "../../models/icon-name.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { ElementDirectionality } from "../../services/element-directionality.js";
 import { ChipComponent } from "../chip/chip.component.js";
@@ -51,7 +52,7 @@ export class MenuItemComponent {
   protected readonly keyTooltipText: Signal<string> = computed(() => Resources.formatJoinedTooltip(this.label(), this.description()));
 
   public readonly label = input.required<string>();
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly checked = input<boolean | null>(null);
   public readonly checkbox = input<boolean>(false);
   public readonly shortcut = input<string | null>(null);
