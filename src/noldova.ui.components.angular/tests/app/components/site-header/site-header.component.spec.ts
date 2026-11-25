@@ -436,7 +436,7 @@ describe("SiteHeaderComponent", () => {
         await renderAsync(() => undefined, theme, mode);
         for (const link of all(".nol-site-social"))
           for (const state of [null, "Hover", "Focus"]) {
-            if (state === null)
+            if (Object.isNull(state))
               link.removeAttribute("data-nol-state");
             else
               link.setAttribute("data-nol-state", state);

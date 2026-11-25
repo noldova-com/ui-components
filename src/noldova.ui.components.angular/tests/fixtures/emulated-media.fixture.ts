@@ -11,7 +11,8 @@ import { cdp } from "vitest/browser";
 
 export class EmulatedMediaFixture {
   private static readonly PLAYWRIGHT_DEFAULTS: ReadonlyMap<string, string> = new Map([["prefers-reduced-motion", "no-preference"],
-    ["forced-colors", "none"], ["prefers-color-scheme", "light"], ["prefers-contrast", "no-preference"]]);
+    ["forced-colors", "none"], ["prefers-color-scheme", "light"], ["prefers-contrast", "no-preference"],
+    ["prefers-reduced-transparency", "no-preference"]]);
   private static readonly features: Map<string, string> = new Map(EmulatedMediaFixture.PLAYWRIGHT_DEFAULTS);
 
   public static emulateAsync(name: string, value: string): Promise<unknown> {

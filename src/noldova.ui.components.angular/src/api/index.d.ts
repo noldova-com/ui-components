@@ -7382,6 +7382,15 @@ export declare class LinkReferenceChipComponent {
   public readonly reference: InputSignal<LinkReference>;
 
   /**
+   * Whether the chip flows as text in its line, for a line cut with an
+   * ellipsis, such as a list row's: the line's "…" then cuts inside the chip's
+   * text as the line narrows, rather than hiding the chip's text. The chip
+   * looks the same while it fits, but isn't held to its own 27.5rem. False
+   * when not bound.
+   */
+  public readonly isInline: InputSignal<boolean>;
+
+  /**
    * Whether the chip's card is open.
    */
   public get isShown(): boolean;
@@ -12105,6 +12114,11 @@ export declare class SiteFooterComponent {
  * tap put it. Opening the menu moves the focus to its first link, and Tab
  * follows the parts in the order they are drawn at either width.
  *
+ * Once the page scrolls under it, the header turns translucent, its panel
+ * color 92% opaque over a blur of what is behind it, and opaque again back
+ * at the top. It stays opaque with its menu or search open, when the
+ * visitor asks for reduced transparency, and where the browser can't blur.
+ *
  * @example
  * ```ts
  * import { Component } from "@angular/core";
@@ -12224,6 +12238,12 @@ export declare class SiteHeaderComponent {
    * bar.
    */
   public readonly searchOpen: ModelSignal<boolean>;
+
+  /**
+   * Creates the header, which reads the page's scroll once it renders and on
+   * each scroll of the window after. Angular creates it from its selector.
+   */
+  public constructor();
 }
 
 /**

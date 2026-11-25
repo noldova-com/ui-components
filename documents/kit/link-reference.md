@@ -24,6 +24,13 @@ A work item's state is a round 0.4375rem dot, `reference-dot`, in the app's tone
 Merge requests, work items, commits and branches are chips of the same shape, with the kind, icon and state the app gives; a chip the app gives no card, `hasCard: false`, such as a branch or a server, shows none, and can't have the parts only a card shows.
 Every part the app gives is checked when the reference is made: an empty status, detail, footnote or work item label, or, in a browser, a tone or state color it doesn't accept as a color, throws a `LinkReferenceException`.
 
+## In-line variant
+
+`[isInline]="true"`, the class `nol-link-reference-chip-inline`, is a chip the app draws in a line cut with an ellipsis, such as a list row's or a commit subject's, where the default chip's text would be hidden once the line is too narrow for the chip.
+It flows as text in the line, so the line's "…" cuts inside the chip's text as the line narrows, and its mark and icon stay whole and centred on the line while they fit.
+While it fits, it looks as the default chip does: the same mark, icon and text, 0.25rem, `space-1`, between its parts, and the mark and icon centred on the line.
+It isn't held to 27.5rem; the line's width alone cuts it.
+
 ## Text role
 
 The chip takes the text it sits in.
