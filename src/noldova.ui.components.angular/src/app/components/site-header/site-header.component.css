@@ -334,7 +334,10 @@ nol-site-theme-switch {
     margin-inline-start: var(--nol-site-actions-gap-phone);
   }
 
+  /* The menu glyph is in the text color, as TeamRun's own menu button is, where the other icon buttons take the icon color. */
   .nol-site-menu-button {
+    --nol-icon-color: var(--nol-text);
+
     display: inline-grid;
     grid-area: menu;
     margin-inline-start: var(--nol-site-actions-gap-phone);
