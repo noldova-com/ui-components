@@ -38,7 +38,7 @@
 }
 
 .nol-site-hero-copy {
-  margin-bottom: 0.3125rem;
+  margin: 0 0 0.3125rem;
   color: var(--nol-text-muted);
   font-size: var(--nol-site-text);
   line-height: 1.75;

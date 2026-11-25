@@ -65,6 +65,8 @@ describe("SiteHeroComponent", () => {
 
   async function renderAsync(change: (host: SiteHeroHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
+    // A site marks the mode its visitor chose on the root, as its theme switch does.
+    document.documentElement.setAttribute("data-nol-theme-mode", mode);
     fixture = TestBed.createComponent(SiteHeroHostComponent);
     change(fixture.componentInstance);
     fixture.detectChanges();
@@ -79,6 +81,7 @@ describe("SiteHeroComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
+    document.documentElement.removeAttribute("data-nol-theme-mode");
     await page.viewport(viewport.width, viewport.height);
   });
 
@@ -96,9 +99,9 @@ describe("SiteHeroComponent", () => {
       ["Download TeamRundownload", "/download/", false], ["Get startedkeyboard_arrow_right", "/docs/", true]]);
     expect(DomFixture.all(hero(), ".nol-site-hero-action-icon").map(t => t.getAttribute("aria-hidden"))).toEqual(["true", "true"]);
     expect(part(".nol-site-hero-shot").id).toBe("product");
-    expect(images.map(t => [t.getAttribute("srcset"), t.alt, t.width, t.height, t.loading])).toEqual([
-      [`${pixel} 1438w, ${pixel}#light-2x 2876w`, "The product at work.", 1438, 1022, "lazy"],
-      [`${pixel}#dark 1438w, ${pixel}#dark-2x 2876w`, "The product at work.", 1438, 1022, "lazy"]]);
+    expect(images.map(t => [t.getAttribute("srcset"), t.alt, t.getAttribute("width"), t.getAttribute("height"), t.loading])).toEqual([
+      [`${pixel} 1438w, ${pixel}#light-2x 2876w`, "The product at work.", "1438", "1022", "lazy"],
+      [`${pixel}#dark 1438w, ${pixel}#dark-2x 2876w`, "The product at work.", "1438", "1022", "lazy"]]);
     expect(images.map(t => t.getAttribute("sizes"))).toEqual([
       "(max-width: 47.5em) calc(100vw - 2.5rem), min(75rem, calc(100vw - 5rem))", "(max-width: 47.5em) calc(100vw - 2.5rem), min(75rem, calc(100vw - 5rem))"]);
   });

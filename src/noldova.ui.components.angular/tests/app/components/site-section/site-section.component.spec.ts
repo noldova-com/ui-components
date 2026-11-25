@@ -112,7 +112,8 @@ describe("SiteSectionComponent", () => {
       AppearanceFixture.expectPixels(box(".nol-site-eyebrow").top - block.top, rem(4.375));
       AppearanceFixture.expectPixels(copy.top - box("h2").bottom, rem(1.4375));
       AppearanceFixture.expectPixels(copy.left, block.left);
-      expect(part(".nol-site-section-copy").innerText).toBe("From the first question to the final review, every step stays in front of you.");
+      const lines = DomFixture.all(section(), ".nol-site-section-copy-line");
+      expect(lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content])).toEqual([["inline", "none"], ["inline", '" "']]);
       AppearanceFixture.expectPixels(part(".body").getBoundingClientRect().top - (copy.bottom + rem(0.25)), rem(1.8125));
     });
   }
