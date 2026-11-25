@@ -58,15 +58,20 @@
   text-wrap: pretty;
 }
 
-@media (max-width: 68.75em) {
+/* A card takes the narrower spacing by the width of the section it is in, the page's width. */
+@container (width < 68.75rem) {
   :host {
+    --nol-site-card-title-size: 1.375rem;
+
     padding-inline: 1.25rem;
   }
 }
 
-@media (max-width: 47.5em) {
+@container (width < 47.5rem) {
   :host {
-    padding: min(1.5625rem, 6vw);
+    --nol-site-card-title-size: 1.6875rem;
+
+    padding: min(1.5625rem, 6cqi);
   }
 
   .nol-site-card-head {

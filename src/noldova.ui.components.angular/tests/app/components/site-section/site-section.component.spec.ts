@@ -114,7 +114,8 @@ describe("SiteSectionComponent", () => {
       AppearanceFixture.expectPixels(copy.left, block.left);
       const lines = DomFixture.all(section(), ".nol-site-section-copy-line");
       expect(lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content])).toEqual([["inline", "none"], ["inline", '" "']]);
-      AppearanceFixture.expectPixels(part(".body").getBoundingClientRect().top - (copy.bottom + rem(0.25)), rem(1.8125));
+      // The copy's own space under it falls within the heading's, as on a page.
+      AppearanceFixture.expectPixels(part(".body").getBoundingClientRect().top - copy.bottom, rem(1.8125));
     });
   }
 });

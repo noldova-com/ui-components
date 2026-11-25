@@ -8,6 +8,7 @@
 
 :host {
   display: block;
+  container-type: inline-size;
 }
 
 .nol-site-hero-intro {
@@ -124,7 +125,7 @@
   display: none;
 }
 
-@media (max-width: 68.75em) {
+@container (width < 68.75rem) {
   .nol-site-hero-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 15.3125rem);
     gap: 1.5625rem;
@@ -135,9 +136,18 @@
   }
 }
 
-@media (max-width: 47.5em) {
+@container (width < 47.5rem) {
+  .nol-site-hero-intro,
+  .nol-site-hero-shot {
+    --nol-site-shell-gutter: 1.25rem;
+  }
+
   .nol-site-hero-intro {
     padding-block: 2.6875rem 1.9375rem;
+  }
+
+  .nol-site-hero-title {
+    --nol-site-hero-title-size: clamp(2.4375rem, 9cqi, 3.75rem);
   }
 
   .nol-site-hero-grid {
@@ -161,7 +171,7 @@
   }
 }
 
-@media (max-width: 26.25em) {
+@container (width < 26.25rem) {
   .nol-site-hero-actions {
     flex-direction: column;
     align-items: flex-start;

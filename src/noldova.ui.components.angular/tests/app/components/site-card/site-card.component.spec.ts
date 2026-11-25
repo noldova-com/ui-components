@@ -12,19 +12,22 @@ import { page } from "vitest/browser";
 
 import { SiteCardGridComponent } from "../../../../src/app/components/site-card/site-card-grid.component";
 import { SiteCardComponent } from "../../../../src/app/components/site-card/site-card.component";
+import { SiteSectionComponent } from "../../../../src/app/components/site-section/site-section.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
 @Component({
-  imports: [SiteCardComponent, SiteCardGridComponent],
+  imports: [SiteCardComponent, SiteCardGridComponent, SiteSectionComponent],
   template: `
+    <nol-site-section title="Features" headingId="features">
     <nol-site-card-grid>
       <nol-site-card [icon]="icon()" [index]="index()" [title]="title" [text]="text()"><div class="picture">Picture</div></nol-site-card>
       <nol-site-card icon="group" index="02" title="The right teammate." text="Give an agent a role." />
       <nol-site-card icon="difference" index="03" title="See the changes." text="Approve what they do." />
     </nol-site-card-grid>
+    </nol-site-section>
   `
 })
 class SiteCardHostComponent {
@@ -122,7 +125,9 @@ describe("SiteCardComponent", () => {
 
       expect(boxes.every(t => Math.abs(t.width - outer.width) < 1 / 32)).toBe(true);
       AppearanceFixture.expectPixels(DomFixture.at(boxes, 1).top - card.bottom, rem(1.25));
-      AppearanceFixture.expectPixels(box(".nol-site-card-icon").left - card.left, Math.min(rem(1.5625), 375 * 0.06) + 1);
+      // The card's spacing follows the width of the section it is in.
+      const section = DomFixture.one(DomFixture.host(fixture), "nol-site-section").getBoundingClientRect();
+      AppearanceFixture.expectPixels(box(".nol-site-card-icon").left - card.left, Math.min(rem(1.5625), section.width * 0.06) + 1);
       AppearanceFixture.expectPixels(box("h3").top - box(".nol-site-card-head").bottom, rem(1.5));
       AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part("h3")).fontSize), rem(1.6875));
     });
