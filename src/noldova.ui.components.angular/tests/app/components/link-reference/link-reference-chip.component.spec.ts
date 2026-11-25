@@ -47,6 +47,7 @@ import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { ScreenshotFixture } from "../../../fixtures/screenshot.fixture";
 import { TestTimeSource } from "../../../fixtures/test-time-source";
 
 class TestReferences implements ILinkReferenceSource {
@@ -1367,12 +1368,23 @@ describe("LinkReferenceChipComponent in-line in a line cut with an ellipsis", ()
   const itemOf = (options: ILinkReferenceOptions = {}): LinkReference => new LinkReference("example/app#12", "Pull request", new LinkReferenceImage(square), {
     state: merged, title, mark: new LinkReferenceImage(square), ...options
   });
+  const drawn = 96;
   const pixels = (rem: number): number => AppearanceFixture.toPixels(rem);
   const line = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "p.line");
   const chip = (): HTMLElement => DomFixture.one(line(), "a.nol-link-reference-chip");
   const part = (name: string): HTMLElement => DomFixture.one(chip(), `.nol-link-reference-chip-${name}`);
   const centreOf = (box: DOMRect): DOMPoint => new DOMPoint(box.left + box.width / 2, box.top + box.height / 2);
-  const isHit = (point: DOMPoint, name: string): boolean => part(name).contains(document.elementFromPoint(point.x, point.y));
+  const inkIn = (shot: ImageData, origin: DOMRect, box: DOMRect): number => {
+    const ratio = devicePixelRatio;
+    const left = Math.floor(origin.left * ratio);
+    const top = Math.floor(origin.top * ratio);
+    let largest = 0;
+    for (let y = Math.ceil(box.top * ratio) - top; y < Math.floor(box.bottom * ratio) - top; y++)
+      for (let x = Math.ceil(box.left * ratio) - left; x < Math.floor(box.right * ratio) - left; x++)
+        for (let channel = 0; channel < 3; channel++)
+          largest = Math.max(largest, Math.abs((shot.data[(y * shot.width + x) * 4 + channel] ?? 0) - (shot.data[channel] ?? 0)));
+    return largest;
+  };
   const textRange = (): Range => {
     const range = document.createRange();
     range.selectNodeContents(part("text"));
@@ -1441,7 +1453,7 @@ describe("LinkReferenceChipComponent in-line in a line cut with an ellipsis", ()
   });
 
   for (const room of [2, 6, 12])
-    it(`is cut inside its text by the line's ellipsis when the line ends ${room}rem into its text, its mark and icon whole and centred on the line`, async () => {
+    it(`is cut inside its text by the line's ellipsis when the line ends ${room}rem into its text, its mark, icon and text start drawn, the mark and icon whole and centred on the line`, async () => {
       await renderAsync(itemOf());
       const start = textRange().getBoundingClientRect().left - line().getBoundingClientRect().left;
       await changeAsync(host => host.width.set(Math.round(start + pixels(room))));
@@ -1449,9 +1461,10 @@ describe("LinkReferenceChipComponent in-line in a line cut with an ellipsis", ()
       const mark = part("mark").getBoundingClientRect();
       const icon = part("icon").getBoundingClientRect();
       const text = textRange().getBoundingClientRect();
-      const inText = new DOMPoint(text.left + pixels(0.5), box.top + box.height / 2);
+      const shot = await ScreenshotFixture.pixelsAsync(line());
+      const inks = [mark, icon, new DOMRect(text.left, box.top, pixels(1), box.height)].map(t => inkIn(shot, box, t));
 
-      expect([isHit(centreOf(mark), "mark"), isHit(centreOf(icon), "icon"), isHit(inText, "text")]).toEqual([true, true, true]);
+      expect(inks.map(t => t > drawn)).toEqual([true, true, true]);
       expect([icon.right <= box.right, text.left < box.right, text.right > box.right]).toEqual([true, true, true]);
       AppearanceFixture.expectPixels(centreOf(icon).y, box.top + box.height / 2);
       AppearanceFixture.expectPixels(centreOf(mark).y, box.top + box.height / 2);
