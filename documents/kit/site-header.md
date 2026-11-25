@@ -12,6 +12,7 @@ A website's start imports the header from its own entry, `@noldova/ui.components
 From the start: the lockup, the links' text 2rem after it and 1.5rem apart, then at the end the search, 16rem wide (`--nol-site-search-width`), the social links 0.5rem apart, the theme switch and the Download button, the search, the switch and the button each 1rem from the part before.
 The lockup's wordmark is 0.8125rem high (`--nol-site-wordmark`) in the wordmark's proportions, its width reserved before the file loads from `wordmarkRatio`, the Noldova wordmark's by default and the file's own when a site passes its own, with the product's name 0.5rem after it and a version 0.375rem after that.
 A site that passes its product's `icon` gets it before the wordmark, drawn in its own colors, 1.75rem square (`--nol-site-icon`) and 0.75rem from the wordmark, its box held before the file loads; with an `iconDark` too, dark mode draws that one in its place. The icon is decorative, so the link's name stays the product's home. The lockup never narrows below its icon and its wordmark, so a tight bar takes the space from the product's name.
+A site that passes its product's own wordmark, such as TeamRun's or Commitline's, sets `wordmarkSize` to `SiteWordmarkSize.Large`: the wordmark is then 1.375rem high, 1.25rem in a header at most 47.5rem wide and 1.0625rem in one at most 22.5rem wide, as TeamRun's own header draws it.
 Each link is at least the pointer target high, with 0.5rem insets, and so is the version's link; each social link is an icon button target square with an icon-sized glyph.
 The Download button is the kit's [button](button.md) at its height with no edge, its label in panel text at the emphasis weight, and its icon 0.375rem from its start.
 
@@ -26,7 +27,7 @@ The version: small, in `text-muted`.
 
 The page's `banner` landmark, on the panel color, with no border or line; it stays at the top of the page as it scrolls.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is one link home named for the product's home, such as `TeamRun home`, or `Noldova home` without a product's name; the site passes the wordmark's file, which is drawn as a mask in the text color, so the package ships no wordmark.
+The lockup is one link home named for the product's home, such as `TeamRun home`, or `Noldova home` without a product's name, or by the site's `homeLabel`, such as `UI Components docs home`; a site whose wordmark or icon already shows the product's name passes no `name`, so it isn't drawn twice, and names the link with `homeLabel`; the site passes the wordmark's file, which is drawn as a mask in the text color, so the package ships no wordmark.
 The current page's link is marked `aria-current="page"`; a hovered link takes the toolbar hover fill and `text-strong`, and keyboard focus is an accent outline inside it.
 Each social link is named and tooltipped by its label, and the site passes its icon's file, drawn as a mask, so the package ships no third-party logo.
 With the content's id, a skip link to it comes first, shown at the header's start only while it has the focus.

@@ -320,6 +320,22 @@ export declare class SiteHeaderComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
+   * The lockup link's accessible name, such as `UI Components docs home`;
+   * null, the default, names it from `name`, as `TeamRun home`, or
+   * `Noldova home` without one. A site whose wordmark or icon already shows
+   * the product's name passes no `name`, so the name isn't drawn twice, and
+   * names the link here.
+   */
+  public readonly homeLabel: InputSignal<string | null>;
+
+  /**
+   * The wordmark's size: `SiteWordmarkSize.Small`, the default, for the
+   * Noldova wordmark, or `SiteWordmarkSize.Large` for a product's own
+   * wordmark, such as TeamRun's.
+   */
+  public readonly wordmarkSize: InputSignal<SiteWordmarkSize>;
+
+  /**
    * The product's icon, drawn in its own colors before the wordmark, 1.75rem square (`--nol-site-icon`) and 0.75rem from it; none when not bound. The image is decorative, so the link's name stays the product's home.
    */
   public readonly icon: InputSignal<string | null>;
@@ -686,4 +702,21 @@ export declare class SiteSocialLink {
    * @param icon The URL of its icon's file.
    */
   public constructor(label: string, href: string, icon: string);
+}
+
+/**
+ * The size of a {@link SiteHeaderComponent}'s wordmark.
+ */
+export declare enum SiteWordmarkSize {
+  /**
+   * The wordmark height, `--nol-site-wordmark`, 0.8125rem, for the Noldova
+   * wordmark beside a product's name; the default.
+   */
+  Small = "Small",
+
+  /**
+   * A product's own wordmark: 1.375rem high, 1.25rem in a header at most
+   * 47.5rem wide and 1.0625rem in one at most 22.5rem wide.
+   */
+  Large = "Large"
 }

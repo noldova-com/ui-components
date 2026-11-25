@@ -7,7 +7,8 @@
  */
 
 :host {
-  --nol-site-lockup-marks: calc(var(--nol-site-wordmark) * var(--nol-site-lockup-ratio));
+  --nol-site-lockup-wordmark: var(--nol-site-wordmark);
+  --nol-site-lockup-marks: calc(var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
 
   display: inline-flex;
   flex: 0 1 auto;
@@ -15,8 +16,26 @@
   max-width: 100%;
 }
 
+/* A product's own wordmark, such as TeamRun's, at its site's size: smaller in a header at most 47.5rem wide, and again
+ * at most 22.5rem wide, as TeamRun's own header steps it. */
+:host(.nol-site-lockup-large) {
+  --nol-site-lockup-wordmark: 1.375rem;
+}
+
+@container nol-site-header (width <= 47.5rem) {
+  :host(.nol-site-lockup-large) {
+    --nol-site-lockup-wordmark: 1.25rem;
+  }
+}
+
+@container nol-site-header (width <= 22.5rem) {
+  :host(.nol-site-lockup-large) {
+    --nol-site-lockup-wordmark: 1.0625rem;
+  }
+}
+
 :host(.nol-site-lockup-with-icon) {
-  --nol-site-lockup-marks: calc(var(--nol-site-icon) + var(--nol-space-3) + var(--nol-site-wordmark) * var(--nol-site-lockup-ratio));
+  --nol-site-lockup-marks: calc(var(--nol-site-icon) + var(--nol-space-3) + var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
 }
 
 .nol-site-lockup-link {
@@ -71,7 +90,7 @@
 
 .nol-site-wordmark {
   flex: none;
-  height: var(--nol-site-wordmark);
+  height: var(--nol-site-lockup-wordmark);
   background-color: currentColor;
   mask-position: center;
   mask-repeat: no-repeat;

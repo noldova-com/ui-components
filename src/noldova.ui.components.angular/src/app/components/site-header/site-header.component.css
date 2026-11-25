@@ -9,7 +9,7 @@
 :host {
   display: block;
   position: sticky;
-  container-type: inline-size;
+  container: nol-site-header / inline-size;
   top: 0;
   z-index: 1;
   background-color: var(--nol-panel);

@@ -138,6 +138,7 @@ export { PlanStepStatus } from "../app/enums/plan-step-status.js";
 export { PopoverOpening } from "../app/enums/popover-opening.js";
 export { SashOrientation } from "../app/enums/sash-orientation.js";
 export { ShellRunState } from "../app/enums/shell-run-state.js";
+export { SiteWordmarkSize } from "../app/enums/site-wordmark-size.js";
 export { TabTone } from "../app/enums/tab-tone.js";
 export { TerminalOutputStyle } from "../app/enums/terminal-output-style.js";
 export { ThemeMode } from "../app/enums/theme-mode.js";

@@ -9,6 +9,7 @@
 import { Component, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, viewChild }
   from "@angular/core";
 
+import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -43,6 +44,8 @@ export class SiteHeaderComponent {
   public readonly wordmarkRatio = input<number>(SiteLockupResources.wordmarkRatio);
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
+  public readonly homeLabel = input<string | null>(null);
+  public readonly wordmarkSize = input<SiteWordmarkSize>(SiteWordmarkSize.Small);
   public readonly icon = input<string | null>(null);
   public readonly iconDark = input<string | null>(null);
   public readonly version = input<string | null>(null);

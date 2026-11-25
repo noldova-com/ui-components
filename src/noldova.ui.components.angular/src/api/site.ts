@@ -14,6 +14,7 @@ export { SiteHeaderComponent } from "../app/components/site-header/site-header.c
 export { SiteSearchDirective } from "../app/components/site-header/site-search.directive.js";
 export { SiteHeroComponent } from "../app/components/site-hero/site-hero.component.js";
 export { SiteSectionComponent } from "../app/components/site-section/site-section.component.js";
+export { SiteWordmarkSize } from "../app/enums/site-wordmark-size.js";
 export { SiteAction } from "../app/models/site-action.js";
 export { SiteLinkGroup } from "../app/models/site-link-group.js";
 export { SiteLink } from "../app/models/site-link.js";
