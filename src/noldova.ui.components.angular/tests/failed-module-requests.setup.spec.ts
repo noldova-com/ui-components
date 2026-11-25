@@ -232,16 +232,32 @@ describe("failed module request setup", () => {
     expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: the census couldn't be taken: netstat failed: scripted$/u);
   });
 
+  it("prints the sockets netstat listed, and names tasklist and netsh as not read, when they were stopped at the limit", async () => {
+    const printed = await commands.scriptedResourceError("partly stopped", "net::ERR_NO_BUFFER_SPACE");
+
+    expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets 8: TIME_WAIT 3, ESTABLISHED 3, CLOSE_WAIT 1, LISTENING 1; most held by unknown 8; dynamic ports unknown; not read: tasklist failed: The operation was aborted, netsh failed: The operation was aborted$/u);
+  });
+
   it("says the census is taken on Windows only on another platform", async () => {
     const printed = await commands.scriptedResourceError("elsewhere", "net::ERR_NO_BUFFER_SPACE");
 
     expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: taken on Windows only$/u);
   });
 
-  it("reads this machine's own listings on Windows, and says it's Windows only elsewhere", async () => {
-    const printed = await commands.scriptedResourceError("this machine", "net::ERR_NO_BUFFER_SPACE");
+  it("reads this machine's own listings on Windows, naming any a loaded machine stopped at the limit, and says it's Windows only elsewhere", async () => {
+    const lines: ReadonlyMap<string, RegExp> = new Map([
+      ["", /^Machine's sockets at \S+Z, after a request failed for lack of resources: (TCP sockets [1-9]\d*: [A-Z_]+ \d+.*; most held by .+ \d+.*; dynamic ports \d+-\d+ \(\d+ ports\)|taken on Windows only)$/u],
+      ["; not read: tasklist failed: The operation was aborted", /^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets ([1-9]\d*): [A-Z_]+ \d+.*; most held by unknown \1; dynamic ports \d+-\d+ \(\d+ ports\); not read: tasklist failed: The operation was aborted$/u],
+      ["; not read: netsh failed: The operation was aborted", /^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets [1-9]\d*: [A-Z_]+ \d+.*; most held by .+ \d+.*; dynamic ports unknown; not read: netsh failed: The operation was aborted$/u],
+      ["; not read: tasklist failed: The operation was aborted, netsh failed: The operation was aborted", /^Machine's sockets at \S+Z, after a request failed for lack of resources: TCP sockets ([1-9]\d*): [A-Z_]+ \d+.*; most held by unknown \1; dynamic ports unknown; not read: tasklist failed: The operation was aborted, netsh failed: The operation was aborted$/u]
+    ]);
 
-    expect(printed[1]).toMatch(/^Machine's sockets at \S+Z, after a request failed for lack of resources: (TCP sockets [1-9]\d*: [A-Z_]+ \d+.*; most held by .+ \d+.*; dynamic ports \d+-\d+ \(\d+ ports\)|taken on Windows only)$/u);
+    const printed = await commands.scriptedResourceError("this machine", "net::ERR_NO_BUFFER_SPACE");
+    const line = printed[1] ?? "";
+    const notRead = /; not read: .+$/u.exec(line)?.[0] ?? "";
+
+    expect([...lines.keys()]).toContain(notRead);
+    expect(line).toMatch(lines.get(notRead) ?? /^$/u);
   });
 
   it("prints nothing for a failed request that isn't a module's, such as a fetch", async () => {
