@@ -12,7 +12,6 @@ import "@noldova/context.core";
 
 import { DomResources } from "../../../dom-resources.js";
 import type { SelectOption } from "../../models/select-option.js";
-import { ElementDirectionality } from "../../services/element-directionality.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { ChoicePillsBehavior } from "./choice-pills-behavior.js";
 
@@ -21,7 +20,6 @@ import { ChoicePillsBehavior } from "./choice-pills-behavior.js";
   templateUrl: "./choice-pills.component.html",
   styleUrl: "./choice-pills.component.css",
   imports: [TooltipDirective],
-  providers: [ElementDirectionality.provide()],
   host: {
     "class": "nol-choice-pills"
   }

@@ -138,6 +138,6 @@ describe("LazyTooltipDirective", () => {
     await userEvent.hover(anchor());
     await fixture.whenStable();
 
-    expect([report.mock.calls, anchor().getAttribute("aria-describedby"), tooltip()]).toEqual([[failure], null, null]);
+    expect([report.mock.calls, anchor().getAttribute("aria-describedby"), tooltip()]).toEqual([[[failure]], null, null]);
   });
 });

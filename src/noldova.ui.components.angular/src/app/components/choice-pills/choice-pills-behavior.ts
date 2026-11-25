@@ -6,8 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Directionality } from "@angular/cdk/bidi";
-import { type Signal, computed, inject } from "@angular/core";
+import { ElementRef, type Signal, computed, inject } from "@angular/core";
 
 import "@noldova/context.core";
 
@@ -18,9 +17,11 @@ import { ChoicePillsResources } from "./choice-pills.resources.js";
 
 // What the choice pills do, shared by ChoicePillsComponent, whose pills take TooltipDirective, and SiteChoicePillsComponent, the site theme
 // switch's, whose pills take LazyTooltipDirective; each keeps the same template and styles and builds one of these in its injection context.
+// The arrow keys follow the host's own direction, read from the page rather than the Angular CDK's Directionality, so a website's start
+// holds none of the CDK.
 export class ChoicePillsBehavior {
   private readonly source: IChoicePillsSource;
-  private readonly directionality: Directionality = inject(Directionality);
+  private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   // The pill Tab reaches: the chosen one, else the first enabled one.
   public readonly tabStop: Signal<string | undefined>;
@@ -40,7 +41,7 @@ export class ChoicePillsBehavior {
     if (!(event.target instanceof HTMLButtonElement) || event.altKey || event.ctrlKey || event.metaKey)
       return;
     const pills = [...group.querySelectorAll<HTMLButtonElement>(ChoicePillsResources.choicePillSelector)];
-    const key = this.directionality.value === DomResources.rightToLeftDirection ? ChoicePillsResources.choicePillMirroredKeys.get(event.key) ?? event.key : event.key;
+    const key = this.host.matches(DomResources.rightToLeftSelector) ? ChoicePillsResources.choicePillMirroredKeys.get(event.key) ?? event.key : event.key;
     const to = ChoicePillsResources.choicePillTargets.get(key);
     const direction = ChoicePillsResources.choicePillDirections.get(key);
     if (Object.isUndefined(to) || Object.isUndefined(direction))
