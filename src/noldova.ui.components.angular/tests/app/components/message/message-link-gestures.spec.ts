@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { FocusOrigin } from "@angular/cdk/a11y";
 import { Component, type WritableSignal, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { MessageComponent } from "../../../../src/app/components/message/message.component";
@@ -20,6 +21,64 @@ import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
 import { DomResources } from "../../../../src/dom-resources";
 import { Resources } from "../../../../src/resources";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+
+class MenuKey {
+  public readonly name: string;
+  public readonly init: KeyboardEventInit;
+
+  public constructor(name: string, init: KeyboardEventInit) {
+    this.name = name;
+    this.init = init;
+  }
+}
+
+class MouseEventPoint {
+  public readonly x: number;
+  public readonly y: number;
+
+  public constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class SeenLinkMenu {
+  public readonly url: string;
+  public readonly type: string;
+  public readonly point: MouseEventPoint;
+  public readonly isPrevented: boolean;
+
+  public constructor(url: string, type: string, point: MouseEventPoint, isPrevented: boolean) {
+    this.url = url;
+    this.type = type;
+    this.point = point;
+    this.isPrevented = isPrevented;
+  }
+}
+
+class SeenMenuRequest {
+  public readonly point: MouseEventPoint;
+  public readonly origin: FocusOrigin;
+  public readonly isOnTarget: boolean;
+  public readonly type: string;
+
+  public constructor(point: MouseEventPoint, origin: FocusOrigin, isOnTarget: boolean, type: string) {
+    this.point = point;
+    this.origin = origin;
+    this.isOnTarget = isOnTarget;
+    this.type = type;
+  }
+}
+
+class MenuKeyPress {
+  public readonly isKeyPrevented: boolean;
+  public readonly isRightClickPrevented: boolean;
+
+  public constructor(isKeyPrevented: boolean, isRightClickPrevented: boolean) {
+    this.isKeyPrevented = isKeyPrevented;
+    this.isRightClickPrevented = isRightClickPrevented;
+  }
+}
 
 @Component({
   imports: [MessageComponent],
@@ -63,9 +122,10 @@ describe("MessageComponent's link gestures", () => {
     for (const event of events)
       link().dispatchEvent(event);
 
-    expect([host.links, host.opens.map(t => [t.url, t.gesture, t.event === events[host.opens.indexOf(t)]])]).toEqual([
-      ["https://example.com/docs", "https://example.com/docs"], [["https://example.com/docs", LinkGesture.Modified, true], ["https://example.com/docs", LinkGesture.Middle, true]]
-    ]);
+    expect(host.links).toEqual(["https://example.com/docs", "https://example.com/docs"]);
+    expect(host.opens.map(t => t.url)).toEqual(["https://example.com/docs", "https://example.com/docs"]);
+    expect(host.opens.map(t => t.gesture)).toEqual([LinkGesture.Modified, LinkGesture.Middle]);
+    expect(host.opens.map((t, i) => t.event === events[i])).toEqual([true, true]);
   });
 
   it("asks for no message menu on a right-click on a link whose menu the app shows, and asks for it when the app leaves the right-click alone", async () => {
@@ -76,21 +136,22 @@ describe("MessageComponent's link gestures", () => {
     const left = contextMenu();
     link().dispatchEvent(left);
 
-    expect([host.linkMenus.map(t => [t.url, t.event]), shown.defaultPrevented, host.menus.map(t => t.event)]).toEqual([
-      [["https://example.com/docs", shown], ["https://example.com/docs", left]], true, [left]
-    ]);
+    expect(host.linkMenus.map(t => t.url)).toEqual(["https://example.com/docs", "https://example.com/docs"]);
+    expect(host.linkMenus.map((t, i) => t.event === [shown, left][i])).toEqual([true, true]);
+    expect(shown.defaultPrevented).toBe(true);
+    expect(host.menus.map(t => t.event === left)).toEqual([true]);
   });
 
-  const menuKeys: readonly (readonly [string, KeyboardEventInit])[] = [["the ContextMenu key", { key: "ContextMenu" }], ["Shift+F10", { key: "F10", shiftKey: true }]];
+  const menuKeys: readonly MenuKey[] = [new MenuKey("the ContextMenu key", { key: "ContextMenu" }), new MenuKey("Shift+F10", { key: "F10", shiftKey: true })];
 
-  const asMouseEventPoint = (x: number, y: number): readonly [number, number] => {
+  const asMouseEventPoint = (x: number, y: number): MouseEventPoint => {
     const event = new MouseEvent("contextmenu", { clientX: x, clientY: y });
-    return [event.clientX, event.clientY];
+    return new MouseEventPoint(event.clientX, event.clientY);
   };
 
   const padToHalfPixel = (value: number): number => ((0.5 - (value - Math.floor(value))) % 1 + 1) % 1;
 
-  it.each(menuKeys)("gives one menu for %s on a focused link: the app's link menu at the link's bottom-left as a right-click holds it, or else the message's, and none for the browser's right-click that follows", async (_name, init) => {
+  it.each(menuKeys)("gives one menu for $name on a focused link: the app's link menu at the link's bottom-left as a right-click holds it, or else the message's, and none for the browser's right-click that follows", async key => {
     const hostElement = DomFixture.host(fixture);
     hostElement.style.display = "block";
     const unpadded = link().getBoundingClientRect();
@@ -99,24 +160,26 @@ describe("MessageComponent's link gestures", () => {
     const target = link();
     target.focus();
     const bounds = target.getBoundingClientRect();
-    const press = (): [boolean, boolean] => {
-      const down = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+    const press = (): MenuKeyPress => {
+      const down = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...key.init });
       target.dispatchEvent(down);
-      target.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, ...init }));
+      target.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, ...key.init }));
       const following = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 1, clientY: 1 });
       target.dispatchEvent(following);
-      return [down.defaultPrevented, following.defaultPrevented];
+      return new MenuKeyPress(down.defaultPrevented, following.defaultPrevented);
     };
     const shown = press();
-    const shownMenus = host.linkMenus.map(t => [t.url, t.event.type, t.event.clientX, t.event.clientY, t.event.defaultPrevented]);
+    const shownMenus = host.linkMenus.map(t => new SeenLinkMenu(t.url, t.event.type, new MouseEventPoint(t.event.clientX, t.event.clientY), t.event.defaultPrevented));
     host.showsLinkMenu.set(false);
     await fixture.whenStable();
     const left = press();
+    const point = asMouseEventPoint(bounds.left, bounds.bottom);
 
-    expect([[bounds.left, bounds.bottom].map(t => Number.isInteger(t)), shown, left, shownMenus, host.linkMenus.length,
-      host.menus.map(t => [t.point.x, t.point.y, t.origin, t.target === target, t.event.type])]).toEqual([
-      [false, false], [true, true], [true, true], [["https://example.com/docs", "contextmenu", ...asMouseEventPoint(bounds.left, bounds.bottom), true]], 2,
-      [[bounds.left, bounds.bottom, DomResources.keyboardFocusOrigin, true, "keydown"]]
-    ]);
+    expect([bounds.left, bounds.bottom].map(t => Number.isInteger(t))).toEqual([false, false]);
+    expect([shown, left]).toEqual([new MenuKeyPress(true, true), new MenuKeyPress(true, true)]);
+    expect(shownMenus).toEqual([new SeenLinkMenu("https://example.com/docs", "contextmenu", point, true)]);
+    expect(host.linkMenus.length).toBe(2);
+    expect(host.menus.map(t => new SeenMenuRequest(new MouseEventPoint(t.point.x, t.point.y), t.origin, t.target === target, t.event.type)))
+      .toEqual([new SeenMenuRequest(new MouseEventPoint(bounds.left, bounds.bottom), DomResources.keyboardFocusOrigin, true, "keydown")]);
   });
 });
