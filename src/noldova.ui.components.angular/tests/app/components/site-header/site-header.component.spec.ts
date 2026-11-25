@@ -19,6 +19,7 @@ import { SiteSocialLink } from "../../../../src/app/models/site-social-link";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
+import { PointerTargetFixture } from "../../../fixtures/pointer-target.fixture";
 
 const formatWordmark = (width: number, height: number): string =>
   `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}'/%3E%3C/svg%3E`;
@@ -335,6 +336,45 @@ describe("SiteHeaderComponent", () => {
       expect(getComputedStyle(link).color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "text-strong"));
       expect([glyph.getAttribute("aria-hidden"), getComputedStyle(glyph).maskImage.includes("data:image/svg+xml")]).toEqual(["true", true]);
     }
+  });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws each social mark pure ${mode === ThemeMode.Dark ? "white" : "black"} in ${mode} mode in every theme, hovered and focused too, as GitHub's and X's terms allow`, async () => {
+      const expected = mode === ThemeMode.Dark ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)";
+      const drawn: string[] = [];
+      for (const theme of AppearanceFixture.themes) {
+        await renderAsync(() => undefined, theme, mode);
+        for (const link of all(".nol-site-social"))
+          for (const state of [null, "Hover", "Focus"]) {
+            if (state === null)
+              link.removeAttribute("data-nol-state");
+            else
+              link.setAttribute("data-nol-state", state);
+            drawn.push(getComputedStyle(DomFixture.one(link, ".nol-site-social-icon")).backgroundColor);
+          }
+        fixture.destroy();
+      }
+
+      expect(drawn).toEqual(drawn.map(() => expected));
+    });
+
+  it("makes every target in the bar at least the pointer target in both directions, the theme switch's pills through hit areas that don't cover each other", async () => {
+    await page.viewport(1280, 800);
+    await renderAsync(t => {
+      t.version.set("v0.4.2");
+      t.versionHref.set("#version");
+    });
+
+    PointerTargetFixture.expectTargets(header(), ["v0.4.2", "Features", "GitHub", "X", "Light", "Dark", "System", "Download"]);
+    AppearanceFixture.expectPixels(box("nol-site-theme-switch .nol-choice-pill").height, AppearanceFixture.measureLook("site-theme-pill"));
+  });
+
+  it("makes every target in the open phone menu at least the pointer target in both directions", async () => {
+    await phoneAsync();
+    await renderAsync();
+    await openAsync();
+
+    PointerTargetFixture.expectTargets(header(), ["Menu", "Features", "GitHub", "X", "Light", "Dark", "System", "Download"]);
   });
 
   it("draws Download with its label, and no button without a link", async () => {

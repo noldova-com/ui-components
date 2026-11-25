@@ -12,6 +12,7 @@ import { Component, DestroyRef, ElementRef, Injector, type Signal, type Writable
 
 import "@noldova/context.core";
 
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { AnnouncementPoliteness } from "../../enums/announcement-politeness.js";
 import { TreeDropPlace } from "../../enums/tree-drop-place.js";
@@ -85,7 +86,7 @@ export class TreeComponent {
     inject(DestroyRef).onDestroy(() => this.session.stop());
     // CdkTree's key manager takes the direction the tree has when it is first shown, and keeps it.
     afterNextRender(() => {
-      this.isKeyedRightToLeft = this.host.matches(Resources.rightToLeftSelector);
+      this.isKeyedRightToLeft = this.host.matches(DomResources.rightToLeftSelector);
     });
     afterRenderEffect(() => {
       for (const branch of this.nodes().flatMap(t => t.startOpenBranches).filter(t => !this.opened.has(t.id))) {
@@ -183,7 +184,7 @@ export class TreeComponent {
   private turn(event: KeyboardEvent): boolean {
     const other = TreeResources.otherArrowKeys.get(event.key);
     const isPlain = !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
-    if (event === this.turning || !isPlain || Object.isUndefined(other) || !(event.target instanceof Element) || this.host.matches(Resources.rightToLeftSelector) === this.isKeyedRightToLeft)
+    if (event === this.turning || !isPlain || Object.isUndefined(other) || !(event.target instanceof Element) || this.host.matches(DomResources.rightToLeftSelector) === this.isKeyedRightToLeft)
       return false;
     event.preventDefault();
     event.stopPropagation();
@@ -194,7 +195,7 @@ export class TreeComponent {
   }
 
   private stepOf(key: string): TreeStep | undefined {
-    const isRightToLeft = this.host.matches(Resources.rightToLeftSelector);
+    const isRightToLeft = this.host.matches(DomResources.rightToLeftSelector);
     switch (key) {
       case Resources.arrowUpKey:
         return TreeStep.Up;

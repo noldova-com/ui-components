@@ -63,6 +63,9 @@
 }
 
 .nol-site-version {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--nol-pointer-target);
   color: var(--nol-text-muted);
   font-size: var(--nol-text-small);
   line-height: var(--nol-line-small);
@@ -178,7 +181,7 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
 .nol-site-social-icon {
   width: var(--nol-icon);
   height: var(--nol-icon);
-  background-color: currentColor;
+  background-color: var(--nol-brand-mark);
   mask-position: center;
   mask-repeat: no-repeat;
   mask-size: contain;

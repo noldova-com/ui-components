@@ -26,6 +26,7 @@ import { PointerGraceArea } from "../../models/pointer-grace-area.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { OverlayBoundsService } from "../../services/overlay-bounds.service.js";
 import { TooltipPace } from "../../services/tooltip-pace.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { TooltipDirectiveResources } from "../tooltip/tooltip-directive.resources.js";
 import { PopoverTriggerResources } from "./popover-trigger.resources.js";
@@ -71,7 +72,7 @@ export class PopoverTriggerDirective {
 
   public constructor() {
     const subscription = this.focus.monitor(this.host).subscribe(origin => {
-      if (origin === Resources.keyboardFocusOrigin && this.opensOnHover)
+      if (origin === DomResources.keyboardFocusOrigin && this.opensOnHover)
         this.show(false, true);
     });
     inject(DestroyRef).onDestroy(() => {
@@ -173,7 +174,7 @@ export class PopoverTriggerDirective {
     });
     overlay.keydownEvents.subscribe(event => this.closeFromKeyboard(event, overlay.element));
     overlay.originLost.subscribe(() => this.close());
-    overlay.element.addEventListener(Resources.pointerLeaveEvent, event => {
+    overlay.element.addEventListener(DomResources.pointerLeaveEvent, event => {
       if (this.opensOnHover && !this.isHeldByFocus && event.pointerType !== PopoverTriggerResources.touchPointerType)
         this.leave(event, overlay, false);
     });
@@ -186,7 +187,7 @@ export class PopoverTriggerDirective {
   }
 
   private closeFromKeyboard(event: KeyboardEvent, pane: HTMLElement): void {
-    if (event.defaultPrevented || ComposingKey.isComposing(event) || (event.key !== Resources.escapeKey && !(event.key === Resources.tabKey && PopoverTriggerDirective.isLeaving(event, pane))))
+    if (event.defaultPrevented || ComposingKey.isComposing(event) || (event.key !== DomResources.escapeKey && !(event.key === Resources.tabKey && PopoverTriggerDirective.isLeaving(event, pane))))
       return;
     event.preventDefault();
     this.close();
@@ -218,8 +219,8 @@ export class PopoverTriggerDirective {
       else if (!area.contains(PopoverTriggerDirective.pointOf(moved)))
         this.scheduleHide();
     };
-    this.document.addEventListener(Resources.pointermoveEvent, move, { capture: true, passive: true });
-    this.stopGrace = () => this.document.removeEventListener(Resources.pointermoveEvent, move, { capture: true });
+    this.document.addEventListener(DomResources.pointermoveEvent, move, { capture: true, passive: true });
+    this.stopGrace = () => this.document.removeEventListener(DomResources.pointermoveEvent, move, { capture: true });
   }
 
   private scheduleHide(): void {

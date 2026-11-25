@@ -9,7 +9,7 @@
 import { Component, ElementRef, inject, input } from "@angular/core";
 
 import { BusyGuard } from "../../services/busy-guard.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
 import { ToolbarButtonResources } from "./toolbar-button.resources.js";
 
@@ -25,13 +25,13 @@ import { ToolbarButtonResources } from "./toolbar-button.resources.js";
     "[attr.aria-label]": "label()",
     "[attr.aria-pressed]": "pressed() ?? null",
     "[attr.aria-haspopup]": "hasMenu() ? partResources.menuPopup : null",
-    "[attr.aria-disabled]": "isUnavailable() ? resources.trueValue : null",
+    "[attr.aria-disabled]": "isUnavailable() ? domResources.trueValue : null",
     "[class.nol-toolbar-button-busy]": "busy()",
-    "[attr.aria-busy]": "busy() ? resources.trueValue : null"
+    "[attr.aria-busy]": "busy() ? domResources.trueValue : null"
   }
 })
 export class ToolbarButtonComponent {
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly partResources: typeof ToolbarButtonResources = ToolbarButtonResources;
 
   public readonly label = input.required<string>();

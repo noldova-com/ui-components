@@ -11,6 +11,7 @@ import { kitBaseStyles } from "@docs-generated/kit-base-styles.js";
 import { DefaultTheme, type Theme, ThemeMode } from "@noldova/ui.components.angular";
 
 import type { ColorToken } from "../../../../noldova.ui.components.angular/src/app/models/color-token.js";
+import { DomResources as KitDomResources } from "../../../../noldova.ui.components.angular/src/dom-resources.js";
 import { Resources as KitResources } from "../../../../noldova.ui.components.angular/src/resources.js";
 import { Resources } from "../../resources.js";
 import { DocsTokenGroup } from "../enums/docs-token-group.js";
@@ -38,7 +39,7 @@ export class DocsThemeTokens {
 
   public static readonly theme: Theme = DefaultTheme.theme;
   public static readonly tokens: readonly DocsToken[] = [
-    ...KitResources.colorTokens.map(t => DocsThemeTokens.readColor(t, DocsThemeTokens.theme)),
+    ...KitDomResources.colorTokens.map(t => DocsThemeTokens.readColor(t, DocsThemeTokens.theme)),
     ...KitResources.lookTokens.map(t => DocsThemeTokens.readLook(t, DocsThemeTokens.theme)),
     ...new DocsStyleSheet(kitBaseStyles, DocsThemeTokens.stylePrefixes).tokens
   ];
@@ -53,7 +54,7 @@ export class DocsThemeTokens {
   }
 
   public static readLook(name: string, theme: Theme): DocsToken {
-    const variable = KitResources.formatLookVariable(name);
+    const variable = KitDomResources.formatLookVariable(name);
     const value = DocsThemeTokens.requireValue(theme.readLook(name), theme, variable);
     return new DocsToken(variable, DocsThemeTokens.lookPrefixes.groupOf(name), value, value);
   }

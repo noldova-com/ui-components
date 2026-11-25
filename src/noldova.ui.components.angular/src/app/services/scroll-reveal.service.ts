@@ -9,7 +9,7 @@
 import { DOCUMENT } from "@angular/common";
 import { DestroyRef, Injectable, inject } from "@angular/core";
 
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 import type { ITimeSource } from "../interfaces/i-time-source.js";
 import { ClockTokens } from "../models/clock-tokens.js";
 import { ScrollRevealResources } from "./scroll-reveal.resources.js";
@@ -22,9 +22,9 @@ export class ScrollRevealService {
 
   public constructor() {
     const listener = (event: Event): void => this.reveal(event.target);
-    this.document.addEventListener(Resources.scrollEvent, listener, { capture: true, passive: true });
+    this.document.addEventListener(DomResources.scrollEvent, listener, { capture: true, passive: true });
     inject(DestroyRef).onDestroy(() => {
-      this.document.removeEventListener(Resources.scrollEvent, listener, { capture: true });
+      this.document.removeEventListener(DomResources.scrollEvent, listener, { capture: true });
       for (const [element, cancel] of this.timers) {
         cancel();
         element.removeAttribute(ScrollRevealResources.scrollingAttribute);

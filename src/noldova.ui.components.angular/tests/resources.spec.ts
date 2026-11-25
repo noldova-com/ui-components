@@ -10,11 +10,12 @@ import { ThemeMode } from "../src/app/enums/theme-mode";
 import { ColorToken } from "../src/app/models/color-token";
 import { DefaultTheme } from "../src/app/models/default-theme";
 import { Theme } from "../src/app/models/theme";
+import { DomResources } from "../src/dom-resources";
 import { Resources } from "../src/resources";
 
 describe("Resources", () => {
   it("formats variables, shape attributes and messages", () => {
-    expect(Resources.formatLookVariable("radius-small")).toBe("--nol-radius-small");
+    expect(DomResources.formatLookVariable("radius-small")).toBe("--nol-radius-small");
     expect(Resources.formatShapeAttribute("tab")).toBe("data-nol-tab-shape");
     expect(Resources.formatMissingThemeValue("noldova.default", "text")).toBe("The theme \"noldova.default\" has no value for \"text\".");
     expect(Resources.formatTextSizeOutOfRange("panelSize", 20)).toBe("The panelSize must be from 12 to 18 CSS pixels; 20 is outside that range.");
@@ -26,11 +27,11 @@ describe("Resources", () => {
   });
 
   it("lists every token once, and the default theme resolves each one in both modes", () => {
-    const variables = Resources.colorTokens.map(t => t.variable);
+    const variables = DomResources.colorTokens.map(t => t.variable);
 
     expect(new Set(variables).size).toBe(variables.length);
     expect(new Set(Resources.lookTokens).size).toBe(Resources.lookTokens.length);
-    for (const token of Resources.colorTokens)
+    for (const token of DomResources.colorTokens)
       for (const mode of [ThemeMode.Light, ThemeMode.Dark])
         expect(token.resolve(DefaultTheme.theme, mode), `${token.key} in ${mode}`).toMatch(/^#[0-9A-F]{6}([0-9A-F]{2})?$/);
     for (const name of Resources.lookTokens)
@@ -38,24 +39,24 @@ describe("Resources", () => {
   });
 
   it("names each color's variable after its key, keeps its fallback, and keeps the public token's shape", () => {
-    const window = Resources.colorTokens.find(t => t.key === "window");
-    const swatch = Resources.colorTokens.find(t => t.key === "swatch-blue");
+    const window = DomResources.colorTokens.find(t => t.key === "window");
+    const swatch = DomResources.colorTokens.find(t => t.key === "swatch-blue");
 
-    expect(Resources.colorTokens.map(t => t.variable)).toEqual(Resources.colorTokens.map(t => `--nol-${t.key}`));
+    expect(DomResources.colorTokens.map(t => t.variable)).toEqual(DomResources.colorTokens.map(t => `--nol-${t.key}`));
     expect(window).toEqual(new ColorToken("--nol-window", "window"));
     expect(swatch).toEqual(new ColorToken("--nol-swatch-blue", "swatch-blue", "author-1"));
   });
 
   it("gives no two keys of the color and look maps the same name or variable", () => {
-    const colorKeys = Resources.colorTokens.map(t => t.key);
-    const variables = [...Resources.colorTokens.map(t => t.variable), ...Resources.lookTokens.map(t => Resources.formatLookVariable(t))];
+    const colorKeys = DomResources.colorTokens.map(t => t.key);
+    const variables = [...DomResources.colorTokens.map(t => t.variable), ...Resources.lookTokens.map(t => DomResources.formatLookVariable(t))];
 
     expect(Resources.lookTokens.filter(t => colorKeys.includes(t))).toEqual([]);
     expect(new Set(variables).size).toBe(variables.length);
   });
 
   it("falls back only to another color's key, and leaves raised and muted text without a fallback", () => {
-    const fallbacks = Object.fromEntries(Resources.colorTokens.filter(t => t.fallbackKey !== null).map(t => [t.key, t.fallbackKey]));
+    const fallbacks = Object.fromEntries(DomResources.colorTokens.filter(t => t.fallbackKey !== null).map(t => [t.key, t.fallbackKey]));
 
     expect(fallbacks).toEqual({
       "code": "window",
@@ -138,7 +139,7 @@ describe("Resources", () => {
 
   it("reads one fallback level, so two colors that fall back to each other resolve to nothing when a theme has neither", () => {
     const theme = new Theme("fixture.borderless", "Borderless", new Map([["text", "#000000"]]), new Map(), new Map(), new Map());
-    const borders = Resources.colorTokens.filter(t => t.key === "card-border" || t.key === "widget-border");
+    const borders = DomResources.colorTokens.filter(t => t.key === "card-border" || t.key === "widget-border");
 
     expect(borders.map(t => t.fallbackKey)).toEqual(["widget-border", "card-border"]);
     expect(borders.map(t => t.resolve(theme, ThemeMode.Light))).toEqual([undefined, undefined]);

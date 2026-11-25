@@ -8,7 +8,7 @@
 
 import { ThemeMode } from "../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
-import { Resources } from "../../../src/resources";
+import { DomResources } from "../../../src/dom-resources";
 import { FixtureTheme } from "../../../src/testing/models/fixture-theme";
 
 describe("FixtureTheme", () => {
@@ -23,7 +23,7 @@ describe("FixtureTheme", () => {
   });
 
   it("gives each color its own value, in light and dark, so a spec can tell any two colors apart", () => {
-    const values = [ThemeMode.Light, ThemeMode.Dark].flatMap(mode => Resources.colorTokens.map(t => FixtureTheme.theme.readColor(mode, t.key)))
+    const values = [ThemeMode.Light, ThemeMode.Dark].flatMap(mode => DomResources.colorTokens.map(t => FixtureTheme.theme.readColor(mode, t.key)))
       .filter(t => t !== undefined).map(t => t.toUpperCase());
 
     expect(values.length).toBeGreaterThan(2 * 100);

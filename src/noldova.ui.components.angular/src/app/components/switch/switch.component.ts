@@ -10,7 +10,7 @@ import { Component, type Signal, computed, input, output } from "@angular/core";
 
 import "@noldova/context.core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { SwitchResources } from "./switch.resources.js";
 
 @Component({
@@ -24,7 +24,7 @@ import { SwitchResources } from "./switch.resources.js";
 export class SwitchComponent {
   private static count: number = 0;
 
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly reasonId: string = `${SwitchResources.switchReasonIdPrefix}${SwitchComponent.count++}`;
   protected readonly shownReason: Signal<string | null> = computed(() => {
     const reason = this.disabledReason();

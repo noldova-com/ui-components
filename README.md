@@ -136,7 +136,7 @@ It reads one line at a time: it refuses an assertion that a line break splits fr
 
 ### Kit bundles
 
-The Kit bundles check builds nine small apps against the packed kit, with production settings, and reads which modules each chunk of the build holds.
+The Kit bundles check builds ten small apps against the packed kit, with production settings, and reads which modules each chunk of the build holds.
 It runs on Linux x64 only, as the Kit copies and the Kit manifest checks do, since the release builds, packs and publishes the kit on Linux x64 (`.github`'s shared `release-npm.yml`), and the other targets' CI jobs are the longer ones; elsewhere `npm test` says it skipped them and Angular's newest.
 The apps are in `src/noldova.ui.components.angular/tests/fixtures/kit-bundles/`, each with its own TypeScript configuration there and its project in the kit's `angular.json`, and they resolve `@noldova/ui.components.angular` to the installed package instead of its source.
 
@@ -146,11 +146,12 @@ The apps are in `src/noldova.ui.components.angular/tests/fixtures/kit-bundles/`,
 | `bundle-code-block`, which shows a code block without highlighting | The same. |
 | `bundle-highlighted-code-block`, which adds `provideCodeHighlighting()` | No initial chunk holds the highlighter's library, and the grammars come in lazy chunks. |
 | `bundle-highlighting-worker`, which adds `provideCodeHighlightingWorker` with a worker file that calls `serveCodeHighlighting` | The same, and a chunk built from the worker file holds every grammar the page's lazy chunks hold and imports no other chunk, since Angular's build leaves out the chunks a worker's lazy imports share. |
-| `bundle-message`, which shows a message and adds `provideMarkdown()` | `markdown-it` comes in a lazy chunk; no chunk of the other eight apps holds it. |
+| `bundle-message`, which shows a message and adds `provideMarkdown()` | `markdown-it` comes in a lazy chunk; no chunk of the other nine apps holds it. |
 | `bundle-progress`, which binds `isDelayed` on a spinner and a progress bar | It builds, as an app that binds an input of a host directive needs that directive exported from the entry point, and no chunk holds the code highlighter, a grammar or `markdown-it`. |
 | `bundle-menu`, which binds `disabled` and `triggered` on a menu group action | The same as `bundle-progress`. |
 | `bundle-button`, which imports `ButtonComponent` alone | The same as `bundle-progress`. Of the kit's strings files, named `resources.js`, its chunks hold only the shared `resources.js` and those of the classes the button reaches: the spinner's delay, `reveal-delay.resources.js`, the busy guard's, `busy-guard.resources.js`, and the clock's, `clock-tokens.resources.js` and `system-time-source.resources.js`. Its initial chunks hold at most 21,200 bytes of them, about a tenth above the 19,250 they held when the cap was set; the check writes the bytes on every run. |
 | `bundle-lazy-code-block`, whose start imports `ButtonComponent` from `@noldova/ui.components.angular/button` and the typography painter from `@noldova/ui.components.angular/typography`, never the main entry, and which later loads three pages, as lazy routes do, one with `CodeBlockComponent` from `@noldova/ui.components.angular/code-block` | The same as `bundle-progress`, and no initial chunk holds the code block, its toolbar or its tooltip, which come in a lazy chunk, as the kit's README, Lazy pages, says. With three lazy pages, Angular's build merges its chunks, as it does for an app with as many lazy routes. |
+| `bundle-site`, whose start shows the site header and footer from `@noldova/ui.components.angular/site`, never the main entry, and which later loads the same three pages | No initial chunk holds a part of the kit other than the site header and footer and the parts they show, the button, the icon button, the tooltip, the choice pills, the spinner and the progress bar, and none holds the kit's shared strings, `src/resources.ts`; the check prints the start's size with and without the icon list; the code block comes in a lazy chunk, as the kit's README, Lazy pages, says. |
 
 ### Kit copies
 

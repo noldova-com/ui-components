@@ -27,6 +27,7 @@ import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { ChipComponent } from "../chip/chip.component.js";
 import { SelectResources } from "./select.resources.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 
 @Component({
@@ -55,7 +56,7 @@ export class SelectComponent {
   private titledIndex: number = -1;
 
   protected readonly partResources: typeof SelectResources = SelectResources;
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly isOpen: WritableSignal<boolean> = signal(false);
   protected readonly optionTooltipSide: OverlaySide = OverlaySide.below;
   protected readonly tagKind: ChipKind = ChipKind.Status;
@@ -106,7 +107,7 @@ export class SelectComponent {
         this.close();
     });
     overlay.keydownEvents.subscribe(event => {
-      if ((event.key !== Resources.escapeKey && event.key !== Resources.tabKey) || (event.key === Resources.escapeKey && event.defaultPrevented))
+      if ((event.key !== DomResources.escapeKey && event.key !== Resources.tabKey) || (event.key === DomResources.escapeKey && event.defaultPrevented))
         return;
       event.preventDefault();
       this.closeTo(button);

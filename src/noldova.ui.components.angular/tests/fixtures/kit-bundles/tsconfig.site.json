@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "files": [
+    "site-app.fixture.ts"
+  ]
+}

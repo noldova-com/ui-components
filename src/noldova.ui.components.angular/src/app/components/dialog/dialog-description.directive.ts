@@ -11,7 +11,7 @@ import { DestroyRef, Directive, ElementRef, afterNextRender, inject } from "@ang
 import "@noldova/context.core";
 
 import { DialogTokens } from "../../models/dialog-tokens.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { DialogDescriptionResources } from "./dialog-description.resources.js";
 
 @Directive({
@@ -42,13 +42,13 @@ export class DialogDescriptionDirective {
   }
 
   private static ids(dialog: Element): readonly string[] {
-    return (dialog.getAttribute(DialogDescriptionResources.ariaDescribedByAttribute) ?? String.empty).split(Resources.ariaIdSeparator).filter(t => !String.isNullOrEmpty(t));
+    return (dialog.getAttribute(DialogDescriptionResources.ariaDescribedByAttribute) ?? String.empty).split(DomResources.ariaIdSeparator).filter(t => !String.isNullOrEmpty(t));
   }
 
   private static describe(dialog: Element, ids: readonly string[]): void {
     if (ids.length === 0)
       dialog.removeAttribute(DialogDescriptionResources.ariaDescribedByAttribute);
     else
-      dialog.setAttribute(DialogDescriptionResources.ariaDescribedByAttribute, ids.join(Resources.ariaIdSeparator));
+      dialog.setAttribute(DialogDescriptionResources.ariaDescribedByAttribute, ids.join(DomResources.ariaIdSeparator));
   }
 }

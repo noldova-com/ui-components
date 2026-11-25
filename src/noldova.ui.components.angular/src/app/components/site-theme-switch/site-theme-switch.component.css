@@ -9,6 +9,7 @@
 :host {
   --nol-choice-pill: var(--nol-site-theme-pill);
   --nol-choice-pill-gap: var(--nol-space-half);
+  --nol-choice-pill-target: var(--nol-pointer-target);
 
   display: inline-flex;
   padding: var(--nol-space-half);

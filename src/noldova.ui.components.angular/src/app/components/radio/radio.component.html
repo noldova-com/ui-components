@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 <label class="nol-radio-label">
   <span class="nol-radio-control">
     <input type="radio" class="nol-radio-box" [attr.name]="name" [value]="value()" [checked]="isChecked()" [attr.aria-label]="label()"
-      [attr.aria-disabled]="disabled() ? resources.trueValue : null" [attr.tabindex]="tabIndex()"
+      [attr.aria-disabled]="disabled() ? domResources.trueValue : null" [attr.tabindex]="tabIndex()"
       (click)="refuse($event)" (change)="pick()" />
     <span class="nol-radio-dot" aria-hidden="true"></span>
   </span>

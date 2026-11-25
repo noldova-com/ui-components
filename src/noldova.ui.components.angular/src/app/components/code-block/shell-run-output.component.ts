@@ -14,7 +14,7 @@ import "@noldova/context.core";
 
 import type { IShellRunOutputContext } from "../../interfaces/i-shell-run-output-context.js";
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import type { CodeBlockComponent } from "./code-block.component.js";
 
 @Component({
@@ -68,7 +68,7 @@ export class ShellRunOutputComponent {
     const [areaStart, areaEnd] = ShellRunOutputComponent.contentBox(this.area());
     const box = this.host.getBoundingClientRect();
     const indent = this.indent();
-    this.indent.set(getComputedStyle(this.host).direction === Resources.rightToLeftDirection ? areaEnd - (box.right - indent) : box.left + indent - areaStart);
+    this.indent.set(getComputedStyle(this.host).direction === DomResources.rightToLeftDirection ? areaEnd - (box.right - indent) : box.left + indent - areaStart);
     this.width.set(areaEnd - areaStart);
   }
 }

@@ -11,6 +11,7 @@ import { ThemeException } from "../../../src/app/exceptions/theme.exception";
 import { Theme } from "../../../src/app/models/theme";
 import { ThemePainter } from "../../../src/app/services/theme-painter";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
+import { DomResources } from "../../../src/dom-resources";
 import { Resources } from "../../../src/resources";
 import { FixtureTheme } from "../../../src/testing/models/fixture-theme";
 
@@ -62,7 +63,7 @@ describe("ThemePainter", () => {
   it("paints no color or look value of the fixture theme equal to the default theme's, in light or dark", () => {
     const painter = new ThemePainter(DefaultTheme.theme);
     const fixture = document.createElement("div");
-    const names = [...Resources.colorTokens.map(t => t.variable), ...Resources.lookTokens.map(t => Resources.formatLookVariable(t))];
+    const names = [...DomResources.colorTokens.map(t => t.variable), ...Resources.lookTokens.map(t => DomResources.formatLookVariable(t))];
 
     for (const mode of [ThemeMode.Light, ThemeMode.Dark]) {
       painter.paint(element, DefaultTheme.theme, mode);

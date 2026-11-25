@@ -9,6 +9,7 @@
 import { DialogRef } from "@angular/cdk/dialog";
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, type Signal, signal, type WritableSignal } from "@angular/core";
 
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { DialogSize } from "../../enums/dialog-size.js";
 import { ComposingKey } from "../../models/composing-key.js";
@@ -87,7 +88,7 @@ export class DialogComponent {
   }
 
   protected escape(event: KeyboardEvent): void {
-    if (event.key !== Resources.escapeKey || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.defaultPrevented || ComposingKey.isComposing(event))
+    if (event.key !== DomResources.escapeKey || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.defaultPrevented || ComposingKey.isComposing(event))
       return;
     event.preventDefault();
     this.dismissed.emit();

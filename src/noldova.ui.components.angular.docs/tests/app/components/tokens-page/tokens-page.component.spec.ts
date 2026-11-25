@@ -14,6 +14,7 @@ import { provideMarkdown } from "@noldova/ui.components.angular/markdown";
 import type {} from "@vitest/browser-playwright";
 import { cdp, userEvent } from "vitest/browser";
 
+import { DomResources as KitDomResources } from "../../../../../noldova.ui.components.angular/src/dom-resources.js";
 import { Resources as KitResources } from "../../../../../noldova.ui.components.angular/src/resources.js";
 import { routes } from "../../../../src/app/app.routes.js";
 import { DocsShellComponent } from "../../../../src/app/components/docs-shell/docs-shell.component.js";
@@ -45,7 +46,7 @@ describe("TokensPageComponent", () => {
 
   const shownNames = (host: HTMLElement): readonly string[] => DocsFixture.all(host, "main tbody th").map(t => t.textContent?.trim() ?? "");
 
-  const lookVariables = (): readonly string[] => KitResources.lookTokens.map(t => KitResources.formatLookVariable(t));
+  const lookVariables = (): readonly string[] => KitResources.lookTokens.map(t => KitDomResources.formatLookVariable(t));
 
   const rulesOf = (sheet: CSSStyleSheet): readonly CSSRule[] =>
     [...sheet.cssRules].flatMap(t => t instanceof CSSImportRule && t.styleSheet !== null ? rulesOf(t.styleSheet) : [t]);
@@ -64,7 +65,7 @@ describe("TokensPageComponent", () => {
     const names = shownNames(host);
     const defined = new Set(rootTokenNames());
 
-    expect(defined.size).toBeGreaterThan(KitResources.colorTokens.length + KitResources.lookTokens.length);
+    expect(defined.size).toBeGreaterThan(KitDomResources.colorTokens.length + KitResources.lookTokens.length);
     expect(new Set(names).size).toBe(names.length);
     expect([...names].sort()).toEqual([...defined].sort());
   });
@@ -74,8 +75,8 @@ describe("TokensPageComponent", () => {
     const shown = shownValues(host);
     const theme = DefaultTheme.theme;
 
-    expect(KitResources.colorTokens.map(t => [t.variable, ...shown.get(t.variable) ?? []]))
-      .toEqual(KitResources.colorTokens.map(t => [t.variable, t.resolve(theme, ThemeMode.Light), t.resolve(theme, ThemeMode.Dark)]));
+    expect(KitDomResources.colorTokens.map(t => [t.variable, ...shown.get(t.variable) ?? []]))
+      .toEqual(KitDomResources.colorTokens.map(t => [t.variable, t.resolve(theme, ThemeMode.Light), t.resolve(theme, ThemeMode.Dark)]));
   });
 
   it("shows each look token's value from the default theme in both modes", async () => {
@@ -84,12 +85,12 @@ describe("TokensPageComponent", () => {
     const theme = DefaultTheme.theme;
 
     expect(lookVariables().map(t => [t, ...shown.get(t) ?? []]))
-      .toEqual(KitResources.lookTokens.map(t => [KitResources.formatLookVariable(t), theme.readLook(t), theme.readLook(t)]));
+      .toEqual(KitResources.lookTokens.map(t => [KitDomResources.formatLookVariable(t), theme.readLook(t), theme.readLook(t)]));
   });
 
   it("shows each token of the kit's base styles with the value its declaration gives, in both modes", async () => {
     const host = await renderAsync("/tokens");
-    const themed = new Set([...KitResources.colorTokens.map(t => t.variable), ...lookVariables()]);
+    const themed = new Set([...KitDomResources.colorTokens.map(t => t.variable), ...lookVariables()]);
     const base = [...shownValues(host)].filter(([name]) => !themed.has(name));
 
     expect(base.map(([name]) => name)).toEqual(expect.arrayContaining(["--nol-font-sans", "--nol-text-panel", "--nol-line-panel", "--nol-weight-emphasis", "--nol-text-tab"]));

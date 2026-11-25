@@ -9,7 +9,7 @@
 import { ThemeMode } from "../../../src/app/enums/theme-mode";
 import type { Theme } from "../../../src/app/models/theme";
 import { DefaultTheme } from "../../../src/app/models/default-theme";
-import { Resources } from "../../../src/resources";
+import { DomResources } from "../../../src/dom-resources";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 
 describe("DefaultTheme", () => {
@@ -282,7 +282,7 @@ describe("DefaultTheme contrast", () => {
   ];
 
   function channels(theme: Theme, mode: ThemeMode, name: string): readonly number[] {
-    const token = Resources.colorTokens.find(t => t.variable === `--nol-${name}`);
+    const token = DomResources.colorTokens.find(t => t.variable === `--nol-${name}`);
     const color = token?.resolve(theme, mode) ?? token?.resolve(DefaultTheme.theme, mode);
     if (color === undefined)
       throw new Error(`The theme ${theme.id} has no ${name} color.`);
@@ -332,7 +332,7 @@ describe("DefaultTheme contrast", () => {
   it("checks or exempts every color of the theme, each exemption with its reason", () => {
     const checked = new Set(pairs.flatMap(([foreground, grounds]) => [foreground, ...grounds]));
     const fills = new Set(fillCues.map(([color]) => color));
-    const unaccounted = Resources.colorTokens.map(t => t.variable.slice("--nol-".length)).filter(t => !checked.has(t) && !exempt.has(t) && !fills.has(t));
+    const unaccounted = DomResources.colorTokens.map(t => t.variable.slice("--nol-".length)).filter(t => !checked.has(t) && !exempt.has(t) && !fills.has(t));
 
     expect(unaccounted).toEqual([]);
     expect([...exempt.keys()].filter(t => checked.has(t))).toEqual([]);

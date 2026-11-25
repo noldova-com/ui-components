@@ -26,6 +26,9 @@
       "@noldova/ui.components.angular/markdown": [
         "../noldova.ui.components.angular/src/api/markdown.ts"
       ],
+      "@noldova/ui.components.angular/site": [
+        "../noldova.ui.components.angular/src/api/site.ts"
+      ],
       "@noldova/ui.components.angular/testing": [
         "../noldova.ui.components.angular/src/api/testing.ts"
       ],

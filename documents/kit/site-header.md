@@ -4,19 +4,21 @@
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
+A website's start imports the header from its own entry, `@noldova/ui.components.angular/site`, and the main entry exports it too; a start that never imports the main entry keeps the parts only a lazy page uses, such as the code block, out of it, as the kit's README, [Lazy pages](../../src/noldova.ui.components.angular/README.md#lazy-pages), says.
+
 ## Default geometry
 
 3.5rem high (`--nol-site-header-height`); the content keeps to 75rem (`--nol-site-content-width`), or 108rem on a documentation site (`--nol-site-content-width-wide`), centered, with 1.5rem insets (`--nol-site-padding-inline`).
 From the start: the lockup, the links' text 2rem after it and 1.5rem apart, then at the end the search, 16rem wide (`--nol-site-search-width`), the social links 0.5rem apart, the theme switch and the Download button, the search, the switch and the button each 1rem from the part before.
 The lockup's wordmark is 0.8125rem high (`--nol-site-wordmark`) in the wordmark's proportions, its width reserved before the file loads from `wordmarkRatio`, the Noldova wordmark's by default and the file's own when a site passes its own, with the product's name 0.5rem after it and a version 0.375rem after that.
-Each link is at least the pointer target high, with 0.5rem insets; each social link is an icon button target square with an icon-sized glyph.
+Each link is at least the pointer target high, with 0.5rem insets, and so is the version's link; each social link is an icon button target square with an icon-sized glyph.
 The Download button is the kit's [button](button.md) at its height with no edge, its label in panel text at the emphasis weight, and its icon 0.375rem from its start.
 
 ## Text roles
 
 The product's name: 1rem on a 1.25rem line (`--nol-site-name-text`, `--nol-site-name-line`), at the emphasis weight, in `text-strong`.
 Links: panel, in `text-muted`, the current page's in `text-strong` at the emphasis weight.
-The social links: `text-strong`.
+The social links: `text-strong`, their marks in `--nol-brand-mark`, pure black in light mode and pure white in dark, as GitHub's and X's terms allow their marks, hovered and focused too.
 The version: small, in `text-muted`.
 
 ## Surface and behavior
@@ -32,6 +34,7 @@ Under forced colors the wordmark, the product's name and the social icons are `L
 ## Theme switch
 
 Icon-only [choice pills](choice-pills.md) named Theme, offering Light, Dark and System in that order, each 1.25rem square (`--nol-site-theme-pill`) and 0.125rem apart, on the window color with a 0.125rem inset and the medium radius.
+Each takes clicks and taps across a pointer target square, 1.5rem, drawn nowhere, which reaches into the inset and the gaps without covering its neighbour's, as WCAG 2.5.8 asks.
 A choice sets `data-nol-theme-mode` to `Light` or `Dark` on the root element, or removes it for System, and is saved in `localStorage` under `noldova-theme` as `light`, `dark` or `system`; with nothing saved, or a value it doesn't know, it follows the system.
 It applies the saved choice once it renders, and a choice the browser refuses to save still applies to the page.
 The component doesn't ship a head script: each site sets `data-nol-theme-mode` from `noldova-theme` the same way in a script in its own head, which runs before the page renders, so the page never shows the other theme first.

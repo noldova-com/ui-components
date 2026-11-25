@@ -6,7 +6,7 @@ This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 -->
 
-<button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [attr.aria-disabled]="disabled() ? resources.trueValue : null"
+<button #button type="button" class="nol-select-button" aria-haspopup="listbox" [attr.aria-expanded]="isOpen()" [attr.aria-disabled]="disabled() ? domResources.trueValue : null"
   [attr.aria-label]="name()" [attr.aria-describedby]="describedBy()" (click)="toggle(button, list)">
   @if (chosen(); as option) {
     @if (option.icon; as glyph) {

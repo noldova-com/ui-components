@@ -11,7 +11,7 @@ import type { FormValueControl } from "@angular/forms/signals";
 
 import "@noldova/context.core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { AnnouncementPoliteness } from "../../enums/announcement-politeness.js";
 import { ColorChooserItemKind } from "../../enums/color-chooser-item-kind.js";
 import { ColorSwatch } from "../../enums/color-swatch.js";
@@ -54,7 +54,7 @@ export class ColorChooserComponent implements FormValueControl<string | null> {
   public readonly theme = input<Theme | null>(null);
   public readonly touch = output<void>();
 
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly partResources: typeof ColorChooserResources = ColorChooserResources;
   protected readonly kinds: typeof ColorChooserItemKind = ColorChooserItemKind;
   protected readonly messageKinds: typeof FieldMessageKind = FieldMessageKind;

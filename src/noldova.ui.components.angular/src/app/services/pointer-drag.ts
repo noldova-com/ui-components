@@ -8,6 +8,7 @@
 
 import "@noldova/context.core";
 
+import { DomResources } from "../../dom-resources.js";
 import { Resources } from "../../resources.js";
 import { PointerDragResources } from "./pointer-drag.resources.js";
 
@@ -41,24 +42,24 @@ export class PointerDrag {
     };
     const onBlur = (): void => cancel();
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key !== Resources.escapeKey || !this.isStarted)
+      if (event.key !== DomResources.escapeKey || !this.isStarted)
         return;
       event.preventDefault();
       event.stopPropagation();
       escape();
     };
-    document.addEventListener(Resources.pointermoveEvent, onMove);
+    document.addEventListener(DomResources.pointermoveEvent, onMove);
     document.addEventListener(PointerDragResources.pointerupEvent, onUp);
     document.addEventListener(PointerDragResources.pointercancelEvent, onLost);
     element.addEventListener(PointerDragResources.lostpointercaptureEvent, onLost);
-    document.addEventListener(Resources.keydownEvent, onKey, { capture: true });
+    document.addEventListener(DomResources.keydownEvent, onKey, { capture: true });
     window.addEventListener(Resources.blurEvent, onBlur);
     this.stopListening = () => {
-      document.removeEventListener(Resources.pointermoveEvent, onMove);
+      document.removeEventListener(DomResources.pointermoveEvent, onMove);
       document.removeEventListener(PointerDragResources.pointerupEvent, onUp);
       document.removeEventListener(PointerDragResources.pointercancelEvent, onLost);
       element.removeEventListener(PointerDragResources.lostpointercaptureEvent, onLost);
-      document.removeEventListener(Resources.keydownEvent, onKey, { capture: true });
+      document.removeEventListener(DomResources.keydownEvent, onKey, { capture: true });
       window.removeEventListener(Resources.blurEvent, onBlur);
     };
   }

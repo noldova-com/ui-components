@@ -8,14 +8,14 @@
 
 import "@noldova/context.core";
 
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 
 export class ContentMovedEvent extends Event {
   public readonly area: DOMRectReadOnly;
   public readonly holder: HTMLElement;
 
   public constructor(area: DOMRectReadOnly, holder: HTMLElement) {
-    super(Resources.contentMovedEvent);
+    super(DomResources.contentMovedEvent);
     this.area = area;
     this.holder = holder;
   }

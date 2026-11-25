@@ -17,6 +17,7 @@ import { MessageAuthor } from "../../../../src/app/models/message-author";
 import type { MessageMenuRequest } from "../../../../src/app/models/message-menu-request";
 import { MessageText } from "../../../../src/app/models/message-text";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
+import { DomResources } from "../../../../src/dom-resources";
 import { Resources } from "../../../../src/resources";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
@@ -115,7 +116,7 @@ describe("MessageComponent's link gestures", () => {
     expect([[bounds.left, bounds.bottom].map(t => Number.isInteger(t)), shown, left, shownMenus, host.linkMenus.length,
       host.menus.map(t => [t.point.x, t.point.y, t.origin, t.target === target, t.event.type])]).toEqual([
       [false, false], [true, true], [true, true], [["https://example.com/docs", "contextmenu", ...asMouseEventPoint(bounds.left, bounds.bottom), true]], 2,
-      [[bounds.left, bounds.bottom, Resources.keyboardFocusOrigin, true, "keydown"]]
+      [[bounds.left, bounds.bottom, DomResources.keyboardFocusOrigin, true, "keydown"]]
     ]);
   });
 });

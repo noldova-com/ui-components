@@ -11,6 +11,7 @@ import "@noldova/context.core";
 import { ThemeMode } from "../enums/theme-mode.js";
 import { ThemeException } from "../exceptions/theme.exception.js";
 import type { Theme } from "../models/theme.js";
+import { DomResources } from "../../dom-resources.js";
 import { Resources } from "../../resources.js";
 import { ThemePainterResources } from "./theme-painter.resources.js";
 
@@ -24,10 +25,10 @@ export class ThemePainter {
   // Every value is read before any is painted, so a missing one leaves what was painted before whole rather than two themes mixed.
   public paint(element: HTMLElement, theme: Theme, mode: ThemeMode): void {
     const properties: Map<string, string> = new Map([[ThemePainterResources.colorSchemeProperty, mode === ThemeMode.Dark ? Resources.darkScheme : Resources.lightScheme]]);
-    for (const token of Resources.colorTokens)
+    for (const token of DomResources.colorTokens)
       properties.set(token.variable, this.requireValue(token.resolve(theme, mode) ?? token.resolve(this.defaultTheme, mode), token.key));
     for (const name of Resources.lookTokens)
-      properties.set(Resources.formatLookVariable(name), this.requireValue(theme.readLook(name) ?? this.defaultTheme.readLook(name), name));
+      properties.set(DomResources.formatLookVariable(name), this.requireValue(theme.readLook(name) ?? this.defaultTheme.readLook(name), name));
     const attributes: Map<string, string> = new Map();
     for (const [control, shapes] of ThemePainterResources.shapes) {
       const chosen = theme.readShape(control);
@@ -43,10 +44,10 @@ export class ThemePainter {
   public erase(element: HTMLElement): void {
     const style = element.style;
     style.removeProperty(ThemePainterResources.colorSchemeProperty);
-    for (const token of Resources.colorTokens)
+    for (const token of DomResources.colorTokens)
       style.removeProperty(token.variable);
     for (const name of Resources.lookTokens)
-      style.removeProperty(Resources.formatLookVariable(name));
+      style.removeProperty(DomResources.formatLookVariable(name));
     for (const [control] of ThemePainterResources.shapes)
       element.removeAttribute(Resources.formatShapeAttribute(control));
   }

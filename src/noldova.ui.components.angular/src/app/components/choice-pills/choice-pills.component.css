@@ -38,12 +38,33 @@
 }
 
 .nol-choice-pill-icon {
+  --nol-choice-pill-reach: max(0px, calc((var(--nol-choice-pill-target, 0px) - var(--nol-choice-pill)) / 2));
+
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--nol-choice-pill);
   height: var(--nol-choice-pill);
   padding: 0;
+}
+
+.nol-choice-pill-icon::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--nol-choice-pill-reach));
+}
+
+.nol-choice-pill-icon:first-child::before {
+  inset-inline: calc(-2 * var(--nol-choice-pill-reach)) 0;
+}
+
+.nol-choice-pill-icon:last-child::before {
+  inset-inline: 0 calc(-2 * var(--nol-choice-pill-reach));
+}
+
+.nol-choice-pill-icon:only-child::before {
+  inset-inline: calc(-1 * var(--nol-choice-pill-reach));
 }
 
 .nol-choice-pill-glyph {

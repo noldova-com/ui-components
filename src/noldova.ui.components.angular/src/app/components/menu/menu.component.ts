@@ -13,7 +13,7 @@ import { Component, DestroyRef, ElementRef, type Signal, type WritableSignal, co
 
 import "@noldova/context.core";
 
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { MenuItemComponent } from "./menu-item.component.js";
 import { MenuOpensOnDirective } from "./menu-opens-on.directive.js";
 import { MenuResources } from "./menu.resources.js";
@@ -87,7 +87,7 @@ export class MenuComponent {
     };
     const handleKeyEvent = menu._handleKeyEvent.bind(menu);
     menu._handleKeyEvent = (event: KeyboardEvent): void => {
-      if (event.key !== Resources.escapeKey || !event.defaultPrevented)
+      if (event.key !== DomResources.escapeKey || !event.defaultPrevented)
         handleKeyEvent(event);
     };
     const held: Element[] = [];
@@ -98,7 +98,7 @@ export class MenuComponent {
     };
     const stop = (): void => {
       host.removeEventListener(MenuResources.mouseenterEvent, holdEnter, true);
-      document.removeEventListener(Resources.pointermoveEvent, release, true);
+      document.removeEventListener(DomResources.pointermoveEvent, release, true);
     };
     const release = (): void => {
       stop();
@@ -108,7 +108,7 @@ export class MenuComponent {
           element.dispatchEvent(new MouseEvent(MenuResources.mouseenterEvent));
     };
     host.addEventListener(MenuResources.mouseenterEvent, holdEnter, true);
-    document.addEventListener(Resources.pointermoveEvent, release, true);
+    document.addEventListener(DomResources.pointermoveEvent, release, true);
     inject(DestroyRef).onDestroy(() => {
       stop();
       ordered.unsubscribe();

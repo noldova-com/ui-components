@@ -11,6 +11,7 @@ import { DestroyRef, Directive, ElementRef, Injector, type Signal, type Writable
 import "@noldova/context.core";
 
 import { ToolbarOrientation } from "../../enums/toolbar-orientation.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { ToolbarItemDirective } from "./toolbar-item.directive.js";
 import { ToolbarResources } from "./toolbar.resources.js";
@@ -92,7 +93,7 @@ export class ToolbarDirective {
   protected move(event: KeyboardEvent): void {
     if (!ToolbarResources.toolbarMoveKeys[this.orientation()].includes(event.key) || !this.items().some(t => t.element === event.target))
       return;
-    const direction = this.host.matches(Resources.rightToLeftSelector) ? Resources.rightToLeftDirection : Resources.leftToRightDirection;
+    const direction = this.host.matches(DomResources.rightToLeftSelector) ? DomResources.rightToLeftDirection : DomResources.leftToRightDirection;
     this.keys.withHorizontalOrientation(this.orientation() === ToolbarOrientation.Vertical ? null : direction);
     this.keys.onKeydown(event);
   }

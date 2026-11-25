@@ -46,6 +46,10 @@
       "types": "./api/markdown.d.ts",
       "default": "./api/markdown.js"
     },
+    "./site": {
+      "types": "./api/site.d.ts",
+      "default": "./api/site.js"
+    },
     "./testing": {
       "types": "./api/testing.d.ts",
       "default": "./api/testing.js"

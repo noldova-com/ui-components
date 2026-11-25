@@ -10,6 +10,7 @@ import { type Signal, type WritableSignal, signal } from "@angular/core";
 
 import "@noldova/context.core";
 
+import { DomResources } from "../../dom-resources.js";
 import { Resources } from "../../resources.js";
 import { TreeDropPlace } from "../enums/tree-drop-place.js";
 import type { ITimeSource } from "../interfaces/i-time-source.js";
@@ -114,7 +115,7 @@ export class TreeDragSession {
       this.rowSize = new DOMRect(0, 0, box.width / this.zoom, box.height / this.zoom);
       this.rowSizeZoom = this.zoom;
     }
-    const isRightToLeft = this.host.matches(Resources.rightToLeftSelector);
+    const isRightToLeft = this.host.matches(DomResources.rightToLeftSelector);
     const x = isRightToLeft ? this.document.documentElement.clientWidth - event.clientX : event.clientX;
     this.ghostState.set(new TreeGhost(x / this.zoom + TreeDragSessionResources.treeGhostOffset, event.clientY / this.zoom - this.rowSize.height / 2, this.rowSize.width, isRightToLeft));
     this.setScroll(this.scrollAt(event.clientY, this.rowSize.height * this.zoom), node);
@@ -195,7 +196,7 @@ export class TreeDragSession {
     const [first] = (drop.place === TreeDropPlace.Start ? drop.target.children : []).slice(0, 1).map(t => this.hooks.rowOf(t));
     const style = getComputedStyle(first ?? drop.row);
     const inset = Number.parseFloat(style.paddingInlineStart);
-    const isRightToLeft = this.host.matches(Resources.rightToLeftSelector);
+    const isRightToLeft = this.host.matches(DomResources.rightToLeftSelector);
     const top = drop.place === TreeDropPlace.Before ? box.top - this.rowGap / 2 : box.bottom + this.rowGap / 2;
     const start = isRightToLeft ? frame.right - box.right : box.left - frame.left;
     return new TreeLine((top - frame.top) / this.zoom, start / this.zoom + inset, box.width / this.zoom - inset - Number.parseFloat(style.paddingInlineEnd));

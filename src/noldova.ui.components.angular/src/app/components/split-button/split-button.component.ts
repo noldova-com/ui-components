@@ -12,7 +12,7 @@ import { OverlayAlignment } from "../../enums/overlay-alignment.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
 import { BusyGuard } from "../../services/busy-guard.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { IconButtonComponent } from "../icon-button/icon-button.component.js";
 import { MenuTriggerDirective } from "../menu/menu-trigger.directive.js";
 import { SplitButtonResources } from "./split-button.resources.js";
@@ -29,7 +29,7 @@ import { TooltipDirective } from "../tooltip/tooltip.directive.js";
   }
 })
 export class SplitButtonComponent {
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
   protected readonly partResources: typeof SplitButtonResources = SplitButtonResources;
 
   public readonly icon = input.required<string>();

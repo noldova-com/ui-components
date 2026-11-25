@@ -17,6 +17,7 @@ import { OverlayAlignment } from "../../enums/overlay-alignment.js";
 import { OverlayAnchoring } from "../../models/overlay-anchoring.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { ContextMenuTriggerResources } from "./context-menu-trigger.resources.js";
 
@@ -78,7 +79,7 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
     event.preventDefault();
     event.stopPropagation();
     this.echoes = event.ctrlKey ? [ContextMenuTriggerResources.auxclickEvent, Resources.clickEvent] : [ContextMenuTriggerResources.auxclickEvent];
-    this.openOn(target, new DOMRect(event.clientX, event.clientY, 0, 0), event.button === Resources.secondaryButton ? Resources.mouseFocusOrigin : Resources.keyboardFocusOrigin);
+    this.openOn(target, new DOMRect(event.clientX, event.clientY, 0, 0), event.button === Resources.secondaryButton ? Resources.mouseFocusOrigin : DomResources.keyboardFocusOrigin);
   }
 
   public openFromKeyboard(event: KeyboardEvent, target: HTMLElement = this.host): void {
@@ -87,7 +88,7 @@ export class ContextMenuTriggerDirective extends CdkMenuTriggerBase {
     event.preventDefault();
     this.echoes = [];
     const bounds = target.getBoundingClientRect();
-    this.openOn(target, new DOMRect(bounds.left, bounds.bottom, 0, 0), Resources.keyboardFocusOrigin);
+    this.openOn(target, new DOMRect(bounds.left, bounds.bottom, 0, 0), DomResources.keyboardFocusOrigin);
   }
 
   public close(): void {

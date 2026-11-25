@@ -26,6 +26,7 @@ import { OverlaySide } from "../../models/overlay-side.js";
 import { ThemeChangeWatch } from "../../models/theme-change-watch.js";
 import { AnchoredOverlay } from "../../services/anchored-overlay.js";
 import { Announcer } from "../../services/announcer.js";
+import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
 import { MentionFieldResources } from "./mention-field.resources.js";
 import { MentionListComponent } from "./mention-list.component.js";
@@ -88,7 +89,7 @@ export class MentionFieldDirective {
     effect(() => this.announce(this.completion()));
     effect(() => this.apply(this.value()));
     const handleKey = (event: KeyboardEvent): void => this.handleKey(event);
-    this.field.addEventListener(Resources.keydownEvent, handleKey, true);
+    this.field.addEventListener(DomResources.keydownEvent, handleKey, true);
     const place = (): void => this.backdrop.place();
     const resizes = new ResizeObserver(place);
     const looks = new MutationObserver(place);
@@ -104,7 +105,7 @@ export class MentionFieldDirective {
       themes.start();
     });
     inject(DestroyRef).onDestroy(() => {
-      this.field.removeEventListener(Resources.keydownEvent, handleKey, true);
+      this.field.removeEventListener(DomResources.keydownEvent, handleKey, true);
       resizes.disconnect();
       looks.disconnect();
       themes.stop();
@@ -193,7 +194,7 @@ export class MentionFieldDirective {
           return;
         this.choose(completion, completion.choiceAt(this.active()));
         break;
-      case Resources.escapeKey:
+      case DomResources.escapeKey:
         this.close();
         break;
       default:

@@ -9,7 +9,7 @@
 import { type Direction, Directionality } from "@angular/cdk/bidi";
 import { ElementRef, type Provider, inject } from "@angular/core";
 
-import { Resources } from "../../resources.js";
+import { DomResources } from "../../dom-resources.js";
 
 export class ElementDirectionality extends Directionality {
   private readonly element: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
@@ -19,6 +19,6 @@ export class ElementDirectionality extends Directionality {
   }
 
   public override get value(): Direction {
-    return this.element.matches(Resources.rightToLeftSelector) ? Resources.rightToLeftDirection : Resources.leftToRightDirection;
+    return this.element.matches(DomResources.rightToLeftSelector) ? DomResources.rightToLeftDirection : DomResources.leftToRightDirection;
   }
 }

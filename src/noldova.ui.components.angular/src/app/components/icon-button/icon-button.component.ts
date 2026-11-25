@@ -9,7 +9,7 @@
 import { Component, ElementRef, inject, input } from "@angular/core";
 
 import { BusyGuard } from "../../services/busy-guard.js";
-import { Resources } from "../../../resources.js";
+import { DomResources } from "../../../dom-resources.js";
 import { SpinnerComponent } from "../spinner/spinner.component.js";
 
 @Component({
@@ -28,11 +28,11 @@ import { SpinnerComponent } from "../spinner/spinner.component.js";
     "[class.nol-icon-button-tab-action]": "tabAction() && !filled() && !overlay()",
     "[class.nol-icon-button-danger]": "danger() && !filled() && !overlay()",
     "[class.nol-icon-button-busy]": "busy()",
-    "[attr.aria-busy]": "busy() ? resources.trueValue : null"
+    "[attr.aria-busy]": "busy() ? domResources.trueValue : null"
   }
 })
 export class IconButtonComponent {
-  protected readonly resources: typeof Resources = Resources;
+  protected readonly domResources: typeof DomResources = DomResources;
 
   public readonly icon = input.required<string>();
   public readonly label = input.required<string>();
