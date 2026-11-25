@@ -7,10 +7,16 @@
  */
 
 :host {
+  --nol-site-lockup-marks: calc(var(--nol-site-wordmark) * var(--nol-site-lockup-ratio));
+
   display: inline-flex;
   flex: 0 1 auto;
-  min-width: 0;
+  min-width: var(--nol-site-lockup-marks);
   max-width: 100%;
+}
+
+:host(.nol-site-lockup-with-icon) {
+  --nol-site-lockup-marks: calc(var(--nol-site-icon) + var(--nol-space-3) + var(--nol-site-wordmark) * var(--nol-site-lockup-ratio));
 }
 
 .nol-site-lockup-link {
@@ -30,6 +36,36 @@
 
   @media (forced-colors: active) {
     outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
+.nol-site-lockup-icon {
+  display: block;
+  flex: none;
+  width: var(--nol-site-icon);
+  height: var(--nol-site-icon);
+  margin-inline-end: calc(var(--nol-space-3) - var(--nol-space-2));
+}
+
+.nol-site-lockup-icon-dark {
+  display: none;
+}
+
+:host-context(:root[data-nol-theme-mode="Dark"]) .nol-site-lockup-icon-light {
+  display: none;
+}
+
+:host-context(:root[data-nol-theme-mode="Dark"]) .nol-site-lockup-icon-dark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context(:root:not([data-nol-theme-mode="Light"])) .nol-site-lockup-icon-light {
+    display: none;
+  }
+
+  :host-context(:root:not([data-nol-theme-mode="Light"])) .nol-site-lockup-icon-dark {
+    display: block;
   }
 }
 

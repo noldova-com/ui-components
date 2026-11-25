@@ -148,24 +148,35 @@ describe("SiteThemeSwitchComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes)
-      it(`sits on the window color with the ${theme.id} theme's half-space inset and medium radius, its pills square at the site theme pill size and a half space apart, in ${mode} mode`, async () => {
+      it(`sits on the window color with the ${theme.id} theme's medium radius, its pills at least pointer targets, each with a face at the site theme pill size centred in it, the faces a half space from its edge and apart or as close as the targets allow, in ${mode} mode`, async () => {
         await renderAsync(theme, mode);
         const style = getComputedStyle(switchHost());
         const size = AppearanceFixture.measureLook("site-theme-pill");
-        const inset = AppearanceFixture.measureLook("space-half");
+        const target = Math.max(size, AppearanceFixture.measureLook("pointer-target"));
+        const reach = (target - size) / 2;
+        const half = AppearanceFixture.measureLook("space-half");
+        const inset = Math.max(0, half - reach);
+        const gap = Math.max(0, half - reach * 2);
         const outer = switchHost().getBoundingClientRect();
-        const first = DomFixture.at(pills(), 0).getBoundingClientRect();
+        const boxes = pills().map(t => t.getBoundingClientRect());
 
         expect(style.backgroundColor).toBe(AppearanceFixture.readColor(theme, mode, "window"));
         AppearanceFixture.expectLook(style.borderTopLeftRadius, theme, "radius-medium", "border-top-left-radius");
         expect(style.borderTopWidth).toBe("0px");
-        for (const rectangle of pills().map(t => t.getBoundingClientRect())) {
-          AppearanceFixture.expectPixels(rectangle.width, size);
-          AppearanceFixture.expectPixels(rectangle.height, size);
+        for (const pill of pills()) {
+          const box = pill.getBoundingClientRect();
+          const face = getComputedStyle(pill);
+          const sides = [face.paddingTop, face.paddingRight, face.paddingBottom, face.paddingLeft].map(t => Number.parseFloat(t));
+          AppearanceFixture.expectPixels(box.width, target);
+          AppearanceFixture.expectPixels(box.height, target);
+          for (const side of sides)
+            AppearanceFixture.expectPixels(side, reach);
+          expect(face.backgroundClip).toBe("content-box");
         }
-        AppearanceFixture.expectPixels(first.left - outer.left, inset);
-        AppearanceFixture.expectPixels(first.top - outer.top, inset);
-        AppearanceFixture.expectPixels(outer.height, size + inset * 2);
-        AppearanceFixture.expectPixels(DomFixture.at(pills(), 1).getBoundingClientRect().left - first.right, inset);
+        AppearanceFixture.expectPixels(DomFixture.at(boxes, 0).left - outer.left, inset);
+        AppearanceFixture.expectPixels(outer.right - DomFixture.at(boxes, 2).right, inset);
+        AppearanceFixture.expectPixels(outer.height, target + inset * 2);
+        AppearanceFixture.expectPixels(DomFixture.at(boxes, 1).left - DomFixture.at(boxes, 0).right, gap);
+        AppearanceFixture.expectPixels(DomFixture.at(boxes, 2).left - DomFixture.at(boxes, 1).right, gap);
       });
 });

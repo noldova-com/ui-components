@@ -166,6 +166,16 @@ export declare class SiteHeaderComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
+   * The product's icon, drawn in its own colors before the wordmark, 1.75rem square (`--nol-site-icon`) and 0.75rem from it; none when not bound. The image is decorative, so the link's name stays the product's home.
+   */
+  public readonly icon: InputSignal<string | null>;
+
+  /**
+   * The icon to draw in dark mode in place of `icon`; `icon` in both modes when not bound.
+   */
+  public readonly iconDark: InputSignal<string | null>;
+
+  /**
    * A version drawn after the wordmark in small muted text, such as
    * `v0.0.9`; null, the default, for none.
    */
