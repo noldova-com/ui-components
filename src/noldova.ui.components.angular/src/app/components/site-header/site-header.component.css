@@ -16,6 +16,18 @@
   color: var(--nol-text);
 }
 
+/* Once the page scrolls under it, the header lets the page show through, blurred, where the browser can blur it and the
+ * visitor hasn't asked for less transparency; an open menu or search stays opaque. The panel keeps 92% of its color, so
+ * every text, icon and focus ring on it keeps its contrast over black or white content in both modes. */
+@supports (backdrop-filter: blur(1px)) {
+  @media not (prefers-reduced-transparency: reduce) {
+    :host(.nol-site-header-scrolled:not(.nol-site-header-open, .nol-site-header-searching)) {
+      background-color: color-mix(in srgb, var(--nol-panel) 92%, transparent);
+      backdrop-filter: saturate(180%) blur(1.25rem);
+    }
+  }
+}
+
 .nol-site-skip {
   position: absolute;
   top: var(--nol-space-2);

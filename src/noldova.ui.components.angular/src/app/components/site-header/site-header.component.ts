@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, viewChild }
-  from "@angular/core";
+import { Component, DOCUMENT, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, signal,
+  viewChild } from "@angular/core";
 
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
@@ -32,6 +32,8 @@ import { SiteSearchDirective } from "./site-search.directive.js";
     "[class.nol-site-header-open]": "menuOpen()",
     "[class.nol-site-header-searching]": "searchOpen()",
     "[class.nol-site-header-with-search]": "hasSearch()",
+    "[class.nol-site-header-scrolled]": "isScrolled()",
+    "(window:scroll)": "readScroll()",
     "(keydown.escape)": "closeLayers()",
     "(document:click)": "closeOutside($event)"
   }
@@ -59,6 +61,8 @@ export class SiteHeaderComponent {
   protected readonly menuId: string = `${SiteHeaderResources.menuIdPrefix}${this.headerId}`;
   protected readonly searchId: string = `${SiteHeaderResources.searchIdPrefix}${this.headerId}`;
   private readonly injector: Injector = inject(Injector);
+  private readonly document: Document = inject(DOCUMENT);
+  protected readonly isScrolled: WritableSignal<boolean> = signal(false);
   private readonly isSearchFromButton: WritableSignal<boolean> = linkedSignal({ source: this.searchOpen, computation: () => false });
   private readonly searches: Signal<readonly SiteSearchDirective[]> = contentChildren(SiteSearchDirective);
   protected readonly hasSearch: Signal<boolean> = computed(() => this.searches().length > 0);
@@ -66,6 +70,15 @@ export class SiteHeaderComponent {
   private readonly searchButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("searchButton", { read: ElementRef });
   private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });
   private readonly menuPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("menuPanel", { read: ElementRef });
+
+  public constructor() {
+    // A page opened part way down, or reloaded there, starts scrolled.
+    afterNextRender(() => this.readScroll());
+  }
+
+  protected readScroll(): void {
+    this.isScrolled.set(this.document.documentElement.scrollTop > 0);
+  }
 
   protected maskOf(link: SiteSocialLink): string {
     return SiteLockupResources.formatMask(link.icon);
