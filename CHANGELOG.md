@@ -4,6 +4,12 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.35
+
+- `@noldova/ui.components.angular`: the site's card grid takes `columns`, the number of columns on a screen 75rem and wider, two below 75rem and one below 47.5rem; the last card spans the columns its row leaves, so seven cards in four columns stand four and three, the last across two. Null, the default, keeps the auto-fit grid. With `copy` unset, the site section draws the content projected with `nolSiteSectionCopy` in the copy's place and style, each element with the `nol-site-section-copy-line` class a line, as the card does with `nolSiteCardText` (#142).
+- `@noldova/ui.components.angular`: `input[nol-text-field]` takes `quiet`, the quiet search look for a site's header: a transparent border at the plain field's width, so its size and text stay where a plain field's are, the window fill, and a muted placeholder that keeps 4.5:1 on it; focus, an invalid entry and a disabled field look as on a plain field, and forced colors draw the plain field. The docs site's search uses it in a `nol-text-field-box` with the `search` glyph (#135).
+- `@noldova/ui.components.angular` (breaking): `AnchoredOverlay.placedBoxes` gives a `PlacedBoxes`, with `origin` and `pane`, in place of a pair of boxes. To migrate, read `boxes.origin` for `boxes[0]` and `boxes.pane` for `boxes[1]` (#144).
+
 ## 0.0.34
 
 - `@noldova/ui.components.angular` (breaking): the main entry no longer exports `SiteHeaderComponent`, `SiteFooterComponent` or `SiteSearchDirective`; a site imports them from `@noldova/ui.components.angular/site`, which also exports everything else a site's frame uses (`SiteLink`, `SiteLinkGroup`, `SiteSocialLink`, `SiteWordmarkSize`, the parts and models), so a site that imports all of them from it no longer needs the main entry for its frame. The site's parts load their tooltips' code after the first render, so a website that takes them from the site entry starts with none of the Angular CDK; their selectors, inputs, look and tooltip timing are the same (#139).
