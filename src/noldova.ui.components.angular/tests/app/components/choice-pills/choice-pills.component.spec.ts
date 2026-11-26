@@ -71,6 +71,18 @@ describe("ChoicePillsComponent", () => {
     expect(pills().every(t => Object.isNull(t.querySelector("svg, .nol-icon")))).toBe(true);
   });
 
+  it("draws no pill as chosen from the root's theme mode when it isn't pending, though a pill's value matches it", () => {
+    document.documentElement.setAttribute("data-nol-theme-mode", "Dark");
+    render();
+    host.options.set([new SelectOption("System", "System"), new SelectOption("Light", "Light"), new SelectOption("Dark", "Dark")]);
+    host.value.set("");
+    fixture.detectChanges();
+    const faces = pills().map(t => [getComputedStyle(t).backgroundColor, getComputedStyle(t).boxShadow].join(" "));
+    document.documentElement.removeAttribute("data-nol-theme-mode");
+
+    expect([selected(), faces]).toEqual([[], faces.map(() => "rgba(0, 0, 0, 0) none")]);
+  });
+
   it("describes its group by the elements it is given, and by nothing when given none", () => {
     render();
     const unbound = group().getAttribute("aria-describedby");

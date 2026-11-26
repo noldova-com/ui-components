@@ -13,6 +13,7 @@ export class SiteThemeSwitchResources {
   public static readonly order: readonly ModePreference[] = [ModePreference.Light, ModePreference.Dark, ModePreference.System];
   public static readonly storageKey: string = "noldova-theme";
   public static readonly modeAttribute: string = "data-nol-theme-mode";
+  public static readonly pendingValue: string = "";
   public static readonly label: string = "Theme";
   public static readonly titles: Readonly<Record<ModePreference, string>> = {
     [ModePreference.Light]: "Light",
