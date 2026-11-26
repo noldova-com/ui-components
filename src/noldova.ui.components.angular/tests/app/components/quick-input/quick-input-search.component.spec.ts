@@ -11,6 +11,7 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { QuickInputComponent } from "../../../../src/app/components/quick-input/quick-input.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import type { Theme } from "../../../../src/app/models/theme";
 import { QuickInputItem } from "../../../../src/app/models/quick-input-item";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
@@ -30,7 +31,7 @@ const results: readonly QuickInputItem[] = [new QuickInputItem("one", "Release n
 })
 class SearchHostComponent {
   public readonly items = signal<readonly QuickInputItem[]>(results);
-  public readonly icon = signal<string | null>("search");
+  public readonly icon = signal<IconName | null>("search");
   public readonly emptyText = signal(hint);
   public readonly isAlert = signal(false);
   public readonly width = signal<string | null>(null);

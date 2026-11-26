@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
+
 export class CanvasResources {
   public static readonly canvasRoleDescription: string = "canvas";
   public static readonly canvasContentMoves: MutationObserverInit = { childList: true, subtree: true };
@@ -18,10 +20,10 @@ export class CanvasResources {
   public static readonly canvasHint: string = "Drag to move · scroll to pan · pinch or Ctrl+scroll to zoom";
   public static readonly canvasShowMapLabel: string = "Show the overview map";
   public static readonly canvasHideMapLabel: string = "Hide the overview map";
-  public static readonly canvasZoomInGlyph: string = "zoom_in";
-  public static readonly canvasZoomOutGlyph: string = "zoom_out";
-  public static readonly canvasFitGlyph: string = "fit_screen";
-  public static readonly canvasMapGlyph: string = "map";
+  public static readonly canvasZoomInGlyph: IconName = "zoom_in";
+  public static readonly canvasZoomOutGlyph: IconName = "zoom_out";
+  public static readonly canvasFitGlyph: IconName = "fit_screen";
+  public static readonly canvasMapGlyph: IconName = "map";
   public static readonly canvasLeftKey: string = "ArrowLeft";
   public static readonly canvasRightKey: string = "ArrowRight";
   public static readonly canvasZoomInKeys: readonly string[] = ["+", "="];

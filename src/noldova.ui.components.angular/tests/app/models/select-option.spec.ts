@@ -34,9 +34,9 @@ describe("SelectOption", () => {
     expect(options.map(t => [t.icon, t.iconColor])).toEqual([["groups", "teal"], ["construction", "#C2410C"], ["science", "#a3f"], ["science", null], [null, null]]);
   });
 
-  it("holds an icon and an icon color as given, without checking them, since checking the names would ship the kit's whole icon list with every option", () => {
-    const option = new SelectOption("design", "Design", null, false, "Groups", "cyan");
+  it("holds an icon color as given, without checking it, since the type check refuses a misspelt icon and checking at run time would ship the kit's whole icon list", () => {
+    const option = new SelectOption("design", "Design", null, false, "groups", "cyan");
 
-    expect([option.icon, option.iconColor]).toEqual(["Groups", "cyan"]);
+    expect([option.icon, option.iconColor]).toEqual(["groups", "cyan"]);
   });
 });

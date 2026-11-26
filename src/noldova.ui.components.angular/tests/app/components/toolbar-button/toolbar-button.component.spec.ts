@@ -14,6 +14,7 @@ import { MenuItemComponent } from "../../../../src/app/components/menu/menu-item
 import { MenuTriggerDirective } from "../../../../src/app/components/menu/menu-trigger.directive";
 import { MenuComponent } from "../../../../src/app/components/menu/menu.component";
 import { ToolbarButtonComponent } from "../../../../src/app/components/toolbar-button/toolbar-button.component";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -41,7 +42,7 @@ import { OpacityFixture } from "../../../fixtures/opacity.fixture";
 class ToolbarButtonHostComponent {
   public readonly directions: readonly string[] = ["ltr", "rtl"];
   public readonly label = signal("Bold");
-  public readonly icon = signal<string | null>("format_bold");
+  public readonly icon = signal<IconName | null>("format_bold");
   public readonly isShowingLabel = signal(false);
   public readonly hasMenu = signal(false);
   public readonly pressed = signal<boolean | undefined>(undefined);
@@ -134,7 +135,7 @@ describe("ToolbarButtonComponent", () => {
       t.hasMenu.set(true);
     });
     expect([button().querySelector(".nol-toolbar-button-glyph")?.textContent, button().querySelector(".nol-toolbar-button-label")?.textContent]).toEqual(["format_bold", "Bold"]);
-    expect(button().querySelector(".nol-toolbar-button-chevron")?.textContent).toBe("expand_more");
+    expect(button().querySelector(".nol-toolbar-button-chevron")?.textContent).toBe("keyboard_arrow_down");
     expect(button().getAttribute("aria-haspopup")).toBe("menu");
   });
 

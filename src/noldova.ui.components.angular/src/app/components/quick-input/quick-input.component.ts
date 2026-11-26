@@ -14,10 +14,12 @@ import {
 import "@noldova/context.core";
 
 import { ComposingKey } from "../../models/composing-key.js";
+import type { IconName } from "../../models/icon-name.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { QuickInputGroup } from "../../models/quick-input-group.js";
 import type { QuickInputItem } from "../../models/quick-input-item.js";
 import { QuickInputResources } from "./quick-input.resources.js";
+import { QuickInputSearch } from "./quick-input-search.js";
 import { TooltipDirective } from "../tooltip/tooltip.directive.js";
 import { DomResources } from "../../../dom-resources.js";
 import { Resources } from "../../../resources.js";
@@ -38,9 +40,9 @@ export class QuickInputComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly optionTooltips: Signal<readonly TooltipDirective[]> = viewChildren(TooltipDirective);
-  private readonly movedId: WritableSignal<string | null> = linkedSignal({
-    source: () => ({ items: this.items(), query: this.query() }),
-    computation: (source, previous?: { readonly source: { readonly items: readonly QuickInputItem[]; readonly query: string }; readonly value: string | null }) =>
+  private readonly movedId: WritableSignal<string | null> = linkedSignal<QuickInputSearch, string | null>({
+    source: () => new QuickInputSearch(this.items(), this.query()),
+    computation: (source, previous) =>
       !Object.isUndefined(previous) && previous.source.query === source.query && source.items.some(t => t.id === previous.value) ? previous.value : null
   });
   private shownQuery: string = String.empty;
@@ -75,7 +77,7 @@ export class QuickInputComponent {
 
   public readonly items = input.required<readonly QuickInputItem[]>();
   public readonly label = input.required<string>();
-  public readonly icon = input<string | null>(null);
+  public readonly icon = input<IconName | null>(null);
   public readonly emptyText = input<string>(String.empty);
   public readonly isEmptyTextAlert = input<boolean>(false);
   public readonly query = model<string>(String.empty);

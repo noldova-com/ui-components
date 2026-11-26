@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { IconName } from "../../models/icon-name.js";
 import { OverlaySide } from "../../models/overlay-side.js";
 import { TooltipDefaults } from "../../models/tooltip-defaults.js";
 import { Resources } from "../../../resources.js";
@@ -13,10 +14,10 @@ import { Resources } from "../../../resources.js";
 export class TabResources {
   public static readonly tabTooltip: TooltipDefaults = new TooltipDefaults(OverlaySide.below, true);
   public static readonly previewDescription: string = "Preview";
-  public static readonly tabWaitingGlyph: string = "pan_tool";
+  public static readonly tabWaitingGlyph: IconName = "pan_tool";
   public static readonly tabWaitingDescription: string = "waiting for your answer";
   public static readonly tabTitleFieldLabel: string = "Tab title";
-  public static readonly tabImageGlyph: string = "public";
+  public static readonly tabImageGlyph: IconName = "public";
   public static readonly menuPaneSelector: string = `.${Resources.menuPaneClass}`;
   public static formatBadged(label: string, badge: string): string {
     return `${label}, ${badge}`;

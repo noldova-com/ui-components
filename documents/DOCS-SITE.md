@@ -1,9 +1,9 @@
 # The docs site
 
-**Scope:** The docs site's commands, its generated sources, the rules its pages keep, its theme switch and what it leaves to hosting.
+**Scope:** The docs site's commands, its generated sources, the rules its pages keep, its theme and what it leaves to hosting.
 
 The docs site shows each component of `@noldova/ui.components.angular` with its description, live examples and their code, its states and its API.
-It is an Angular app in `src/noldova.ui.components.angular.docs`, built against the kit's source, never published as a package, and drawn only with the kit's own components, tokens, fonts and icons, apart from the header's GitHub and X marks, the site's own drawing in its own `--nol-docs-brand-mark` color, #000000 in the Light mode and #FFFFFF in the Dark one.
+It is an Angular app in `src/noldova.ui.components.angular.docs`, built against the kit's source, never published as a package, and drawn only with the kit's own components, tokens, fonts and icons, apart from the GitHub and X marks its header shows.
 
 ## Commands
 
@@ -33,21 +33,23 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 
 ## Pages
 
-- Every page's header shows the Noldova wordmark, drawn in the text's color and named "Noldova", then "UI Components", linking to the site's root; then, 0.5rem after it and centered on its line, the kit's version as `v<version>` in the muted text at the label size, read from the root's `version.json` when the site builds and linking to that version's section of the CHANGELOG; then the search, the theme switch and links to the kit's GitHub repository and to Noldova on X, which open in the same tab.
-  Each of the two links shows only its brand's mark, black in the Light look and white in the Dark one, and the link color under forced colors; it is named "GitHub" or "X", with that name as its tooltip.
+- Every page is framed by the kit's site header and footer, imported from `@noldova/ui.components.angular/site`, as the kit's [site header](kit/site-header.md) and [site footer](kit/site-footer.md) pages describe, both at the wide width.
+  The header shows the Noldova wordmark and "UI Components", linking to the site's root; then the kit's version as `v<version>`, read from the root's `version.json` when the site builds and linking to that version's section of the CHANGELOG; then the docs search, as the header's search; then the theme switch and the GitHub and X links. It has no page links and no download button.
+  The footer shows the same lockup and three groups: UI Components, with Getting started, Theme tokens and the CHANGELOG; Help, with the repository's issues and Noldova's privacy notice; and Follow, with GitHub and X.
+  A plain click on a header or footer link to a page of the site moves there through the router, without a reload; a click with a modifier, a link to another site and a link to a part of the same page are left to the browser.
   The wordmark, `assets/noldova-wordmark.svg`, and the favicons, the Noldova "N" as `favicon.svg` with `favicon-32.png` and the 180px `apple-touch-icon.png`, are in `src/noldova.ui.components.angular.docs/public`, which the build copies to the site's root.
   The wordmark and the favicons are Noldova's trademarks, not under the MIT License, as the README's [Trademarks](../README.md#trademarks) says.
-  The two marks are drawn inline by `src/app/components/docs-brand-mark`, their paths unchanged from their sources:
-  - The GitHub mark is `icons/mark-github-16.svg` of Primer Octicons at `@primer/octicons@19.42.0` (commit `9a274e212ee25c400ff666ce25a57866b7eacc25`), https://github.com/primer/octicons, under the MIT license, whose text the site serves as `assets/licenses/OCTICONS-LICENSE.txt`; the source file's SHA-256 is `7421820090b50ac79d7c2bf7c951a433d7098a8a9c474809207bdd45f62d9d46`. GitHub is a trademark of GitHub, Inc.
-  - The X logo is `logo.svg` from `x-logo.zip` on X's brand toolkit, https://about.x.com/en/who-we-are/brand-toolkit, used under X's Trademark Guidelines; its fill, white in the file, is black or white, the two colors the toolkit ships it in, and it links only to Noldova's X account; the source file's SHA-256 is `10133d36ecdb84d3cd6f36c6727e826340e3621cd8408503c710c5fab62defde`. X is a trademark of X Corp.
+  The GitHub and X marks are `public/brand/github.svg` and `public/brand/x.svg`, unchanged from each owner's brand page, used only as the icons of the links to Noldova's own accounts there, and named "GitHub" and "X":
+  - `github.svg` is the GitHub mark (Invertocat), `GitHub Logos/SVG/GitHub_Invertocat_Black.svg` from https://brand.github.com/GitHub_Logos.zip, under GitHub's terms at https://brand.github.com; its SHA-256 is `693d7abe6f899646cc2e96856723b45e95f71885a54910b2749f6decdf7e1ee1`. GitHub is a trademark of GitHub, Inc.
+  - `x.svg` is `logo.svg` from `x-logo.zip` on X's brand toolkit, https://about.x.com/en/who-we-are/brand-toolkit, used under X's Trademark Guidelines; its SHA-256 is `511cb310e53fc7226033643561df12290125be95275aa54635513f19a024194b`. X is a trademark of X Corp.
 - The site's own text, its pages, menu, search and "On this page" list, is 14px: `src/styles.css` scales, on the shell's `nol-docs-root` class, the kit's text sizes, their line heights, its spaces and the heights of the fields, pills, section headers and code headers the site draws by 14 / 13, as a larger panel size would, from copies of the kit's values that it keeps on the root as `--nol-docs-kit-*`.
   An example's preview and a page's states keep the kit's own values, so they show the components as apps draw them.
-- Below the header, the menu, the page and the "On this page" list together are at most 108rem wide, centered in the window, and from 75rem wide 3.5rem in from the window's sides; the page fills the space between the menu and the list.
+- Below the header, the menu, the page and the "On this page" list together are at most 108rem wide, the kit's `--nol-site-content-width-wide`, and the site's inset on each side, as the header's content is, centered in the window, and from 48rem wide in from the window's sides by the site's inset less the menu's own, so the menu's links line up with the header's and the footer's lockups; the page fills the space between the menu and the list.
 - Getting started is the site's root, and the theme tokens page lives at `tokens/`; both stand in the menu ahead of the component groups.
 - A component page lives at `components/<name>/`, and every address ends in `/`.
-- The header stays at the top of the window while the page scrolls, at every width and in every look, in front of the page and filled, so nothing shows through it; the shell keeps `--nol-docs-header-height` at its height on the root, whose `scroll-padding-block-start` it sets, so a heading reached by a link or an address's anchor lands just below it.
-- From 48rem wide the menu stands beside the page. Below that width it is closed behind a "Menu" button at the start of the header, which says with `aria-expanded` whether it is open, so the page's content comes first.
-  Beside the page, and open on a phone wherever the page is scrolled, it stays right below the header while the page scrolls, in front of the page; either way, taller than the window, it scrolls on its own, its height the window's dynamic height (`dvh`) less the header's, so a mobile browser's toolbar never hides its end. The button opens and closes it, Escape closes it and puts the focus back on the button, and choosing a page closes it and moves the focus to that page's heading.
+- The header stays at the top of the window while the page scrolls, at every width and in every look, in front of the page, which shows through it blurred once it scrolls under it, as the kit's site header draws it; the shell keeps `--nol-docs-header-height` at its height, with the Pages bar's below 48rem, on the root, whose `scroll-padding-block-start` it sets, so a heading reached by a link or an address's anchor lands just below them.
+- From 48rem wide the menu stands beside the page. Below that width it is closed behind a "Pages" button in a bar of its own under the header, which stays below the header while the page scrolls, behind the header's open menu and search, and says with `aria-expanded` whether the menu is open, so the page's content comes first; opening the menu closes the header's menu and search, and opening either of those closes it.
+  Beside the page, and open on a phone wherever the page is scrolled, it stays right below the header, and on a phone below the Pages bar, while the page scrolls, in front of the page; either way, taller than the window, it scrolls on its own, its height the window's dynamic height (`dvh`) less the header's and the bar's, so a mobile browser's toolbar never hides its end. The button opens and closes it, Escape closes it and puts the focus back on the button, and choosing a page closes it and moves the focus to that page's heading.
   The menu marks the current page's link with `aria-current="page"` and the selected fill; under forced colors that fill is `Highlight` with the link's text in `HighlightText`, kept on hover, and a focus ring on it is `HighlightText`, at every width, the phone menu too.
 - An API, accessibility or tokens table whose columns, holding names that never break, are wider than its section stacks each row, as `src/app/components/docs-fit-table` measures again whenever the section changes size, so one page can show one table in columns and stack another: the name, the type and the default on one line, the type and default labelled, and the description below at the table's full width; the column headings stay for screen readers only.
 - From 75rem wide, an "On this page" list stands to the right of every page, below the header while the page scrolls and scrolling on its own when taller than the window, a navigation landmark named by its label, and is hidden below that width, where the page keeps the whole width.
@@ -69,7 +71,7 @@ The docs app imports its modules by the path alias `@docs-generated/*`, which th
 
 ## Theme
 
-The theme switch keeps the reader's choice, `Light` or `Dark`, under the browser storage key `nol-docs-theme`, and `System` removes it.
+The header's theme switch keeps the reader's choice under the browser storage key `noldova-theme`, which every Noldova site shares, as the kit's site header page says.
 A script in the page shell's head sets `data-nol-theme-mode` from that key before the first paint.
 
 ## Hosting

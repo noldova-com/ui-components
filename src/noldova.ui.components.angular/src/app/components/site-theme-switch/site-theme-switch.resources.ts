@@ -7,6 +7,7 @@
  */
 
 import { ModePreference } from "../../enums/mode-preference.js";
+import type { IconName } from "../../models/icon-name.js";
 
 export class SiteThemeSwitchResources {
   public static readonly order: readonly ModePreference[] = [ModePreference.Light, ModePreference.Dark, ModePreference.System];
@@ -19,7 +20,7 @@ export class SiteThemeSwitchResources {
     [ModePreference.Dark]: "Dark",
     [ModePreference.System]: "System"
   };
-  public static readonly glyphs: Readonly<Record<ModePreference, string>> = {
+  public static readonly glyphs: Readonly<Record<ModePreference, IconName>> = {
     [ModePreference.Light]: "light_mode",
     [ModePreference.Dark]: "dark_mode",
     [ModePreference.System]: "desktop_windows"

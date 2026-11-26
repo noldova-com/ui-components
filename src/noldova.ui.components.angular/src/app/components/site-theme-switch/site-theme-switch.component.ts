@@ -12,14 +12,14 @@ import { Component, DOCUMENT, PLATFORM_ID, type Signal, ViewEncapsulation, after
 import { ModePreference } from "../../enums/mode-preference.js";
 import { ThemeMode } from "../../enums/theme-mode.js";
 import { SelectOption } from "../../models/select-option.js";
-import { ChoicePillsComponent } from "../choice-pills/choice-pills.component.js";
+import { SiteChoicePillsComponent } from "../choice-pills/site-choice-pills.component.js";
 import { SiteThemeSwitchResources } from "./site-theme-switch.resources.js";
 
 @Component({
   selector: "nol-site-theme-switch",
   templateUrl: "./site-theme-switch.component.html",
   styleUrl: "./site-theme-switch.component.css",
-  imports: [ChoicePillsComponent],
+  imports: [SiteChoicePillsComponent],
   encapsulation: ViewEncapsulation.None,
   host: {
     "class": "nol-site-theme-switch",

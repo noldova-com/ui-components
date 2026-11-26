@@ -18,11 +18,13 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
 const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 37 37'%3E%3Crect width='37' height='37'/%3E%3C/svg%3E";
+// A light glyph for the dark tile, in place of the dark one.
+const markDark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 37 37'%3E%3Crect width='37' height='37' fill='white'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteClosingComponent],
   template: `
-    <nol-site-closing [mark]="mark()" [eyebrow]="eyebrow()" [title]="title()" [action]="action()" [link]="link()" headingId="closing-title"
+    <nol-site-closing [mark]="mark()" [markDark]="markDark()" [eyebrow]="eyebrow()" [title]="title()" [action]="action()" [link]="link()" headingId="closing-title"
       ><span class="by">Free and open source, made by</span><img class="wordmark" src="${mark}" width="80" height="12" alt="Noldova"
     /></nol-site-closing>
     <nol-site-closing class="projected" headingId="projected-title"><span nolSiteClosingTitle>Commit freely.<br /><kbd>Ctrl+Z</kbd> is right there.</span></nol-site-closing>
@@ -30,6 +32,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 })
 class SiteClosingHostComponent {
   public readonly mark = signal<string | null>(mark);
+  public readonly markDark = signal<string | null>(null);
   public readonly eyebrow = signal<string | null>("Ready when you are");
   public readonly title = signal<string | null>("Your team of agents\nis one download away.");
   public readonly action = signal<SiteAction | null>(new SiteAction("Download TeamRun", "/download/", "download"));
@@ -37,7 +40,8 @@ class SiteClosingHostComponent {
 }
 
 describe("SiteClosingComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteClosingHostComponent>;
 
   async function renderAsync(change: (host: SiteClosingHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -58,7 +62,8 @@ describe("SiteClosingComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    document.documentElement.removeAttribute("data-nol-theme-mode");
+    await page.viewport(windowWidth, windowHeight);
   });
 
   it("is a region named by its title, with the mark, the line above, the action, the text link and the note a site gives it", async () => {
@@ -85,6 +90,37 @@ describe("SiteClosingComponent", () => {
 
     expect([".nol-site-closing-mark", ".nol-site-eyebrow", ".nol-site-closing-actions"].map(t => DomFixture.maybe(closing(), t))).toEqual([null, null, null]);
     expect(getComputedStyle(DomFixture.one(bare, ".nol-site-closing-note")).display).toBe("none");
+  });
+
+  for (const mode of AppearanceFixture.modes) {
+    it(`draws the dark mark in dark mode and the mark in light mode, one at a time, 2.3125rem square in the frame's middle, ${mode}`, async () => {
+      await renderAsync(t => t.markDark.set(markDark), mode);
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
+      const shown = DomFixture.all(closing(), ".nol-site-closing-mark img").filter(t => getComputedStyle(t).display !== "none");
+      const frame = box(".nol-site-closing-mark");
+      const glyph = shown[0]?.getBoundingClientRect() ?? frame;
+
+      expect(shown.map(t => [t.getAttribute("src"), t.getAttribute("alt")])).toEqual([[mode === ThemeMode.Dark ? markDark : mark, ""]]);
+      AppearanceFixture.expectPixels(glyph.width, rem(2.3125));
+      AppearanceFixture.expectPixels(glyph.height, rem(2.3125));
+      AppearanceFixture.expectPixels(middle(glyph), middle(frame));
+      AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, frame.top + frame.height / 2);
+    });
+  }
+
+  it("draws no dark mark without a mark, and the mark in dark mode without a dark mark", async () => {
+    await renderAsync(t => {
+      t.mark.set(null);
+      t.markDark.set(markDark);
+    }, ThemeMode.Dark);
+    document.documentElement.setAttribute("data-nol-theme-mode", ThemeMode.Dark);
+
+    expect(DomFixture.maybe(closing(), ".nol-site-closing-mark")).toBeNull();
+
+    fixture.destroy();
+    await renderAsync(undefined, ThemeMode.Dark);
+
+    expect(DomFixture.all(closing(), ".nol-site-closing-mark img").map(t => [t.getAttribute("src"), getComputedStyle(t).display])).toEqual([[mark, "block"]]);
   });
 
   it("keeps the actions row for a text link alone", async () => {
@@ -138,6 +174,9 @@ describe("SiteClosingComponent", () => {
         AppearanceFixture.expectPixels(box(".nol-site-closing-note").top - box(".nol-site-closing-actions").bottom, rem(1.4375));
         AppearanceFixture.expectPixels(box("a[nol-button]").height, rem(2.5));
         AppearanceFixture.expectPixels(link.height, rem(1.5));
+        // The link's arrow is the kit's icon size, larger than the link's text, as TeamRun draws it.
+        AppearanceFixture.expectPixels(box(".nol-site-closing-link-icon").width, AppearanceFixture.measureLook("icon"));
+        AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part(".nol-site-closing-link-icon")).fontSize), AppearanceFixture.measureLook("icon"));
         AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part("h2")).fontSize), Math.min(Math.max(rem(2.4375), outer.width * 0.05), rem(3.8125)));
         if (phone) {
           // The link wraps under the button, the row's gap and its own phone margin apart.

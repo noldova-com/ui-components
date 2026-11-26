@@ -24,6 +24,18 @@ import { ForcedColorsFixture } from "../fixtures/forced-colors.fixture";
 class ThemeStylesheetHostComponent {
 }
 
+class TextShades {
+  public readonly mode: ThemeMode;
+  public readonly text: string;
+  public readonly strong: string;
+
+  public constructor(mode: ThemeMode, text: string, strong: string) {
+    this.mode = mode;
+    this.text = text;
+    this.strong = strong;
+  }
+}
+
 describe("theme stylesheet", () => {
   const modeAttribute = "data-nol-theme-mode";
   const lookVariables = Resources.lookTokens.map(t => DomResources.formatLookVariable(t));
@@ -46,8 +58,8 @@ describe("theme stylesheet", () => {
   }
 
   function styleRule(rules: readonly CSSRule[], selector: string): Map<string, string> | undefined {
-    const rule = rules.find(t => t instanceof CSSStyleRule && t.selectorText === selector) as CSSStyleRule | undefined;
-    return rule === undefined ? undefined : declarations(rule.style);
+    const rule = rules.filter(t => t instanceof CSSStyleRule).find(t => t.selectorText === selector);
+    return Object.isUndefined(rule) ? undefined : declarations(rule.style);
   }
 
   beforeEach(() => {
@@ -65,7 +77,7 @@ describe("theme stylesheet", () => {
   });
 
   it("gives the root the painter's dark colors when the system prefers dark and the page has not chosen light", () => {
-    const media = themeRules().find(t => t instanceof CSSMediaRule) as CSSMediaRule | undefined;
+    const media = themeRules().filter(t => t instanceof CSSMediaRule).at(0);
     const dark = new Map([...painted(ThemeMode.Dark)].filter(([name]) => !lookVariables.includes(name)));
 
     expect(media?.conditionText).toBe(Resources.darkSchemeQuery);
@@ -84,7 +96,7 @@ describe("theme stylesheet", () => {
     expect([root.getPropertyValue("--nol-window").trim(), root.colorScheme]).toEqual([light, Resources.lightScheme]);
   });
 
-  for (const [mode, text, strong] of [[ThemeMode.Light, "#3B3B3B", "#3B3B3B"], [ThemeMode.Dark, "#BDBDBD", "#CCCCCC"]] as const)
+  for (const { mode, text, strong } of [new TextShades(ThemeMode.Light, "#3B3B3B", "#3B3B3B"), new TextShades(ThemeMode.Dark, "#BDBDBD", "#CCCCCC")])
     it(`draws text in ${text}, names, bold text and headings in ${strong}, and the terminal on the panel in ${mode} mode, and all of the text in CanvasText in forced colors`, async () => {
       const root = document.documentElement;
       const probes = ["--nol-text", "--nol-text-strong"].map(t => {

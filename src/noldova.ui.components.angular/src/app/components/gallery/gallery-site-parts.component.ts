@@ -32,8 +32,10 @@ export class GallerySitePartsComponent {
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly action: string = GalleryResources.heroAction;
-  protected readonly actions: readonly SiteAction[] = GalleryResources.text.siteHeroActions.map((t, i) =>
-    new SiteAction(t, GalleryResources.siteHref + i, GalleryResources.text.siteHeroIcons[i] ?? null, i === 0 ? ButtonVariant.Primary : ButtonVariant.Secondary));
+  protected readonly actions: readonly SiteAction[] = [
+    new SiteAction(GalleryResources.text.siteHeroActions[0], GalleryResources.siteHref + 0, GalleryResources.text.siteHeroIcons[0], ButtonVariant.Primary),
+    new SiteAction(GalleryResources.text.siteHeroActions[1], GalleryResources.siteHref + 1, GalleryResources.text.siteHeroIcons[1], ButtonVariant.Secondary)
+  ];
   protected readonly shot: SiteShot = new SiteShot(GalleryResources.siteShot, GalleryResources.siteShot, 16, 9, GalleryResources.text.siteHeroAlt);
   protected readonly cards: readonly number[] = GalleryResources.text.siteCardTitles.map((_, i) => i);
   protected readonly mark: string = GalleryResources.siteSocialIcon;

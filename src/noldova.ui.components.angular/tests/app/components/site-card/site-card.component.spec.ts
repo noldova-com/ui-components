@@ -15,6 +15,7 @@ import { SiteCardComponent } from "../../../../src/app/components/site-card/site
 import { SiteSectionComponent } from "../../../../src/app/components/site-section/site-section.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import type { IconName } from "../../../../src/app/models/icon-name";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
@@ -33,13 +34,14 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 })
 class SiteCardHostComponent {
   public readonly title = "One chat,\nevery agent.";
-  public readonly icon = signal<string | null>("forum");
+  public readonly icon = signal<IconName | null>("forum");
   public readonly index = signal<string | null>("01");
   public readonly text = signal<string | null>("Each agent reads the same chat.");
 }
 
 describe("SiteCardComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteCardHostComponent>;
 
   async function renderAsync(change: (host: SiteCardHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -60,7 +62,7 @@ describe("SiteCardComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   it("draws each card as an article with its icon, index, title, text and content, the icon hidden from assistive tech", async () => {

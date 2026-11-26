@@ -44,6 +44,8 @@ export class KitBundleCheck implements ICheck {
   private static readonly CODE_BLOCK: string = "/@noldova/ui.components.angular/app/components/code-block/";
   private static readonly SHARED_STRINGS: string = "/@noldova/ui.components.angular/resources.js";
   private static readonly ICON_LIST: string = "/@noldova/ui.components.angular/app/models/icon-names.js";
+  private static readonly ANGULAR_CDK: string = "/@angular/cdk/";
+  private static readonly TOOLTIP_ENGINE: string = "/@noldova/ui.components.angular/app/components/tooltip/tooltip-engine.js";
   private static readonly STRINGS_FILE: string = "resources.js";
   private static readonly BUTTON_STRINGS: readonly string[] = ["/@noldova/ui.components.angular/dom-resources.js", "/@noldova/ui.components.angular/app/components/progress/reveal-delay.resources.js",
     "/@noldova/ui.components.angular/app/models/clock-tokens.resources.js", "/@noldova/ui.components.angular/app/services/busy-guard.resources.js",
@@ -66,7 +68,7 @@ export class KitBundleCheck implements ICheck {
   private static readonly WORKER_RULE: string = "an app's highlighting worker holds every grammar the kit knows and imports no other chunk, since Angular's build leaves out the chunks a worker's lazy imports share, as src/noldova.ui.components.angular/README.md, Code highlighting, says.";
   private static readonly STRINGS_RULE: string = `an app that imports ButtonComponent alone ships only the shared strings and those of the classes it reaches, at most ${KitBundleCheck.STRINGS_LIMIT} bytes, since each class keeps its own strings in its own file, as documents/ARCHITECTURE.md, Code, says.`;
   private static readonly CODE_BLOCK_RULE: string = "an app whose start imports only the button and typography entries, never the main one, ships the code block, its toolbar and its tooltip in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
-  private static readonly SITE_RULE: string = "an app whose start imports only the site entry ships in its start only the site's header and footer and the parts they show, the site hero, sections, cards and closing, the button, the icon button, the tooltip, the choice pills, the spinner and the progress bar, none of the kit's shared strings in src/resources.ts, nor its icon list, and the code block in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
+  private static readonly SITE_RULE: string = "an app whose start imports only the site entry ships in its start only the site's header and footer and the parts they show, the site hero, sections, cards and closing, the button, the icon button, the tooltip's directives, the choice pills, the spinner and the progress bar, none of the kit's shared strings in src/resources.ts, nor its icon list, nor the Angular CDK; the tooltip's engine, with the CDK, comes in a lazy chunk, and the code block in the chunk of the lazy page that shows it, as src/noldova.ui.components.angular/README.md, Lazy pages, says.";
   private static readonly PARSER_RULE: string = "an app without provideMarkdown() ships no markdown-it, and an app with it loads it lazily, as src/noldova.ui.components.angular/README.md, Markdown, says.";
 
   private readonly root: string;
@@ -177,6 +179,13 @@ export class KitBundleCheck implements ICheck {
     findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.ICON_LIST))
       .map(t => `${project}: its initial chunk ${t.chunk} holds the kit's icon list, ${t.file}; ${KitBundleCheck.SITE_RULE}`));
     output.write(`${project}: its initial chunks hold ${start.reduce((sum, t) => sum + t.bytes, 0)} bytes of code.\n`);
+    const cdk = start.filter(t => t.file.includes(KitBundleCheck.ANGULAR_CDK));
+    output.write(`${project}: its initial chunks hold ${cdk.reduce((sum, t) => sum + t.bytes, 0)} bytes of the Angular CDK.\n`);
+    findings.push(...cdk.map(t => `${project}: its initial chunk ${t.chunk} holds the Angular CDK's ${t.file}, ${t.bytes} bytes; ${KitBundleCheck.SITE_RULE}`));
+    findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.TOOLTIP_ENGINE))
+      .map(t => `${project}: its initial chunk ${t.chunk} holds the tooltip's engine, ${t.file}; ${KitBundleCheck.SITE_RULE}`));
+    if (![...outputs].some(([name, t]) => !initial.has(name) && KitBundleCheck.holds(t, [KitBundleCheck.TOOLTIP_ENGINE])))
+      findings.push(`${project}: emits no lazy chunk of the tooltip's engine, though its theme switch's pills show tooltips; ${KitBundleCheck.SITE_RULE}`);
     if (![...outputs].some(([name, t]) => !initial.has(name) && KitBundleCheck.holds(t, [KitBundleCheck.CODE_BLOCK])))
       findings.push(`${project}: emits no lazy chunk of the code block, though its page loads later; ${KitBundleCheck.SITE_RULE}`);
     return findings;

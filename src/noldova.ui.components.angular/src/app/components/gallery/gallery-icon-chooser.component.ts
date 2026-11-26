@@ -8,6 +8,7 @@
 
 import { Component, type WritableSignal, signal } from "@angular/core";
 
+import type { IconName } from "../../models/icon-name.js";
 import { GallerySize } from "../../enums/gallery-size.js";
 import { IconChooserComponent } from "../icon-chooser/icon-chooser.component.js";
 import { GalleryCellComponent } from "./gallery-cell.component.js";
@@ -25,5 +26,5 @@ export class GalleryIconChooserComponent {
   protected readonly text: typeof GalleryResources.text = GalleryResources.text;
   protected readonly sizes: typeof GallerySize = GallerySize;
   protected readonly focusedIconChooser: string = GalleryResources.focusedIconChooser;
-  protected readonly icon: WritableSignal<string | null> = signal(GalleryResources.text.iconChooserInitial);
+  protected readonly icon: WritableSignal<IconName | null> = signal(GalleryResources.text.iconChooserInitial);
 }

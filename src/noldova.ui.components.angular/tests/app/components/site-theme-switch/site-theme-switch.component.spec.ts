@@ -11,7 +11,9 @@ import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { userEvent } from "vitest/browser";
 
 import { SiteThemeSwitchComponent } from "../../../../src/app/components/site-theme-switch/site-theme-switch.component";
+import { TooltipFixture } from "../../../../src/testing/models/tooltip-fixture";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
 
@@ -84,6 +86,22 @@ describe("SiteThemeSwitchComponent", () => {
 
     expect(DomFixture.one(switchHost(), "[role=radiogroup]").getAttribute("aria-label")).toBe("Theme");
     expect(pills().map(t => [t.getAttribute("aria-label"), t.textContent?.trim()])).toEqual([["Light", "light_mode"], ["Dark", "dark_mode"], ["System", "desktop_windows"]]);
+  });
+
+  it("shows each pill's title as its tooltip on hover, with the tooltip's engine loaded once the switch renders", async () => {
+    TestBed.configureTestingModule({ providers: [TooltipFixture.atOnce] });
+    await renderAsync();
+    const shown: (string | undefined)[] = [];
+    for (const pill of pills()) {
+      await userEvent.hover(pill);
+      shown.push(await DomChangeFixture.untilAsync(() => {
+        const tip = document.querySelector(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
+        expect(tip).toBe(pill.getAttribute("aria-label"));
+        return tip;
+      }));
+    }
+
+    expect(shown).toEqual(["Light", "Dark", "System"]);
   });
 
   it("follows the system with nothing saved", async () => {
