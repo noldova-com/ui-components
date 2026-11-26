@@ -30,6 +30,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FrameVirtualListSourceFixture } from "../../../fixtures/frame-virtual-list-source.fixture";
+import { HoldingResizeObserversFixture } from "../../../fixtures/holding-resize-observers.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
@@ -1844,20 +1845,15 @@ describe("VirtualListComponent", () => {
   });
 
   describe("in a feed taller than its 600px overscan, through its first layout", () => {
-    let held: (() => void)[];
-    let isHolding: boolean;
+    let measures: HoldingResizeObserversFixture = new HoldingResizeObserversFixture();
 
     function holdMeasures(): void {
-      held = [];
-      isHolding = true;
-      const observers = { create: (callback: ResizeObserverCallback): ResizeObserver =>
-        new ResizeObserver((entries, observer) => isHolding ? held.push(() => callback(entries, observer)) : callback(entries, observer)) };
-      TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: observers }] });
+      measures = new HoldingResizeObserversFixture();
+      TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: measures }] });
     }
 
     async function releaseAsync(): Promise<void> {
-      isHolding = false;
-      held.splice(0).forEach(t => t());
+      measures.release();
       await settleAsync();
     }
 
@@ -1877,7 +1873,7 @@ describe("VirtualListComponent", () => {
     const isTopFilled = (): boolean => Math.min(...articles().map(t => t.getBoundingClientRect().top)) <= viewport().getBoundingClientRect().top + 1;
 
     afterEach(() => {
-      isHolding = false;
+      measures.isHolding = false;
     });
 
     it("fills the view from its top to its newest row in its first render, before any measure or scroll", async () => {

@@ -28,6 +28,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
+import { RecordingResizeObserversFixture } from "../../../fixtures/recording-resize-observers.fixture";
 
 @Component({
   imports: [MenuComponent, MenuGroupComponent, MenuItemComponent],
@@ -242,12 +243,10 @@ describe("MenuGroupComponent with maxRows", () => {
   });
 
   const get = (selector: string): HTMLElement => DomFixture.one(DomFixture.host(scrolling), selector);
-  const recordResizes = (callbacks: ResizeObserverCallback[]): void => {
-    const observers = { create: (callback: ResizeObserverCallback): ResizeObserver => {
-      callbacks.push(callback);
-      return new ResizeObserver(() => undefined);
-    } };
+  const recordResizes = (): RecordingResizeObserversFixture => {
+    const observers = new RecordingResizeObserversFixture();
     TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: observers }] });
+    return observers;
   };
   const rows = (): HTMLElement => get(".responders .nol-menu-group-rows");
   const edges = (selector: string): DOMRect => get(selector).getBoundingClientRect();
@@ -297,14 +296,12 @@ describe("MenuGroupComponent with maxRows", () => {
       });
 
   it("fits its rows as it opens and again after its rows resize, never inside the ResizeObserver callback, which would log the browser's loop message", async () => {
-    const callbacks: ResizeObserverCallback[] = [];
-    recordResizes(callbacks);
+    const observers = recordResizes();
     await showAsync();
     const fitted = rows().style.maxHeight;
     rows().style.maxHeight = "1px";
 
-    for (const callback of callbacks)
-      callback([], {} as ResizeObserver);
+    observers.notify([]);
     const inCallback = rows().style.maxHeight;
     await DomChangeFixture.untilAsync(() => expect(rows().style.maxHeight).toBe(fitted));
 
@@ -312,24 +309,16 @@ describe("MenuGroupComponent with maxRows", () => {
   });
 
   it("drops a fit its rows' resize asked for when it stops scrolling before that frame, so the rows keep their whole height", async () => {
-    const callbacks: ResizeObserverCallback[] = [];
-    const observer = new ResizeObserver(() => undefined);
-    recordResizes(callbacks);
-    try {
-      await showAsync();
-      // The resize asks for a fit on the next frame; maxRows goes null and the group cleans up in the same task, first.
-      for (const callback of callbacks)
-        callback([], observer);
-      scrolling.componentInstance.maxRows.set(null);
-      TestBed.tick();
-      const cleaned = rows().style.maxHeight;
-      await new Promise(t => requestAnimationFrame(() => requestAnimationFrame(t)));
+    const observers = recordResizes();
+    await showAsync();
+    // The resize asks for a fit on the next frame; maxRows goes null and the group cleans up in the same task, first.
+    observers.notify([]);
+    scrolling.componentInstance.maxRows.set(null);
+    TestBed.tick();
+    const cleaned = rows().style.maxHeight;
+    await new Promise(t => requestAnimationFrame(() => requestAnimationFrame(t)));
 
-      expect([callbacks.length > 0, cleaned, rows().style.maxHeight]).toEqual([true, "", ""]);
-    }
-    finally {
-      observer.disconnect();
-    }
+    expect([observers.count > 0, cleaned, rows().style.maxHeight]).toEqual([true, "", ""]);
   });
 
   it("follows its rows' height, a description line included, when maxRows changes", async () => {

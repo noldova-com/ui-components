@@ -16,9 +16,22 @@ import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
 import { provideCodeHighlightingWorker } from "../../../../src/app/services/provide-code-highlighting-worker";
 import { Resources } from "../../../../src/resources";
 import { CodeBlockHarness } from "../../../fixtures/code-block-harness.fixture";
+import { CountingResizeObserversFixture } from "../../../fixtures/counting-resize-observers.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
 const CODE = "npm install\n\nnpm test\n";
+
+class PrerenderedBlock {
+  public readonly lines: readonly (string | null)[];
+  public readonly hasCode: boolean;
+  public readonly skipsHydration: boolean;
+
+  public constructor(lines: readonly (string | null)[], hasCode: boolean, skipsHydration: boolean) {
+    this.lines = lines;
+    this.hasCode = hasCode;
+    this.skipsHydration = skipsHydration;
+  }
+}
 
 @Component({
   imports: [CodeBlockComponent, ShellRunOutputComponent],
@@ -35,15 +48,11 @@ class CodeBlockServerHostComponent {
 
 describe("CodeBlockComponent on the server", () => {
   const harness = new CodeBlockHarness();
-  let observed: number;
+  let observers: CountingResizeObserversFixture;
 
   beforeEach(() => {
     harness.configure();
-    observed = 0;
-    const observers = { create: (callback: ResizeObserverCallback): ResizeObserver => {
-      observed++;
-      return new ResizeObserver(callback);
-    } };
+    observers = new CountingResizeObserversFixture();
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: "server" }, { provide: ResizeTokens.observers, useValue: observers }] });
     vi.stubGlobal("ngServerMode", true);
   });
@@ -53,18 +62,20 @@ describe("CodeBlockComponent on the server", () => {
     await harness.resetAsync();
   });
 
-  async function renderAsync(): Promise<readonly unknown[]> {
+  async function renderAsync(): Promise<PrerenderedBlock> {
     const fixture = TestBed.createComponent(CodeBlockServerHostComponent);
     await fixture.whenStable();
     const block = DomFixture.one(DomFixture.host(fixture), "nol-code-block");
     const lines = DomFixture.all(block, `code > .${Resources.codeLineClass}`).map(t => t.textContent);
     const html = block.outerHTML;
     fixture.destroy();
-    return [lines, html.includes("npm install"), html.includes("ngskiphydration")];
+    return new PrerenderedBlock(lines, html.includes("npm install"), html.includes("ngskiphydration"));
   }
 
   it("renders its code as lines in the HTML and observes no sizes when it is prerendered", async () => {
-    expect([await renderAsync(), observed]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], 0]);
+    const rendered = await renderAsync();
+
+    expect([rendered.lines, rendered.hasCode, rendered.skipsHydration, observers.count]).toEqual([["npm install\n", "\n", "npm test\n"], true, true, 0]);
   });
 
   it("asks the highlighter for no tokens when it is prerendered", async () => {
@@ -72,7 +83,7 @@ describe("CodeBlockComponent on the server", () => {
 
     const rendered = await renderAsync();
 
-    expect([rendered, tokensAsync.mock.calls]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], []]);
+    expect([rendered.lines, rendered.hasCode, rendered.skipsHydration, tokensAsync.mock.calls]).toEqual([["npm install\n", "\n", "npm test\n"], true, true, []]);
   });
 
   it("starts no highlighting worker and reports no failure when it is prerendered", async () => {
@@ -84,6 +95,6 @@ describe("CodeBlockComponent on the server", () => {
 
     const rendered = await renderAsync();
 
-    expect([rendered, start.mock.calls, handleError.mock.calls]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], [], []]);
+    expect([rendered.lines, rendered.hasCode, rendered.skipsHydration, start.mock.calls, handleError.mock.calls]).toEqual([["npm install\n", "\n", "npm test\n"], true, true, [], []]);
   });
 });

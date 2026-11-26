@@ -15,6 +15,7 @@ import { AvatarSize } from "../../../../src/app/enums/avatar-size";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
+import { CountingResizeObserversFixture } from "../../../fixtures/counting-resize-observers.fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
@@ -513,15 +514,11 @@ describe("AvatarComponent", () => {
   });
 
   it("shows its initials on the server platform without starting a resize observer, as when a page is prerendered", async () => {
-    let started = 0;
-    const observers = { create: (callback: ResizeObserverCallback): ResizeObserver => {
-      started++;
-      return new ResizeObserver(callback);
-    } };
+    const observers = new CountingResizeObserversFixture();
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: "server" }, { provide: ResizeTokens.observers, useValue: observers }] });
     await renderAsync(t => t.initials.set("MW"));
 
-    expect([shown(), started]).toEqual(["MW", 0]);
+    expect([shown(), observers.count]).toEqual(["MW", 0]);
   });
 
   it("fits its initials again when its text grows after it is drawn, and lets them back to their own size when the text shrinks again", async () => {
