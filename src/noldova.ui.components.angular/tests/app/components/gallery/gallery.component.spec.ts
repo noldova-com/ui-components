@@ -16,6 +16,7 @@ import { userEvent } from "vitest/browser";
 
 import { GalleryCellComponent, GalleryComponent, GallerySpecimenComponent } from "../../../../src/api/gallery";
 import * as kit from "../../../../src/api/index";
+import * as site from "../../../../src/api/site";
 import { GalleryContentComponent } from "../../../../src/app/components/gallery/gallery-content.component";
 import { GalleryFormsComponent } from "../../../../src/app/components/gallery/gallery-forms.component";
 import { GalleryMessageComponent } from "../../../../src/app/components/gallery/gallery-message.component";
@@ -74,6 +75,14 @@ class KitSectionControls {
     this.controls = controls;
   }
 }
+
+// What the kit exports: the main entry's exports, and the site's header, footer and search, which only the site entry exports.
+const kitExports: Readonly<Record<string, unknown>> = {
+  ...kit,
+  SiteFooterComponent: site.SiteFooterComponent,
+  SiteHeaderComponent: site.SiteHeaderComponent,
+  SiteSearchDirective: site.SiteSearchDirective
+};
 
 const kitSectionControls: readonly KitSectionControls[] = [
   new KitSectionControls(GalleryFormsComponent, ["ButtonComponent", "CheckboxComponent", "ChipComponent", "ChoicePillsComponent", "ChoiceRowComponent", "ColorChooserComponent", "ColorPickerComponent", "ConfigurationTableActionDirective",
@@ -254,7 +263,7 @@ describe("GalleryComponent", () => {
   });
 
   it("lists every component and directive the kit exports once, under one of the kit's sections in a scope's order, so a new control fails until a section shows it", () => {
-    const controls = Object.entries(kit).filter(([, value]) => Object.isFunction(value) && ("ɵcmp" in value || "ɵdir" in value)).map(([name]) => name);
+    const controls = Object.entries(kitExports).filter(([, value]) => Object.isFunction(value) && ("ɵcmp" in value || "ɵdir" in value)).map(([name]) => name);
     const listed = kitSectionControls.flatMap(t => t.controls);
 
     expect(controls.length).toBeGreaterThan(20);
@@ -270,7 +279,7 @@ describe("GalleryComponent", () => {
     const placed = new Set<unknown>(nodes.flatMap(t => t.providerTokens));
     const owners = new Set<object>(nodes.filter(t => t instanceof DebugElement).flatMap(t => Object.isObject(t.componentInstance) ? [t.componentInstance] : []));
     const held = [...owners].flatMap(t => Object.values(t)).filter(isSignal).map(t => t());
-    const exported = new Map<string, unknown>(Object.entries(kit));
+    const exported = new Map<string, unknown>(Object.entries(kitExports));
     const isShown = (type: unknown): boolean => placed.has(type) || (Object.isFunction(type) && held.some(t => t instanceof type));
 
     const missing = controls.filter(t => !isShown(exported.get(t)));

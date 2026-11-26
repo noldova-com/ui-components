@@ -14,7 +14,7 @@ At the start, the lockup, with the site's `wordmarkSize`, then an optional line 
 At the end, the link groups, 3rem apart (`--nol-site-footer-group-gap`), the last one ending at the content's end; when the footer is too narrow for both, the groups wrap under the lockup, 2rem from it (`--nol-site-footer-gap`).
 Each group's title is 0.5rem above its links, and the links are 0.625rem apart (`--nol-site-footer-link-gap`); each is at least the pointer target high and wide, so a one-letter link such as X is a whole target.
 A link the site gives an `icon` draws it first, as a mask as high as its text, 0.5rem from its label, in `--nol-brand-mark` as the header's social marks are.
-When the footer is at most 47.5rem wide, as on a phone, the content takes the phone insets, 2.75rem from the top (`--nol-site-footer-padding-block-phone`), and the groups are 2.5rem apart (`--nol-site-footer-group-gap-phone`).
+When the footer is at most 47.5rem wide, as on a phone, the content takes the phone insets, 2.75rem from the top (`--nol-site-footer-padding-block-phone`), and the groups are 2.5rem apart (`--nol-site-footer-group-gap-phone`). The theme still defines `--nol-site-footer-gap-phone` (1.5rem), the phone gap of the footer's former layout, but nothing in the kit reads it now.
 
 ## Text roles
 

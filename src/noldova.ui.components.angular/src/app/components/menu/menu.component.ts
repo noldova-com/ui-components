@@ -16,6 +16,7 @@ import "@noldova/context.core";
 import { DomResources } from "../../../dom-resources.js";
 import { MenuItemComponent } from "./menu-item.component.js";
 import { MenuOpensOnDirective } from "./menu-opens-on.directive.js";
+import { MenuRow } from "./menu-row.js";
 import { MenuResources } from "./menu.resources.js";
 
 @Component({
@@ -45,19 +46,22 @@ export class MenuComponent {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     const document = inject(DOCUMENT);
     const menu = inject(CdkMenu, { self: true });
-    const rows = (): readonly (readonly [MenuItemComponent, CdkMenuItem])[] => {
+    const rows = (): readonly MenuRow[] => {
       const own = menu.items.toArray();
       const menuItems = this.menuItems();
-      return this.items().map((t, index) => [t, menuItems[index] as CdkMenuItem] as const).filter(([, t]) => own.includes(t));
+      return this.items().flatMap((t, index) => {
+        const menuItem = menuItems[index];
+        return Object.isUndefined(menuItem) || !own.includes(menuItem) ? [] : [new MenuRow(t, menuItem)];
+      });
     };
     const marked = (): CdkMenuItem | null => {
       const own = menu.items.toArray();
       const item = this.marks().find(t => t.opensOn() && !Object.isNull(t.item) && own.includes(t.item) && !t.item.disabled)?.item ?? null;
       return menu.isInline ? null : item;
     };
-    const focusRow = (row: readonly [MenuItemComponent, CdkMenuItem] | undefined): void => {
+    const focusRow = (row: MenuRow | undefined): void => {
       if (!menu.isInline && !Object.isUndefined(row))
-        menu.setActiveMenuItem(row[1]);
+        menu.setActiveMenuItem(row.menuItem);
     };
     const ordered = menu.items.changes.subscribe(() => menu.items.reset(menu.items.toArray().sort((a, b) => {
       const position = a._elementRef.nativeElement.compareDocumentPosition(b._elementRef.nativeElement);
@@ -73,7 +77,7 @@ export class MenuComponent {
       }
       focusFirstItem(origin);
       const own = rows();
-      focusRow(own.find(([t]) => t.checked() === true) ?? own[0]);
+      focusRow(own.find(t => t.item.checked() === true) ?? own[0]);
     };
     menu.focusLastItem = (origin?: FocusOrigin): void => {
       const mark = marked();
@@ -83,7 +87,7 @@ export class MenuComponent {
       }
       focusLastItem(origin);
       const own = rows();
-      focusRow(own.find(([t]) => t.checked() === true) ?? own.at(-1));
+      focusRow(own.find(t => t.item.checked() === true) ?? own.at(-1));
     };
     const handleKeyEvent = menu._handleKeyEvent.bind(menu);
     menu._handleKeyEvent = (event: KeyboardEvent): void => {

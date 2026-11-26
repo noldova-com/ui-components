@@ -16,6 +16,7 @@ import type { IShellRunOutputContext } from "../../interfaces/i-shell-run-output
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
 import { DomResources } from "../../../dom-resources.js";
 import type { CodeBlockComponent } from "./code-block.component.js";
+import { HorizontalExtent } from "./horizontal-extent.js";
 
 @Component({
   selector: "nol-shell-run-output",
@@ -56,19 +57,19 @@ export class ShellRunOutputComponent {
     });
   }
 
-  private static contentBox(element: Element): readonly [number, number] {
+  private static contentBox(element: Element): HorizontalExtent {
     const box = element.getBoundingClientRect();
     const style = getComputedStyle(element);
-    return [box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft), box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight)];
+    return new HorizontalExtent(box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft), box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight));
   }
 
   private measure(): void {
     if (!this.isShown())
       return;
-    const [areaStart, areaEnd] = ShellRunOutputComponent.contentBox(this.area());
+    const area = ShellRunOutputComponent.contentBox(this.area());
     const box = this.host.getBoundingClientRect();
     const indent = this.indent();
-    this.indent.set(getComputedStyle(this.host).direction === DomResources.rightToLeftDirection ? areaEnd - (box.right - indent) : box.left + indent - areaStart);
-    this.width.set(areaEnd - areaStart);
+    this.indent.set(getComputedStyle(this.host).direction === DomResources.rightToLeftDirection ? area.right - (box.right - indent) : box.left + indent - area.left);
+    this.width.set(area.width);
   }
 }

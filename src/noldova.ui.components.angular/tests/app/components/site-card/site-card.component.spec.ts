@@ -68,7 +68,8 @@ class GridWidth {
 }
 
 describe("SiteCardComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteCardHostComponent>;
 
   async function renderAsync(change: (host: SiteCardHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -89,7 +90,7 @@ describe("SiteCardComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   for (const size of [new GridWidth(1280, 4, 2), new GridWidth(900, 2, 2), new GridWidth(375, 1, 1)]) {

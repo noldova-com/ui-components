@@ -24,7 +24,7 @@ describe("FixtureTheme", () => {
 
   it("gives each color its own value, in light and dark, so a spec can tell any two colors apart", () => {
     const values = [ThemeMode.Light, ThemeMode.Dark].flatMap(mode => DomResources.colorTokens.map(t => FixtureTheme.theme.readColor(mode, t.key)))
-      .filter(t => t !== undefined).map(t => t.toUpperCase());
+      .filter(t => !Object.isUndefined(t)).map(t => t.toUpperCase());
 
     expect(values.length).toBeGreaterThan(2 * 100);
     expect(values.filter((t, i) => values.indexOf(t) !== i)).toEqual([]);

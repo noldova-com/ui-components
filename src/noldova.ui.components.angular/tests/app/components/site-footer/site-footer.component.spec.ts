@@ -117,7 +117,8 @@ describe("SiteFooterComponent", () => {
     });
 
     expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["TeamRun home", null]);
-    AppearanceFixture.expectPixels(box(".nol-site-wordmark").height, AppearanceFixture.toPixels(1.375));
+    // As high as TeamRun's header draws its wordmark, 9.125rem wide in its proportions.
+    AppearanceFixture.expectPixels(box(".nol-site-wordmark").height, AppearanceFixture.toPixels(9.125 * 201.396 / 1335.64));
   });
 
   it("links the lockup where it is told, and draws no line without one", async () => {

@@ -56,7 +56,8 @@ class CopyReading {
 }
 
 describe("SiteSectionComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteSectionHostComponent>;
 
   async function renderAsync(change: (host: SiteSectionHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -75,7 +76,7 @@ describe("SiteSectionComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   it("is a region named by its title, with its id, the line above, the copy beside and the content under them", async () => {

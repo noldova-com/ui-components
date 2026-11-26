@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import "@noldova/context.core";
+
 import type { SiteShot } from "../../models/site-shot.js";
 
 export class SiteHeroResources {
@@ -14,6 +16,6 @@ export class SiteHeroResources {
   public static readonly shotSizes: string = "(max-width: 47.5em) calc(100vw - 2.5rem), min(75rem, calc(100vw - 5rem))";
 
   public static formatSources(file: string, large: string | null, shot: SiteShot): string {
-    return large === null ? `${file} ${shot.width}w` : `${file} ${shot.width}w, ${large} ${shot.width * 2}w`;
+    return Object.isNull(large) ? `${file} ${shot.width}w` : `${file} ${shot.width}w, ${large} ${shot.width * 2}w`;
   }
 }

@@ -136,13 +136,6 @@
   }
 }
 
-.nol-site-closing-link-icon {
-  width: 1em;
-  height: 1em;
-  font-size: 1em;
-  line-height: 1;
-}
-
 .nol-site-closing-note {
   display: flex;
   flex-wrap: wrap;

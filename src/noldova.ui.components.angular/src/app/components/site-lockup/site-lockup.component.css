@@ -16,21 +16,22 @@
   max-width: 100%;
 }
 
-/* A product's own wordmark, such as TeamRun's, at its site's size: smaller in a header at most 47.5rem wide, and again
- * at most 22.5rem wide, as TeamRun's own header steps it. */
+/* A product's own wordmark, such as TeamRun's, as high as TeamRun's own header draws its wordmark: 9.125rem wide in
+ * its file's proportions (1335.64 by 201.396), 8.25rem in a header at most 47.5rem wide and 7rem in one at most 22.5rem
+ * wide. */
 :host(.nol-site-lockup-large) {
-  --nol-site-lockup-wordmark: 1.375rem;
+  --nol-site-lockup-wordmark: calc(9.125rem * 201.396 / 1335.64);
 }
 
 @container nol-site-header (width <= 47.5rem) {
   :host(.nol-site-lockup-large) {
-    --nol-site-lockup-wordmark: 1.25rem;
+    --nol-site-lockup-wordmark: calc(8.25rem * 201.396 / 1335.64);
   }
 }
 
 @container nol-site-header (width <= 22.5rem) {
   :host(.nol-site-lockup-large) {
-    --nol-site-lockup-wordmark: 1.0625rem;
+    --nol-site-lockup-wordmark: calc(7rem * 201.396 / 1335.64);
   }
 }
 
@@ -104,6 +105,12 @@
     forced-color-adjust: none;
     background-color: LinkText;
   }
+}
+
+/* A large wordmark's box is as wide as its height in the proportions the site gives, as TeamRun sizes its own by width, so
+ * TeamRun's comes out exactly 9.125rem, 8.25rem or 7rem wide with its height cut to the layout's step below, as there. */
+:host(.nol-site-lockup-large) .nol-site-wordmark {
+  width: calc(var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
 }
 
 :host(.nol-site-lockup-with-icon) .nol-site-wordmark {
