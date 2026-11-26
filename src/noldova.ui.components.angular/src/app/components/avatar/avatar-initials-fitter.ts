@@ -11,6 +11,8 @@ import { DestroyRef, Injectable, PLATFORM_ID, inject } from "@angular/core";
 
 import "@noldova/context.core";
 
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import { AvatarResources } from "./avatar.resources.js";
 
 type AvatarParts = readonly [host: HTMLElement, letters: HTMLElement];
@@ -21,6 +23,7 @@ export class AvatarInitialsFitter {
   private readonly scales: WeakMap<HTMLElement, number> = new WeakMap();
   private readonly watched: Map<Element, AvatarParts> = new Map();
   private readonly isInBrowser: boolean = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
   private observer: ResizeObserver | null = null;
   private context: CanvasRenderingContext2D | null | undefined;
 
@@ -95,7 +98,7 @@ export class AvatarInitialsFitter {
   }
 
   private observing(): ResizeObserver {
-    this.observer ??= new ResizeObserver(entries => this.refit(entries));
+    this.observer ??= this.observers.create(entries => this.refit(entries));
     return this.observer;
   }
 

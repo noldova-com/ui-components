@@ -20,6 +20,7 @@ import { VirtualListKind } from "../../../../src/app/enums/virtual-list-kind";
 import { ArrayVirtualListSource } from "../../../../src/app/models/array-virtual-list-source";
 import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { VirtualListJump } from "../../../../src/app/models/virtual-list-jump";
 import { VirtualListPosition } from "../../../../src/app/models/virtual-list-position";
 import type { VirtualListSource } from "../../../../src/app/models/virtual-list-source";
@@ -1849,12 +1850,9 @@ describe("VirtualListComponent", () => {
     function holdMeasures(): void {
       held = [];
       isHolding = true;
-      const Observer = ResizeObserver;
-      vi.stubGlobal("ResizeObserver", class extends Observer {
-        public constructor(callback: ResizeObserverCallback) {
-          super((entries, observer) => isHolding ? held.push(() => callback(entries, observer)) : callback(entries, observer));
-        }
-      });
+      const observers = { create: (callback: ResizeObserverCallback): ResizeObserver =>
+        new ResizeObserver((entries, observer) => isHolding ? held.push(() => callback(entries, observer)) : callback(entries, observer)) };
+      TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: observers }] });
     }
 
     async function releaseAsync(): Promise<void> {
@@ -1880,7 +1878,6 @@ describe("VirtualListComponent", () => {
 
     afterEach(() => {
       isHolding = false;
-      vi.unstubAllGlobals();
     });
 
     it("fills the view from its top to its newest row in its first render, before any measure or scroll", async () => {

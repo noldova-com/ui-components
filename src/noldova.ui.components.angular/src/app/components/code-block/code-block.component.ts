@@ -16,6 +16,7 @@ import { AnnouncementPoliteness } from "../../enums/announcement-politeness.js";
 import { CopyState } from "../../enums/copy-state.js";
 import { ShellRunState } from "../../enums/shell-run-state.js";
 import type { ICodeHighlighter } from "../../interfaces/i-code-highlighter.js";
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
 import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
 import { CodeHighlighterTokens } from "../../models/code-highlighter-tokens.js";
@@ -25,6 +26,7 @@ import { CodeShownSource } from "../../models/code-shown-source.js";
 import type { CodeToken } from "../../models/code-token.js";
 import { CodeTokensRequest } from "../../models/code-tokens-request.js";
 import type { IconName } from "../../models/icon-name.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import { ScrollEndFollower } from "../../models/scroll-end-follower.js";
 import { ShellRun } from "../../models/shell-run.js";
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
@@ -77,6 +79,7 @@ export class CodeBlockComponent {
     }
   });
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
   private cancelCopy: (() => void) | null = null;
   private isDestroyed: boolean = false;
   private grewStreaming: boolean = false;
@@ -138,7 +141,7 @@ export class CodeBlockComponent {
       this.grewStreaming ||= isStreaming;
     });
     afterNextRender(() => {
-      const measureAfterLayout = new ResizeObserver(() => {
+      const measureAfterLayout = this.observers.create(() => {
         this.measureAdvance();
         this.followEnd();
       });

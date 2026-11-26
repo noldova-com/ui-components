@@ -22,6 +22,7 @@ import { MenuComponent } from "../../../../src/app/components/menu/menu.componen
 import { AvatarSize } from "../../../../src/app/enums/avatar-size";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import type { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
@@ -241,6 +242,13 @@ describe("MenuGroupComponent with maxRows", () => {
   });
 
   const get = (selector: string): HTMLElement => DomFixture.one(DomFixture.host(scrolling), selector);
+  const recordResizes = (callbacks: ResizeObserverCallback[]): void => {
+    const observers = { create: (callback: ResizeObserverCallback): ResizeObserver => {
+      callbacks.push(callback);
+      return new ResizeObserver(() => undefined);
+    } };
+    TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: observers }] });
+  };
   const rows = (): HTMLElement => get(".responders .nol-menu-group-rows");
   const edges = (selector: string): DOMRect => get(selector).getBoundingClientRect();
 
@@ -290,60 +298,23 @@ describe("MenuGroupComponent with maxRows", () => {
 
   it("fits its rows as it opens and again after its rows resize, never inside the ResizeObserver callback, which would log the browser's loop message", async () => {
     const callbacks: ResizeObserverCallback[] = [];
-    vi.stubGlobal("ResizeObserver", class {
-      public constructor(callback: ResizeObserverCallback) {
-        callbacks.push(callback);
-      }
+    recordResizes(callbacks);
+    await showAsync();
+    const fitted = rows().style.maxHeight;
+    rows().style.maxHeight = "1px";
 
-      public observe(): void {
-        return;
-      }
+    for (const callback of callbacks)
+      callback([], {} as ResizeObserver);
+    const inCallback = rows().style.maxHeight;
+    await DomChangeFixture.untilAsync(() => expect(rows().style.maxHeight).toBe(fitted));
 
-      public unobserve(): void {
-        return;
-      }
-
-      public disconnect(): void {
-        return;
-      }
-    });
-    try {
-      await showAsync();
-      const fitted = rows().style.maxHeight;
-      rows().style.maxHeight = "1px";
-
-      for (const callback of callbacks)
-        callback([], {} as ResizeObserver);
-      const inCallback = rows().style.maxHeight;
-      await DomChangeFixture.untilAsync(() => expect(rows().style.maxHeight).toBe(fitted));
-
-      expect([fitted === "" ? "unfitted" : "fitted", inCallback, rows().style.maxHeight]).toEqual(["fitted", "1px", fitted]);
-    }
-    finally {
-      vi.unstubAllGlobals();
-    }
+    expect([fitted === "" ? "unfitted" : "fitted", inCallback, rows().style.maxHeight]).toEqual(["fitted", "1px", fitted]);
   });
 
   it("drops a fit its rows' resize asked for when it stops scrolling before that frame, so the rows keep their whole height", async () => {
     const callbacks: ResizeObserverCallback[] = [];
     const observer = new ResizeObserver(() => undefined);
-    vi.stubGlobal("ResizeObserver", class {
-      public constructor(callback: ResizeObserverCallback) {
-        callbacks.push(callback);
-      }
-
-      public observe(): void {
-        return;
-      }
-
-      public unobserve(): void {
-        return;
-      }
-
-      public disconnect(): void {
-        return;
-      }
-    });
+    recordResizes(callbacks);
     try {
       await showAsync();
       // The resize asks for a fit on the next frame; maxRows goes null and the group cleans up in the same task, first.
@@ -358,7 +329,6 @@ describe("MenuGroupComponent with maxRows", () => {
     }
     finally {
       observer.disconnect();
-      vi.unstubAllGlobals();
     }
   });
 

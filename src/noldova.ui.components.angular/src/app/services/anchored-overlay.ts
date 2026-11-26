@@ -13,12 +13,14 @@ import { type Observable, Subject } from "rxjs";
 
 import "@noldova/context.core";
 
+import type { IResizeObservers } from "../interfaces/i-resize-observers.js";
 import type { ITimeSource } from "../interfaces/i-time-source.js";
 import { ClockTokens } from "../models/clock-tokens.js";
 import { ContentMovedEvent } from "../models/content-moved-event.js";
 import type { OverlayAnchoring } from "../models/overlay-anchoring.js";
 import type { OverlayPlacement } from "../models/overlay-placement.js";
 import { PlacedBoxes } from "../models/placed-boxes.js";
+import { ResizeTokens } from "../models/resize-tokens.js";
 import { DomResources } from "../../dom-resources.js";
 import { AnchoredOverlayResources } from "./anchored-overlay.resources.js";
 import { OverlayBoundsService } from "./overlay-bounds.service.js";
@@ -31,6 +33,7 @@ export class AnchoredOverlay {
   private readonly bounds: OverlayBoundsService;
   private readonly origins: OverlayOriginsService;
   private readonly timeSource: ITimeSource;
+  private readonly observers: IResizeObservers;
   private readonly cleanups: (() => void)[] = [];
   private readonly originLostValue: Subject<void> = new Subject<void>();
   private origin: Element | null = null;
@@ -53,6 +56,7 @@ export class AnchoredOverlay {
     this.bounds = injector.get(OverlayBoundsService);
     this.origins = injector.get(OverlayOriginsService);
     this.timeSource = injector.get(ClockTokens.timeSource);
+    this.observers = injector.get(ResizeTokens.observers);
     this.strategy = createGlobalPositionStrategy(injector);
     this.overlay = createOverlayRef(injector, { positionStrategy: this.strategy, panelClass });
     this.overlay.detachments().subscribe(() => this.release());
@@ -131,7 +135,7 @@ export class AnchoredOverlay {
       this.originLostValue.next();
     };
     let cancelFrame: (() => void) | null = null;
-    const resize = new ResizeObserver(entries => {
+    const resize = this.observers.create(entries => {
       if (entries.some(t => this.hasResizedTo(t.borderBoxSize[0])))
         cancelFrame ??= this.timeSource.frame(() => {
           cancelFrame = null;
@@ -139,7 +143,7 @@ export class AnchoredOverlay {
         });
     });
     resize.observe(this.element);
-    const hidden = new ResizeObserver(() => {
+    const hidden = this.observers.create(() => {
       if (!origin.checkVisibility())
         this.originLostValue.next();
     });

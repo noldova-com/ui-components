@@ -11,6 +11,7 @@ import { TestBed } from "@angular/core/testing";
 
 import { CodeBlockComponent } from "../../../../src/app/components/code-block/code-block.component";
 import { ShellRunOutputComponent } from "../../../../src/app/components/code-block/shell-run-output.component";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { CodeHighlighter } from "../../../../src/app/services/code-highlighter";
 import { provideCodeHighlightingWorker } from "../../../../src/app/services/provide-code-highlighting-worker";
 import { Resources } from "../../../../src/resources";
@@ -34,12 +35,17 @@ class CodeBlockServerHostComponent {
 
 describe("CodeBlockComponent on the server", () => {
   const harness = new CodeBlockHarness();
+  let observed: number;
 
   beforeEach(() => {
     harness.configure();
-    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: "server" }] });
+    observed = 0;
+    const observers = { create: (callback: ResizeObserverCallback): ResizeObserver => {
+      observed++;
+      return new ResizeObserver(callback);
+    } };
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: "server" }, { provide: ResizeTokens.observers, useValue: observers }] });
     vi.stubGlobal("ngServerMode", true);
-    vi.stubGlobal("ResizeObserver", undefined);
   });
 
   afterEach(async () => {
@@ -58,7 +64,7 @@ describe("CodeBlockComponent on the server", () => {
   }
 
   it("renders its code as lines in the HTML and observes no sizes when it is prerendered", async () => {
-    expect(await renderAsync()).toEqual([["npm install\n", "\n", "npm test\n"], true, true]);
+    expect([await renderAsync(), observed]).toEqual([[["npm install\n", "\n", "npm test\n"], true, true], 0]);
   });
 
   it("asks the highlighter for no tokens when it is prerendered", async () => {

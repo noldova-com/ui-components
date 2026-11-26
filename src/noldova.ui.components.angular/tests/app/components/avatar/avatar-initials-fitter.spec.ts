@@ -10,6 +10,7 @@ import { PLATFORM_ID } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 
 import { AvatarInitialsFitter } from "../../../../src/app/components/avatar/avatar-initials-fitter";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 
 class DrawnAvatar {
@@ -23,11 +24,10 @@ class DrawnAvatar {
 }
 
 describe("AvatarInitialsFitter", () => {
-  const browserObserver = window.ResizeObserver;
   const made: RecordingObserver[] = [];
   const drawn: HTMLElement[] = [];
 
-  class RecordingObserver extends browserObserver {
+  class RecordingObserver extends ResizeObserver {
     public readonly callback: ResizeObserverCallback;
     public readonly unobserved: Element[] = [];
     public disconnects: number = 0;
@@ -73,12 +73,11 @@ describe("AvatarInitialsFitter", () => {
 
   beforeEach(async () => {
     made.length = 0;
-    window.ResizeObserver = RecordingObserver;
+    TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: { create: (callback: ResizeObserverCallback) => new RecordingObserver(callback) } }] });
     await document.fonts.ready;
   });
 
   afterEach(() => {
-    window.ResizeObserver = browserObserver;
     drawn.splice(0).forEach(t => t.remove());
     vi.restoreAllMocks();
   });

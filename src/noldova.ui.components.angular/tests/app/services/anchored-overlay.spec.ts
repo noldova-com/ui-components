@@ -15,6 +15,7 @@ import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { ContentMovedEvent } from "../../../src/app/models/content-moved-event";
 import { OverlayAnchoring } from "../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../src/app/models/overlay-side";
+import { ResizeTokens } from "../../../src/app/models/resize-tokens";
 import { AnchoredOverlay } from "../../../src/app/services/anchored-overlay";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
@@ -274,19 +275,13 @@ describe("AnchoredOverlay", () => {
 
   it("drops a reposition its content asked for when it closes before the next frame", () => {
     const notify: ((entries: readonly ResizeEntry[]) => void)[] = [];
-    vi.stubGlobal("ResizeObserver", class {
-      public constructor(callback: (entries: readonly ResizeEntry[]) => void) {
-        notify.push(callback);
-      }
-
-      public observe(): void {
-      }
-
-      public disconnect(): void {
-      }
-    });
+    const observers = { create: (callback: (entries: readonly ResizeEntry[]) => void): ResizeObserver => {
+      notify.push(callback);
+      return new ResizeObserver(() => undefined);
+    } };
     const source = new TestTimeSource();
-    const timed = new AnchoredOverlay(Injector.create({ providers: [{ provide: ClockTokens.timeSource, useValue: source }], parent: fixture.componentInstance.injector }), "nol-test-pane");
+    const providers = [{ provide: ClockTokens.timeSource, useValue: source }, { provide: ResizeTokens.observers, useValue: observers }];
+    const timed = new AnchoredOverlay(Injector.create({ providers, parent: fixture.componentInstance.injector }), "nol-test-pane");
     try {
       timed.openComponent(new ComponentPortal(ContentComponent), anchor(), below());
       const reposition = vi.spyOn(timed, "reposition");
@@ -304,7 +299,6 @@ describe("AnchoredOverlay", () => {
     }
     finally {
       timed.dispose();
-      vi.unstubAllGlobals();
     }
   });
 
