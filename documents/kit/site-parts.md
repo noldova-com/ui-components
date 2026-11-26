@@ -46,10 +46,11 @@ Below 47.5em the copy goes 1.4375rem under the title, its lines running on, and 
 **Text roles.** The line above: as `.nol-site-eyebrow`, 1em over the title. The title: `--nol-site-title-size` at the emphasis weight, balanced, in `setting-title`. The copy: `--nol-site-text` on a 1.7 line in `text-muted`.
 
 **Surface and behavior.** A region named by its title, a level-2 heading, with the id the site gives so a link can lead to it; a line break in the title starts a new line, and one in the copy does beside the title only.
+A site that needs markup in the copy, such as a key name that differs by platform, leaves `copy` unset and projects an element with the `nolSiteSectionCopy` attribute, which the section draws in its copy's place and style, each of its elements with the `nol-site-section-copy-line` class a line of the copy; with neither, the section has no copy.
 
 ## Cards
 
-**Default geometry.** A card grid sets as many columns of at least 18rem as fit, 1.25rem apart, the cards in a row as tall as each other, and one column when it is narrower.
+**Default geometry.** A card grid sets as many columns of at least 18rem as fit, 1.25rem apart, the cards in a row as tall as each other, and one column when it is narrower. With `columns`, it sets that many on a screen 75rem and wider, two below that and one below 47.5rem, and the last card spans the columns its row leaves, so seven cards in four columns are set four and three with the last across two.
 A card is 1.6875rem inside its border at the top and sides, with its icon, 1.4375rem, and its index on a row 2.125rem over its title, the title 0.875rem over its text, which takes at least 4.625rem.
 Below 68.75em the sides are 1.25rem; below 47.5em the card is min(1.5625rem, 6vw) inside its border all round, the row 1.5rem over the title and the text as tall as it is.
 

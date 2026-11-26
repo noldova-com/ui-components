@@ -20,6 +20,8 @@ LICENSE file in the root directory of this source tree.
           <span class="nol-site-section-copy-line">{{ line }}</span>
         }
       </p>
+    } @else {
+      <p class="nol-site-section-copy"><ng-content select="[nolSiteSectionCopy]" /></p>
     }
   </div>
   <ng-content />

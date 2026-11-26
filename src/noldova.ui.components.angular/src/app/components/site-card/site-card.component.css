@@ -6,6 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* The last card of a grid with set columns spans what its row leaves; one column anywhere else. */
+:host(:last-child) {
+  grid-column: span var(--nol-site-card-grid-last-span, 1);
+}
+
 :host {
   display: block;
   box-sizing: border-box;

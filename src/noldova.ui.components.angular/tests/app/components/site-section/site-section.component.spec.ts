@@ -29,6 +29,32 @@ class SiteSectionHostComponent {
   public readonly sectionId = signal<string | null>("workflow");
 }
 
+// The same section with its copy projected, its lines marked as the section marks its own and holding markup of their own.
+@Component({
+  imports: [SiteSectionComponent],
+  template: `
+    <nol-site-section title="Agents that work together,
+with you in charge." headingId="projected-title"><span nolSiteSectionCopy><span class="nol-site-section-copy-line">From the first question to the <span class="key">final</span> review,</span><span class="nol-site-section-copy-line">every step stays in front of you.</span></span><div class="body">Body</div></nol-site-section>
+  `
+})
+class SiteSectionProjectedHostComponent {}
+
+// What a section's copy shows: the paragraph, its rendered text, each line's display and separator, and the boxes of the
+// paragraph, each line and the content, from the section's block.
+class CopyReading {
+  public readonly copy: HTMLElement;
+  public readonly text: string;
+  public readonly lines: readonly (readonly string[])[];
+  public readonly places: readonly (readonly number[])[];
+
+  public constructor(copy: HTMLElement, text: string, lines: readonly (readonly string[])[], places: readonly (readonly number[])[]) {
+    this.copy = copy;
+    this.text = text;
+    this.lines = lines;
+    this.places = places;
+  }
+}
+
 describe("SiteSectionComponent", () => {
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
@@ -71,8 +97,40 @@ describe("SiteSectionComponent", () => {
       t.sectionId.set(null);
     });
 
-    expect([part("section").hasAttribute("id"), DomFixture.maybe(section(), ".nol-site-eyebrow"), DomFixture.maybe(section(), ".nol-site-section-copy")]).toEqual([false, null, null]);
+    expect([part("section").hasAttribute("id"), DomFixture.maybe(section(), ".nol-site-eyebrow"), DomFixture.maybe(section(), ".nol-site-section-copy-line")]).toEqual([false, null, null]);
+    expect([part(".nol-site-section-copy").childElementCount, getComputedStyle(part(".nol-site-section-copy")).display]).toEqual([0, "none"]);
   });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const width of [1280, 375])
+      it(`draws projected copy, with its markup, where and as the string copy is at ${String(width)} pixels, ${mode}`, async () => {
+        await page.viewport(width, 800);
+        const read = (root: HTMLElement): CopyReading => {
+          const block = DomFixture.one(root, "section").getBoundingClientRect();
+          const copy = DomFixture.one(root, ".nol-site-section-copy");
+          const lines = DomFixture.all(root, ".nol-site-section-copy-line");
+          const places = [copy, ...lines, DomFixture.one(root, ".body")].map(t => {
+            const box = t.getBoundingClientRect();
+            return [box.left - block.left, box.top - block.top, box.width, box.height];
+          });
+          return new CopyReading(copy, copy.innerText, lines.map(t => [getComputedStyle(t).display, getComputedStyle(t, "::before").content]), places);
+        };
+        await renderAsync(t => t.eyebrow.set(null), mode);
+        const own = read(section());
+        fixture.destroy();
+        const projected = TestBed.createComponent(SiteSectionProjectedHostComponent);
+        projected.detectChanges();
+        await projected.whenStable();
+        const other = read(DomFixture.one(DomFixture.host(projected), "nol-site-section"));
+
+        expect([DomFixture.one(other.copy, "[nolSiteSectionCopy]").parentElement === other.copy, DomFixture.one(other.copy, ".key").textContent, other.text, getComputedStyle(other.copy).color])
+          .toEqual([true, "final", own.text, color(mode, "text-muted")]);
+        expect(other.lines).toEqual(own.lines);
+        for (const [index, place] of other.places.entries())
+          for (const [axis, value] of place.entries())
+            AppearanceFixture.expectPixels(value, DomFixture.at(DomFixture.at(own.places, index), axis));
+        projected.destroy();
+      });
 
   for (const mode of AppearanceFixture.modes) {
     it(`draws the line above in the accent color, the title in the title color and the copy muted, ${mode}`, async () => {
