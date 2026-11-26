@@ -61,7 +61,10 @@
   }
 }
 
-.nol-choice-pill-selected .nol-choice-pill-glyph {
+.nol-choice-pill-selected .nol-choice-pill-glyph,
+:host-context(.nol-choice-pills-pending):host-context(:root[data-nol-theme-mode="Light"]) .nol-choice-pill[data-nol-value="Light"] .nol-choice-pill-glyph,
+:host-context(.nol-choice-pills-pending):host-context(:root[data-nol-theme-mode="Dark"]) .nol-choice-pill[data-nol-value="Dark"] .nol-choice-pill-glyph,
+:host-context(.nol-choice-pills-pending):host-context(:root:not([data-nol-theme-mode])) .nol-choice-pill[data-nol-value="System"] .nol-choice-pill-glyph {
   color: var(--nol-choice-pill-selected-icon, var(--nol-icon-color));
 
   @media (forced-colors: active) {
@@ -78,7 +81,10 @@
   }
 }
 
-.nol-choice-pill.nol-choice-pill-selected {
+.nol-choice-pill.nol-choice-pill-selected,
+:host-context(.nol-choice-pills-pending):host-context(:root[data-nol-theme-mode="Light"]) .nol-choice-pill[data-nol-value="Light"],
+:host-context(.nol-choice-pills-pending):host-context(:root[data-nol-theme-mode="Dark"]) .nol-choice-pill[data-nol-value="Dark"],
+:host-context(.nol-choice-pills-pending):host-context(:root:not([data-nol-theme-mode])) .nol-choice-pill[data-nol-value="System"] {
   --nol-text-muted: var(--nol-text);
   background-color: var(--nol-choice-pill-selected, var(--nol-selected));
   box-shadow: var(--nol-choice-pill-selected-shadow, none);
