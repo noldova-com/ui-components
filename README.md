@@ -510,7 +510,7 @@ Specs emulate media only through `src/noldova.ui.components.angular/tests/fixtur
 A spy's own `mockRestore()` leaves its restore in Vitest's registry, where a later spec file's `vi.restoreAllMocks()` runs it again, so a test that spies on a faked timer global restores it with `vi.restoreAllMocks()`.
 One spec fakes a timer global in the shared page, by the maintainer's decision: `src/noldova.ui.components.angular/tests/testing/services/kit-stylesheet-fixture.spec.ts` fakes `setTimeout` to reach `KitStylesheetFixture`'s 30 s load deadline and the 5 s limit on its diagnostic fetch of a font that failed.
 No event can stand in for a load or an answer that never comes, and the fixture is a public helper with no injected time source; the spec restores the timers in its `afterEach`.
-A spec that needs its own resize observers, to hold, count or call their callbacks, provides them through `ResizeTokens.observers` in `src/noldova.ui.components.angular/src/app/models/resize-tokens.ts`, whose default starts the browser's own; no spec replaces the global `ResizeObserver`, since the specs that run after it on the page would see the replacement.
+A spec that needs its own resize observers, to hold, count or call their callbacks, provides them through `ResizeTokens.observers` in `src/noldova.ui.components.angular/src/app/models/resize-tokens.ts`, whose default starts the browser's own, with one of the fake sources in `src/noldova.ui.components.angular/tests/fixtures`, such as `CountingResizeObserversFixture`; no spec replaces the global `ResizeObserver`, since the specs that run after it on the page would see the replacement.
 No test needs a resource that the operating system can't isolate per process, so none runs alone.
 
 ### Newest context
