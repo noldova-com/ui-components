@@ -18,8 +18,8 @@
     "@angular/platform-server": "22.3.0",
     "@angular/router": "22.3.0",
     "@angular/ssr": "22.3.0",
-    "@noldova/context.core": "0.0.17",
-    "@noldova/context.exceptions": "0.0.17",
+    "@noldova/context.core": "0.0.18",
+    "@noldova/context.exceptions": "0.0.18",
     "rxjs": "7.8.2",
     "tslib": "2.8.1"
   },
