@@ -9,8 +9,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-import "@noldova/context.core";
-
 import { JsonFields } from "../angular/json-fields.ts";
 import type { PackageManifest } from "./package-manifest.ts";
 
@@ -38,7 +36,7 @@ export class NodeLoadEntries {
     const manifest = path.join(this.root, ...this.manifest.directory.split("/"), NodeLoadEntries.MANIFEST_FILE);
     const listed = this.describe(manifest);
     const entries = this.listEntries(JsonFields.parse(await readFile(manifest, "utf8"), listed).object(NodeLoadEntries.EXPORTS_FIELD));
-    const loaded = new Set([...(await readFile(this.script, "utf8")).matchAll(NodeLoadEntries.LOAD)].flatMap(t => Object.isString(t[1]) ? [t[1]] : []));
+    const loaded = new Set([...(await readFile(this.script, "utf8")).matchAll(NodeLoadEntries.LOAD)].map(t => t[1] ?? ""));
     const shown = this.describe(this.script);
     return [
       ...[...entries].filter(t => !loaded.has(t)).map(t => `${shown}: loads no ${t}, though ${listed} exports it; ${NodeLoadEntries.RULE}`),
@@ -47,9 +45,8 @@ export class NodeLoadEntries {
   }
 
   private listEntries(exports: JsonFields): ReadonlySet<string> {
-    const targets = exports.toJson();
     return new Set(exports.names()
-      .filter(t => !NodeLoadEntries.SKIPPED.includes(t) && Object.isObject(Reflect.get(targets, t)) && exports.object(t).has(NodeLoadEntries.TYPES_FIELD))
+      .filter(t => !NodeLoadEntries.SKIPPED.includes(t) && exports.holdsObject(t) && exports.object(t).has(NodeLoadEntries.TYPES_FIELD))
       .map(t => t === NodeLoadEntries.MAIN_SUBPATH ? this.manifest.name : `${this.manifest.name}${t.slice(NodeLoadEntries.RELATIVE_PREFIX.length)}`));
   }
 
