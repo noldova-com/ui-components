@@ -7,7 +7,7 @@
  */
 
 import { isPlatformBrowser } from "@angular/common";
-import { Component, DOCUMENT, PLATFORM_ID, type Signal, ViewEncapsulation, afterNextRender, computed, inject, signal } from "@angular/core";
+import { Component, DOCUMENT, PLATFORM_ID, type Signal, afterNextRender, computed, inject, signal } from "@angular/core";
 
 import { ModePreference } from "../../enums/mode-preference.js";
 import { ThemeMode } from "../../enums/theme-mode.js";
@@ -20,10 +20,8 @@ import { SiteThemeSwitchResources } from "./site-theme-switch.resources.js";
   templateUrl: "./site-theme-switch.component.html",
   styleUrl: "./site-theme-switch.component.css",
   imports: [SiteChoicePillsComponent],
-  encapsulation: ViewEncapsulation.None,
   host: {
-    "class": "nol-site-theme-switch",
-    "[class.nol-site-theme-switch-pending]": "!isInBrowser"
+    "class": "nol-site-theme-switch"
   }
 })
 export class SiteThemeSwitchComponent {

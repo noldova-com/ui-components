@@ -57,6 +57,7 @@ describe("SiteThemeSwitchComponent", () => {
   const checked = (): (string | null)[] => pills().filter(t => t.getAttribute("aria-checked") === "true").map(t => t.getAttribute("aria-label"));
   const shownMode = (): string | null => document.documentElement.getAttribute(modeAttribute);
   const switchHost = (): HTMLElement => DomFixture.one(DomFixture.host(fixture), "nol-site-theme-switch");
+  const pillsHost = (): HTMLElement => DomFixture.one(switchHost(), "nol-site-choice-pills");
   const glyphColor = (pill: Element): string => getComputedStyle(DomFixture.one(pill, ".nol-choice-pill-glyph")).color;
   const headCases: readonly StoredCase[] = [new StoredCase("light", "Light", "Light"), new StoredCase("dark", "Dark", "Dark"), new StoredCase("system", "System", null)];
 
@@ -183,13 +184,13 @@ describe("SiteThemeSwitchComponent", () => {
     localStorage.setItem(key, "dark");
     await prerenderAsync("Dark");
 
-    expect([checked(), switchHost().classList.contains("nol-site-theme-switch-pending")]).toEqual([[], true]);
+    expect([checked(), pillsHost().classList.contains("nol-choice-pills-pending")]).toEqual([[], true]);
   });
 
   it("is not pending once it renders in the browser", async () => {
     await renderAsync();
 
-    expect(switchHost().classList.contains("nol-site-theme-switch-pending")).toBe(false);
+    expect(pillsHost().classList.contains("nol-choice-pills-pending")).toBe(false);
   });
 
   for (const { stored, label, mode } of headCases)
@@ -206,6 +207,17 @@ describe("SiteThemeSwitchComponent", () => {
 
   for (const mode of AppearanceFixture.modes)
     for (const theme of AppearanceFixture.themes) {
+      it(`draws the pill the head script names before hydration with the selected pill's own fill, shadow and glyph color, with the ${theme.id} theme in ${mode} mode`, async () => {
+        await prerenderAsync("Dark", theme, mode);
+        const pending = DomFixture.one(switchHost(), '[aria-label="Dark"]');
+        const selected = DomFixture.one(switchHost(), '[aria-label="Light"]');
+        selected.classList.add("nol-choice-pill-selected");
+        const look = (pill: Element): string => [getComputedStyle(pill).backgroundColor, getComputedStyle(pill).boxShadow, glyphColor(pill)].join(" ");
+
+        expect(look(pending)).toBe(look(selected));
+        expect(look(pending)).not.toBe(look(DomFixture.one(switchHost(), '[aria-label="System"]')));
+      });
+
       for (const stored of headCases)
         it(`draws ${stored.label} as chosen before hydration when the head script applies a saved ${stored.stored}, as the hydrated switch draws it, with the ${theme.id} theme in ${mode} mode`, async () => {
           await prerenderAsync(stored.mode, theme, mode);
