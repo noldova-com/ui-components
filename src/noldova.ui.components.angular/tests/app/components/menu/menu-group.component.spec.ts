@@ -324,6 +324,44 @@ describe("MenuGroupComponent with maxRows", () => {
     }
   });
 
+  it("drops a fit its rows' resize asked for when it stops scrolling before that frame, so the rows keep their whole height", async () => {
+    const callbacks: ResizeObserverCallback[] = [];
+    const observer = new ResizeObserver(() => undefined);
+    vi.stubGlobal("ResizeObserver", class {
+      public constructor(callback: ResizeObserverCallback) {
+        callbacks.push(callback);
+      }
+
+      public observe(): void {
+        return;
+      }
+
+      public unobserve(): void {
+        return;
+      }
+
+      public disconnect(): void {
+        return;
+      }
+    });
+    try {
+      await showAsync();
+      // The resize asks for a fit on the next frame; maxRows goes null and the group cleans up in the same task, first.
+      for (const callback of callbacks)
+        callback([], observer);
+      scrolling.componentInstance.maxRows.set(null);
+      TestBed.tick();
+      const cleaned = rows().style.maxHeight;
+      await new Promise(t => requestAnimationFrame(() => requestAnimationFrame(t)));
+
+      expect([callbacks.length > 0, cleaned, rows().style.maxHeight]).toEqual([true, "", ""]);
+    }
+    finally {
+      observer.disconnect();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("follows its rows' height, a description line included, when maxRows changes", async () => {
     await showAsync();
     const before = rows().getBoundingClientRect().height;
