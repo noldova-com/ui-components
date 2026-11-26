@@ -7,27 +7,12 @@ LICENSE file in the root directory of this source tree.
 -->
 
 <div class="nol-site-footer-inner">
-  <div class="nol-site-footer-top">
-    <div class="nol-site-footer-brand">
-      <nol-site-lockup [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [href]="homeHref()" />
-      @if (line(); as lineText) {
-        <p class="nol-site-footer-line">{{ lineText }}</p>
-      }
-    </div>
-    <div class="nol-site-footer-groups">
-      @for (group of groups(); track group.title) {
-        <nav class="nol-site-footer-group" [attr.aria-label]="group.title">
-          <p class="nol-site-footer-title" aria-hidden="true">{{ group.title }}</p>
-          <ul class="nol-site-footer-links">
-            @for (link of group.links; track link.href) {
-              <li class="nol-site-footer-item"><a class="nol-site-footer-link" [href]="link.href" [attr.aria-current]="link.isCurrent ? partResources.currentPage : null">{{ link.label }}</a></li>
-            }
-          </ul>
-        </nav>
-      }
-    </div>
-  </div>
-  <div class="nol-site-footer-bottom">
+  <div class="nol-site-footer-brand">
+    <nol-site-lockup [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [href]="homeHref()" [label]="homeLabel()"
+      [wordmarkSize]="wordmarkSize()" />
+    @if (line(); as lineText) {
+      <p class="nol-site-footer-line">{{ lineText }}</p>
+    }
     <p class="nol-site-footer-notice">
       @if (notice(); as noticeText) {
         {{ noticeText }}
@@ -36,5 +21,19 @@ LICENSE file in the root directory of this source tree.
       }
     </p>
     <ng-content />
+  </div>
+  <div class="nol-site-footer-groups">
+    @for (group of groups(); track group.title) {
+      <nav class="nol-site-footer-group" [attr.aria-label]="group.title">
+        <p class="nol-site-footer-title" aria-hidden="true">{{ group.title }}</p>
+        <ul class="nol-site-footer-links">
+          @for (link of group.links; track link.href) {
+            <li class="nol-site-footer-item"><a class="nol-site-footer-link" [href]="link.href" [attr.aria-current]="link.isCurrent ? partResources.currentPage : null"
+              >@if (link.icon; as icon) {<span class="nol-site-footer-link-icon" aria-hidden="true" [style.mask-image]="maskOf(icon)"></span>}{{ link.label }}</a
+            ></li>
+          }
+        </ul>
+      </nav>
+    }
   </div>
 </div>

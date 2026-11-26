@@ -42,11 +42,11 @@ So the start imports from entries that hold only what it needs, and a lazy page 
 |---|---|
 | `@noldova/ui.components.angular/button` | The button, `ButtonComponent`, with `ButtonSize` and `ButtonVariant`. |
 | `@noldova/ui.components.angular/typography` | The typography, `Typography` and `TypographyPainter`, with `TypographySizing` and `ThemeMode`. |
-| `@noldova/ui.components.angular/site` | The website header and footer every Noldova website shares, `SiteHeaderComponent` (`nol-site-header`) and `SiteFooterComponent` (`nol-site-footer`), with their links, `SiteLink`, `SiteLinkGroup` and `SiteSocialLink`, and the search slot, `SiteSearchDirective`, which holds the site's search field, the quiet text field, `input[nol-text-field]` with `quiet`, in a `nol-text-field-box` whose `icon` is `search`, from the main entry. A website's start, which shows them on every page, imports them from here. |
+| `@noldova/ui.components.angular/site` | The website header and footer every Noldova website shares, `SiteHeaderComponent` (`nol-site-header`) and `SiteFooterComponent` (`nol-site-footer`), with their links, `SiteLink`, `SiteLinkGroup` and `SiteSocialLink`, and the search slot, `SiteSearchDirective`, which holds the site's search field, the quiet text field, `input[nol-text-field]` with `quiet`, in a `nol-text-field-box` whose `icon` is `search`, from the main entry; and the page parts its pages share, `SiteHeroComponent` (`nol-site-hero`) with its `SiteAction`s and `SiteShot`, `SiteSectionComponent` (`nol-site-section`) and `SiteCardGridComponent` (`nol-site-card-grid`) with its `SiteCardComponent`s (`nol-site-card`), and `SiteClosingComponent` (`nol-site-closing`), which need `styles/site.css`. A website's start, which shows them on every page, imports them from here; the header, the footer and the search slot come only from here, and their tooltips load their engine, with the Angular CDK, once they render, so the start holds none of it. |
 | `@noldova/ui.components.angular/code-block` | The code block, `CodeBlockComponent` (`nol-code-block`), with what an app binds on it: `ShellRunOutputDirective`, `ShellRun`, `ShellRunState` and `IShellRunOutputContext`. |
 
 The code block, its toolbar and its tooltips then come in that page's chunk of the app's build.
-The main entry exports the same classes too, so an app's imports from it keep working.
+The main entry exports the same classes too, but for the site's header, footer and search slot, so an app's imports from it keep working.
 
 ```ts
 // main.ts, the app's start

@@ -335,6 +335,7 @@ A list that fills a row while it is hovered, active, chosen or current keeps two
 - [Select](kit/select.md)
 - [Site footer](kit/site-footer.md)
 - [Site header and theme switch](kit/site-header.md)
+- [Site hero, sections, cards and closing](kit/site-parts.md)
 - [Split button](kit/split-button.md)
 - [Switch](kit/switch.md)
 - [Tab](kit/tab.md)

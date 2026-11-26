@@ -10,10 +10,12 @@ export class SiteLink {
   public readonly label: string;
   public readonly href: string;
   public readonly isCurrent: boolean;
+  public readonly icon: string | null;
 
-  public constructor(label: string, href: string, isCurrent: boolean = false) {
+  public constructor(label: string, href: string, isCurrent: boolean = false, icon: string | null = null) {
     this.label = label;
     this.href = href;
     this.isCurrent = isCurrent;
+    this.icon = icon;
   }
 }
