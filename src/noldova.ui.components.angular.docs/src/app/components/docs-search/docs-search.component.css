@@ -12,8 +12,7 @@
   min-width: 0;
 }
 
-.nol-docs-search-field {
-  box-sizing: border-box;
+.nol-docs-search-box {
   width: 100%;
 }
 

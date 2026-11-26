@@ -27,6 +27,9 @@ import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
     <textarea class="role" nol-text-field rows="4" aria-label="Role" placeholder="What this teammate does"></textarea>
     <textarea class="brief" nol-text-field rows="4" aria-label="Brief" disabled></textarea>
     <textarea class="notes" nol-text-field rows="4" aria-label="Notes" aria-invalid="true"></textarea>
+    <input class="quiet" nol-text-field [quiet]="true" type="search" aria-label="Search the docs" placeholder="Search the docs" />
+    <input class="quiet-invalid" nol-text-field [quiet]="true" type="search" aria-label="Missing search" aria-invalid="true" />
+    <input class="quiet-locked" nol-text-field [quiet]="true" type="search" aria-label="Locked search" disabled />
   `
 })
 class TextFieldHostComponent {}
@@ -205,6 +208,76 @@ describe("TextFieldComponent", () => {
           expect([focused.outlineStyle, focused.outlineColor, parseFloat(focused.outlineWidth)]).toEqual(["solid", ForcedColorsFixture.resolve("Highlight"), width * 2]);
           for (const [index, value] of [...invalid.size, ...invalid.inset].entries())
             AppearanceFixture.expectPixels(value, [...off.size, ...off.inset][index] as number);
+        }
+        finally {
+          await ForcedColorsFixture.resetAsync();
+        }
+      });
+
+  const place = (name: string): number[] => {
+    const style = getComputedStyle(field(name));
+    const box = field(name).getBoundingClientRect();
+    return [box.width, box.height, parseFloat(style.borderTopWidth), parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft)];
+  };
+
+  const expectPlace = (actual: number[], expected: number[]): void => {
+    for (const [index, value] of actual.entries())
+      AppearanceFixture.expectPixels(value, expected[index] ?? Number.NaN);
+  };
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`takes the quiet look in the ${theme.id} theme in ${mode} mode: a transparent border of the field's width on the window fill, its placeholder in the muted text color, the plain field's size and text inset, the accent border while focused, the error border while invalid and dimmed while disabled`, () => {
+        render(theme, mode);
+        const style = getComputedStyle(field("quiet"));
+        const sides = [style.borderTopColor, style.borderRightColor, style.borderBottomColor, style.borderLeftColor];
+        const fill = style.backgroundColor;
+
+        field("quiet").focus();
+        const focused = getComputedStyle(field("quiet")).borderTopColor;
+
+        expect(field("quiet").classList.contains("nol-text-field-quiet")).toBe(true);
+        expect(field("search").classList.contains("nol-text-field-quiet")).toBe(false);
+        expect(sides).toEqual(["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"]);
+        expect([fill, style.color]).toEqual([AppearanceFixture.readColor(theme, mode, "window"), AppearanceFixture.readColor(theme, mode, "input-text")]);
+        expect(getComputedStyle(field("quiet"), "::placeholder").color).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        AppearanceFixture.expectPixels(parseFloat(style.borderTopWidth), AppearanceFixture.measureLook("border-width"));
+        expectPlace(place("quiet"), place("search"));
+        expect(focused).toBe(AppearanceFixture.readColor(theme, mode, "accent"));
+        expect(getComputedStyle(field("quiet-invalid")).borderTopColor).toBe(AppearanceFixture.readColor(theme, mode, "error"));
+        expect([getComputedStyle(field("quiet-locked")).opacity, getComputedStyle(field("quiet-locked")).cursor]).toEqual(["0.5", "default"]);
+      });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`keeps the quiet field's placeholder at 4.5:1 or more on its window fill in the kit's default theme in ${mode} mode, where the input's placeholder color would fall short`, () => {
+      render(DefaultTheme.theme, mode);
+      const style = getComputedStyle(field("quiet"));
+
+      expect(AppearanceFixture.contrast(getComputedStyle(field("quiet"), "::placeholder").color, style.backgroundColor)).toBeGreaterThanOrEqual(4.5);
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws the quiet field as the plain field under forced colors, its system border, fill and size, the Highlight focus outline and the invalid and disabled cues, in the ${theme.id} theme in ${mode} mode`, async () => {
+        render(theme, mode);
+        await ForcedColorsFixture.activateAsync();
+        try {
+          const look = (name: string): (string | number)[] => {
+            const style = getComputedStyle(field(name));
+            return [style.borderTopStyle, parseFloat(style.borderTopWidth), style.borderTopColor, style.backgroundColor, style.color, style.outlineStyle];
+          };
+          const quiet = look("quiet");
+          const plain = look("search");
+          const width = AppearanceFixture.measureLook("border-width");
+          expectPlace(place("quiet"), place("search"));
+          field("quiet").focus();
+          const focused = getComputedStyle(field("quiet"));
+
+          expect(quiet).toEqual(plain);
+          expect(quiet.slice(0, 3)).toEqual(["solid", width, ForcedColorsFixture.resolve("FieldText")]);
+          expect([focused.outlineStyle, focused.outlineColor, parseFloat(focused.outlineWidth)]).toEqual(["solid", ForcedColorsFixture.resolve("Highlight"), width * 2]);
+          expect(look("quiet-invalid").slice(0, 3)).toEqual(["dashed", width * 2, ForcedColorsFixture.resolve("CanvasText")]);
+          expect([getComputedStyle(field("quiet-locked")).borderTopColor, getComputedStyle(field("quiet-locked")).color]).toEqual([ForcedColorsFixture.resolve("GrayText"), ForcedColorsFixture.resolve("GrayText")]);
         }
         finally {
           await ForcedColorsFixture.resetAsync();
