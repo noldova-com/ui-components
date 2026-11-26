@@ -20,9 +20,11 @@ import { ButtonVariant } from "../../enums/button-variant.js";
 import { VirtualListAlign } from "../../enums/virtual-list-align.js";
 import { VirtualListEdge } from "../../enums/virtual-list-edge.js";
 import { VirtualListKind } from "../../enums/virtual-list-kind.js";
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
 import type { ITimeSource } from "../../interfaces/i-time-source.js";
 import type { IVirtualListObserver } from "../../interfaces/i-virtual-list-observer.js";
 import { ClockTokens } from "../../models/clock-tokens.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import { VirtualListAnchor } from "../../models/virtual-list-anchor.js";
 import { VirtualListChoice } from "../../models/virtual-list-choice.js";
 import { VirtualListGap } from "../../models/virtual-list-gap.js";
@@ -56,13 +58,14 @@ export class VirtualListComponent<T> {
   private isRetryHeld: boolean = false;
   private readonly announcer: Announcer = inject(Announcer);
   private readonly timeSource: ITimeSource = inject(ClockTokens.timeSource);
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
   private readonly viewport: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("viewport");
   private readonly list: Signal<ElementRef<HTMLElement>> = viewChild.required<ElementRef<HTMLElement>>("list");
   private readonly slots: Signal<readonly ElementRef<HTMLElement>[]> = viewChildren<ElementRef<HTMLElement>>("slot");
   private readonly jumpButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("jumpButton", { read: ElementRef });
   private readonly retryButton: Signal<ElementRef<HTMLElement> | undefined> = viewChild("retryButton", { read: ElementRef });
-  private readonly observer: ResizeObserver = new ResizeObserver(t => this.measure(t));
-  private readonly checker: ResizeObserver = new ResizeObserver(() => this.keepClamp(this.viewport().nativeElement));
+  private readonly observer: ResizeObserver = this.observers.create(t => this.measure(t));
+  private readonly checker: ResizeObserver = this.observers.create(() => this.keepClamp(this.viewport().nativeElement));
   private readonly observed: Set<Element> = new Set();
   private readonly reserved: WeakSet<HTMLElement> = new WeakSet();
   private readonly follower: IVirtualListObserver = {

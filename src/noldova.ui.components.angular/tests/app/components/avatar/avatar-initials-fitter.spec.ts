@@ -10,7 +10,10 @@ import { PLATFORM_ID } from "@angular/core";
 import { TestBed } from "@angular/core/testing";
 
 import { AvatarInitialsFitter } from "../../../../src/app/components/avatar/avatar-initials-fitter";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
+import type { TrackedResizeObserverFixture } from "../../../fixtures/tracked-resize-observer.fixture";
+import { TrackingResizeObserversFixture } from "../../../fixtures/tracking-resize-observers.fixture";
 
 class DrawnAvatar {
   public readonly host: HTMLElement;
@@ -23,31 +26,8 @@ class DrawnAvatar {
 }
 
 describe("AvatarInitialsFitter", () => {
-  const browserObserver = window.ResizeObserver;
-  const made: RecordingObserver[] = [];
+  let observers: TrackingResizeObserversFixture;
   const drawn: HTMLElement[] = [];
-
-  class RecordingObserver extends browserObserver {
-    public readonly callback: ResizeObserverCallback;
-    public readonly unobserved: Element[] = [];
-    public disconnects: number = 0;
-
-    public constructor(callback: ResizeObserverCallback) {
-      super(callback);
-      this.callback = callback;
-      made.push(this);
-    }
-
-    public override unobserve(target: Element): void {
-      this.unobserved.push(target);
-      super.unobserve(target);
-    }
-
-    public override disconnect(): void {
-      this.disconnects++;
-      super.disconnect();
-    }
-  }
 
   const draw = (size: number, text: string, fontSize: number = 16): DrawnAvatar => {
     const host = document.createElement("div");
@@ -62,23 +42,22 @@ describe("AvatarInitialsFitter", () => {
     return new DrawnAvatar(host, letters);
   };
 
-  const observer = (): RecordingObserver => {
-    const last = made.at(-1);
-    if (Object.isUndefined(last) || made.length !== 1)
-      throw new Error(`The fitter started ${made.length} resize observers, not one.`);
+  const observer = (): TrackedResizeObserverFixture => {
+    const last = observers.made.at(-1);
+    if (Object.isUndefined(last) || observers.made.length !== 1)
+      throw new Error(`The fitter started ${observers.made.length} resize observers, not one.`);
     return last;
   };
 
   const fitter = (): AvatarInitialsFitter => TestBed.inject(AvatarInitialsFitter);
 
   beforeEach(async () => {
-    made.length = 0;
-    window.ResizeObserver = RecordingObserver;
+    observers = new TrackingResizeObserversFixture();
+    TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: observers }] });
     await document.fonts.ready;
   });
 
   afterEach(() => {
-    window.ResizeObserver = browserObserver;
     drawn.splice(0).forEach(t => t.remove());
     vi.restoreAllMocks();
   });
@@ -149,7 +128,7 @@ describe("AvatarInitialsFitter", () => {
     fitter().watch(host, letters);
     fitter().unwatch(host, letters);
     const entries = await new Promise<ResizeObserverEntry[]>(resolve => {
-      const elsewhere = new browserObserver(found => {
+      const elsewhere = new ResizeObserver(found => {
         elsewhere.disconnect();
         resolve(found);
       });
@@ -168,7 +147,7 @@ describe("AvatarInitialsFitter", () => {
     fitter().watch(host, letters);
     fitter().unwatch(host, letters);
 
-    expect(made.length).toBe(0);
+    expect(observers.made.length).toBe(0);
   });
 
   it("disconnects its resize observer when its injector is destroyed, and has none to disconnect when it never watched", () => {
@@ -180,6 +159,6 @@ describe("AvatarInitialsFitter", () => {
     fitter();
     TestBed.resetTestingModule();
 
-    expect([started.disconnects, made.length]).toEqual([1, 1]);
+    expect([started.disconnects, observers.made.length]).toEqual([1, 1]);
   });
 });

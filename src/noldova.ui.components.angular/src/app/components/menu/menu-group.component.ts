@@ -7,10 +7,12 @@
  */
 
 import { CdkMenuItem } from "@angular/cdk/menu";
-import { Component, ElementRef, afterRenderEffect, contentChildren, input, viewChild } from "@angular/core";
+import { Component, ElementRef, afterRenderEffect, contentChildren, inject, input, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import { MenuGroupResources } from "./menu-group.resources.js";
 
 @Component({
@@ -29,6 +31,7 @@ export class MenuGroupComponent {
 
   private readonly rows = viewChild.required<ElementRef<HTMLElement>>("rows");
   private readonly items = contentChildren<CdkMenuItem, ElementRef<HTMLElement>>(CdkMenuItem, { read: ElementRef });
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
   private settled: number = 0;
 
   protected readonly labelId: string = `${MenuGroupResources.menuGroupLabelIdPrefix}${MenuGroupComponent.count++}`;
@@ -53,7 +56,7 @@ export class MenuGroupComponent {
       fit();
       this.showCurrent(rows, items);
       let frame: number | null = null;
-      const observer = new ResizeObserver(() => frame ??= requestAnimationFrame(() => {
+      const observer = this.observers.create(() => frame ??= requestAnimationFrame(() => {
         frame = null;
         fit();
       }));

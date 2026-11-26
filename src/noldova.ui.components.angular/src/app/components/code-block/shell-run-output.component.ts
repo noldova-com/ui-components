@@ -12,7 +12,9 @@ import { Component, DestroyRef, ElementRef, type Signal, type TemplateRef, ViewE
 
 import "@noldova/context.core";
 
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
 import type { IShellRunOutputContext } from "../../interfaces/i-shell-run-output-context.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import { ShellRunBlocks } from "../../models/shell-run-blocks.js";
 import { DomResources } from "../../../dom-resources.js";
 import type { CodeBlockComponent } from "./code-block.component.js";
@@ -34,6 +36,7 @@ import { HorizontalExtent } from "./horizontal-extent.js";
 export class ShellRunOutputComponent {
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly blocks: ShellRunBlocks | null = inject(ShellRunBlocks, { optional: true });
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
   private readonly indent: WritableSignal<number> = signal(0);
   private readonly width: WritableSignal<number | null> = signal(null);
 
@@ -50,7 +53,7 @@ export class ShellRunOutputComponent {
   public constructor() {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
-      const sizes = new ResizeObserver(() => this.measure());
+      const sizes = this.observers.create(() => this.measure());
       destroyRef.onDestroy(() => sizes.disconnect());
       sizes.observe(this.area());
       sizes.observe(this.host);

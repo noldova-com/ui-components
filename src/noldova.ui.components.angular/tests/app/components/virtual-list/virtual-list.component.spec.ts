@@ -20,6 +20,7 @@ import { VirtualListKind } from "../../../../src/app/enums/virtual-list-kind";
 import { ArrayVirtualListSource } from "../../../../src/app/models/array-virtual-list-source";
 import { ClockTokens } from "../../../../src/app/models/clock-tokens";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import { ResizeTokens } from "../../../../src/app/models/resize-tokens";
 import { VirtualListJump } from "../../../../src/app/models/virtual-list-jump";
 import { VirtualListPosition } from "../../../../src/app/models/virtual-list-position";
 import type { VirtualListSource } from "../../../../src/app/models/virtual-list-source";
@@ -29,6 +30,7 @@ import { AppearanceFixture } from "../../../../src/testing/services/appearance-f
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { FrameVirtualListSourceFixture } from "../../../fixtures/frame-virtual-list-source.fixture";
+import { HoldingResizeObserversFixture } from "../../../fixtures/holding-resize-observers.fixture";
 import { LayoutSettleFixture } from "../../../fixtures/layout-settle.fixture";
 import { LayoutTraceFixture } from "../../../fixtures/layout-trace.fixture";
 import { RenderedFrameFixture } from "../../../fixtures/rendered-frame.fixture";
@@ -1843,23 +1845,15 @@ describe("VirtualListComponent", () => {
   });
 
   describe("in a feed taller than its 600px overscan, through its first layout", () => {
-    let held: (() => void)[];
-    let isHolding: boolean;
+    let measures: HoldingResizeObserversFixture = new HoldingResizeObserversFixture();
 
     function holdMeasures(): void {
-      held = [];
-      isHolding = true;
-      const Observer = ResizeObserver;
-      vi.stubGlobal("ResizeObserver", class extends Observer {
-        public constructor(callback: ResizeObserverCallback) {
-          super((entries, observer) => isHolding ? held.push(() => callback(entries, observer)) : callback(entries, observer));
-        }
-      });
+      measures = new HoldingResizeObserversFixture();
+      TestBed.configureTestingModule({ providers: [{ provide: ResizeTokens.observers, useValue: measures }] });
     }
 
     async function releaseAsync(): Promise<void> {
-      isHolding = false;
-      held.splice(0).forEach(t => t());
+      measures.release();
       await settleAsync();
     }
 
@@ -1879,8 +1873,7 @@ describe("VirtualListComponent", () => {
     const isTopFilled = (): boolean => Math.min(...articles().map(t => t.getBoundingClientRect().top)) <= viewport().getBoundingClientRect().top + 1;
 
     afterEach(() => {
-      isHolding = false;
-      vi.unstubAllGlobals();
+      measures.isHolding = false;
     });
 
     it("fills the view from its top to its newest row in its first render, before any measure or scroll", async () => {
@@ -1889,7 +1882,7 @@ describe("VirtualListComponent", () => {
       await fixture.whenStable();
       const first = [isTopFilled(), newestInView()];
       await RenderedFrameFixture.nextAsync();
-      const measured = held.length > 0;
+      const measured = measures.held.length > 0;
       await releaseAsync();
 
       expect([first, measured]).toEqual([[true, Array(9).fill(true)], true]);
@@ -1904,7 +1897,7 @@ describe("VirtualListComponent", () => {
       viewport().dispatchEvent(new Event("scroll"));
       await fixture.whenStable();
       await RenderedFrameFixture.nextAsync();
-      const first = [held.length > 0, isTopFilled(), newestInView(), viewport().getBoundingClientRect().bottom - article("item 999").getBoundingClientRect().bottom < 30];
+      const first = [measures.held.length > 0, isTopFilled(), newestInView(), viewport().getBoundingClientRect().bottom - article("item 999").getBoundingClientRect().bottom < 30];
       await releaseAsync();
 
       expect(first).toEqual([true, true, Array(9).fill(true), true]);

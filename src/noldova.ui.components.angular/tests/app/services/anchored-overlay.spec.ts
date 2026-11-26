@@ -15,11 +15,13 @@ import { ClockTokens } from "../../../src/app/models/clock-tokens";
 import { ContentMovedEvent } from "../../../src/app/models/content-moved-event";
 import { OverlayAnchoring } from "../../../src/app/models/overlay-anchoring";
 import { OverlaySide } from "../../../src/app/models/overlay-side";
+import { ResizeTokens } from "../../../src/app/models/resize-tokens";
 import { AnchoredOverlay } from "../../../src/app/services/anchored-overlay";
 import { AppearanceFixture } from "../../../src/testing/services/appearance-fixture";
 import { ChangeSignalFixture } from "../../fixtures/change-signal.fixture";
 import { DomChangeFixture } from "../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../fixtures/dom.fixture";
+import { RecordingResizeObserversFixture } from "../../fixtures/recording-resize-observers.fixture";
 import { TestTimeSource } from "../../fixtures/test-time-source";
 
 @Component({
@@ -39,11 +41,19 @@ class EdgeCase {
   }
 }
 
-class ResizeEntry {
+class ResizeEntry implements ResizeObserverEntry {
   public readonly borderBoxSize: readonly ResizeObserverSize[];
+  public readonly contentBoxSize: readonly ResizeObserverSize[];
+  public readonly devicePixelContentBoxSize: readonly ResizeObserverSize[];
+  public readonly contentRect: DOMRectReadOnly;
+  public readonly target: Element;
 
   public constructor(inlineSize: number, blockSize: number) {
     this.borderBoxSize = [{ inlineSize, blockSize }];
+    this.contentBoxSize = this.borderBoxSize;
+    this.devicePixelContentBoxSize = this.borderBoxSize;
+    this.contentRect = new DOMRectReadOnly(0, 0, inlineSize, blockSize);
+    this.target = document.body;
   }
 }
 
@@ -273,27 +283,17 @@ describe("AnchoredOverlay", () => {
   });
 
   it("drops a reposition its content asked for when it closes before the next frame", () => {
-    const notify: ((entries: readonly ResizeEntry[]) => void)[] = [];
-    vi.stubGlobal("ResizeObserver", class {
-      public constructor(callback: (entries: readonly ResizeEntry[]) => void) {
-        notify.push(callback);
-      }
-
-      public observe(): void {
-      }
-
-      public disconnect(): void {
-      }
-    });
+    const observers = new RecordingResizeObserversFixture();
     const source = new TestTimeSource();
-    const timed = new AnchoredOverlay(Injector.create({ providers: [{ provide: ClockTokens.timeSource, useValue: source }], parent: fixture.componentInstance.injector }), "nol-test-pane");
+    const providers = [{ provide: ClockTokens.timeSource, useValue: source }, { provide: ResizeTokens.observers, useValue: observers }];
+    const timed = new AnchoredOverlay(Injector.create({ providers, parent: fixture.componentInstance.injector }), "nol-test-pane");
     try {
       timed.openComponent(new ComponentPortal(ContentComponent), anchor(), below());
       const reposition = vi.spyOn(timed, "reposition");
 
       const grown = [new ResizeEntry(1000, 1000)];
-      notify.forEach(t => t(grown));
-      notify.forEach(t => t(grown));
+      observers.notify(grown);
+      observers.notify(grown);
       const pending = source.frameCount;
       timed.close();
       source.runFrames();
@@ -304,7 +304,6 @@ describe("AnchoredOverlay", () => {
     }
     finally {
       timed.dispose();
-      vi.unstubAllGlobals();
     }
   });
 
