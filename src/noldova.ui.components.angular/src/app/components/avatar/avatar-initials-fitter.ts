@@ -13,10 +13,10 @@ import "@noldova/context.core";
 
 import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
 import { ResizeTokens } from "../../models/resize-tokens.js";
+import { AvatarFit } from "./avatar-fit.js";
+import { AvatarParts } from "./avatar-parts.js";
+import { AvatarPoint } from "./avatar-point.js";
 import { AvatarResources } from "./avatar.resources.js";
-
-type AvatarParts = readonly [host: HTMLElement, letters: HTMLElement];
-type Point = readonly [x: number, y: number];
 
 @Injectable({ providedIn: "root" })
 export class AvatarInitialsFitter {
@@ -38,10 +38,10 @@ export class AvatarInitialsFitter {
       - AvatarResources.avatarInitialsInset;
     const scale = this.scales.get(letters) ?? 1;
     const shown = letters.getBoundingClientRect();
-    const [right, below]: Point = [shown.left + shown.width / 2 - (frame.left + frame.width / 2), shown.top + shown.height / 2 - (frame.top + frame.height / 2)];
+    const offset = new AvatarPoint(shown.left + shown.width / 2 - (frame.left + frame.width / 2), shown.top + shown.height / 2 - (frame.top + frame.height / 2));
     const least = Number.parseFloat(style.getPropertyValue(AvatarResources.avatarInitialsLeastProperty)) / Number.parseFloat(style.fontSize);
     return Math.max(Number.isNaN(least) ? 0 : least, Math.min(1, ...this.inkCorners(letters, shown.width / scale, scale)
-      .map(t => AvatarInitialsFitter.reach(t, [right, below + Math.sign(t[1]) * AvatarResources.avatarInitialsSlack], radius))));
+      .map(t => AvatarInitialsFitter.reach(t, new AvatarPoint(offset.x, offset.y + Math.sign(t.y) * AvatarResources.avatarInitialsSlack), radius))));
   }
 
   public apply(letters: HTMLElement, scale: number): void {
@@ -52,7 +52,7 @@ export class AvatarInitialsFitter {
   public watch(host: HTMLElement, letters: HTMLElement): void {
     if (!this.isInBrowser)
       return;
-    const parts: AvatarParts = [host, letters];
+    const parts = new AvatarParts(host, letters);
     this.watched.set(host, parts);
     this.watched.set(letters, parts);
     this.observing().observe(host);
@@ -68,7 +68,7 @@ export class AvatarInitialsFitter {
     this.watched.delete(letters);
   }
 
-  private inkCorners(letters: HTMLElement, width: number, scale: number): readonly Point[] {
+  private inkCorners(letters: HTMLElement, width: number, scale: number): readonly AvatarPoint[] {
     this.context ??= letters.ownerDocument.createElement("canvas").getContext("2d");
     if (Object.isNull(this.context)) {
       const text = letters.ownerDocument.createRange();
@@ -87,14 +87,14 @@ export class AvatarInitialsFitter {
       [baseline - ink.actualBoundingBoxAscent * size, baseline + ink.actualBoundingBoxDescent * size]);
   }
 
-  private static cornersOf(across: readonly number[], down: readonly number[]): readonly Point[] {
-    return across.flatMap(x => down.map((y): Point => [x, y]));
+  private static cornersOf(across: readonly number[], down: readonly number[]): readonly AvatarPoint[] {
+    return across.flatMap(x => down.map(y => new AvatarPoint(x, y)));
   }
 
-  private static reach([x, y]: Point, [right, below]: Point, radius: number): number {
-    const length = x * x + y * y;
-    const along = x * right + y * below;
-    return (Math.sqrt(along * along - length * (right * right + below * below - radius * radius)) - along) / length;
+  private static reach(corner: AvatarPoint, offset: AvatarPoint, radius: number): number {
+    const length = corner.x * corner.x + corner.y * corner.y;
+    const along = corner.x * offset.x + corner.y * offset.y;
+    return (Math.sqrt(along * along - length * (offset.x * offset.x + offset.y * offset.y - radius * radius)) - along) / length;
   }
 
   private observing(): ResizeObserver {
@@ -104,7 +104,7 @@ export class AvatarInitialsFitter {
 
   private refit(entries: readonly ResizeObserverEntry[]): void {
     const shown = new Set(entries.map(t => this.watched.get(t.target)).filter((t): t is AvatarParts => !Object.isUndefined(t)));
-    const fits: (readonly [HTMLElement, number])[] = [...shown].map(([host, letters]) => [letters, this.measure(host, letters)]);
-    fits.forEach(([letters, scale]) => this.apply(letters, scale));
+    const fits = [...shown].map(t => new AvatarFit(t.letters, this.measure(t.host, t.letters)));
+    fits.forEach(t => this.apply(t.letters, t.scale));
   }
 }
