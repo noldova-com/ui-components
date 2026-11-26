@@ -17,4 +17,5 @@ export class TooltipDirectiveResources {
   public static readonly ariaLabelAttribute: string = "aria-label";
   public static readonly ariaLabelledByAttribute: string = "aria-labelledby";
   public static readonly truncationSelector: string = "[data-truncates]";
+  public static readonly keyboardFocusedSelector: string = ":focus-visible";
 }
