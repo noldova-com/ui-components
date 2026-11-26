@@ -265,6 +265,26 @@
         }
       }
     },
+    "bundle-site-frame": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": ".",
+      "prefix": "nol",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "../../_build/kit-bundles/bundle-site-frame",
+            "browser": "tests/fixtures/kit-bundles/site-frame-app.fixture.ts",
+            "index": false,
+            "tsConfig": "tests/fixtures/kit-bundles/tsconfig.site-frame.json",
+            "optimization": true,
+            "outputHashing": "none",
+            "statsJson": true
+          }
+        }
+      }
+    },
     "bundle-lazy-code-block": {
       "projectType": "application",
       "root": "",

@@ -15,6 +15,7 @@ import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
 import type PackageInfo from "./package-info.ts";
 import { ArchiveReader } from "./packages/archive.reader.ts";
+import { NodeLoadEntries } from "./packages/node-load-entries.ts";
 import { PackageBuilder } from "./packages/package-builder.ts";
 import { PackageManifest } from "./packages/package-manifest.ts";
 import { PeerRange } from "./packages/peer-range.ts";
@@ -123,6 +124,9 @@ export class Build extends Script {
       await this.installAsync(kit, archive);
     });
     await this.runStepAsync(Build.loadingInNode(kit.packageName), async () => {
+      const differences = await new NodeLoadEntries(Build.ROOT, await PackageManifest.readAsync(Build.ROOT, kit), path.resolve(Build.NODE_LOAD_SCRIPT)).findDifferencesAsync();
+      if (differences.length > 0)
+        throw new CommandFailedException(differences.join("\n"));
       await this.executeProcessAsync(process.execPath, [Build.NODE_LOAD_SCRIPT], process.cwd(), true);
       await this.executeTypeScriptCompilerAsync([Build.TYPESCRIPT_PROJECT_OPTION, Build.NODE_LOAD_PROJECT]);
     });

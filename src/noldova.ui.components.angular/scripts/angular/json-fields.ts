@@ -99,6 +99,11 @@ export class JsonFields {
     return this.value;
   }
 
+  public holdsObject(name: string): boolean {
+    const value: unknown = Reflect.get(this.value, name);
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
   public has(name: string): boolean {
     return Reflect.has(this.value, name) && Reflect.get(this.value, name) !== null;
   }

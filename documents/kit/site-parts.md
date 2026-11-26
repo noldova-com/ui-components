@@ -4,7 +4,7 @@
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
-A website imports the parts from its own entry, `@noldova/ui.components.angular/site`, as it does the [site header](site-header.md) and [footer](site-footer.md), and loads `styles/site.css` after the kit's own styles; `styles/kit.css` imports it too.
+A website imports the parts from the site entry, `@noldova/ui.components.angular/site`, as it does the [site header](site-header.md) and [footer](site-footer.md), or each from its own, `@noldova/ui.components.angular/site/hero`, `/site/section`, `/site/card` and `/site/closing`, as a lazy page does to keep them out of a start that shows only the header and footer, and loads `styles/site.css` after the kit's own styles; `styles/kit.css` imports it too.
 
 ## Type scale and spacing
 
