@@ -209,6 +209,22 @@ describe("LazyTooltipDirective", () => {
     expect([dismissed, (await shownAsync()).textContent?.trim()]).toEqual([null, "Split the group to the right"]);
   });
 
+  it("shows nothing for a pointer on its anchor when Escape came during the keyboard's focus before the engine arrived, until the pointer comes on again", async () => {
+    const clock = stillClock();
+    const held = holdEngine();
+    await renderAsync();
+    await userEvent.hover(anchor());
+    DomFixture.one(DomFixture.host(fixture), ".before").focus();
+    await userEvent.keyboard("{Tab}");
+    await userEvent.keyboard("{Escape}");
+    await held.arriveAsync();
+    const dismissed = [clock.timerCount, tooltip()];
+    await userEvent.hover(DomFixture.one(DomFixture.host(fixture), ".other"));
+    await userEvent.hover(anchor());
+
+    expect([dismissed, clock.timerCount]).toEqual([[0, null], 1]);
+  });
+
   it("reports an engine that can't load to the error handler and leaves its anchor without a tooltip", async () => {
     const failure = new Error("The tooltip engine's chunk did not load.");
     TestBed.overrideProvider(TooltipEngineLoader, { useValue: new FailedEngineLoader(failure) });

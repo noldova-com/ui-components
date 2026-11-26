@@ -19,7 +19,7 @@ import { TooltipEngineLoader } from "./tooltip-engine-loader.js";
 
 // The tooltip of the site entry's parts, with TooltipDirective's inputs, look and pace: it imports the tooltip's engine, and the Angular CDK
 // with it, once its host renders, so a website's start holds none of them. A pointer that came onto the host, or the keyboard's focus on
-// it, before the engine arrived is met as if it came then, unless a press, or Escape during that focus, dismissed it first, as they
+// it, before the engine arrived is met as if it came then, unless a press, or Escape on the host, dismissed it first, as they
 // dismiss TooltipDirective's tooltip. The main entry never reaches this file, since a lazy import anywhere in an app's graph splits the engine out
 // of its start for every app. A failed import goes to the error handler and leaves the host without its tooltip.
 @Directive({
@@ -82,11 +82,12 @@ export class LazyTooltipDirective implements ITooltipSource {
     this.engine?.hide();
   }
 
-  // Escape dismisses the tooltip; one before the engine arrives keeps it from showing for this focus.
+  // Escape dismisses the tooltip; one before the engine arrives keeps it from showing for this focus, or for the pointer until it comes on again.
   protected escape(event: Event): void {
-    if (Object.isNull(this.engine))
+    if (Object.isNull(this.engine)) {
       this.isFocusDismissed = true;
-    else
+      this.isPointerOn = false;
+    } else
       this.engine.dismiss(event);
   }
 }
