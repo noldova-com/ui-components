@@ -14,7 +14,9 @@ import type { Writable } from "node:stream";
 import "@noldova/context.core";
 
 import type { ProcessRunner } from "../processes/process-runner.ts";
-import type { IBundleOutput } from "./interfaces/i-bundle-output.ts";
+import { BundleOutput } from "./bundle-output.ts";
+import { ChunkFile } from "./chunk-file.ts";
+import { ChunkPart } from "./chunk-part.ts";
 import type { ICheck } from "./interfaces/i-check.ts";
 
 export class KitBundleCheck implements ICheck {
@@ -91,7 +93,7 @@ export class KitBundleCheck implements ICheck {
     return findings.length === 0;
   }
 
-  private static readOutputs(text: string): ReadonlyMap<string, IBundleOutput> | null {
+  private static readOutputs(text: string): ReadonlyMap<string, BundleOutput> | null {
     let stats: unknown;
     try {
       stats = JSON.parse(text);
@@ -104,7 +106,7 @@ export class KitBundleCheck implements ICheck {
     const outputs = KitBundleCheck.field(stats, "outputs");
     if (!KitBundleCheck.isRecord(outputs))
       return null;
-    const read = new Map<string, IBundleOutput>();
+    const read = new Map<string, BundleOutput>();
     for (const [name, value] of Object.entries(outputs)) {
       const inputs = KitBundleCheck.field(value, "inputs");
       const imports = KitBundleCheck.field(value, "imports");
@@ -119,16 +121,17 @@ export class KitBundleCheck implements ICheck {
         return Object.isString(target) ? [path.posix.basename(target)] : [];
       });
       const entryPoint = KitBundleCheck.field(value, "entryPoint");
-      const inputBytes = new Map(Object.entries(inputs).map(([t, u]): [string, number] => {
-        const bytes = KitBundleCheck.field(u, "bytesInOutput");
-        return [t, Object.isNumber(bytes) ? bytes : 0];
-      }));
-      read.set(path.posix.basename(name), { inputs: Object.keys(inputs), inputBytes, staticImports, imports: allImports, entryPoint: Object.isString(entryPoint) ? entryPoint : "" });
+      const inputBytes = new Map<string, number>();
+      for (const [file, input] of Object.entries(inputs)) {
+        const bytes = KitBundleCheck.field(input, "bytesInOutput");
+        inputBytes.set(file, Object.isNumber(bytes) ? bytes : 0);
+      }
+      read.set(path.posix.basename(name), new BundleOutput(Object.keys(inputs), inputBytes, staticImports, allImports, Object.isString(entryPoint) ? entryPoint : ""));
     }
     return read;
   }
 
-  private static collectInitial(outputs: ReadonlyMap<string, IBundleOutput>): ReadonlySet<string> {
+  private static collectInitial(outputs: ReadonlyMap<string, BundleOutput>): ReadonlySet<string> {
     const initial = new Set<string>([KitBundleCheck.MAIN_FILE]);
     const pending = [KitBundleCheck.MAIN_FILE];
     for (let name = pending.pop(); !Object.isUndefined(name); name = pending.pop()) {
@@ -142,7 +145,7 @@ export class KitBundleCheck implements ICheck {
     return initial;
   }
 
-  private static holds(output: IBundleOutput, parts: readonly string[]): boolean {
+  private static holds(output: BundleOutput, parts: readonly string[]): boolean {
     return output.inputs.some(t => parts.some(u => t.includes(u)));
   }
 
@@ -154,7 +157,7 @@ export class KitBundleCheck implements ICheck {
     return Object.isObject(value) && !Array.isArray(value);
   }
 
-  private static inspectCodeBlock(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>): readonly string[] {
+  private static inspectCodeBlock(project: string, outputs: ReadonlyMap<string, BundleOutput>, initial: ReadonlySet<string>): readonly string[] {
     if (project !== KitBundleCheck.LAZY_CODE_BLOCK_BUNDLE)
       return [];
     const findings = [...outputs].filter(([name, t]) => initial.has(name) && KitBundleCheck.holds(t, KitBundleCheck.CODE_BLOCK_PARTS))
@@ -164,16 +167,16 @@ export class KitBundleCheck implements ICheck {
     return findings;
   }
 
-  private static inspectSite(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>, output: Writable): readonly string[] {
+  private static inspectSite(project: string, outputs: ReadonlyMap<string, BundleOutput>, initial: ReadonlySet<string>, output: Writable): readonly string[] {
     if (project !== KitBundleCheck.SITE_BUNDLE)
       return [];
     const parts = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => t.inputs.filter(u => u.includes(KitBundleCheck.KIT_COMPONENTS))
-      .map(u => ({ chunk: name, part: KitBundleCheck.componentOf(u) })));
+      .map(u => new ChunkPart(name, KitBundleCheck.componentOf(u))));
     const others = new Map(parts.filter(t => !KitBundleCheck.SITE_COMPONENTS.includes(t.part)).map(t => [t.part, t.chunk]));
     const findings = [...others].map(([part, chunk]) => `${project}: its initial chunk ${chunk} holds the kit's ${part}; ${KitBundleCheck.SITE_RULE}`);
     if (!parts.some(t => t.part === "site-header") || !parts.some(t => t.part === "site-footer"))
       findings.push(`${project}: its initial chunks hold no site header or no site footer, though its start shows both; ${KitBundleCheck.SITE_RULE}`);
-    const start = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => [...t.inputBytes].map(([u, bytes]) => ({ chunk: name, file: u, bytes })));
+    const start = [...outputs].filter(([name]) => initial.has(name)).flatMap(([name, t]) => [...t.inputBytes].map(([u, bytes]) => new ChunkFile(name, u, bytes)));
     findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.SHARED_STRINGS))
       .map(t => `${project}: its initial chunk ${t.chunk} holds the kit's shared strings, ${t.file}; ${KitBundleCheck.SITE_RULE}`));
     findings.push(...start.filter(t => t.file.endsWith(KitBundleCheck.ICON_LIST))
@@ -196,7 +199,7 @@ export class KitBundleCheck implements ICheck {
     return rest.slice(0, rest.indexOf("/"));
   }
 
-  private static inspectParser(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>): readonly string[] {
+  private static inspectParser(project: string, outputs: ReadonlyMap<string, BundleOutput>, initial: ReadonlySet<string>): readonly string[] {
     const shows = project === KitBundleCheck.MESSAGE_BUNDLE;
     const parsers = [...outputs].filter(([, t]) => KitBundleCheck.holds(t, [KitBundleCheck.MARKDOWN_PARSER])).map(([t]) => t);
     const findings = parsers.filter(t => !shows || initial.has(t)).map(t => shows
@@ -207,11 +210,11 @@ export class KitBundleCheck implements ICheck {
     return findings;
   }
 
-  private static inspectStrings(project: string, outputs: ReadonlyMap<string, IBundleOutput>, initial: ReadonlySet<string>, output: Writable): readonly string[] {
+  private static inspectStrings(project: string, outputs: ReadonlyMap<string, BundleOutput>, initial: ReadonlySet<string>, output: Writable): readonly string[] {
     if (project !== KitBundleCheck.BUTTON_BUNDLE)
       return [];
     const strings = [...outputs].flatMap(([name, t]) => [...t.inputBytes].filter(([u]) => u.includes(KitBundleCheck.KIT_FILES) && u.endsWith(KitBundleCheck.STRINGS_FILE))
-      .map(([u, bytes]) => ({ chunk: name, file: u, bytes })));
+      .map(([u, bytes]) => new ChunkFile(name, u, bytes)));
     const findings = strings.filter(t => !KitBundleCheck.BUTTON_STRINGS.some(u => t.file.endsWith(u)))
       .map(t => `${project}: its chunk ${t.chunk} holds ${t.file}, the strings of a class the button doesn't reach; ${KitBundleCheck.STRINGS_RULE}`);
     const bytes = strings.filter(t => initial.has(t.chunk)).reduce((sum, t) => sum + t.bytes, 0);
@@ -221,7 +224,7 @@ export class KitBundleCheck implements ICheck {
     return findings;
   }
 
-  private static inspectWorker(project: string, outputs: ReadonlyMap<string, IBundleOutput>): readonly string[] {
+  private static inspectWorker(project: string, outputs: ReadonlyMap<string, BundleOutput>): readonly string[] {
     if (project !== KitBundleCheck.WORKER_BUNDLE)
       return [];
     const worker = [...outputs].find(([, t]) => t.entryPoint === KitBundleCheck.WORKER_ENTRY);

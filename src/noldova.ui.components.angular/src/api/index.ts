@@ -225,6 +225,7 @@ export { PermissionDecision } from "../app/models/permission-decision.js";
 export { PermissionOption } from "../app/models/permission-option.js";
 export { PermissionRequest } from "../app/models/permission-request.js";
 export { PermissionRequester } from "../app/models/permission-requester.js";
+export { PlacedBoxes } from "../app/models/placed-boxes.js";
 export { Plan } from "../app/models/plan.js";
 export { PlanStep } from "../app/models/plan-step.js";
 export { QueryMatcher } from "../app/models/query-matcher.js";
