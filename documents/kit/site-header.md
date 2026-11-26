@@ -47,6 +47,7 @@ The switch is centred on the social links and the Download button, and stays in 
 A choice sets `data-nol-theme-mode` to `Light` or `Dark` on the root element, or removes it for System, and is saved in `localStorage` under `noldova-theme` as `light`, `dark` or `system`; with nothing saved, or a value it doesn't know, it follows the system.
 It applies the saved choice once it renders, and a choice the browser refuses to save still applies to the page.
 The component doesn't ship a head script: each site sets `data-nol-theme-mode` from `noldova-theme` the same way in a script in its own head, which runs before the page renders, so the page never shows the other theme first.
+Prerendered, the switch checks no pill, since it can't read the saved choice; until the page hydrates it draws as chosen, with the chosen pill's own look, the pill `data-nol-theme-mode` names, or System when it names none.
 
 ## Phone menu
 

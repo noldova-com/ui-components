@@ -290,7 +290,9 @@ export declare class SiteFooterComponent {
  * once it renders. The package ships no head script: each site sets
  * `data-nol-theme-mode` from `noldova-theme` the same way in a script in its
  * own head, which runs before the page renders, so the page never flashes
- * the other theme.
+ * the other theme. Prerendered, the switch checks no choice, since it can't
+ * read the saved one, and until the page hydrates it draws as chosen the
+ * one `data-nol-theme-mode` names, or System when it names none.
  *
  * When the header is narrower than 48rem, as on a phone, the bar keeps the
  * wordmark, Download, a search button when the site projects a search, and
