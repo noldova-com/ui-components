@@ -1882,7 +1882,7 @@ describe("VirtualListComponent", () => {
       await fixture.whenStable();
       const first = [isTopFilled(), newestInView()];
       await RenderedFrameFixture.nextAsync();
-      const measured = held.length > 0;
+      const measured = measures.held.length > 0;
       await releaseAsync();
 
       expect([first, measured]).toEqual([[true, Array(9).fill(true)], true]);
@@ -1897,7 +1897,7 @@ describe("VirtualListComponent", () => {
       viewport().dispatchEvent(new Event("scroll"));
       await fixture.whenStable();
       await RenderedFrameFixture.nextAsync();
-      const first = [held.length > 0, isTopFilled(), newestInView(), viewport().getBoundingClientRect().bottom - article("item 999").getBoundingClientRect().bottom < 30];
+      const first = [measures.held.length > 0, isTopFilled(), newestInView(), viewport().getBoundingClientRect().bottom - article("item 999").getBoundingClientRect().bottom < 30];
       await releaseAsync();
 
       expect(first).toEqual([true, true, Array(9).fill(true), true]);
