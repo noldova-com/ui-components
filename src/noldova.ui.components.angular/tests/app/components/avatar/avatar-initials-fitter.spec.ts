@@ -148,7 +148,7 @@ describe("AvatarInitialsFitter", () => {
     fitter().watch(host, letters);
     fitter().unwatch(host, letters);
     const entries = await new Promise<ResizeObserverEntry[]>(resolve => {
-      const elsewhere = new browserObserver(found => {
+      const elsewhere = new ResizeObserver(found => {
         elsewhere.disconnect();
         resolve(found);
       });
