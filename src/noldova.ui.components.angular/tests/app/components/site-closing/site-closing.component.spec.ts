@@ -40,7 +40,8 @@ class SiteClosingHostComponent {
 }
 
 describe("SiteClosingComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteClosingHostComponent>;
 
   async function renderAsync(change: (host: SiteClosingHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -62,7 +63,7 @@ describe("SiteClosingComponent", () => {
   afterEach(async () => {
     AppearanceFixture.reset();
     document.documentElement.removeAttribute("data-nol-theme-mode");
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   it("is a region named by its title, with the mark, the line above, the action, the text link and the note a site gives it", async () => {
@@ -173,6 +174,9 @@ describe("SiteClosingComponent", () => {
         AppearanceFixture.expectPixels(box(".nol-site-closing-note").top - box(".nol-site-closing-actions").bottom, rem(1.4375));
         AppearanceFixture.expectPixels(box("a[nol-button]").height, rem(2.5));
         AppearanceFixture.expectPixels(link.height, rem(1.5));
+        // The link's arrow is the kit's icon size, larger than the link's text, as TeamRun draws it.
+        AppearanceFixture.expectPixels(box(".nol-site-closing-link-icon").width, AppearanceFixture.measureLook("icon"));
+        AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part(".nol-site-closing-link-icon")).fontSize), AppearanceFixture.measureLook("icon"));
         AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(part("h2")).fontSize), Math.min(Math.max(rem(2.4375), outer.width * 0.05), rem(3.8125)));
         if (phone) {
           // The link wraps under the button, the row's gap and its own phone margin apart.

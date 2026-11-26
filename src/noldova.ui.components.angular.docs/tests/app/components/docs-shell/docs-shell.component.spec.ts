@@ -32,6 +32,30 @@ class FrameLink {
   }
 }
 
+class ScrolledPage {
+  public readonly host: HTMLElement;
+  public readonly header: HTMLElement;
+  public readonly height: number;
+
+  public constructor(host: HTMLElement, header: HTMLElement, height: number) {
+    this.host = host;
+    this.header = header;
+    this.height = height;
+  }
+}
+
+class MainEdges {
+  public readonly page: DOMRect;
+  public readonly start: number;
+  public readonly end: number;
+
+  public constructor(page: DOMRect, start: number, end: number) {
+    this.page = page;
+    this.start = start;
+    this.end = end;
+  }
+}
+
 describe("DocsShellComponent", () => {
   const renderAsync = async (url: string): Promise<ComponentFixture<DocsShellComponent>> => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes, withComponentInputBinding()), provideMarkdown(), TooltipFixture.atOnce] });
@@ -93,7 +117,7 @@ describe("DocsShellComponent", () => {
       const tables = DocsFixture.all(host, "main table");
 
       expect(DocsFixture.overflowWidth()).toBe(0);
-      expect(tables.filter(t => t.closest(".nol-docs-section") === null).length).toBe(0);
+      expect(tables.filter(t => Object.isNull(t.closest(".nol-docs-section"))).length).toBe(0);
       expect(tables.flatMap(t => {
         const box = t.getBoundingClientRect();
         const owner = t.closest(".nol-docs-section")?.getBoundingClientRect() ?? box;
@@ -369,7 +393,7 @@ describe("DocsShellComponent", () => {
     ["Light", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT],
     ["Dark", DocsFixture.PHONE_WIDTH, DocsFixture.PHONE_HEIGHT]
   ])("in the %s mode at %ipx wide, while the page scrolls", (mode, width, height) => {
-    const scrolledAsync = async (url: string): Promise<{ host: HTMLElement; header: HTMLElement; height: number }> => {
+    const scrolledAsync = async (url: string): Promise<ScrolledPage> => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
@@ -378,7 +402,7 @@ describe("DocsShellComponent", () => {
       const before = header.getBoundingClientRect().height;
       window.scrollTo(0, document.documentElement.scrollHeight / 2);
       await DomChangeFixture.untilAsync(() => expect(window.scrollY).toBeGreaterThan(before));
-      return { host, header, height: before };
+      return new ScrolledPage(host, header, before);
     };
 
     beforeEach(() => EmulatedMediaFixture.emulateAsync("prefers-reduced-transparency", "no-preference"));
@@ -666,15 +690,15 @@ describe("DocsShellComponent", () => {
       DocsFixture.setMode(mode);
       await DocsFixture.viewAsync(width, height);
       const host = DocsFixture.host(await renderAsync(url));
-      await DomChangeFixture.untilAsync(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, host.querySelector(".nol-docs-states .nol-gallery-specimen") !== null]).toEqual([true, true]));
+      await DomChangeFixture.untilAsync(() => expect([host.querySelectorAll("main .nol-docs-example-preview").length > 0, !Object.isNull(host.querySelector(".nol-docs-states .nol-gallery-specimen"))]).toEqual([true, true]));
       return host;
     };
 
-    const edges = (host: HTMLElement): { page: DOMRect; start: number; end: number } => {
+    const edges = (host: HTMLElement): MainEdges => {
       const main = DocsFixture.one(host, "main");
       const box = main.getBoundingClientRect();
       const style = getComputedStyle(main);
-      return { page: DocsFixture.one(host, ".nol-docs-page").getBoundingClientRect(), start: box.left + Number.parseFloat(style.paddingInlineStart), end: box.right - Number.parseFloat(style.paddingInlineEnd) };
+      return new MainEdges(DocsFixture.one(host, ".nol-docs-page").getBoundingClientRect(), box.left + Number.parseFloat(style.paddingInlineStart), box.right - Number.parseFloat(style.paddingInlineEnd));
     };
 
     it("draws the site's own text at 14px with paragraph lines one and a half times as tall, its page title at 28px, and the examples and states at the kit's 13px, a button in them at the kit's 12px label size", async () => {
@@ -695,7 +719,7 @@ describe("DocsShellComponent", () => {
       const host = await pageAsync("/components/section-header");
       const scale = 14 / 13;
       const menu = DocsFixture.all(host, ".nol-docs-menu nol-section-header");
-      const example = DocsFixture.all(host, ".nol-docs-example-preview nol-section-header").filter(t => t.previousElementSibling !== null);
+      const example = DocsFixture.all(host, ".nol-docs-example-preview nol-section-header").filter(t => !Object.isNull(t.previousElementSibling));
       const margin = (element: HTMLElement): number => Number.parseFloat(getComputedStyle(element).marginTop);
 
       expect(menu.map(t => margin(t))).toEqual(menu.map(() => expect.closeTo(12 * scale, 2)));

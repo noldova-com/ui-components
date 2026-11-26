@@ -40,7 +40,8 @@ class SiteCardHostComponent {
 }
 
 describe("SiteCardComponent", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteCardHostComponent>;
 
   async function renderAsync(change: (host: SiteCardHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
@@ -61,7 +62,7 @@ describe("SiteCardComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   it("draws each card as an article with its icon, index, title, text and content, the icon hidden from assistive tech", async () => {

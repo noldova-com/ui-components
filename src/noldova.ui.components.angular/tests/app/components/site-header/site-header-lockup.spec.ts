@@ -21,6 +21,7 @@ import { DomFixture } from "../../../fixtures/dom.fixture";
 const ratio = 4;
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Crect width='800' height='200'/%3E%3C/svg%3E";
 const longRatio = 1708.818 / 201.396;
+const teamRunWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1335.64 201.396'%3E%3Crect width='1335.64' height='201.396'/%3E%3C/svg%3E`;
 const longWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1708.818 201.396'%3E%3Crect width='1708.818' height='201.396'/%3E%3C/svg%3E`;
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
@@ -37,19 +38,26 @@ class SiteHeaderLockupHostComponent {
   public readonly size = signal(SiteWordmarkSize.Large);
 }
 
-// A window width and the wordmark height a large wordmark takes in a header that wide.
+// TeamRun's wordmark's proportions, by which a large wordmark takes the height TeamRun's own header draws its wordmark at.
+const teamRunRatio = 1335.64 / 201.396;
+
+// A window width, the width TeamRun's header draws its wordmark at in a header that wide, and the height in rem that gives
+// any large wordmark.
 class LargeWidth {
   public readonly width: number;
+  public readonly teamRunWidth: number;
   public readonly height: number;
 
-  public constructor(width: number, height: number) {
+  public constructor(width: number, teamRunWidth: number) {
     this.width = width;
-    this.height = height;
+    this.teamRunWidth = teamRunWidth;
+    this.height = teamRunWidth / teamRunRatio;
   }
 }
 
 describe("SiteHeaderComponent's lockup", () => {
-  const viewport = { width: window.innerWidth, height: window.innerHeight };
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteHeaderLockupHostComponent>;
 
   async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
@@ -72,7 +80,7 @@ describe("SiteHeaderComponent's lockup", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
-    await page.viewport(viewport.width, viewport.height);
+    await page.viewport(windowWidth, windowHeight);
   });
 
   for (const mode of AppearanceFixture.modes)
@@ -110,14 +118,27 @@ describe("SiteHeaderComponent's lockup", () => {
     AppearanceFixture.expectPixels(mark().left - iconBox.right, rem(0.75));
   });
 
-  for (const size of [new LargeWidth(1280, 1.375), new LargeWidth(761, 1.375), new LargeWidth(760, 1.25), new LargeWidth(375, 1.25), new LargeWidth(361, 1.25), new LargeWidth(360, 1.0625)]) {
-    it(`draws a large wordmark ${size.height}rem high, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
+  for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
+    it(`draws a large wordmark as high as TeamRun's ${size.teamRunWidth}rem-wide wordmark, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
       await page.viewport(size.width, 800);
       await renderAsync();
 
       AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
       AppearanceFixture.expectPixels(mark().height, rem(size.height));
       AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
+    });
+  }
+
+  for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(760, 8.25), new LargeWidth(360, 7)]) {
+    it(`draws TeamRun's own wordmark ${size.teamRunWidth}rem wide, as TeamRun's header does, in a header ${size.width} pixels wide`, async () => {
+      await page.viewport(size.width, 800);
+      await renderAsync(t => {
+        t.wordmark.set(teamRunWordmark);
+        t.ratio.set(teamRunRatio);
+      });
+
+      AppearanceFixture.expectPixels(mark().width, rem(size.teamRunWidth));
+      AppearanceFixture.expectPixels(mark().height, rem(size.height));
     });
   }
 
@@ -135,7 +156,7 @@ describe("SiteHeaderComponent's lockup", () => {
     await renderAsync();
     const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
 
-    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(1.0625) * ratio - 1 / 32);
+    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(7 / teamRunRatio) * ratio - 1 / 32);
   });
 
   for (const width of [360, 320]) {
@@ -151,8 +172,8 @@ describe("SiteHeaderComponent's lockup", () => {
 
       expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
-      AppearanceFixture.expectPixels(mark().height, rem(1.0625));
-      expect(mark().width).toBeLessThan(rem(1.0625) * longRatio - 1);
+      AppearanceFixture.expectPixels(mark().height, rem(7 / teamRunRatio));
+      expect(mark().width).toBeLessThan(rem(7 / teamRunRatio) * longRatio - 1);
       expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
     });

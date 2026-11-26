@@ -47,13 +47,15 @@ export class ChoicePillsBehavior {
     if (Object.isUndefined(to) || Object.isUndefined(direction))
       return;
     event.preventDefault();
-    const entries = this.source.options().map((option, index) => ({ option, index }));
-    const start = to(pills.indexOf(event.target), entries.length - 1);
-    const ring = direction > 0 ? [...entries.slice(start), ...entries.slice(0, start)] : [...entries.slice(0, start + 1).reverse(), ...entries.slice(start + 1).reverse()];
-    const next = ring.find(t => !t.option.isDisabled);
-    if (Object.isUndefined(next))
+    const options = this.source.options();
+    const indices = options.map((_, index) => index);
+    const start = to(pills.indexOf(event.target), indices.length - 1);
+    const ring = direction > 0 ? [...indices.slice(start), ...indices.slice(0, start)] : [...indices.slice(0, start + 1).reverse(), ...indices.slice(start + 1).reverse()];
+    const next = ring.find(t => options[t]?.isDisabled === false);
+    const option = Object.isUndefined(next) ? undefined : options[next];
+    if (Object.isUndefined(next) || Object.isUndefined(option))
       return;
-    this.choose(next.option);
-    pills[next.index]?.focus();
+    this.choose(option);
+    pills[next]?.focus();
   }
 }

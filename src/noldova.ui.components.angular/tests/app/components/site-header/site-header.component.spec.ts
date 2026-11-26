@@ -491,6 +491,14 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(centre(box(".nol-site-download")), centre(box(".nol-site-social")));
   });
 
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the phone's menu glyph in the text color, ${mode}`, async () => {
+      await phoneAsync();
+      await renderAsync(() => undefined, DefaultTheme.theme, mode);
+
+      expect(getComputedStyle(part(".nol-site-menu-button")).color).toBe(AppearanceFixture.readColor(DefaultTheme.theme, mode, "text"));
+    });
+
   it("makes every target in the open phone menu at least the pointer target in both directions", async () => {
     await phoneAsync();
     await renderAsync();
@@ -509,7 +517,7 @@ describe("SiteHeaderComponent", () => {
   });
 
   for (const theme of AppearanceFixture.themes)
-    it(`draws Download at the ${theme.id} theme's site download height and text size with no edge, its icon after its label, a space step on, at the end of its padding`, async () => {
+    it(`draws Download at the ${theme.id} theme's site download height and text size with the button's edge, its icon after its label, a space step on, as wide as its padding, label and edge`, async () => {
       await renderAsync(() => undefined, theme);
       const download = part(".nol-site-download");
       const style = getComputedStyle(download);
@@ -518,11 +526,17 @@ describe("SiteHeaderComponent", () => {
       const text = document.createRange();
       text.selectNodeContents(DomFixture.present(part(".nol-site-download-label").firstChild));
 
-      expect([style.borderTopWidth, style.borderLeftWidth]).toEqual(["0px", "0px"]);
+      const border = AppearanceFixture.measureLook("border-width");
+      const padding = AppearanceFixture.measureLook("site-download-padding-inline");
+      const label = text.getBoundingClientRect();
+
+      expect([style.borderTopWidth, style.borderLeftWidth, style.borderRightWidth]).toEqual([`${border}px`, `${border}px`, `${border}px`]);
       AppearanceFixture.expectPixels(Number.parseFloat(style.fontSize), AppearanceFixture.measureLook("site-download-text"));
       AppearanceFixture.expectPixels(edge.height, AppearanceFixture.measureLook("site-download-height"));
-      AppearanceFixture.expectPixels(glyph.left - text.getBoundingClientRect().right, AppearanceFixture.measureLook("space-2"));
-      AppearanceFixture.expectPixels(edge.right - glyph.right, AppearanceFixture.measureLook("site-download-padding-inline"));
+      AppearanceFixture.expectPixels(glyph.left - label.right, AppearanceFixture.measureLook("space-2"));
+      AppearanceFixture.expectPixels(label.left - edge.left, padding + border);
+      AppearanceFixture.expectPixels(edge.right - glyph.right, padding + border);
+      AppearanceFixture.expectPixels(edge.width, 2 * (padding + border) + glyph.right - label.left);
       AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-download-text") * 1.25);
     });
 
