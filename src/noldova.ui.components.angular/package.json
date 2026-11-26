@@ -50,6 +50,30 @@
       "types": "./api/site.d.ts",
       "default": "./api/site.js"
     },
+    "./site/card": {
+      "types": "./api/site-card.d.ts",
+      "default": "./api/site-card.js"
+    },
+    "./site/closing": {
+      "types": "./api/site-closing.d.ts",
+      "default": "./api/site-closing.js"
+    },
+    "./site/footer": {
+      "types": "./api/site-footer.d.ts",
+      "default": "./api/site-footer.js"
+    },
+    "./site/header": {
+      "types": "./api/site-header.d.ts",
+      "default": "./api/site-header.js"
+    },
+    "./site/hero": {
+      "types": "./api/site-hero.d.ts",
+      "default": "./api/site-hero.js"
+    },
+    "./site/section": {
+      "types": "./api/site-section.d.ts",
+      "default": "./api/site-section.js"
+    },
     "./testing": {
       "types": "./api/testing.d.ts",
       "default": "./api/testing.js"

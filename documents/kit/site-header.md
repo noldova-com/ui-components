@@ -4,7 +4,7 @@
 
 The themes, the tokens and the rules every control shares are in [KIT.md](../KIT.md), whose [Controls](../KIT.md#controls) section says how this specification reads.
 
-A website's start imports the header from its own entry, `@noldova/ui.components.angular/site`, and the main entry exports it too; a start that never imports the main entry keeps the parts only a lazy page uses, such as the code block, out of it, as the kit's README, [Lazy pages](../../src/noldova.ui.components.angular/README.md#lazy-pages), says.
+A website's start imports the header from the site entry, `@noldova/ui.components.angular/site`, or from its own, `@noldova/ui.components.angular/site/header`, never from the main entry, which doesn't export it; a start that never imports the main entry keeps the parts only a lazy page uses, such as the code block, out of it, and one that imports only the header's and footer's entries keeps out the site's hero, sections, cards and closing too, when the lazy pages import them from their own entries, as the kit's README, [Lazy pages](../../src/noldova.ui.components.angular/README.md#lazy-pages), says.
 
 ## Default geometry
 

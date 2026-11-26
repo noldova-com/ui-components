@@ -10,8 +10,8 @@ import type { InputSignal, ModelSignal } from "@angular/core";
 import type { ButtonVariant, IconName } from "@noldova/ui.components.angular";
 
 /**
- * A call to action of a {@link SiteHeroComponent} or a
- * {@link SiteClosingComponent}: a button link with its
+ * A call to action of a site hero, `SiteHeroComponent`, or a site
+ * closing, `SiteClosingComponent`: a button link with its
  * label and an optional Material Symbols icon after it.
  */
 export declare class SiteAction {
@@ -527,7 +527,7 @@ export declare class SiteHeroComponent {
 }
 
 /**
- * A link of the site entry's header, `SiteHeaderComponent`, or of a {@link SiteLinkGroup}.
+ * A link of the site's header, `SiteHeaderComponent`, or of a `SiteLinkGroup`.
  */
 export declare class SiteLink {
   /**

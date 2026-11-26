@@ -29,6 +29,24 @@
       "@noldova/ui.components.angular/site": [
         "../noldova.ui.components.angular/src/api/site.ts"
       ],
+      "@noldova/ui.components.angular/site/card": [
+        "../noldova.ui.components.angular/src/api/site-card.ts"
+      ],
+      "@noldova/ui.components.angular/site/closing": [
+        "../noldova.ui.components.angular/src/api/site-closing.ts"
+      ],
+      "@noldova/ui.components.angular/site/footer": [
+        "../noldova.ui.components.angular/src/api/site-footer.ts"
+      ],
+      "@noldova/ui.components.angular/site/header": [
+        "../noldova.ui.components.angular/src/api/site-header.ts"
+      ],
+      "@noldova/ui.components.angular/site/hero": [
+        "../noldova.ui.components.angular/src/api/site-hero.ts"
+      ],
+      "@noldova/ui.components.angular/site/section": [
+        "../noldova.ui.components.angular/src/api/site-section.ts"
+      ],
       "@noldova/ui.components.angular/testing": [
         "../noldova.ui.components.angular/src/api/testing.ts"
       ],
