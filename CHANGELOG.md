@@ -10,6 +10,7 @@ Each version's section is written by the pull request that changes the version, 
 - `@noldova/ui.components.angular`: the site footer's default notice draws Noldova's wordmark in place of the word, `© <year>` and the logo, linking to https://noldova.com at the page's stage and named Noldova. The logo is inline, in the notice's color in every theme, as high as its capitals, and `LinkText` under forced colors; the kit ships no file for a site to serve (#194).
 - `@noldova/ui.components.angular`: on a phone, the site header moves the theme switch into the menu only when the lockup's whole name and version don't fit beside it, as it measures, in place of #178's fixed 30rem and 37.5rem widths. The `nol-site-header-with-download` host class is gone (#182).
 - `@noldova/ui.components.angular`: in the site header's bar, the theme switch stands as high as the Download button's face, 1.875rem, in place of 2.375rem; the open phone menu keeps its menu-row pills (#191).
+- `@noldova/ui.components.angular`: the site lockup's icon is a square as high as the wordmark, in place of 1.75rem, so an icon and a wordmark drawn to their files' edges stand on the same lines (#192).
 - `@noldova/ui.components.angular`: the package ships `glyphs.json`, exported as `./glyphs.json`: the Material Symbols glyphs each exported part can draw, `{ "parts": { "<ClassName>": [sorted glyphs] } }`. A site subsets the icon font to the union of the parts it uses, plus its own icons. A new check fails when a glyph of the kit's source is in no exported part's list (#185).
 
 ## 0.0.36
