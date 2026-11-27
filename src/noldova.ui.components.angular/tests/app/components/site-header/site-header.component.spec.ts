@@ -195,6 +195,7 @@ describe("SiteHeaderComponent", () => {
   const maybe = (selector: string): HTMLElement | null => DomFixture.maybe(header(), selector);
   const all = (selector: string): HTMLElement[] => DomFixture.all(header(), selector);
   const box = (selector: string): DOMRect => part(selector).getBoundingClientRect();
+  const downloadFace = (): DOMRect => DomFixture.one(part(".nol-site-download"), ".nol-button-face").getBoundingClientRect();
   const menuButton = (): HTMLButtonElement => DomFixture.oneOf(header(), ".nol-site-menu-button", HTMLButtonElement);
   const searchButton = (): HTMLButtonElement => DomFixture.oneOf(header(), ".nol-site-search-button", HTMLButtonElement);
   const field = (): HTMLInputElement => DomFixture.oneOf(header(), "input[nolSiteSearch]", HTMLInputElement);
@@ -566,7 +567,7 @@ describe("SiteHeaderComponent", () => {
 
     PointerTargetFixture.expectTargets(header(), ["v0.4.2", "Features", "GitHub", "X", "Light", "Dark", "System", "Download"]);
     const pills = all("nol-site-theme-switch .nol-choice-pill");
-    const size = AppearanceFixture.measureLook("site-theme-pill");
+    const size = downloadFace().height - AppearanceFixture.measureLook("site-theme-switch-padding") * 2;
     const target = AppearanceFixture.measureLook("pointer-target");
     const centre = (rectangle: DOMRect): number => rectangle.top + rectangle.height / 2;
 
@@ -581,6 +582,28 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(centre(box("nol-site-theme-switch")), centre(box(".nol-site-social")));
     AppearanceFixture.expectPixels(centre(box(".nol-site-download")), centre(box(".nol-site-social")));
   });
+
+  for (const theme of AppearanceFixture.themes)
+    for (const width of [1600, 600])
+      it(`stands the theme switch's track as high as Download's face, inside its edge, its chosen pill on the face's middle line, the GitHub mark too where the bar shows it, with the ${theme.id} theme on a ${width}px window`, async () => {
+        await page.viewport(width, 900);
+        await renderAsync(t => t.name.set("Kit"), theme, ThemeMode.Dark);
+        const middle = (rectangle: DOMRect): number => rectangle.top + rectangle.height / 2;
+        const track = box("nol-site-theme-switch");
+        const face = downloadFace();
+
+        AppearanceFixture.expectPixels(face.height, AppearanceFixture.measureLook("site-download-height") - AppearanceFixture.measureLook("border-width") * 2);
+        AppearanceFixture.expectPixels(track.top, face.top);
+        AppearanceFixture.expectPixels(track.bottom, face.bottom);
+
+        AppearanceFixture.apply(theme, ThemeMode.Light);
+        const pill = part("nol-site-theme-switch .nol-choice-pill-selected");
+        const glyph = DomFixture.one(pill, ".nol-choice-pill-glyph").getBoundingClientRect();
+        AppearanceFixture.expectPixels(middle(pill.getBoundingClientRect()), middle(downloadFace()));
+        AppearanceFixture.expectPixels(middle(glyph), middle(downloadFace()));
+        if (width === 1600)
+          AppearanceFixture.expectPixels(middle(box(".nol-site-social-icon")), middle(downloadFace()));
+      });
 
   for (const mode of AppearanceFixture.modes)
     it(`draws the phone's menu glyph in the text color, ${mode}`, async () => {
