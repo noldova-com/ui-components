@@ -200,7 +200,7 @@ export declare class SiteClosingComponent {
  * @Component({
  *   selector: "nol-page-footer",
  *   imports: [SiteFooterComponent],
- *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
+ *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"Example\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
  * })
  * export class PageFooterComponent {
  *   protected readonly groups: readonly SiteLinkGroup[] = [new SiteLinkGroup("Product", [new SiteLink("Download", "/download")])];
@@ -224,8 +224,8 @@ export declare class SiteFooterComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -236,7 +236,7 @@ export declare class SiteFooterComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
-   * The lockup link's accessible name, such as `TeamRun home`; null, the
+   * The lockup link's accessible name, such as `Example home`; null, the
    * default, names it from `name`, or `Noldova home` without one. A site that
    * draws its own wordmark passes no `name` and names the link here.
    */
@@ -263,8 +263,8 @@ export declare class SiteFooterComponent {
 
   /**
    * The notice at the bottom, as plain text; null, the default, says
-   * `© <year> Noldova` with `Noldova` linking to https://noldova.com at
-   * the page's stage, as `SiteStageService.address` gives it.
+   * `© <year>` and Noldova's logo, linking to https://noldova.com as
+   * Noldova at the page's stage, as `SiteStageService.address` gives it.
    */
   public readonly notice: InputSignal<string | null>;
 
@@ -318,7 +318,7 @@ export declare class SiteFooterComponent {
  * @Component({
  *   selector: "nol-page-header",
  *   imports: [SiteHeaderComponent],
- *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
+ *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"Example\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
  * })
  * export class PageHeaderComponent {
  *   protected readonly links: readonly SiteLink[] = [new SiteLink("Features", "/features", true), new SiteLink("Docs", "/docs")];
@@ -343,8 +343,8 @@ export declare class SiteHeaderComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -356,7 +356,7 @@ export declare class SiteHeaderComponent {
 
   /**
    * The lockup link's accessible name, such as `UI Components docs home`;
-   * null, the default, names it from `name`, as `TeamRun home`, or
+   * null, the default, names it from `name`, as `Example home`, or
    * `Noldova home` without one. A site whose wordmark or icon already shows
    * the product's name passes no `name`, so the name isn't drawn twice, and
    * names the link here.
@@ -366,7 +366,7 @@ export declare class SiteHeaderComponent {
   /**
    * The wordmark's size: `SiteWordmarkSize.Small`, the default, for the
    * Noldova wordmark, or `SiteWordmarkSize.Large` for a product's own
-   * wordmark, such as TeamRun's.
+   * wordmark.
    */
   public readonly wordmarkSize: InputSignal<SiteWordmarkSize>;
 
@@ -762,21 +762,21 @@ export declare class SiteSocialLink {
  */
 export declare enum SiteStage {
   /**
-   * The public site, such as `teamrun.noldova.com`, and every host that
+   * The public site, such as `example.noldova.com`, and every host that
    * names no stage, the prerender's and a local server's included.
    */
   Production = "Production",
 
   /**
    * The sandbox: a host whose label just before `noldova.com` or
-   * `noldova.dev` is `sandbox`, such as `teamrun.sandbox.noldova.com` or
+   * `noldova.dev` is `sandbox`, such as `example.sandbox.noldova.com` or
    * `sandbox.noldova.com`.
    */
   Sandbox = "Sandbox",
 
   /**
    * Staging: a host whose label just before `noldova.com` or `noldova.dev`
-   * is `staging`, such as `teamrun.staging.noldova.com`.
+   * is `staging`, such as `example.staging.noldova.com`.
    */
   Staging = "Staging"
 }
@@ -800,7 +800,7 @@ export declare enum SiteStage {
  *   template: `<a [href]="docs.href">{{ docs.label }}</a>`
  * })
  * export class DocsLinkComponent {
- *   protected readonly docs: SiteLink = inject(SiteStageService).link(new SiteLink("Docs", "https://teamrun.noldova.dev"));
+ *   protected readonly docs: SiteLink = inject(SiteStageService).link(new SiteLink("Docs", "https://example.noldova.dev"));
  * }
  * ```
  */
@@ -815,7 +815,7 @@ export declare class SiteStageService {
    * absolute address on `noldova.com` or `noldova.dev` that names no stage
    * gets the stage's label just before that domain, keeping its path, query
    * and fragment, and comes back as the URL standard writes it, such as
-   * `https://teamrun.sandbox.noldova.dev/` for `https://teamrun.noldova.dev`.
+   * `https://example.sandbox.noldova.dev/` for `https://example.noldova.dev`.
    * Every other address, and every address at production, comes back
    * unchanged: a relative one, one on another domain or with no host,
    * such as a `mailto:` address, and one that names a stage already.
@@ -846,8 +846,8 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as TeamRun's header draws its
-   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
+   * A product's own wordmark, as high as the site header draws one:
+   * 9.125rem wide in its proportions, 8.25rem in a header at most
    * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"

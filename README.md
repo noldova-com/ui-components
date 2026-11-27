@@ -635,5 +635,5 @@ The docs site, which isn't published as a package, also shows two marks that are
 ## Trademarks
 
 The code is under the MIT License, while the name "Noldova" and its logos are not: the MIT License grants no right to them.
-They are the Noldova wordmark, `src/noldova.ui.components.angular.docs/public/assets/noldova-wordmark.svg`, and the Noldova "N" favicons beside it, `favicon.svg`, `favicon-32.png` and `apple-touch-icon.png`, which the docs site shows.
+They are the Noldova wordmark, `src/noldova.ui.components.angular.docs/public/assets/noldova-wordmark.svg`, and the Noldova "N" favicons beside it, `favicon.svg`, `favicon-32.png` and `apple-touch-icon.png`, which the docs site shows, and the Noldova logo the site footer draws in its notice, `assets/brand/noldova-wordmark.svg`, copied unchanged from noldova.com's `public/brand/noldova-wordmark.svg` (SHA-256 6d22a233af9c3df792d6a3cc131f24738c9ddb22dfde42593e7a0dbad6f60b94), whose path the footer's `site-footer-logo.resources.ts` holds.
 A build from this code that is published by anyone but Noldova uses another name and its own logos.
