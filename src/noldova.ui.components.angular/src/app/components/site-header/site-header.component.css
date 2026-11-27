@@ -34,6 +34,17 @@
   }
 }
 
+/* An empty element across the header's width, which the header watches for its width: neither the compact class nor an
+ * open menu resizes it. */
+.nol-site-header-width {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
 .nol-site-skip {
   position: absolute;
   top: var(--nol-space-2);
@@ -336,7 +347,7 @@ nol-site-theme-switch {
     margin-inline-start: var(--nol-site-actions-gap-phone);
   }
 
-  /* The menu glyph is in the text color, as TeamRun's own menu button is, where the other icon buttons take the icon color. */
+  /* The menu glyph is in the text color, where the other icon buttons take the icon color. */
   .nol-site-menu-button {
     --nol-icon-color: var(--nol-text);
 
@@ -442,14 +453,16 @@ nol-site-theme-switch {
     font-size: var(--nol-site-download-glyph-phone);
   }
 
-  /* The header measures whether the lockup's whole name and the version fit beside the theme switch, and where they don't
-   * it takes the compact class: the switch moves into the menu, under the links, at the menu's row size. */
-  :host(.nol-site-header-compact) nol-site-theme-switch {
+  /* The header measures whether the lockup's whole name, its whole wordmark and the version fit beside the theme switch,
+   * and where they don't it takes the compact class: the switch moves into the menu, under the links, at the menu's row
+   * size. Until it has measured, as on a prerendered page, whose switch can't be used yet, the switch is in the menu too,
+   * so the first paint keeps the whole name. */
+  :host(:is(.nol-site-header-compact, :not(.nol-site-header-measured))) nol-site-theme-switch {
     display: none;
     grid-area: switch;
   }
 
-  :host(.nol-site-header-compact.nol-site-header-open) nol-site-theme-switch {
+  :host(:is(.nol-site-header-compact, :not(.nol-site-header-measured)).nol-site-header-open) nol-site-theme-switch {
     --nol-site-theme-pill: var(--nol-site-menu-row);
     --nol-site-header-icon: var(--nol-site-menu-icon);
 

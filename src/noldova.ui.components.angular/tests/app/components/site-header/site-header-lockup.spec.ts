@@ -17,11 +17,12 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
-// A product's own wordmark four times as wide as high, a longer one, and an icon with no text in it.
+// A product's own wordmark four times as wide as high, a reference wordmark in the proportions the large size is set by,
+// a longer one, and an icon with no text in it.
 const ratio = 4;
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Crect width='800' height='200'/%3E%3C/svg%3E";
 const longRatio = 1708.818 / 201.396;
-const teamRunWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1335.64 201.396'%3E%3Crect width='1335.64' height='201.396'/%3E%3C/svg%3E`;
+const referenceWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1335.64 201.396'%3E%3Crect width='1335.64' height='201.396'/%3E%3C/svg%3E`;
 const longWordmark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1708.818 201.396'%3E%3Crect width='1708.818' height='201.396'/%3E%3C/svg%3E`;
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
 
@@ -38,20 +39,20 @@ class SiteHeaderLockupHostComponent {
   public readonly size = signal(SiteWordmarkSize.Large);
 }
 
-// TeamRun's wordmark's proportions, by which a large wordmark takes the height TeamRun's own header draws its wordmark at.
-const teamRunRatio = 1335.64 / 201.396;
+// The reference wordmark's proportions, by which a large wordmark takes its height: the height the reference wordmark has
+// at its width for the header's width.
+const referenceRatio = 1335.64 / 201.396;
 
-// A window width, the width TeamRun's header draws its wordmark at in a header that wide, and the height in rem that gives
-// any large wordmark.
+// A window width, the reference wordmark's width in a header that wide, and the height in rem that gives any large wordmark.
 class LargeWidth {
   public readonly width: number;
-  public readonly teamRunWidth: number;
+  public readonly referenceWidth: number;
   public readonly height: number;
 
-  public constructor(width: number, teamRunWidth: number) {
+  public constructor(width: number, referenceWidth: number) {
     this.width = width;
-    this.teamRunWidth = teamRunWidth;
-    this.height = teamRunWidth / teamRunRatio;
+    this.referenceWidth = referenceWidth;
+    this.height = referenceWidth / referenceRatio;
   }
 }
 
@@ -103,11 +104,11 @@ describe("SiteHeaderComponent's lockup", () => {
 
   it("names the home link from the product's name when the site gives no label", async () => {
     await renderAsync(t => {
-      t.name.set("TeamRun");
+      t.name.set("Exampleware");
       t.homeLabel.set(null);
     });
 
-    expect(link().getAttribute("aria-label")).toBe("TeamRun home");
+    expect(link().getAttribute("aria-label")).toBe("Exampleware home");
   });
 
   it("draws an icon and a product's own wordmark without the name a second time, its link named by the label", async () => {
@@ -119,7 +120,7 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
-    it(`draws a large wordmark as high as TeamRun's ${size.teamRunWidth}rem-wide wordmark, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
+    it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
       await page.viewport(size.width, 800);
       await renderAsync();
 
@@ -130,14 +131,14 @@ describe("SiteHeaderComponent's lockup", () => {
   }
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(760, 8.25), new LargeWidth(360, 7)]) {
-    it(`draws TeamRun's own wordmark ${size.teamRunWidth}rem wide, as TeamRun's header does, in a header ${size.width} pixels wide`, async () => {
+    it(`draws the reference wordmark ${size.referenceWidth}rem wide in a header ${size.width} pixels wide`, async () => {
       await page.viewport(size.width, 800);
       await renderAsync(t => {
-        t.wordmark.set(teamRunWordmark);
-        t.ratio.set(teamRunRatio);
+        t.wordmark.set(referenceWordmark);
+        t.ratio.set(referenceRatio);
       });
 
-      AppearanceFixture.expectPixels(mark().width, rem(size.teamRunWidth));
+      AppearanceFixture.expectPixels(mark().width, rem(size.referenceWidth));
       AppearanceFixture.expectPixels(mark().height, rem(size.height));
     });
   }
@@ -151,29 +152,33 @@ describe("SiteHeaderComponent's lockup", () => {
     }
   });
 
-  it("keeps a large wordmark's full width beside the icon as the header narrows", async () => {
+  it("keeps a short large wordmark's full width beside the icon as the header narrows, with the theme switch beside it in the bar, the phone's gap apart", async () => {
     await page.viewport(360, 800);
     await renderAsync();
     const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
+    const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
 
-    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(7 / teamRunRatio) * ratio - 1 / 32);
+    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(7 / referenceRatio) * ratio - 1 / 32);
+    AppearanceFixture.expectPixels(mark().width, rem(7 / referenceRatio) * ratio);
+    expect([theme.width > 0, theme.left - lockup.right >= AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32]).toEqual([true, true]);
   });
 
   for (const width of [360, 320]) {
-    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark's box narrowed and drawn inside it in its file's proportions, in a header ${width} pixels wide`, async () => {
+    it(`keeps a long wordmark whole, at its height in its file's proportions, the phone's gap before the menu button, with the theme switch in the menu, in a header ${width} pixels wide`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => {
         t.wordmark.set(longWordmark);
         t.ratio.set(longRatio);
       });
       const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
-      const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
+      const menu = DomFixture.one(header(), ".nol-site-menu-button").getBoundingClientRect();
       const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-site-actions-gap-phone"));
 
-      expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
+      expect(getComputedStyle(DomFixture.one(header(), "nol-site-theme-switch")).display).toBe("none");
+      expect(menu.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
-      AppearanceFixture.expectPixels(mark().height, rem(7 / teamRunRatio));
-      expect(mark().width).toBeLessThan(rem(7 / teamRunRatio) * longRatio - 1);
+      AppearanceFixture.expectPixels(mark().height, rem(7 / referenceRatio));
+      AppearanceFixture.expectPixels(mark().width, rem(7 / referenceRatio) * longRatio);
       expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
     });

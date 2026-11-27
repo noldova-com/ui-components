@@ -80,6 +80,7 @@ export class SiteHeaderComponent {
   private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });
   private readonly menuPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("menuPanel", { read: ElementRef });
   private readonly brand: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("brand", { read: ElementRef });
+  private readonly width: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("width", { read: ElementRef });
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
 
@@ -98,11 +99,15 @@ export class SiteHeaderComponent {
       this.hasSearch();
       this.wide();
       untracked(() => {
-        const observer = this.observers.create(() => this.fitBrand());
-        for (const element of [this.host, ...this.brand().nativeElement.children])
-          observer.observe(element);
-        onCleanup(() => observer.disconnect());
-        this.fitBrand();
+        const fit = (): void => this.fitBrand();
+        const observer = this.observers.create(fit);
+        observer.observe(this.width().nativeElement);
+        this.document.fonts.addEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+        onCleanup(() => {
+          observer.disconnect();
+          this.document.fonts.removeEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+        });
+        fit();
       });
     });
   }
@@ -171,12 +176,18 @@ export class SiteHeaderComponent {
     this.menuOpen.set(false);
   }
 
-  // The lockup gives its width up from the name, which ends with an ellipsis before the version moves, so the two fit when
-  // the name is whole. That is read with the theme switch in the bar, whatever the last reading was, so a reading never
-  // depends on the one before it; the class changes before the page paints.
+  // The lockup gives its width up from the name, which ends with an ellipsis before the version moves, and then from its
+  // wordmark, which narrows below its height in its proportions; so the lockup and the version fit while neither is cut.
+  // That is read with the theme switch in the bar, whatever the last reading was, so a reading never depends on the one
+  // before it. The observer watches only an element across the header's width, which neither class resizes, and the
+  // classes change before the page paints.
   private fitBrand(): void {
+    this.host.classList.add(SiteHeaderResources.measuredClass);
     this.host.classList.remove(SiteHeaderResources.compactClass);
-    const name = this.brand().nativeElement.querySelector<HTMLElement>(SiteHeaderResources.lockupName);
-    this.host.classList.toggle(SiteHeaderResources.compactClass, !Object.isNull(name) && name.scrollWidth > name.clientWidth);
+    const brand = this.brand().nativeElement;
+    const name = brand.querySelector<HTMLElement>(SiteHeaderResources.lockupName);
+    const isNarrowed = [...brand.querySelectorAll<HTMLElement>(SiteHeaderResources.lockupWordmark)]
+      .some(t => t.getBoundingClientRect().width < t.getBoundingClientRect().height * this.wordmarkRatio() - SiteHeaderResources.fitSlack);
+    this.host.classList.toggle(SiteHeaderResources.compactClass, isNarrowed || (!Object.isNull(name) && name.scrollWidth > name.clientWidth));
   }
 }

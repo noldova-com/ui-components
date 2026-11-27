@@ -16,6 +16,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteSocialLink } from "../../../../src/app/models/site-social-link";
+import { Theme } from "../../../../src/app/models/theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomChangeFixture } from "../../../fixtures/dom-change.fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
@@ -46,7 +47,7 @@ class SiteHeaderHostComponent {
   public readonly wordmarkRatio = signal(20 / 3);
   public readonly productIcon = signal<string | null>(null);
   public readonly productIconDark = signal<string | null>(null);
-  public readonly name = signal<string | null>("TeamRun");
+  public readonly name = signal<string | null>("Example");
   public readonly version = signal<string | null>(null);
   public readonly versionHref = signal<string | null>(null);
   public readonly links = signal<readonly SiteLink[]>([new SiteLink("Features", "#features", true), new SiteLink("Docs", "#docs"), new SiteLink("Releases", "#releases")]);
@@ -66,6 +67,65 @@ class SiteHeaderHostComponent {
 })
 class SiteHeaderDefaultRatioHostComponent {
   public readonly wordmark: string = unreadable;
+}
+
+// The width the lockup's whole name and the version need, and the room the bar leaves them beside the theme switch.
+class NameRoom {
+  public readonly needed: number;
+  public readonly room: number;
+
+  public constructor(needed: number, room: number) {
+    this.needed = needed;
+    this.room = room;
+  }
+}
+
+// Renders a header with a product name after a wordmark in the Noldova wordmark's proportions, with a version and a search,
+// and reads the room its bar leaves the name.
+class SiteHeaderNames {
+  // Product names short, long and very long.
+  public readonly names: readonly string[] = ["Kit", "Exampleware", "An example product with a very long name"];
+  private readonly render: (change: (host: SiteHeaderHostComponent) => void, theme: Theme, mode: ThemeMode) => Promise<void>;
+  private readonly header: () => HTMLElement;
+
+  public constructor(render: (change: (host: SiteHeaderHostComponent) => void, theme: Theme, mode: ThemeMode) => Promise<void>, header: () => HTMLElement) {
+    this.render = render;
+    this.header = header;
+  }
+
+  public async renderAsync(name: string, wide: boolean, mode: ThemeMode): Promise<void> {
+    await this.render(t => {
+      t.wordmark.set(formatWordmark(1333.817, 201.396));
+      t.wordmarkRatio.set(1333.817 / 201.396);
+      t.name.set(name);
+      t.version.set("v0.0.1");
+      t.hasSearch.set(true);
+      t.wide.set(wide);
+    }, DefaultTheme.theme, mode);
+  }
+
+  // The room beside a theme switch as wide as the bar draws it, measured from the switch where the bar shows it, and from
+  // where it would go where not.
+  public room(switchWidth: number): NameRoom {
+    const gap = AppearanceFixture.measureLook("site-actions-gap-phone");
+    const name = this.box(".nol-site-lockup-name");
+    const text = document.createRange();
+    text.selectNodeContents(DomFixture.one(this.header(), ".nol-site-lockup-name"));
+    const needed = this.box("nol-site-lockup").width - name.width + text.getBoundingClientRect().width
+      + Number.parseFloat(getComputedStyle(DomFixture.one(this.header(), ".nol-site-header-brand")).columnGap) + this.box(".nol-site-version").width;
+    const next = Math.min(...[".nol-site-download", ".nol-site-search-button", ".nol-site-menu-button"].filter(t => this.shown(t)).map(t => this.box(t).left));
+    const end = this.shown("nol-site-theme-switch") ? this.box("nol-site-theme-switch").left : next - gap - switchWidth;
+
+    return new NameRoom(needed, end - gap - this.box(".nol-site-header-brand").left);
+  }
+
+  private box(selector: string): DOMRect {
+    return DomFixture.one(this.header(), selector).getBoundingClientRect();
+  }
+
+  private shown(selector: string): boolean {
+    return getComputedStyle(DomFixture.one(this.header(), selector)).display !== "none";
+  }
 }
 
 class SearchCloseCase {
@@ -157,7 +217,7 @@ describe("SiteHeaderComponent", () => {
     const size = mark.getBoundingClientRect();
 
     expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-lockup-name").textContent?.trim(), getComputedStyle(mark).maskImage.includes("data:image/svg+xml")])
-      .toEqual(["/", "TeamRun home", "TeamRun", true]);
+      .toEqual(["/", "Example home", "Example", true]);
     AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
     expect(size.width / size.height).toBeCloseTo(20 / 3, 1);
   });
@@ -363,7 +423,7 @@ describe("SiteHeaderComponent", () => {
       AppearanceFixture.expectPixels(glyph.height, size);
       AppearanceFixture.expectPixels(word.left - glyph.right, AppearanceFixture.measureLook("space-3"));
       AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, word.top + word.height / 2);
-      expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "TeamRun home"]);
+      expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "Example home"]);
       expect([glyph.left >= link.left - 1 / 32, word.right <= link.right + 1 / 32]).toEqual([true, true]);
     });
 
@@ -516,12 +576,12 @@ describe("SiteHeaderComponent", () => {
   });
 
   it("draws Download with its label, and no button without a link", async () => {
-    await renderAsync(t => t.downloadLabel.set("Get TeamRun"));
+    await renderAsync(t => t.downloadLabel.set("Get Example"));
     const labelled = [part(".nol-site-download").getAttribute("href"), part(".nol-site-download").textContent?.replace("download", String.empty).trim()];
     host.downloadHref.set(null);
     fixture.detectChanges();
 
-    expect([labelled, maybe(".nol-site-download")]).toEqual([["#download", "Get TeamRun"], null]);
+    expect([labelled, maybe(".nol-site-download")]).toEqual([["#download", "Get Example"], null]);
   });
 
   it("draws no Download for an empty link, and keeps the theme switch in the bar on a 520px window, as without one", async () => {
@@ -930,49 +990,23 @@ describe("SiteHeaderComponent", () => {
     expect(box(".nol-site-menu-button").right).toBeLessThanOrEqual(edges().right);
   });
 
-  // Product names short, long and very long, after a wordmark in the Noldova wordmark's proportions, each with a version and a search.
-  const names = ["Kit", "Exampleware", "An example product with a very long name"];
+  const names = new SiteHeaderNames(renderAsync, header);
   const compact = "nol-site-header-compact";
-
-  async function renderNameAsync(name: string, wide: boolean, mode: ThemeMode): Promise<void> {
-    await renderAsync(t => {
-      t.wordmark.set(formatWordmark(1333.817, 201.396));
-      t.wordmarkRatio.set(1333.817 / 201.396);
-      t.name.set(name);
-      t.version.set("v0.0.1");
-      t.hasSearch.set(true);
-      t.wide.set(wide);
-    }, DefaultTheme.theme, mode);
-  }
-
-  // The width the lockup's whole name and the version need, and the room the bar leaves them beside a theme switch as wide as
-  // the bar draws it.
-  function brandRoom(switchWidth: number): [number, number] {
-    const gap = AppearanceFixture.measureLook("site-actions-gap-phone");
-    const name = part(".nol-site-lockup-name");
-    const text = document.createRange();
-    text.selectNodeContents(name);
-    const needed = box("nol-site-lockup").width - name.getBoundingClientRect().width + text.getBoundingClientRect().width
-      + Number.parseFloat(getComputedStyle(part(".nol-site-header-brand")).columnGap) + box(".nol-site-version").width;
-    const next = Math.min(...[".nol-site-download", ".nol-site-search-button", ".nol-site-menu-button"].filter(shown).map(t => box(t).left));
-    const end = shown("nol-site-theme-switch") ? box("nol-site-theme-switch").left : next - gap - switchWidth;
-
-    return [needed, end - gap - box(".nol-site-header-brand").left];
-  }
+  const frameAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => resolve()));
 
   for (const mode of AppearanceFixture.modes)
     for (const wide of [true, false])
       it(`keeps the theme switch in the bar exactly when a short, a long or a very long name and its version fit beside it, and otherwise draws it in the menu, the name whole where it fits there and cut with an ellipsis where not, on a phone ${wide ? "for a documentation site" : "with Download"}, in ${mode} mode`, async () => {
         await page.viewport(1280, 812);
-        await renderNameAsync(DomFixture.at(names, 0), wide, mode);
+        await names.renderAsync(DomFixture.at(names.names, 0), wide, mode);
         const switchWidth = box("nol-site-theme-switch").width;
         fixture.destroy();
         const read: string[][] = [];
-        for (const name of names)
+        for (const name of names.names)
           for (const width of [360, 375, 430, 480, 600]) {
             await page.viewport(width, 812);
-            await renderNameAsync(name, wide, mode);
-            const [needed, room] = brandRoom(switchWidth);
+            await names.renderAsync(name, wide, mode);
+            const { needed, room } = names.room(switchWidth);
             const label = part(".nol-site-lockup-name");
             const parts = all(".nol-site-header-bar > *").filter(t => getComputedStyle(t).display !== "none" && t.getBoundingClientRect().width > 0).map(t => t.getBoundingClientRect());
             const overlaps = parts.flatMap((t, i) => parts.slice(i + 1).filter(u => t.left < u.right - 1 / 32 && u.left < t.right - 1 / 32 && t.top < u.bottom - 1 / 32 && u.top < t.bottom - 1 / 32));
@@ -986,17 +1020,17 @@ describe("SiteHeaderComponent", () => {
         const placed = read.map(t => [DomFixture.at(t, 0), "switch placed", "name drawn", "apart"]);
 
         expect(read).toEqual(placed);
-        expect(names.map(t => read.filter(u => DomFixture.at(u, 0).startsWith(`${t} at`)).length)).toEqual([5, 5, 5]);
+        expect(names.names.map(t => read.filter(u => DomFixture.at(u, 0).startsWith(`${t} at`)).length)).toEqual([5, 5, 5]);
       });
 
   for (const mode of AppearanceFixture.modes)
     it(`draws a short name with the theme switch in the bar at 430px and a very long one cut with an ellipsis, the switch in the menu, at 480px, in ${mode} mode`, async () => {
       await page.viewport(430, 812);
-      await renderNameAsync(DomFixture.at(names, 0), true, mode);
+      await names.renderAsync(DomFixture.at(names.names, 0), true, mode);
       const short = [shown("nol-site-theme-switch"), header().classList.contains(compact)];
       fixture.destroy();
       await page.viewport(480, 812);
-      await renderNameAsync(DomFixture.at(names, 2), true, mode);
+      await names.renderAsync(DomFixture.at(names.names, 2), true, mode);
 
       expect([short, [shown("nol-site-theme-switch"), header().classList.contains(compact)]]).toEqual([[true, false], [false, true]]);
       AppearanceFixture.expectTruncates(part(".nol-site-lockup-name"));
@@ -1007,7 +1041,7 @@ describe("SiteHeaderComponent", () => {
 
   it("moves the theme switch into the menu once as the window narrows past where the name fits, keeps it there with the menu open, and moves it back once as the window widens", async () => {
     await page.viewport(600, 812);
-    await renderNameAsync(DomFixture.at(names, 1), true, ThemeMode.Light);
+    await names.renderAsync(DomFixture.at(names.names, 1), true, ThemeMode.Light);
     const states = [header().classList.contains(compact)];
     const changes = new MutationObserver(() => {
       const isCompact = header().classList.contains(compact);
@@ -1015,7 +1049,6 @@ describe("SiteHeaderComponent", () => {
         states.push(isCompact);
     });
     changes.observe(header(), { attributes: true, attributeFilter: ["class"] });
-    const frameAsync = (): Promise<void> => new Promise(resolve => requestAnimationFrame(() => resolve()));
     const settledAsync = (what: string): Promise<void> => LayoutSettleFixture.settledAsync(what, () => `${states.join()} ${String(shown("nol-site-theme-switch"))}`, frameAsync);
 
     await page.viewport(375, 812);
@@ -1031,6 +1064,43 @@ describe("SiteHeaderComponent", () => {
     changes.disconnect();
 
     expect([states, opened]).toEqual([[false, true, false], [true, true]]);
+  });
+
+  it("moves the theme switch between the bar and the open menu as the window crosses where the name fits, with no error on the page", async () => {
+    await page.viewport(600, 812);
+    await names.renderAsync(DomFixture.at(names.names, 1), true, ThemeMode.Light);
+    const errors: string[] = [];
+    const report = (event: ErrorEvent): void => {
+      errors.push(event.message);
+    };
+    window.addEventListener("error", report);
+    const settledAsync = (what: string): Promise<void> => LayoutSettleFixture.settledAsync(what, () => `${String(header().classList.contains(compact))} ${errors.length}`, frameAsync);
+    await openAsync();
+
+    await page.viewport(375, 812);
+    await DomChangeFixture.untilAsync(() => expect(header().classList.contains(compact)).toBe(true));
+    await settledAsync("the narrowed header");
+    const narrowed = [shown("nol-site-theme-switch"), box("nol-site-theme-switch").top > bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height-phone") - 1 / 32];
+    await page.viewport(600, 812);
+    await DomChangeFixture.untilAsync(() => expect(header().classList.contains(compact)).toBe(false));
+    await settledAsync("the widened header");
+    window.removeEventListener("error", report);
+
+    expect([narrowed, errors]).toEqual([[true, true], []]);
+  });
+
+  it("hides the theme switch in a phone's bar until the header has measured the name, as a prerendered page first paints, and draws it in the open menu", async () => {
+    await phoneAsync();
+    await renderAsync(t => t.name.set(DomFixture.at(names.names, 0)));
+    const measured = [header().classList.contains("nol-site-header-measured"), shown("nol-site-theme-switch")];
+    header().classList.remove("nol-site-header-measured", compact);
+    const unmeasured = shown("nol-site-theme-switch");
+    await openAsync();
+    // Opening the menu resizes the header, which measures it again.
+    header().classList.remove("nol-site-header-measured", compact);
+
+    expect([measured, unmeasured, shown("nol-site-theme-switch")]).toEqual([[true, true], false, true]);
+    expect(box("nol-site-theme-switch").top).toBeGreaterThan(bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height-phone") - 1 / 32);
   });
 
   it("moves Download into the open menu on a phone for a documentation site, a menu row high across the content", async () => {
