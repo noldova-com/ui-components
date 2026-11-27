@@ -14,19 +14,24 @@ import "@noldova/context.core";
 
 import { ExportedPart } from "./exported-part.ts";
 import { GlyphPlace } from "./glyph-place.ts";
+import { IconInput } from "./icon-input.ts";
 import { PartGlyphsFile } from "./part-glyphs-file.ts";
 import { PartGlyphsReading } from "./part-glyphs-reading.ts";
 import { PartTemplate } from "./part-template.ts";
 
 // Reads, from the kit's source, the glyphs each part the package exports can draw: those its own file gives, those of the files it imports that
 // its code uses or its template names, the names its template draws as written, and the same of the kit's parts it shows. A glyph is a string
-// literal typed `IconName`, or, in a constant written `as const`, an icon name under a property whose name holds glyph or icon. Icons a site passes
-// in are the site's own.
+// literal typed `IconName`, or, in a constant written `as const`, an icon name under a property whose name holds glyph or icon, or an icon name a
+// template gives an input of a part that the input's type, `IconName` or a list of them, says is an icon. Icons a site passes in are the site's own.
 export class PartGlyphs {
   private static readonly ICON_TYPE: string = "IconName";
   private static readonly COMPONENT_DECORATOR: string = "Component";
   private static readonly TEMPLATE_FIELD: string = "template";
   private static readonly TEMPLATE_URL_FIELD: string = "templateUrl";
+  private static readonly SELECTOR_FIELD: string = "selector";
+  private static readonly ALIAS_FIELD: string = "alias";
+  private static readonly SELECTOR_SEPARATOR: string = ",";
+  private static readonly INPUT_FUNCTIONS: ReadonlySet<string> = new Set(["input", "model"]);
   private static readonly CONSTANT: string = "const";
   private static readonly PARENT: string = "..";
   private static readonly DECLARATIONS: string = ".d.ts";
@@ -35,14 +40,20 @@ export class PartGlyphs {
   private static readonly WORD: RegExp = /[A-Za-z_$][\w$]*/gu;
   // An icon a template draws by its name, written between the symbol font's span tags.
   private static readonly DRAWN_ICON: RegExp = /<span[^>]*material-symbols-rounded[^>]*>\s*([a-z0-9_]+)\s*<\/span\s*>/gu;
-  // An icon a template hands to an icon or glyph input as written, such as icon="forum" or [icon]="'forum'".
-  private static readonly GIVEN_ICON: RegExp = /\s(?:\[[\w-]*(?:icon|glyph)[\w-]*\]="'([a-z0-9_]+)'"|[\w-]*(?:icon|glyph)[\w-]*="([a-z0-9_]+)")/giu;
+  // An element's start tag in a template, with its attributes, and each attribute, its value in double or single quotes.
+  private static readonly START_TAG: RegExp = /<([a-z][\w-]*)((?:\s+[^\s=>"'/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'))?)*)\s*\/?>/giu;
+  private static readonly ATTRIBUTE: RegExp = /([^\s=>"'/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/gu;
+  // A literal of a bound expression: in single or double quotes, or between backticks with no interpolation.
+  private static readonly LITERAL: RegExp = /'([^'\\]*)'|"([^"\\]*)"|`([^`$\\]*)`/gu;
+  private static readonly SELECTOR_ELEMENT: RegExp = /^[a-z][\w-]*/iu;
+  private static readonly SELECTOR_ATTRIBUTE: RegExp = /\[([\w-]+)\]/gu;
 
   private readonly program: ts.Program;
   private readonly checker: ts.TypeChecker;
   private readonly names: ReadonlySet<string>;
   private readonly readText: (file: string) => string;
   private readonly places: GlyphPlace[] = [];
+  private readonly iconInputs: IconInput[] = [];
   // The glyphs each declaration holds, by its name, such as a resources class's `closeGlyph` or `copyGlyphs`, and the file that declares it. A
   // constant written `as const` gives its members' readers symbols of their own, so a reader is matched by the declarations of its symbol.
   private readonly owners: Map<ts.Identifier, Set<string>> = new Map();
@@ -72,6 +83,9 @@ export class PartGlyphs {
   public read(entries: readonly string[], folder: string): PartGlyphsReading {
     const sources = this.program.getSourceFiles().filter(t => PartGlyphs.isUnder(t.fileName, folder));
     const iconType = this.findIconType(sources);
+    if (!Object.isNull(iconType))
+      for (const source of sources)
+        this.collectIconInputs(source, iconType);
     for (const source of sources)
       this.collectGlyphs(source, iconType, folder);
     const parts = new Map<string, readonly string[]>();
@@ -122,12 +136,70 @@ export class PartGlyphs {
     return null;
   }
 
+  private static textOf(options: ts.ObjectLiteralExpression | null, field: string): string | null {
+    for (const property of options?.properties ?? [])
+      if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.name) && property.name.text === field && ts.isStringLiteralLike(property.initializer))
+        return property.initializer.text;
+    return null;
+  }
+
   private findIconType(sources: readonly ts.SourceFile[]): ts.Type | null {
     for (const source of sources)
       for (const statement of source.statements)
         if (ts.isTypeAliasDeclaration(statement) && statement.name.text === PartGlyphs.ICON_TYPE)
           return this.checker.getTypeAtLocation(statement.name);
     return null;
+  }
+
+  // The inputs, and models, of each part whose value, or each item of it, is an `IconName`, by the selector that places the part.
+  private collectIconInputs(source: ts.SourceFile, iconType: ts.Type): void {
+    for (const statement of source.statements) {
+      if (!ts.isClassDeclaration(statement))
+        continue;
+      const selector = PartGlyphs.textOf(PartGlyphs.componentOf(statement), PartGlyphs.SELECTOR_FIELD);
+      for (const member of Object.isNull(selector) ? [] : statement.members) {
+        const name = this.iconInputOf(member, iconType);
+        for (const part of Object.isNull(name) || Object.isNull(selector) ? [] : selector.split(PartGlyphs.SELECTOR_SEPARATOR))
+          this.iconInputs.push(new IconInput(part.trim().match(PartGlyphs.SELECTOR_ELEMENT)?.[0] ?? null,
+            [...part.matchAll(PartGlyphs.SELECTOR_ATTRIBUTE)].map(t => t[1] ?? ""), name ?? ""));
+      }
+    }
+  }
+
+  private iconInputOf(member: ts.ClassElement, iconType: ts.Type): string | null {
+    if (!ts.isPropertyDeclaration(member) || !ts.isIdentifier(member.name) || Object.isUndefined(member.initializer) || !ts.isCallExpression(member.initializer))
+      return null;
+    const call = member.initializer;
+    const callee = ts.isPropertyAccessExpression(call.expression) ? call.expression.expression : call.expression;
+    const read = this.checker.getTypeAtLocation(member.name).getCallSignatures()[0];
+    if (!ts.isIdentifier(callee) || !PartGlyphs.INPUT_FUNCTIONS.has(callee.text) || Object.isUndefined(read))
+      return null;
+    const value = this.checker.getNonNullableType(read.getReturnType());
+    const item = this.checker.getIndexTypeOfType(value, ts.IndexKind.Number);
+    if (!this.isIconType(value, iconType) && (Object.isUndefined(item) || !this.isIconType(item, iconType)))
+      return null;
+    return PartGlyphs.textOf(call.arguments.find(ts.isObjectLiteralExpression) ?? null, PartGlyphs.ALIAS_FIELD) ?? member.name.text;
+  }
+
+  private isIconType(type: ts.Type, iconType: ts.Type): boolean {
+    return (type.flags & ts.TypeFlags.Any) === 0 && this.checker.isTypeAssignableTo(type, iconType) && this.checker.isTypeAssignableTo(iconType, type);
+  }
+
+  // The icon names a template gives its parts' icon inputs: an attribute's value as written, or each literal of a bound expression.
+  private givenIcons(text: string): readonly string[] {
+    const icons: string[] = [];
+    for (const tag of text.matchAll(PartGlyphs.START_TAG)) {
+      const element = (tag[1] ?? "").toLowerCase();
+      const attributes = new Map([...(tag[2] ?? "").matchAll(PartGlyphs.ATTRIBUTE)].map(t => [t[1] ?? "", t[2] ?? t[3] ?? ""]));
+      for (const input of this.iconInputs) {
+        if ((!Object.isNull(input.element) && input.element !== element) || !input.attributes.every(t => attributes.has(t)))
+          continue;
+        icons.push(attributes.get(input.name) ?? "");
+        for (const literal of (attributes.get(`[${input.name}]`) ?? "").matchAll(PartGlyphs.LITERAL))
+          icons.push(literal[1] ?? literal[2] ?? literal[3] ?? "");
+      }
+    }
+    return icons.filter(t => this.names.has(t));
   }
 
   private collectGlyphs(source: ts.SourceFile, iconType: ts.Type | null, folder: string): void {
@@ -148,8 +220,7 @@ export class PartGlyphs {
     visit(source);
     const template = this.readTemplate(source);
     if (!Object.isNull(template)) {
-      const given = [...template.text.matchAll(PartGlyphs.GIVEN_ICON)].map(t => t[1] ?? t[2] ?? "").filter(t => this.names.has(t));
-      const icons = [...[...template.text.matchAll(PartGlyphs.DRAWN_ICON)].map(t => t[1] ?? ""), ...given];
+      const icons = [...[...template.text.matchAll(PartGlyphs.DRAWN_ICON)].map(t => t[1] ?? ""), ...this.givenIcons(template.text)];
       this.templates.set(source, template);
       this.drawn.set(source, icons);
       for (const icon of icons)
@@ -162,8 +233,7 @@ export class PartGlyphs {
       return false;
     const context = this.checker.getContextualType(node);
     const given = Object.isUndefined(context) ? undefined : this.checker.getNonNullableType(context);
-    if (!Object.isNull(iconType) && !Object.isUndefined(given) && (given.flags & ts.TypeFlags.Any) === 0 &&
-      this.checker.isTypeAssignableTo(given, iconType) && this.checker.isTypeAssignableTo(iconType, given))
+    if (!Object.isNull(iconType) && !Object.isUndefined(given) && this.isIconType(given, iconType))
       return true;
     const owner = PartGlyphs.ownerOf(node);
     return !Object.isNull(owner) && PartGlyphs.GLYPH_NAME.test(owner.text) && PartGlyphs.isConstant(node);
