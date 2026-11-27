@@ -1116,12 +1116,19 @@ describe("SiteHeaderComponent", () => {
     await page.viewport(520, 812);
     await names.renderAsync(DomFixture.at(names.names, 0), false, ThemeMode.Light);
     await names.observedAsync();
+    const errors: string[] = [];
+    const report = (event: ErrorEvent): void => {
+      errors.push(event.message);
+    };
+    window.addEventListener("error", report);
     const before = [header().classList.contains(compact), shown("nol-site-theme-switch")];
-    host.downloadLabel.set("Download the latest version for every computer you use");
+    host.downloadLabel.set("Download for every computer");
     fixture.detectChanges();
     await DomChangeFixture.untilAsync(() => expect(header().classList.contains(compact)).toBe(true));
+    await LayoutSettleFixture.settledAsync("the longer label", () => `${header().className} ${errors.length}`, frameAsync);
+    window.removeEventListener("error", report);
 
-    expect([before, shown("nol-site-theme-switch")]).toEqual([[false, true], false]);
+    expect([before, shown("nol-site-theme-switch"), document.documentElement.scrollWidth <= window.innerWidth, errors]).toEqual([[false, true], false, true, []]);
   });
 
   it("measures again when a font the name uses loads after the first reading, and not once the header is destroyed", async () => {
@@ -1152,6 +1159,9 @@ describe("SiteHeaderComponent", () => {
     header().classList.remove("nol-site-header-measured", compact);
     const unmeasured = shown("nol-site-theme-switch");
     await openAsync();
+    // Opening the menu can measure the header again, as when a font its rows use loads or the window's scrollbar comes.
+    await LayoutSettleFixture.settledAsync("the open menu", () => `${header().className} ${box("nol-site-theme-switch").top}`, frameAsync);
+    header().classList.remove("nol-site-header-measured", compact);
 
     expect([measured, unmeasured, shown("nol-site-theme-switch")]).toEqual([[true, true], false, true]);
     expect(box("nol-site-theme-switch").top).toBeGreaterThan(bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height-phone") - 1 / 32);

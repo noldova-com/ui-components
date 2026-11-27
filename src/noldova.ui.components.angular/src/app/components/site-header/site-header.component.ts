@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DOCUMENT, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, afterRenderEffect, computed, contentChildren, inject, input,
+import { Component, DOCUMENT, DestroyRef, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, afterRenderEffect, computed, contentChildren, inject, input,
   linkedSignal, model, signal, untracked, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
@@ -83,11 +83,23 @@ export class SiteHeaderComponent {
   private readonly width: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("width", { read: ElementRef });
   private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   public constructor() {
-    // A page opened part way down, or reloaded there, starts scrolled.
-    afterNextRender(() => this.readScroll());
-    afterRenderEffect(onCleanup => {
+    // A page opened part way down, or reloaded there, starts scrolled. The header measures again when its width changes or
+    // fonts load, and on any change of what it measures.
+    afterNextRender(() => {
+      this.readScroll();
+      const fit = (): void => this.fitBrand();
+      const observer = this.observers.create(fit);
+      observer.observe(this.width().nativeElement);
+      this.document.fonts.addEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+      this.destroyRef.onDestroy(() => {
+        observer.disconnect();
+        this.document.fonts.removeEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+      });
+    });
+    afterRenderEffect(() => {
       this.name();
       this.version();
       this.versionHref();
@@ -99,17 +111,7 @@ export class SiteHeaderComponent {
       this.downloadLabel();
       this.hasSearch();
       this.wide();
-      untracked(() => {
-        const fit = (): void => this.fitBrand();
-        const observer = this.observers.create(fit);
-        observer.observe(this.width().nativeElement);
-        this.document.fonts.addEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
-        onCleanup(() => {
-          observer.disconnect();
-          this.document.fonts.removeEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
-        });
-        fit();
-      });
+      untracked(() => this.fitBrand());
     });
   }
 
