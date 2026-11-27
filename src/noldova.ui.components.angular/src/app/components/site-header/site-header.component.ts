@@ -9,6 +9,8 @@
 import { Component, DOCUMENT, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, signal,
   viewChild } from "@angular/core";
 
+import "@noldova/context.core";
+
 import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
@@ -32,6 +34,7 @@ import { SiteSearchDirective } from "./site-search.directive.js";
     "[class.nol-site-header-open]": "menuOpen()",
     "[class.nol-site-header-searching]": "searchOpen()",
     "[class.nol-site-header-with-search]": "hasSearch()",
+    "[class.nol-site-header-with-download]": "hasDownload()",
     "[class.nol-site-header-scrolled]": "isScrolled()",
     "(window:scroll)": "readScroll()",
     "(keydown.escape)": "closeLayers()",
@@ -70,6 +73,7 @@ export class SiteHeaderComponent {
   private readonly isSearchFromButton: WritableSignal<boolean> = linkedSignal({ source: this.searchOpen, computation: () => false });
   private readonly searches: Signal<readonly SiteSearchDirective[]> = contentChildren(SiteSearchDirective);
   protected readonly hasSearch: Signal<boolean> = computed(() => this.searches().length > 0);
+  protected readonly hasDownload: Signal<boolean> = computed(() => !String.isNullOrEmpty(this.downloadHref()));
   private readonly menuButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("menuButton", { read: ElementRef });
   private readonly searchButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("searchButton", { read: ElementRef });
   private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });

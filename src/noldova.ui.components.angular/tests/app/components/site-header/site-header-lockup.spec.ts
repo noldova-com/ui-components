@@ -160,20 +160,20 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const width of [360, 320]) {
-    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark's box narrowed and drawn inside it in its file's proportions, in a header ${width} pixels wide`, async () => {
+    it(`keeps a long wordmark whole, at its height in its file's proportions, the phone's gap before the menu button, with the theme switch in the menu, in a header ${width} pixels wide`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => {
         t.wordmark.set(longWordmark);
         t.ratio.set(longRatio);
       });
       const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
-      const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
+      const menu = DomFixture.one(header(), ".nol-site-menu-button").getBoundingClientRect();
       const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-site-actions-gap-phone"));
 
-      expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
+      expect(menu.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
       AppearanceFixture.expectPixels(mark().height, rem(7 / teamRunRatio));
-      expect(mark().width).toBeLessThan(rem(7 / teamRunRatio) * longRatio - 1);
+      AppearanceFixture.expectPixels(mark().width, rem(7 / teamRunRatio) * longRatio);
       expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
     });
