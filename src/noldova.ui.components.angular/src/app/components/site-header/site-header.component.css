@@ -298,7 +298,8 @@ nol-site-theme-switch {
 }
 
 /* On a phone the bar keeps the lockup, the theme switch, Download, a search button and the menu button; the links,
- * the social links and, on a documentation site, Download move into the menu. */
+ * the social links and, on a documentation site, Download move into the menu, and so does the theme switch where the
+ * bar is too narrow for it and the product's whole name, as below. */
 @container (width <= 47.5rem) {
   .nol-site-header-bar {
     display: grid;
@@ -306,6 +307,7 @@ nol-site-theme-switch {
       "brand theme download find menu"
       "search search search search search"
       "nav nav nav nav nav"
+      "switch switch switch switch switch"
       "social social social social social"
       "action action action action action";
     grid-template-columns: minmax(0, 1fr) auto auto auto auto;
@@ -319,7 +321,7 @@ nol-site-theme-switch {
     grid-area: brand;
   }
 
-  /* The lockup may narrow below its wordmark's full width, so the gap before the theme switch holds at any width. */
+  /* The lockup may narrow below its wordmark's full width, so the gap before the bar's next part holds at any width. */
   .nol-site-header-brand nol-site-lockup {
     min-width: 0;
   }
@@ -441,7 +443,42 @@ nol-site-theme-switch {
   }
 }
 
+/* Beside Download, a bar under 37.5rem wide, and any bar 30rem wide or less, holds the theme switch only by cutting a
+ * product name as long as Commitline's, with its version, so the switch moves into the menu, under the links, at the
+ * menu's row size, and the lockup keeps the whole name. */
+@container (width < 37.5rem) {
+  :host(.nol-site-header-with-download:not(.nol-site-header-wide)) nol-site-theme-switch {
+    display: none;
+    grid-area: switch;
+  }
+
+  :host(.nol-site-header-open.nol-site-header-with-download:not(.nol-site-header-wide)) nol-site-theme-switch {
+    --nol-site-theme-pill: var(--nol-site-menu-row);
+    --nol-site-header-icon: var(--nol-site-menu-icon);
+
+    display: inline-flex;
+    justify-self: start;
+    margin-block-start: var(--nol-space-3);
+    margin-inline-start: 0;
+  }
+}
+
 @container (width <= 30rem) {
+  nol-site-theme-switch {
+    display: none;
+    grid-area: switch;
+  }
+
+  :host(.nol-site-header-open) nol-site-theme-switch {
+    --nol-site-theme-pill: var(--nol-site-menu-row);
+    --nol-site-header-icon: var(--nol-site-menu-icon);
+
+    display: inline-flex;
+    justify-self: start;
+    margin-block-start: var(--nol-space-3);
+    margin-inline-start: 0;
+  }
+
   .nol-site-download {
     display: none;
     grid-area: action;

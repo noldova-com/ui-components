@@ -389,7 +389,7 @@ describe("SiteHeaderComponent", () => {
       expect([drawn, single]).toEqual([[mode === "Dark" ? darkIcon : icon], [icon]]);
     });
 
-  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark, the phone gap before the theme switch and nothing in the bar overlapping, and Download in the open menu", async () => {
+  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark, the phone gap before the menu button and nothing in the bar overlapping, and the theme switch and Download in the open menu", async () => {
     await page.viewport(390, 800);
     await renderAsync(t => {
       t.productIcon.set(icon);
@@ -401,15 +401,15 @@ describe("SiteHeaderComponent", () => {
     const bar = all(".nol-site-header-bar > *").filter(t => getComputedStyle(t).display !== "none" && t.getBoundingClientRect().width > 0).map(t => t.getBoundingClientRect());
     const overlaps = bar.flatMap((t, i) => bar.slice(i + 1).filter(u => t.left < u.right - 1 / 32 && u.left < t.right - 1 / 32 && t.top < u.bottom - 1 / 32 && u.top < t.bottom - 1 / 32));
 
-    expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download")]).toEqual([true, 0, false]);
-    expect(box("nol-site-theme-switch").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
+    expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download"), shown("nol-site-theme-switch")]).toEqual([true, 0, false, false]);
+    expect(box(".nol-site-menu-button").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
     AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 26 / 3);
     await openAsync();
 
-    expect([shown(".nol-site-download"), box(".nol-site-download").top > box(".nol-site-header-social").bottom]).toEqual([true, true]);
+    expect([shown("nol-site-theme-switch"), shown(".nol-site-download"), box(".nol-site-download").top > box(".nol-site-header-social").bottom]).toEqual([true, true, true]);
   });
 
-  it("narrows the wordmark, its icon whole, rather than running into the theme switch when the bar is too tight for them, on a 520px window with Download in the bar", async () => {
+  it("narrows the wordmark, its icon whole, rather than running into Download when the bar is too tight for them, on a 520px window with Download in the bar, and draws the theme switch in the open menu under the links", async () => {
     await page.viewport(520, 800);
     await renderAsync(t => {
       t.productIcon.set(icon);
@@ -421,11 +421,17 @@ describe("SiteHeaderComponent", () => {
     const wordmark = DomFixture.at(parts, 1);
 
     expect([shown(".nol-site-download"), parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32)]).toEqual([true, true]);
-    expect(box("nol-site-theme-switch").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
+    expect(box(".nol-site-download").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
     AppearanceFixture.expectPixels(DomFixture.at(parts, 0).width, AppearanceFixture.measureLook("site-icon"));
     AppearanceFixture.expectPixels(wordmark.height, AppearanceFixture.measureLook("site-wordmark"));
     expect(wordmark.width).toBeLessThan(AppearanceFixture.measureLook("site-wordmark") * 24 - 1);
     expect(getComputedStyle(part(".nol-site-wordmark")).maskSize).toBe("contain");
+    expect(shown("nol-site-theme-switch")).toBe(false);
+    await openAsync();
+
+    expect(shown("nol-site-theme-switch")).toBe(true);
+    AppearanceFixture.expectPixels(box("nol-site-theme-switch").top - DomFixture.at(all(".nol-site-nav-link").map(t => t.getBoundingClientRect()), 2).bottom, AppearanceFixture.measureLook("space-3"));
+    AppearanceFixture.expectPixels(box("nol-site-theme-switch").left, edges().left + AppearanceFixture.measureLook("site-padding-inline-phone"));
   });
 
   it("draws each social link in the strong text color, named by its label with the label as its title, its box the theme pill size, its icon a mask at the header icon size", async () => {
@@ -609,13 +615,16 @@ describe("SiteHeaderComponent", () => {
       expect(box(".nol-site-download-icon").left).toBeGreaterThan(label.getBoundingClientRect().right);
     });
 
-  it("opens the links, then the social links named by their labels, in rows under the bar on a phone, then Download across the content, without the search", async () => {
+  it("opens the links, then the theme switch at the menu row size, then the social links named by their labels, in rows under the bar on a phone, then Download across the content, without the search", async () => {
     await phoneAsync();
     await renderAsync(t => t.hasSearch.set(true));
     await openAsync();
     await userEvent.hover(part(".nol-site-header-brand"));
     const inset = AppearanceFixture.measureLook("site-padding-inline-phone");
-    const rows = [...all(".nol-site-nav-link"), ...all(".nol-site-social")].map(t => t.getBoundingClientRect());
+    const links = all(".nol-site-nav-link").map(t => t.getBoundingClientRect());
+    const socials = all(".nol-site-social").map(t => t.getBoundingClientRect());
+    const rows = [...links, ...socials];
+    const theme = box("nol-site-theme-switch");
     const rowHeight = AppearanceFixture.measureLook("site-menu-row");
     const colors = (key: string): string => AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, key);
     const [current, other] = all(".nol-site-nav-link").map(t => getComputedStyle(t));
@@ -628,12 +637,19 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(Number.parseFloat(social.fontSize), AppearanceFixture.measureLook("site-menu-text"));
     expect([shown(".nol-site-header-search"), shown("nol-site-theme-switch")]).toEqual([false, true]);
     AppearanceFixture.expectPixels(DomFixture.at(rows, 0).top - bar().getBoundingClientRect().top, AppearanceFixture.measureLook("site-header-height-phone"));
-    for (const [index, row] of rows.entries()) {
+    for (const row of rows) {
       AppearanceFixture.expectPixels(row.height, rowHeight);
       AppearanceFixture.expectPixels(row.left, edges().left + inset);
       AppearanceFixture.expectPixels(row.width, edges().width - inset * 2);
-      AppearanceFixture.expectPixels(row.top, DomFixture.at(rows, 0).top + index * rowHeight);
     }
+    for (const [index, row] of links.entries())
+      AppearanceFixture.expectPixels(row.top, DomFixture.at(links, 0).top + index * rowHeight);
+    for (const [index, row] of socials.entries())
+      AppearanceFixture.expectPixels(row.top, theme.bottom + index * rowHeight);
+    AppearanceFixture.expectPixels(theme.top - DomFixture.at(links, links.length - 1).bottom, AppearanceFixture.measureLook("space-3"));
+    AppearanceFixture.expectPixels(theme.left, edges().left + inset);
+    AppearanceFixture.expectPixels(pill().getBoundingClientRect().height, rowHeight);
+    AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(DomFixture.one(pill(), ".nol-choice-pill-glyph")).fontSize), AppearanceFixture.measureLook("site-menu-icon"));
     AppearanceFixture.expectPixels(box(".nol-site-social-icon").width, AppearanceFixture.measureLook("site-menu-icon"));
     AppearanceFixture.expectPixels(box(".nol-site-social-label").left - box(".nol-site-social-icon").right, AppearanceFixture.measureLook("space-2"));
     AppearanceFixture.expectPixels(box(".nol-site-download").top - DomFixture.at(rows, rows.length - 1).bottom, AppearanceFixture.measureLook("space-3"));
@@ -783,7 +799,7 @@ describe("SiteHeaderComponent", () => {
       expect([host.searchOpen(), shown(".nol-site-header-search")]).toEqual([true, true]);
     });
 
-  it("moves the focus to the first link when the menu opens on a phone, and Tab goes on through the links, the bar's theme switch, the social links, then Download", async () => {
+  it("moves the focus to the first link when the menu opens on a phone, and Tab goes on through the links, the theme switch, the social links, then Download", async () => {
     await phoneAsync();
     await renderAsync(t => {
       t.hasSearch.set(true);
@@ -900,6 +916,36 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectTruncates(part(".nol-site-lockup-name"));
     expect(box(".nol-site-menu-button").right).toBeLessThanOrEqual(edges().right);
   });
+
+  // The Noldova wordmark's proportions, with a product's name as long as Commitline's and a version after it, in the kit's
+  // theme; the fixture theme's larger values only tell its tokens apart.
+  for (const mode of AppearanceFixture.modes)
+    for (const wide of [true, false])
+      it(`keeps a name as long as Commitline's whole, its version after it, a phone actions gap before the bar's next part, on a phone from 375px to 760px ${wide ? "for a documentation site" : "with Download"}, with a search, in ${mode} mode`, async () => {
+        const widths = [375, 480, 481, 599, 600, 760];
+        const results: (number | boolean)[][] = [];
+        for (const width of widths) {
+          await page.viewport(width, 812);
+          await renderAsync(t => {
+            t.wordmark.set(formatWordmark(1333.817, 201.396));
+            t.wordmarkRatio.set(1333.817 / 201.396);
+            t.name.set("Commitline");
+            t.version.set("v0.0.1");
+            t.hasSearch.set(true);
+            t.wide.set(wide);
+          }, DefaultTheme.theme, mode);
+          const gap = AppearanceFixture.measureLook("site-actions-gap-phone");
+          const name = part(".nol-site-lockup-name");
+          const text = document.createRange();
+          text.selectNodeContents(name);
+          const next = Math.min(...["nol-site-theme-switch", ".nol-site-download", ".nol-site-search-button", ".nol-site-menu-button"].filter(shown).map(t => box(t).left));
+          results.push([width, text.getBoundingClientRect().width <= name.getBoundingClientRect().width + 1 / 32, name.scrollWidth <= name.clientWidth,
+            box(".nol-site-version").left >= name.getBoundingClientRect().right, next - box(".nol-site-version").right >= gap - 1 / 32]);
+          fixture.destroy();
+        }
+
+        expect(results).toEqual(widths.map(t => [t, true, true, true, true]));
+      });
 
   it("moves Download into the open menu on a phone for a documentation site, a menu row high across the content", async () => {
     await phoneAsync();
