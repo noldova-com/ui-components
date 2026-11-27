@@ -4,6 +4,14 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.37
+
+- `@noldova/ui.components.angular`: the site package tells the page's stage from its host and gives addresses and links at that stage. `SiteStage` is `Production`, `Sandbox` or `Staging`. `SiteStageService.stage` is `Sandbox` or `Staging` when that label stands just before `noldova.com` or `noldova.dev` in the host, and `Production` otherwise, the prerender included. `address(href)` adds the stage's label to an absolute address on those domains that names none, and `link(link)` gives a `SiteLink` at that address. The site footer's Noldova link and the docs site's Privacy link follow the stage (#193).
+- `@noldova/ui.components.angular`: the site footer's default notice draws Noldova's wordmark in place of the word, `© <year>` and the logo, linking to https://noldova.com at the page's stage and named Noldova. The logo is inline, in the notice's color in every theme, as high as its capitals, and `LinkText` under forced colors; the kit ships no file for a site to serve (#194).
+- `@noldova/ui.components.angular`: on a phone, the site header moves the theme switch into the menu only when the lockup's whole name and version don't fit beside it, as it measures, in place of #178's fixed 30rem and 37.5rem widths. The `nol-site-header-with-download` host class is gone (#182).
+- `@noldova/ui.components.angular`: in the site header's bar, the theme switch stands as high as the Download button's face, 1.875rem, in place of 2.375rem; the open phone menu keeps its menu-row pills (#191).
+- `@noldova/ui.components.angular`: the package ships `glyphs.json`, exported as `./glyphs.json`: the Material Symbols glyphs each exported part can draw, `{ "parts": { "<ClassName>": [sorted glyphs] } }`. A site subsets the icon font to the union of the parts it uses, plus its own icons. A new check fails when a glyph of the kit's source is in no exported part's list (#185).
+
 ## 0.0.36
 
 - `@noldova/ui.components.angular`: each part of a site has its own entry, `@noldova/ui.components.angular/site/header`, `/site/footer`, `/site/hero`, `/site/section`, `/site/card` and `/site/closing`, each exporting the part's classes and the models it takes, the same ones `/site` exports, which keeps exporting them all. A website whose start shows only its header and footer imports them from their entries and the other parts from theirs in its lazy pages, so the hero, sections, cards and closing leave its start: 23,210 bytes less in the kit's own such app (#170).
