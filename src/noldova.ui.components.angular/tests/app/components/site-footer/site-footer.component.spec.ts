@@ -216,7 +216,7 @@ describe("SiteFooterComponent", () => {
         expect(cap.height / rem).toBeGreaterThan(0.5);
         AppearanceFixture.expectPixels(drawn.height, cap.height);
         AppearanceFixture.expectPixels(drawn.bottom, cap.bottom);
-        AppearanceFixture.expectPixels(drawn.width, drawn.height * 1311.818 / 197.396);
+        expect(drawn.width / drawn.height).toBeCloseTo(1311.818 / 197.396, 2);
         expect([drawn.top >= line.top, drawn.bottom <= line.bottom]).toEqual([true, true]);
       });
 
