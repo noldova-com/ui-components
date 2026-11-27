@@ -22,6 +22,12 @@ export class SiteHeaderResources {
   public static readonly downloadGlyph: IconName = "download";
   public static readonly skipLabel: string = "Skip to content";
   public static readonly currentPage: string = "page";
+  public static readonly compactClass: string = "nol-site-header-compact";
+  public static readonly measuredClass: string = "nol-site-header-measured";
+  public static readonly lockupName: string = ".nol-site-lockup-name";
+  public static readonly lockupWordmark: string = ".nol-site-wordmark";
+  public static readonly fontsLoadedEvent: string = "loadingdone";
+  public static readonly fitSlack: number = 0.5;
 
   public static formatTarget(id: string): string {
     return `#${id}`;

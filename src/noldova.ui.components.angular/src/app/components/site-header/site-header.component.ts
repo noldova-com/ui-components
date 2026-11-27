@@ -6,12 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, DOCUMENT, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, computed, contentChildren, inject, input, linkedSignal, model, signal,
-  viewChild } from "@angular/core";
+import { Component, DOCUMENT, DestroyRef, ElementRef, Injector, type Signal, type WritableSignal, afterNextRender, afterRenderEffect, computed, contentChildren, inject, input,
+  linkedSignal, model, signal, untracked, viewChild } from "@angular/core";
 
 import "@noldova/context.core";
 
 import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
+import type { IResizeObservers } from "../../interfaces/i-resize-observers.js";
+import { ResizeTokens } from "../../models/resize-tokens.js";
 import type { SiteLink } from "../../models/site-link.js";
 import type { SiteSocialLink } from "../../models/site-social-link.js";
 import { ButtonComponent } from "../button/button.component.js";
@@ -34,7 +36,6 @@ import { SiteSearchDirective } from "./site-search.directive.js";
     "[class.nol-site-header-open]": "menuOpen()",
     "[class.nol-site-header-searching]": "searchOpen()",
     "[class.nol-site-header-with-search]": "hasSearch()",
-    "[class.nol-site-header-with-download]": "hasDownload()",
     "[class.nol-site-header-scrolled]": "isScrolled()",
     "(window:scroll)": "readScroll()",
     "(keydown.escape)": "closeLayers()",
@@ -78,10 +79,40 @@ export class SiteHeaderComponent {
   private readonly searchButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("searchButton", { read: ElementRef });
   private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });
   private readonly menuPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("menuPanel", { read: ElementRef });
+  private readonly brand: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("brand", { read: ElementRef });
+  private readonly width: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("width", { read: ElementRef });
+  private readonly host: HTMLElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly observers: IResizeObservers = inject(ResizeTokens.observers);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   public constructor() {
-    // A page opened part way down, or reloaded there, starts scrolled.
-    afterNextRender(() => this.readScroll());
+    // A page opened part way down, or reloaded there, starts scrolled. The header measures again when its width changes or
+    // fonts load, and on any change of what it measures.
+    afterNextRender(() => {
+      this.readScroll();
+      const fit = (): void => this.fitBrand();
+      const observer = this.observers.create(fit);
+      observer.observe(this.width().nativeElement);
+      this.document.fonts.addEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+      this.destroyRef.onDestroy(() => {
+        observer.disconnect();
+        this.document.fonts.removeEventListener(SiteHeaderResources.fontsLoadedEvent, fit);
+      });
+    });
+    afterRenderEffect(() => {
+      this.name();
+      this.version();
+      this.versionHref();
+      this.wordmark();
+      this.wordmarkRatio();
+      this.wordmarkSize();
+      this.icon();
+      this.hasDownload();
+      this.downloadLabel();
+      this.hasSearch();
+      this.wide();
+      untracked(() => this.fitBrand());
+    });
   }
 
   protected readScroll(): void {
@@ -146,5 +177,20 @@ export class SiteHeaderComponent {
 
   protected leaveMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  // The lockup gives its width up from the name, which ends with an ellipsis before the version moves, and then from its
+  // wordmark, which narrows below its height in its proportions; so the lockup and the version fit while neither is cut.
+  // That is read with the theme switch in the bar, whatever the last reading was, so a reading never depends on the one
+  // before it. The observer watches only an element across the header's width, which neither class resizes, and the
+  // classes change before the page paints.
+  private fitBrand(): void {
+    this.host.classList.add(SiteHeaderResources.measuredClass);
+    this.host.classList.remove(SiteHeaderResources.compactClass);
+    const brand = this.brand().nativeElement;
+    const name = brand.querySelector<HTMLElement>(SiteHeaderResources.lockupName);
+    const isNarrowed = [...brand.querySelectorAll<HTMLElement>(SiteHeaderResources.lockupWordmark)]
+      .some(t => t.getBoundingClientRect().width < t.getBoundingClientRect().height * this.wordmarkRatio() - SiteHeaderResources.fitSlack);
+    this.host.classList.toggle(SiteHeaderResources.compactClass, isNarrowed || (!Object.isNull(name) && name.scrollWidth > name.clientWidth));
   }
 }
