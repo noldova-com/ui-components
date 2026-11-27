@@ -13,6 +13,8 @@ import { AngularPackageBuilder } from "./angular-package-builder.ts";
 import { ApiCatalog } from "./api/api-catalog.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
+import { KitGlyphs } from "./glyphs/kit-glyphs.ts";
+import { PartGlyphs } from "./glyphs/part-glyphs.ts";
 import type PackageInfo from "./package-info.ts";
 import { ArchiveReader } from "./packages/archive.reader.ts";
 import { NodeLoadEntries } from "./packages/node-load-entries.ts";
@@ -115,6 +117,7 @@ export class Build extends Script {
       await this.removeInstalledKitAsync(kit);
       const builder = Build.createBuilder();
       await builder.buildAsync(path.resolve(output));
+      await this.writeFileAsync(path.join(output, KitGlyphs.FILE_NAME), PartGlyphs.render((await KitGlyphs.readAsync(Build.ROOT)).parts));
       const leaks = await new TestingIsolation(Build.ROOT, manifest).findLeaksAsync();
       if (leaks.length > 0)
         throw new CommandFailedException(leaks.join("\n"));
