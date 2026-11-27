@@ -497,7 +497,7 @@ describe("SiteHeaderComponent", () => {
       expect([drawn, single]).toEqual([[mode === "Dark" ? darkIcon : icon], [icon]]);
     });
 
-  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark, the phone gap before the menu button and nothing in the bar overlapping, and the theme switch and Download in the open menu", async () => {
+  it("keeps the lockup's icon and whole wordmark inside its link on a 390px window, with a long wordmark, the theme switch in the bar a phone gap after it and nothing in the bar overlapping, and Download in the open menu", async () => {
     await page.viewport(390, 800);
     await renderAsync(t => {
       t.productIcon.set(icon);
@@ -509,8 +509,8 @@ describe("SiteHeaderComponent", () => {
     const bar = all(".nol-site-header-bar > *").filter(t => getComputedStyle(t).display !== "none" && t.getBoundingClientRect().width > 0).map(t => t.getBoundingClientRect());
     const overlaps = bar.flatMap((t, i) => bar.slice(i + 1).filter(u => t.left < u.right - 1 / 32 && u.left < t.right - 1 / 32 && t.top < u.bottom - 1 / 32 && u.top < t.bottom - 1 / 32));
 
-    expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download"), shown("nol-site-theme-switch")]).toEqual([true, 0, false, false]);
-    expect(box(".nol-site-menu-button").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
+    expect([parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32), overlaps.length, shown(".nol-site-download"), shown("nol-site-theme-switch")]).toEqual([true, 0, false, true]);
+    expect(box("nol-site-theme-switch").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
     AppearanceFixture.expectPixels(DomFixture.at(parts, 1).width, AppearanceFixture.measureLook("site-wordmark") * 26 / 3);
     await openAsync();
 
