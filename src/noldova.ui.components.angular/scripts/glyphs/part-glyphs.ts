@@ -154,14 +154,16 @@ export class PartGlyphs {
   // The inputs, and models, of each part whose value, or each item of it, is an `IconName`, by the selector that places the part.
   private collectIconInputs(source: ts.SourceFile, iconType: ts.Type): void {
     for (const statement of source.statements) {
-      if (!ts.isClassDeclaration(statement))
+      const selector = ts.isClassDeclaration(statement) ? PartGlyphs.textOf(PartGlyphs.componentOf(statement), PartGlyphs.SELECTOR_FIELD) : null;
+      if (!ts.isClassDeclaration(statement) || Object.isNull(selector))
         continue;
-      const selector = PartGlyphs.textOf(PartGlyphs.componentOf(statement), PartGlyphs.SELECTOR_FIELD);
-      for (const member of Object.isNull(selector) ? [] : statement.members) {
+      for (const member of statement.members) {
         const name = this.iconInputOf(member, iconType);
-        for (const part of Object.isNull(name) || Object.isNull(selector) ? [] : selector.split(PartGlyphs.SELECTOR_SEPARATOR))
+        if (Object.isNull(name))
+          continue;
+        for (const part of selector.split(PartGlyphs.SELECTOR_SEPARATOR))
           this.iconInputs.push(new IconInput(part.trim().match(PartGlyphs.SELECTOR_ELEMENT)?.[0] ?? null,
-            [...part.matchAll(PartGlyphs.SELECTOR_ATTRIBUTE)].map(t => t[1] ?? ""), name ?? ""));
+            [...part.matchAll(PartGlyphs.SELECTOR_ATTRIBUTE)].map(t => t[1] ?? ""), name));
       }
     }
   }
