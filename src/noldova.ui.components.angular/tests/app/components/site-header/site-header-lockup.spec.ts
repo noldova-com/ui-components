@@ -160,7 +160,7 @@ describe("SiteHeaderComponent's lockup", () => {
     const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
     const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
 
-    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(7 / referenceRatio) * ratio - 1 / 32);
+    expect(lockup.width).toBeGreaterThanOrEqual(rem(7 / referenceRatio) + rem(0.75) + rem(7 / referenceRatio) * ratio - 1 / 32);
     AppearanceFixture.expectPixels(mark().width, rem(7 / referenceRatio) * ratio);
     expect([theme.width > 0, theme.left - lockup.right >= AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32]).toEqual([true, true]);
   });

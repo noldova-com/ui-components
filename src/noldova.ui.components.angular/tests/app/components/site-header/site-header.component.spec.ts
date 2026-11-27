@@ -459,6 +459,7 @@ describe("SiteHeaderComponent", () => {
         t.productIcon.set(icon);
         t.productIconDark.set(darkIcon);
       }, DefaultTheme.theme, ThemeMode.Dark);
+      document.documentElement.setAttribute("data-nol-theme-mode", "Dark");
       const glyph = box(".nol-site-lockup-icon-dark");
       const word = box(".nol-site-wordmark");
 
