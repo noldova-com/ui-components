@@ -119,19 +119,28 @@ describe("SiteHeaderComponent's lockup", () => {
     AppearanceFixture.expectPixels(mark().left - iconBox.right, rem(0.75));
   });
 
-  for (const theme of AppearanceFixture.themes)
-    for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
-      it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, the icon's top and bottom on its own, in the ${theme.id} theme in a header ${size.width} pixels wide`, async () => {
+  for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
+    it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
+      await page.viewport(size.width, 800);
+      await renderAsync();
+
+      AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
+      AppearanceFixture.expectPixels(mark().height, rem(size.height));
+      AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
+    });
+
+    for (const theme of AppearanceFixture.themes)
+      it(`draws the icon's top and bottom on a large wordmark's as high as the reference wordmark ${size.referenceWidth}rem wide, in the ${theme.id} theme in a header ${size.width} pixels wide`, async () => {
         await page.viewport(size.width, 800);
         await renderAsync(() => undefined, theme);
+        const glyph = DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect();
 
-        AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
         AppearanceFixture.expectPixels(mark().height, rem(size.height));
-        AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
-        AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().top, mark().top);
-        AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().bottom, mark().bottom);
+        AppearanceFixture.expectPixels(glyph.top, mark().top);
+        AppearanceFixture.expectPixels(glyph.bottom, mark().bottom);
+        AppearanceFixture.expectPixels(glyph.width, mark().height);
       });
-    }
+  }
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(760, 8.25), new LargeWidth(360, 7)]) {
     it(`draws the reference wordmark ${size.referenceWidth}rem wide in a header ${size.width} pixels wide`, async () => {
