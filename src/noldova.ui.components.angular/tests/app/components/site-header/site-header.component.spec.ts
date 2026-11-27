@@ -432,50 +432,53 @@ describe("SiteHeaderComponent", () => {
     expect([maybe(".nol-site-lockup-icon"), box(".nol-site-wordmark").left - box(".nol-site-lockup-link").left]).toEqual([null, 0]);
   });
 
-  for (const width of [1280, 600, 390])
-    it(`draws the product's icon as a square as high as the wordmark, its top and bottom on the wordmark's, a space-3 step before it, inside the lockup's link, on a ${width}px window`, async () => {
-      await page.viewport(width, 800);
-      await renderAsync(t => t.productIcon.set(icon));
-      const mark = DomFixture.oneOf(header(), "img.nol-site-lockup-icon", HTMLImageElement);
-      const glyph = mark.getBoundingClientRect();
-      const word = box(".nol-site-wordmark");
-      const link = box(".nol-site-lockup-link");
-      const size = AppearanceFixture.measureLook("site-wordmark");
+  for (const theme of AppearanceFixture.themes)
+    for (const width of [1280, 600, 390])
+      it(`draws the product's icon as a square as high as the wordmark, its top and bottom on the wordmark's, a space-3 step before it, inside the lockup's link, in the ${theme.id} theme on a ${width}px window`, async () => {
+        await page.viewport(width, 800);
+        await renderAsync(t => t.productIcon.set(icon), theme);
+        const mark = DomFixture.oneOf(header(), "img.nol-site-lockup-icon", HTMLImageElement);
+        const glyph = mark.getBoundingClientRect();
+        const word = box(".nol-site-wordmark");
+        const link = box(".nol-site-lockup-link");
+        const size = AppearanceFixture.measureLook("site-wordmark");
 
-      AppearanceFixture.expectPixels(glyph.width, size);
-      AppearanceFixture.expectPixels(glyph.height, size);
-      AppearanceFixture.expectPixels(glyph.top, word.top);
-      AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
-      AppearanceFixture.expectPixels(word.left - glyph.right, AppearanceFixture.measureLook("space-3"));
-      AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, word.top + word.height / 2);
-      expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "Example home"]);
-      expect([glyph.left >= link.left - 1 / 32, word.right <= link.right + 1 / 32]).toEqual([true, true]);
+        AppearanceFixture.expectPixels(glyph.width, size);
+        AppearanceFixture.expectPixels(glyph.height, size);
+        AppearanceFixture.expectPixels(glyph.top, word.top);
+        AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
+        AppearanceFixture.expectPixels(word.left - glyph.right, AppearanceFixture.measureLook("space-3"));
+        AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, word.top + word.height / 2);
+        expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "Example home"]);
+        expect([glyph.left >= link.left - 1 / 32, word.right <= link.right + 1 / 32]).toEqual([true, true]);
+      });
+
+  for (const theme of AppearanceFixture.themes)
+    for (const width of [1280, 390])
+      it(`draws the dark icon in dark mode with its top and bottom on the wordmark's, in the ${theme.id} theme on a ${width}px window`, async () => {
+        await page.viewport(width, 800);
+        await renderAsync(t => {
+          t.productIcon.set(icon);
+          t.productIconDark.set(darkIcon);
+        }, theme, ThemeMode.Dark);
+        document.documentElement.setAttribute("data-nol-theme-mode", "Dark");
+        const glyph = box(".nol-site-lockup-icon-dark");
+        const word = box(".nol-site-wordmark");
+
+        expect(getComputedStyle(part(".nol-site-lockup-icon-light")).display).toBe("none");
+        AppearanceFixture.expectPixels(glyph.top, word.top);
+        AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
+        AppearanceFixture.expectPixels(glyph.width, word.height);
+      });
+
+  for (const theme of AppearanceFixture.themes)
+    it(`holds the icon's box before its file loads, so the wordmark doesn't move when it does, in the ${theme.id} theme`, async () => {
+      await renderAsync(t => t.productIcon.set(unreadable), theme);
+      const glyph = box(".nol-site-lockup-icon");
+
+      AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-wordmark"));
+      AppearanceFixture.expectPixels(box(".nol-site-wordmark").left - glyph.right, AppearanceFixture.measureLook("space-3"));
     });
-
-  for (const width of [1280, 390])
-    it(`draws the dark icon in dark mode with its top and bottom on the wordmark's, on a ${width}px window`, async () => {
-      await page.viewport(width, 800);
-      await renderAsync(t => {
-        t.productIcon.set(icon);
-        t.productIconDark.set(darkIcon);
-      }, DefaultTheme.theme, ThemeMode.Dark);
-      document.documentElement.setAttribute("data-nol-theme-mode", "Dark");
-      const glyph = box(".nol-site-lockup-icon-dark");
-      const word = box(".nol-site-wordmark");
-
-      expect(getComputedStyle(part(".nol-site-lockup-icon-light")).display).toBe("none");
-      AppearanceFixture.expectPixels(glyph.top, word.top);
-      AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
-      AppearanceFixture.expectPixels(glyph.width, word.height);
-    });
-
-  it("holds the icon's box before its file loads, so the wordmark doesn't move when it does", async () => {
-    await renderAsync(t => t.productIcon.set(unreadable));
-    const glyph = box(".nol-site-lockup-icon");
-
-    AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-wordmark"));
-    AppearanceFixture.expectPixels(box(".nol-site-wordmark").left - glyph.right, AppearanceFixture.measureLook("space-3"));
-  });
 
   for (const mode of ["Light", "Dark"])
     it(`draws the ${mode === "Dark" ? "dark" : "light"} icon alone when the site passes both and the page is in ${mode} mode, and the one icon in either mode without a dark one`, async () => {

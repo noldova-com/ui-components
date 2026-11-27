@@ -61,12 +61,12 @@ describe("SiteHeaderComponent's lockup", () => {
   const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteHeaderLockupHostComponent>;
 
-  async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
-    await renderInAsync(ThemeMode.Light, change);
+  async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined, theme = DefaultTheme.theme): Promise<void> {
+    await renderInAsync(ThemeMode.Light, change, theme);
   }
 
-  async function renderInAsync(mode: ThemeMode, change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
-    AppearanceFixture.apply(DefaultTheme.theme, mode);
+  async function renderInAsync(mode: ThemeMode, change: (host: SiteHeaderLockupHostComponent) => void = () => undefined, theme = DefaultTheme.theme): Promise<void> {
+    AppearanceFixture.apply(theme, mode);
     fixture = TestBed.createComponent(SiteHeaderLockupHostComponent);
     change(fixture.componentInstance);
     fixture.detectChanges();
@@ -119,18 +119,19 @@ describe("SiteHeaderComponent's lockup", () => {
     AppearanceFixture.expectPixels(mark().left - iconBox.right, rem(0.75));
   });
 
-  for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
-    it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, the icon's top and bottom on its own, in a header ${size.width} pixels wide`, async () => {
-      await page.viewport(size.width, 800);
-      await renderAsync();
+  for (const theme of AppearanceFixture.themes)
+    for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
+      it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, the icon's top and bottom on its own, in the ${theme.id} theme in a header ${size.width} pixels wide`, async () => {
+        await page.viewport(size.width, 800);
+        await renderAsync(() => undefined, theme);
 
-      AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
-      AppearanceFixture.expectPixels(mark().height, rem(size.height));
-      AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
-      AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().top, mark().top);
-      AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().bottom, mark().bottom);
-    });
-  }
+        AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
+        AppearanceFixture.expectPixels(mark().height, rem(size.height));
+        AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
+        AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().top, mark().top);
+        AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().bottom, mark().bottom);
+      });
+    }
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(760, 8.25), new LargeWidth(360, 7)]) {
     it(`draws the reference wordmark ${size.referenceWidth}rem wide in a header ${size.width} pixels wide`, async () => {

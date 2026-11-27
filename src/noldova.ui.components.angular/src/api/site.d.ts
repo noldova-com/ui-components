@@ -200,7 +200,7 @@ export declare class SiteClosingComponent {
  * @Component({
  *   selector: "nol-page-footer",
  *   imports: [SiteFooterComponent],
- *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
+ *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"Example\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
  * })
  * export class PageFooterComponent {
  *   protected readonly groups: readonly SiteLinkGroup[] = [new SiteLinkGroup("Product", [new SiteLink("Download", "/download")])];
@@ -224,8 +224,8 @@ export declare class SiteFooterComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -236,7 +236,7 @@ export declare class SiteFooterComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
-   * The lockup link's accessible name, such as `TeamRun home`; null, the
+   * The lockup link's accessible name, such as `Example home`; null, the
    * default, names it from `name`, or `Noldova home` without one. A site that
    * draws its own wordmark passes no `name` and names the link here.
    */
@@ -317,7 +317,7 @@ export declare class SiteFooterComponent {
  * @Component({
  *   selector: "nol-page-header",
  *   imports: [SiteHeaderComponent],
- *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
+ *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"Example\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
  * })
  * export class PageHeaderComponent {
  *   protected readonly links: readonly SiteLink[] = [new SiteLink("Features", "/features", true), new SiteLink("Docs", "/docs")];
@@ -342,8 +342,8 @@ export declare class SiteHeaderComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -355,7 +355,7 @@ export declare class SiteHeaderComponent {
 
   /**
    * The lockup link's accessible name, such as `UI Components docs home`;
-   * null, the default, names it from `name`, as `TeamRun home`, or
+   * null, the default, names it from `name`, as `Example home`, or
    * `Noldova home` without one. A site whose wordmark or icon already shows
    * the product's name passes no `name`, so the name isn't drawn twice, and
    * names the link here.
@@ -365,7 +365,7 @@ export declare class SiteHeaderComponent {
   /**
    * The wordmark's size: `SiteWordmarkSize.Small`, the default, for the
    * Noldova wordmark, or `SiteWordmarkSize.Large` for a product's own
-   * wordmark, such as TeamRun's.
+   * wordmark.
    */
   public readonly wordmarkSize: InputSignal<SiteWordmarkSize>;
 
@@ -766,9 +766,9 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as TeamRun's header draws its
-   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
-   * 47.5rem wide and 7rem in one at most 22.5rem wide.
+   * A product's own wordmark, as high as one in the proportions 1335.64 by
+   * 201.396 is when 9.125rem wide, 8.25rem in a header at most 47.5rem wide
+   * and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"
 }

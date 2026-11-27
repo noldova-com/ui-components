@@ -16,9 +16,8 @@
   max-width: 100%;
 }
 
-/* A product's own wordmark, such as TeamRun's, as high as TeamRun's own header draws its wordmark: 9.125rem wide in
- * its file's proportions (1335.64 by 201.396), 8.25rem in a header at most 47.5rem wide and 7rem in one at most 22.5rem
- * wide. */
+/* A product's own wordmark, as high as one in the proportions 1335.64 by 201.396 is when 9.125rem wide, 8.25rem in a
+ * header at most 47.5rem wide and 7rem in one at most 22.5rem wide. */
 :host(.nol-site-lockup-large) {
   --nol-site-lockup-wordmark: calc(9.125rem * 201.396 / 1335.64);
 }
@@ -109,8 +108,8 @@
   }
 }
 
-/* A large wordmark's box is as wide as its height in the proportions the site gives, as TeamRun sizes its own by width, so
- * TeamRun's comes out exactly 9.125rem, 8.25rem or 7rem wide with its height cut to the layout's step below, as there. */
+/* A large wordmark's box is as wide as its height in the proportions the site gives, so a wordmark in the proportions
+ * 1335.64 by 201.396 comes out exactly 9.125rem, 8.25rem or 7rem wide with its height cut to the layout's step below. */
 :host(.nol-site-lockup-large) .nol-site-wordmark {
   width: calc(var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
 }
