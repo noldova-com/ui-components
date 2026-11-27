@@ -18,6 +18,8 @@ import type { LinkReferenceStatus } from "../../models/link-reference-status.js"
 import { LinkMenuEvent } from "../../models/link-menu-event.js";
 import { LinkOpenEvent } from "../../models/link-open-event.js";
 import { MessageTime } from "../../models/message-time.js";
+import { TimeFormatTokens } from "../../models/time-format-tokens.js";
+import type { TimeFormats } from "../../models/time-formats.js";
 import type { ClockTicker } from "../../services/clock-ticker.js";
 import { SharedClock } from "../../services/shared-clock.js";
 import { Resources } from "../../../resources.js";
@@ -41,6 +43,7 @@ import { LinkReferenceWorkItemStateComponent } from "./link-reference-work-item-
 export class LinkReferenceCardComponent {
   private readonly locale: string = inject(LOCALE_ID);
   private readonly clock: ClockTicker = inject(SharedClock).every(Resources.messageClockInterval);
+  private readonly formats: Signal<TimeFormats> = inject(TimeFormatTokens.formats);
 
   protected readonly resources: typeof Resources = Resources;
   protected readonly partResources: typeof LinkReferenceCardResources = LinkReferenceCardResources;
@@ -52,7 +55,7 @@ export class LinkReferenceCardComponent {
     if (Object.isNull(time))
       return null;
     const times = MessageTime.of(this.locale, false);
-    return { short: times.shortRelativeOf(time, this.clock.now()), full: times.absoluteOf(time) };
+    return { short: times.shortRelativeOf(time, this.clock.now()), full: this.formats().full?.(time) ?? times.absoluteOf(time) };
   });
   protected readonly hasFoot: Signal<boolean> = computed(() => {
     const { author, diff, comments, duration, action, statuses, footnote, workItemState } = this.reference();
