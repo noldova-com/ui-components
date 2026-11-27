@@ -12551,6 +12551,7 @@ export declare class SiteStageService {
    * such as a `mailto:` address, and one that names a stage already.
    *
    * @param href The address, as production writes it.
+   * @returns The address at the page's stage.
    */
   public address(href: string): string;
 
@@ -12559,6 +12560,7 @@ export declare class SiteStageService {
    * label, current mark and icon kept.
    *
    * @param link The link, as production writes it.
+   * @returns A new link at the page's stage.
    */
   public link(link: SiteLink): SiteLink;
 }
