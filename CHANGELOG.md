@@ -4,6 +4,10 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.38
+
+- `@noldova/ui.components.angular`: a site section takes a `shot`, a `SiteShot` drawn as the hero draws its own: a framed image for each theme, with its 2× file in `srcset`, the shell's width in `sizes`, its width, height and alt text, loaded lazily. It stands at the shell's full width, 2.625rem under the section's content, 1.8125rem below 47.5em, or in the content's place when there is none; null, the default, draws none. The section's entry, `/site/section`, exports `SiteShot` too (#199).
+
 ## 0.0.37
 
 - `@noldova/ui.components.angular`: the site package tells the page's stage from its host and gives addresses and links at that stage. `SiteStage` is `Production`, `Sandbox` or `Staging`. `SiteStageService.stage` is `Sandbox` or `Staging` when that label stands just before `noldova.com` or `noldova.dev` in the host, and `Production` otherwise, the prerender included. `address(href)` adds the stage's label to an absolute address on those domains that names none, and `link(link)` gives a `SiteLink` at that address. The site footer's Noldova link and the docs site's Privacy link follow the stage (#193).
