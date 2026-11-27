@@ -13,6 +13,7 @@ import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
 import type { SiteLinkGroup } from "../../models/site-link-group.js";
 import { SiteLockupComponent } from "../site-lockup/site-lockup.component.js";
 import { SiteLockupResources } from "../site-lockup/site-lockup.resources.js";
+import { SiteFooterLogoResources } from "./site-footer-logo.resources.js";
 import { SiteFooterResources } from "./site-footer.resources.js";
 
 @Component({
@@ -39,6 +40,7 @@ export class SiteFooterComponent {
   public readonly wide = input<boolean>(false);
 
   protected readonly partResources: typeof SiteFooterResources = SiteFooterResources;
+  protected readonly logoResources: typeof SiteFooterLogoResources = SiteFooterLogoResources;
   protected readonly year: number = new Date().getFullYear();
 
   protected maskOf(icon: string): string {

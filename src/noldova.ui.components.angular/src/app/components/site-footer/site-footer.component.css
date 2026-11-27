@@ -134,6 +134,14 @@
   text-decoration: none;
 }
 
+/* Noldova's logo in place of its name: as high as the notice's capitals, on its baseline, so it reads as the word did. */
+.nol-site-footer-logo {
+  display: inline-block;
+  block-size: 1cap;
+  inline-size: calc(1cap * 1311.818 / 197.396);
+  vertical-align: baseline;
+}
+
 .nol-site-footer-owner::before {
   content: "";
   position: absolute;

@@ -8,7 +8,7 @@
 
 import { Component, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { page } from "vitest/browser";
+import { commands, page } from "vitest/browser";
 
 import { SiteFooterComponent } from "../../../../src/app/components/site-footer/site-footer.component";
 import { SiteWordmarkSize } from "../../../../src/app/enums/site-wordmark-size";
@@ -182,13 +182,43 @@ describe("SiteFooterComponent", () => {
       .toEqual(["underline", color("text-strong"), color("accent")]);
   });
 
-  it(`says © ${new Date().getFullYear()} Noldova at the bottom by default, Noldova linking to noldova.com in the notice's color`, async () => {
+  it(`says © ${new Date().getFullYear()} and Noldova's logo at the bottom by default, the logo the kit's own file, linking to noldova.com as Noldova in the notice's color`, async () => {
     await renderAsync();
     const owner = part(".nol-site-footer-owner");
+    const logo = DomFixture.one(owner, "svg.nol-site-footer-logo");
+    const file = new DOMParser().parseFromString(await commands.readFile("../../assets/brand/noldova-wordmark.svg"), "image/svg+xml");
+    const drawn = DomFixture.one(logo, "path");
+    const source = DomFixture.one(file.documentElement, "path");
 
-    expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent, owner.getAttribute("href"), getComputedStyle(owner).color, getComputedStyle(owner).textDecorationLine])
-      .toEqual([`© ${new Date().getFullYear()} Noldova`, "Noldova", "https://noldova.com", color("text-muted"), "none"]);
+    expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent?.trim(), owner.getAttribute("aria-label"), owner.getAttribute("href"), getComputedStyle(owner).color,
+      getComputedStyle(owner).textDecorationLine, logo.getAttribute("aria-hidden"), getComputedStyle(drawn).fill])
+      .toEqual([`© ${new Date().getFullYear()}`, "", "Noldova", "https://noldova.com", color("text-muted"), "none", "true", color("text-muted")]);
+    expect([logo.getAttribute("viewBox"), drawn.getAttribute("d"), drawn.getAttribute("fill-rule")])
+      .toEqual([file.documentElement.getAttribute("viewBox"), source.getAttribute("d"), source.getAttribute("fill-rule")]);
   });
+
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws Noldova's logo in the notice's color in the ${theme.id} theme in ${mode} mode, as high as the notice's capitals, on its baseline, in the logo's proportions`, async () => {
+        await renderAsync(() => undefined, theme, mode);
+        const notice = part(".nol-site-footer-notice");
+        const logo = part("svg.nol-site-footer-logo");
+        const capitals = document.createElement("span");
+        capitals.style.cssText = "display: inline-block; block-size: 1cap; inline-size: 0";
+        notice.append(capitals);
+        const line = notice.getBoundingClientRect();
+        const cap = capitals.getBoundingClientRect();
+        const drawn = logo.getBoundingClientRect();
+        capitals.remove();
+        const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+        expect(getComputedStyle(DomFixture.one(logo, "path")).fill).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        expect(cap.height / rem).toBeGreaterThan(0.5);
+        AppearanceFixture.expectPixels(drawn.height, cap.height);
+        AppearanceFixture.expectPixels(drawn.bottom, cap.bottom);
+        AppearanceFixture.expectPixels(drawn.width, drawn.height * 1311.818 / 197.396);
+        expect([drawn.top >= line.top, drawn.bottom <= line.bottom]).toEqual([true, true]);
+      });
 
   it("underlines the notice's link in the strong text color when hovered, and outlines it in the accent color when focused", async () => {
     await renderAsync();
