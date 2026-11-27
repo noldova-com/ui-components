@@ -433,28 +433,46 @@ describe("SiteHeaderComponent", () => {
   });
 
   for (const width of [1280, 600, 390])
-    it(`draws the product's icon at the site icon size a space-3 step before the wordmark, centred on it, inside the lockup's link, on a ${width}px window`, async () => {
+    it(`draws the product's icon as a square as high as the wordmark, its top and bottom on the wordmark's, a space-3 step before it, inside the lockup's link, on a ${width}px window`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => t.productIcon.set(icon));
       const mark = DomFixture.oneOf(header(), "img.nol-site-lockup-icon", HTMLImageElement);
       const glyph = mark.getBoundingClientRect();
       const word = box(".nol-site-wordmark");
       const link = box(".nol-site-lockup-link");
-      const size = AppearanceFixture.measureLook("site-icon");
+      const size = AppearanceFixture.measureLook("site-wordmark");
 
       AppearanceFixture.expectPixels(glyph.width, size);
       AppearanceFixture.expectPixels(glyph.height, size);
+      AppearanceFixture.expectPixels(glyph.top, word.top);
+      AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
       AppearanceFixture.expectPixels(word.left - glyph.right, AppearanceFixture.measureLook("space-3"));
       AppearanceFixture.expectPixels(glyph.top + glyph.height / 2, word.top + word.height / 2);
       expect([mark.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label")]).toEqual(["", "Example home"]);
       expect([glyph.left >= link.left - 1 / 32, word.right <= link.right + 1 / 32]).toEqual([true, true]);
     });
 
+  for (const width of [1280, 390])
+    it(`draws the dark icon in dark mode with its top and bottom on the wordmark's, on a ${width}px window`, async () => {
+      await page.viewport(width, 800);
+      await renderAsync(t => {
+        t.productIcon.set(icon);
+        t.productIconDark.set(darkIcon);
+      }, DefaultTheme.theme, ThemeMode.Dark);
+      const glyph = box(".nol-site-lockup-icon-dark");
+      const word = box(".nol-site-wordmark");
+
+      expect(getComputedStyle(part(".nol-site-lockup-icon-light")).display).toBe("none");
+      AppearanceFixture.expectPixels(glyph.top, word.top);
+      AppearanceFixture.expectPixels(glyph.bottom, word.bottom);
+      AppearanceFixture.expectPixels(glyph.width, word.height);
+    });
+
   it("holds the icon's box before its file loads, so the wordmark doesn't move when it does", async () => {
     await renderAsync(t => t.productIcon.set(unreadable));
     const glyph = box(".nol-site-lockup-icon");
 
-    AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-icon"));
+    AppearanceFixture.expectPixels(glyph.width, AppearanceFixture.measureLook("site-wordmark"));
     AppearanceFixture.expectPixels(box(".nol-site-wordmark").left - glyph.right, AppearanceFixture.measureLook("space-3"));
   });
 
@@ -507,7 +525,7 @@ describe("SiteHeaderComponent", () => {
 
     expect([shown(".nol-site-download"), parts.every(t => t.left >= link.left - 1 / 32 && t.right <= link.right + 1 / 32)]).toEqual([true, true]);
     expect(box(".nol-site-download").left - box("nol-site-lockup").right).toBeGreaterThanOrEqual(AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32);
-    AppearanceFixture.expectPixels(DomFixture.at(parts, 0).width, AppearanceFixture.measureLook("site-icon"));
+    AppearanceFixture.expectPixels(DomFixture.at(parts, 0).width, AppearanceFixture.measureLook("site-wordmark"));
     AppearanceFixture.expectPixels(wordmark.height, AppearanceFixture.measureLook("site-wordmark"));
     expect(wordmark.width).toBeLessThan(AppearanceFixture.measureLook("site-wordmark") * 24 - 1);
     expect(getComputedStyle(part(".nol-site-wordmark")).maskSize).toBe("contain");

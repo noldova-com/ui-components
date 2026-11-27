@@ -120,13 +120,15 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(761, 9.125), new LargeWidth(760, 8.25), new LargeWidth(375, 8.25), new LargeWidth(361, 8.25), new LargeWidth(360, 7)]) {
-    it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, in a header ${size.width} pixels wide`, async () => {
+    it(`draws a large wordmark as high as the reference wordmark ${size.referenceWidth}rem wide, in its file's proportions, the icon's top and bottom on its own, in a header ${size.width} pixels wide`, async () => {
       await page.viewport(size.width, 800);
       await renderAsync();
 
       AppearanceFixture.expectPixels(header().getBoundingClientRect().width, size.width);
       AppearanceFixture.expectPixels(mark().height, rem(size.height));
       AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
+      AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().top, mark().top);
+      AppearanceFixture.expectPixels(DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect().bottom, mark().bottom);
     });
   }
 

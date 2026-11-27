@@ -36,7 +36,7 @@
 }
 
 :host(.nol-site-lockup-with-icon) {
-  --nol-site-lockup-marks: calc(var(--nol-site-icon) + var(--nol-space-3) + var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
+  --nol-site-lockup-marks: calc(var(--nol-site-lockup-wordmark) + var(--nol-space-3) + var(--nol-site-lockup-wordmark) * var(--nol-site-lockup-ratio));
 }
 
 .nol-site-lockup-link {
@@ -59,11 +59,13 @@
   }
 }
 
+/* The icon is a square as high as the wordmark, so a product's icon and wordmark, each drawn to its file's edges, stand
+ * on the same lines. */
 .nol-site-lockup-icon {
   display: block;
   flex: none;
-  width: var(--nol-site-icon);
-  height: var(--nol-site-icon);
+  width: var(--nol-site-lockup-wordmark);
+  height: var(--nol-site-lockup-wordmark);
   margin-inline-end: calc(var(--nol-space-3) - var(--nol-space-2));
 }
 
@@ -114,7 +116,7 @@
 }
 
 :host(.nol-site-lockup-with-icon) .nol-site-wordmark {
-  max-width: calc(100% - var(--nol-site-icon) - var(--nol-space-3));
+  max-width: calc(100% - var(--nol-site-lockup-wordmark) - var(--nol-space-3));
 }
 
 .nol-site-wordmark-size {
