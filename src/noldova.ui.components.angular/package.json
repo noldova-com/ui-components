@@ -84,12 +84,14 @@
     },
     "./styles/*": "./styles/*",
     "./fonts/*": "./fonts/*",
+    "./glyphs.json": "./glyphs.json",
     "./package.json": "./package.json"
   },
   "files": [
     "**/*.js",
     "**/*.js.map",
     "**/*.d.ts",
+    "glyphs.json",
     "styles/",
     "fonts/"
   ],

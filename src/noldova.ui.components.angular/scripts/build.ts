@@ -10,6 +10,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { AngularPackageBuilder } from "./angular-package-builder.ts";
+import { JsonFields } from "./angular/json-fields.ts";
 import { ApiCatalog } from "./api/api-catalog.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
@@ -17,6 +18,7 @@ import type PackageInfo from "./package-info.ts";
 import { ArchiveReader } from "./packages/archive.reader.ts";
 import { NodeLoadEntries } from "./packages/node-load-entries.ts";
 import { PackageBuilder } from "./packages/package-builder.ts";
+import { PackageFile } from "./packages/package-file.ts";
 import { PackageManifest } from "./packages/package-manifest.ts";
 import { PeerRange } from "./packages/peer-range.ts";
 import { TestingIsolation } from "./packages/testing-isolation.ts";
@@ -43,6 +45,8 @@ export class Build extends Script {
   private static readonly ROOT: string = path.resolve(Config.ROOT);
   private static readonly BROWSER_SUBJECT: string = "The browser for the Angular tests";
   private static readonly PACKAGE_MANIFEST_FILE_NAME: string = "package.json";
+  private static readonly PEERS_FIELD: string = "peerDependencies";
+  private static readonly DEVELOPMENT_FIELD: string = "devDependencies";
   private static readonly LICENSE_FILE_NAME: string = "LICENSE";
   private static readonly SCRIPTS_PROJECT: string = "scripts/tsconfig.json";
   private static readonly NODE_LOAD_SCRIPT: string = "tests/fixtures/node-load/load.mts";
@@ -115,12 +119,13 @@ export class Build extends Script {
       await this.removeInstalledKitAsync(kit);
       const builder = Build.createBuilder();
       await builder.buildAsync(path.resolve(output));
+      const glyphs = await this.writeGlyphsAsync(output);
       const leaks = await new TestingIsolation(Build.ROOT, manifest).findLeaksAsync();
       if (leaks.length > 0)
         throw new CommandFailedException(leaks.join("\n"));
       await this.copyReadmeFileAsync(kit);
       await this.finishPackageAsync(output, version, commit);
-      await this.compareArchiveAsync(await builder.listInputsAsync(), archive);
+      await this.compareArchiveAsync(await builder.listInputsAsync(), [glyphs], archive);
       await this.installAsync(kit, archive);
     });
     await this.runStepAsync(Build.loadingInNode(kit.packageName), async () => {
@@ -130,9 +135,9 @@ export class Build extends Script {
       await this.executeProcessAsync(process.execPath, [Build.NODE_LOAD_SCRIPT], process.cwd(), true);
       await this.executeTypeScriptCompilerAsync([Build.TYPESCRIPT_PROJECT_OPTION, Build.NODE_LOAD_PROJECT]);
     });
-    const peers = await this.readPeersAsync(path.join(Config.BUILD_FOLDER, kit.name, Build.PACKAGE_MANIFEST_FILE_NAME));
+    const peers = await this.readDependenciesAsync(path.join(Config.BUILD_FOLDER, kit.name, Build.PACKAGE_MANIFEST_FILE_NAME), Build.PEERS_FIELD);
     await this.runStepAsync(Build.resolvingFreshInstall(kit.packageName), async () => {
-      await this.resolveFreshInstallAsync([path.resolve(archive), ...Object.entries(peers).map(([name, version]) => `${name}@${PeerRange.lowestOf(version)}`)]);
+      await this.resolveFreshInstallAsync([path.resolve(archive), ...[...peers].map(([name, version]) => `${name}@${PeerRange.lowestOf(version)}`)]);
     });
     await this.runStepAsync(Build.resolvingFreshInstallAlone(kit.packageName), async () => {
       await this.resolveFreshInstallAsync([path.resolve(archive)]);
@@ -143,21 +148,23 @@ export class Build extends Script {
     }
     await this.runStepAsync(Build.addingBuildTools(kit.packageName), async () => {
       // At the kit's own development pin of the build tools.
-      const tools = (await this.readDevelopmentPinsAsync(Build.PACKAGE_MANIFEST_FILE_NAME))[Build.ANGULAR_BUILD_TOOLS];
+      const tools = (await this.readDependenciesAsync(Build.PACKAGE_MANIFEST_FILE_NAME, Build.DEVELOPMENT_FIELD)).get(Build.ANGULAR_BUILD_TOOLS);
       if (tools === undefined)
         throw new CommandFailedException(Build.missingPin(kit.packageName, Build.ANGULAR_BUILD_TOOLS));
       await this.executeNPMCommandAsync([...Build.APP_INSTALL_ARGUMENTS, Build.SAVE_DEV_OPTION, `${Build.ANGULAR_BUILD_TOOLS}@${tools}`], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
     });
   }
 
-  private async readPeersAsync(manifest: string): Promise<Readonly<Record<string, string>>> {
-    const fields = JSON.parse(await this.readFileAsync(manifest)) as { readonly peerDependencies?: Readonly<Record<string, string>> };
-    return fields.peerDependencies ?? {};
-  }
-
-  private async readDevelopmentPinsAsync(manifest: string): Promise<Readonly<Record<string, string>>> {
-    const fields = JSON.parse(await this.readFileAsync(manifest)) as { readonly devDependencies?: Readonly<Record<string, string>> };
-    return fields.devDependencies ?? {};
+  // A manifest's dependencies of one kind, such as its peers, by name; none when it names none.
+  private async readDependenciesAsync(manifest: string, field: string): Promise<ReadonlyMap<string, string>> {
+    const fields = JsonFields.parse(await this.readFileAsync(manifest), manifest);
+    const dependencies = new Map<string, string>();
+    if (!fields.has(field))
+      return dependencies;
+    const named = fields.object(field);
+    for (const name of named.names())
+      dependencies.set(name, named.text(name));
+    return dependencies;
   }
 
   private async resolveFreshInstallAsync(packages: readonly string[]): Promise<void> {
@@ -166,6 +173,15 @@ export class Build extends Script {
     await this.writeFileAsync(path.join(Build.FRESH_INSTALL_FOLDER, Build.PACKAGE_MANIFEST_FILE_NAME), Build.FRESH_INSTALL_MANIFEST);
     await this.copyFileAsync(path.join(Build.ROOT, Build.NPM_CONFIG_FILE_NAME), path.join(Build.FRESH_INSTALL_FOLDER, Build.NPM_CONFIG_FILE_NAME));
     await this.executeNPMCommandAsync([...Build.FRESH_INSTALL_ARGUMENTS, ...packages], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
+  }
+
+  // The glyphs.json it writes, and its name in the package.
+  private async writeGlyphsAsync(output: string): Promise<PackageFile> {
+    const { KitGlyphs } = await import("./glyphs/kit-glyphs.ts");
+    const { PartGlyphs } = await import("./glyphs/part-glyphs.ts");
+    const file = path.join(output, KitGlyphs.FILE_NAME);
+    await this.writeFileAsync(file, PartGlyphs.render((await KitGlyphs.readAsync(Build.ROOT)).parts));
+    return new PackageFile(file, KitGlyphs.FILE_NAME);
   }
 
   private async compareApisAsync(): Promise<void> {
@@ -208,19 +224,20 @@ export class Build extends Script {
 
   private async listCopiesAsync(): Promise<void> {
     const kit = Config.KIT_INFO;
-    const copies: (readonly [string, string])[] = [[Build.LICENSE_FILE_NAME, Build.LICENSE_FILE_NAME]];
+    const copies: PackageFile[] = [new PackageFile(Build.LICENSE_FILE_NAME, Build.LICENSE_FILE_NAME)];
     if (await this.pathExistsAsync(Build.README_FILE_NAME))
-      copies.push([Build.describe(path.resolve(Build.README_FILE_NAME)), Build.README_FILE_NAME]);
-    for (const [file, entry] of await new PackageBuilder(Build.ROOT).listCopiesAsync(await Build.createBuilder().listInputsAsync()))
-      copies.push([Build.describe(file), entry]);
-    for (const [source, entry] of copies)
-      process.stdout.write(`${source}\t${kit.packageName}\t${entry}\n`);
+      copies.push(new PackageFile(Build.describe(path.resolve(Build.README_FILE_NAME)), Build.README_FILE_NAME));
+    for (const copy of await new PackageBuilder(Build.ROOT).listCopiesAsync(await Build.createBuilder().listInputsAsync()))
+      copies.push(new PackageFile(Build.describe(copy.source), copy.name));
+    for (const copy of copies)
+      process.stdout.write(`${copy.source}\t${kit.packageName}\t${copy.name}\n`);
     process.stdout.write(`${Build.LIST_COPIES_END_LINE}\n`);
   }
 
-  private async compareArchiveAsync(inputs: readonly string[], archive: string): Promise<void> {
+  // The archive holds a copy of each input, and each file the build writes, such as glyphs.json.
+  private async compareArchiveAsync(inputs: readonly string[], written: readonly PackageFile[], archive: string): Promise<void> {
     const packages = new PackageBuilder(Build.ROOT);
-    const differences = await packages.findArchiveDifferencesAsync(await packages.listCopiesAsync(inputs), path.resolve(archive));
+    const differences = await packages.findArchiveDifferencesAsync([...await packages.listCopiesAsync(inputs), ...written], path.resolve(archive));
     if (differences.length > 0)
       throw new CommandFailedException(differences.join("\n"));
   }

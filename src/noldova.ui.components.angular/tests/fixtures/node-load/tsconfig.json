@@ -11,6 +11,7 @@
     "strict": true,
     "skipLibCheck": false,
     "noEmit": true,
+    "resolveJsonModule": true,
     "types": []
   },
   "files": [

@@ -19,8 +19,9 @@ export class NodeLoadEntries {
   private static readonly RELATIVE_PREFIX: string = ".";
   private static readonly TYPES_FIELD: string = "types";
   private static readonly SKIPPED: readonly string[] = ["./testing"];
-  private static readonly LOAD: RegExp = /await import\("([^"]+)"\);/g;
-  private static readonly RULE: string = "the build loads every entry of the kit's package.json exports but the testing entry in Node.js, each with its own await import, as the README, Build and test, says.";
+  private static readonly JSON_FILE: string = ".json";
+  private static readonly LOAD: RegExp = /await import\("([^"]+)"(?:, \{ with: \{ type: "json" \} \})?\);/g;
+  private static readonly RULE: string = "the build loads every entry of the kit's package.json exports but the testing entry in Node.js, each with its own await import, a JSON file's as JSON, as the README, Build and test, says.";
 
   private readonly root: string;
   private readonly manifest: PackageManifest;
@@ -40,13 +41,13 @@ export class NodeLoadEntries {
     const shown = this.describe(this.script);
     return [
       ...[...entries].filter(t => !loaded.has(t)).map(t => `${shown}: loads no ${t}, though ${listed} exports it; ${NodeLoadEntries.RULE}`),
-      ...[...loaded].filter(t => !entries.has(t)).map(t => `${shown}: loads ${t}, which isn't an entry ${listed} exports with declarations, or is the testing entry; ${NodeLoadEntries.RULE}`)
+      ...[...loaded].filter(t => !entries.has(t)).map(t => `${shown}: loads ${t}, which isn't an entry ${listed} exports with declarations or as a JSON file, or is the testing entry; ${NodeLoadEntries.RULE}`)
     ];
   }
 
   private listEntries(exports: JsonFields): ReadonlySet<string> {
     return new Set(exports.names()
-      .filter(t => !NodeLoadEntries.SKIPPED.includes(t) && exports.holdsObject(t) && exports.object(t).has(NodeLoadEntries.TYPES_FIELD))
+      .filter(t => !NodeLoadEntries.SKIPPED.includes(t) && (t.endsWith(NodeLoadEntries.JSON_FILE) || exports.holdsObject(t) && exports.object(t).has(NodeLoadEntries.TYPES_FIELD)))
       .map(t => t === NodeLoadEntries.MAIN_SUBPATH ? this.manifest.name : `${this.manifest.name}${t.slice(NodeLoadEntries.RELATIVE_PREFIX.length)}`));
   }
 
