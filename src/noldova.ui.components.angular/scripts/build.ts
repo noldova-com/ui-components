@@ -115,13 +115,13 @@ export class Build extends Script {
       await this.removeInstalledKitAsync(kit);
       const builder = Build.createBuilder();
       await builder.buildAsync(path.resolve(output));
-      await this.writeGlyphsAsync(output);
+      const glyphs = await this.writeGlyphsAsync(output);
       const leaks = await new TestingIsolation(Build.ROOT, manifest).findLeaksAsync();
       if (leaks.length > 0)
         throw new CommandFailedException(leaks.join("\n"));
       await this.copyReadmeFileAsync(kit);
       await this.finishPackageAsync(output, version, commit);
-      await this.compareArchiveAsync(await builder.listInputsAsync(), archive);
+      await this.compareArchiveAsync(await builder.listInputsAsync(), [glyphs], archive);
       await this.installAsync(kit, archive);
     });
     await this.runStepAsync(Build.loadingInNode(kit.packageName), async () => {
@@ -169,10 +169,13 @@ export class Build extends Script {
     await this.executeNPMCommandAsync([...Build.FRESH_INSTALL_ARGUMENTS, ...packages], path.resolve(Build.FRESH_INSTALL_FOLDER), true);
   }
 
-  private async writeGlyphsAsync(output: string): Promise<void> {
+  // The glyphs.json it writes, and its name in the package.
+  private async writeGlyphsAsync(output: string): Promise<readonly [string, string]> {
     const { KitGlyphs } = await import("./glyphs/kit-glyphs.ts");
     const { PartGlyphs } = await import("./glyphs/part-glyphs.ts");
-    await this.writeFileAsync(path.join(output, KitGlyphs.FILE_NAME), PartGlyphs.render((await KitGlyphs.readAsync(Build.ROOT)).parts));
+    const file = path.join(output, KitGlyphs.FILE_NAME);
+    await this.writeFileAsync(file, PartGlyphs.render((await KitGlyphs.readAsync(Build.ROOT)).parts));
+    return [file, KitGlyphs.FILE_NAME];
   }
 
   private async compareApisAsync(): Promise<void> {
@@ -225,9 +228,10 @@ export class Build extends Script {
     process.stdout.write(`${Build.LIST_COPIES_END_LINE}\n`);
   }
 
-  private async compareArchiveAsync(inputs: readonly string[], archive: string): Promise<void> {
+  // The archive holds a copy of each input, and each file the build writes, such as glyphs.json.
+  private async compareArchiveAsync(inputs: readonly string[], written: readonly (readonly [string, string])[], archive: string): Promise<void> {
     const packages = new PackageBuilder(Build.ROOT);
-    const differences = await packages.findArchiveDifferencesAsync(await packages.listCopiesAsync(inputs), path.resolve(archive));
+    const differences = await packages.findArchiveDifferencesAsync([...await packages.listCopiesAsync(inputs), ...written], path.resolve(archive));
     if (differences.length > 0)
       throw new CommandFailedException(differences.join("\n"));
   }

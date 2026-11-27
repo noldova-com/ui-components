@@ -35,6 +35,8 @@ export class PartGlyphs {
   private static readonly WORD: RegExp = /[A-Za-z_$][\w$]*/gu;
   // An icon a template draws by its name, written between the symbol font's span tags.
   private static readonly DRAWN_ICON: RegExp = /<span[^>]*material-symbols-rounded[^>]*>\s*([a-z0-9_]+)\s*<\/span\s*>/gu;
+  // An icon a template hands to an icon or glyph input as written, such as icon="forum" or [icon]="'forum'".
+  private static readonly GIVEN_ICON: RegExp = /\s(?:\[[\w-]*(?:icon|glyph)[\w-]*\]="'([a-z0-9_]+)'"|[\w-]*(?:icon|glyph)[\w-]*="([a-z0-9_]+)")/giu;
 
   private readonly program: ts.Program;
   private readonly checker: ts.TypeChecker;
@@ -146,7 +148,8 @@ export class PartGlyphs {
     visit(source);
     const template = this.readTemplate(source);
     if (!Object.isNull(template)) {
-      const icons = [...template.text.matchAll(PartGlyphs.DRAWN_ICON)].map(t => t[1] ?? "");
+      const given = [...template.text.matchAll(PartGlyphs.GIVEN_ICON)].map(t => t[1] ?? t[2] ?? "").filter(t => this.names.has(t));
+      const icons = [...[...template.text.matchAll(PartGlyphs.DRAWN_ICON)].map(t => t[1] ?? ""), ...given];
       this.templates.set(source, template);
       this.drawn.set(source, icons);
       for (const icon of icons)

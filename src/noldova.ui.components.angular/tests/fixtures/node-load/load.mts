@@ -14,6 +14,7 @@ await import("@noldova/ui.components.angular/code-block");
 await import("@noldova/ui.components.angular/code-highlighting");
 await import("@noldova/ui.components.angular/code-highlighting/worker");
 await import("@noldova/ui.components.angular/gallery");
+await import("@noldova/ui.components.angular/glyphs.json", { with: { type: "json" } });
 await import("@noldova/ui.components.angular/markdown");
 await import("@noldova/ui.components.angular/site");
 await import("@noldova/ui.components.angular/site/card");

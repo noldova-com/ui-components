@@ -52,7 +52,7 @@ npm test
 `npm run build:docs` builds no kit, and needs `npm run build:components` first, as [the docs site](documents/DOCS-SITE.md#commands) says.
 The kit's build builds it each time: it compiles it, packs it into `_packages/` as `noldova-ui.components.angular-<version>.tgz`, at the version `version.json` holds, and installs the archive at the root without saving it.
 It installs the npm packages first when `node_modules` is missing, and the browser for the Angular tests.
-It writes into the package `glyphs.json`, the glyphs each exported part can draw, which it reads from the kit's source as the [Part glyphs](#part-glyphs) check does, and which [KIT.md](documents/KIT.md#icons-a-site-subsets) describes.
+It writes into the package `glyphs.json`, the glyphs each exported part can draw, which it reads from the kit's source as the [Part glyphs](#part-glyphs) check does, and which [KIT.md](documents/KIT.md#icons-a-site-subsets) describes; it compares the packed kit's `glyphs.json` with the file it wrote, byte for byte.
 Each archive's `package.json` records the commit it was built from as `gitHead` when the clone has no changed tracked files and no untracked files that Git doesn't ignore, and leaves it out otherwise.
 The kit's build also refuses an entry other than the testing entry that reaches `src/testing/` or Vitest.
 `npm run docs:build -w src/noldova.ui.components.angular.docs` builds the docs site into `_build/docs` from the kit's source, `npm run docs:test -w src/noldova.ui.components.angular.docs` runs its tests, and `npm run docs:api -w src/noldova.ui.components.angular.docs` writes only its API reference; all three need `npm run build:components` first, as [the docs site](documents/DOCS-SITE.md) says.
@@ -63,7 +63,7 @@ Before it builds, the build checks the kit's `package.json`: its name, the versi
 
 The build loads the installed kit in Node.js without a bundler, after `@angular/compiler`, which partially compiled components need when they load unbuilt, and type-checks it with NodeNext resolution and `skipLibCheck` off, from `src/noldova.ui.components.angular/tests/fixtures/node-load/`.
 It loads every entry but the testing entry, which imports Vitest and so loads only inside its test runner; that entry's declarations are type-checked.
-The fixture names each entry in its own `await import`, so that the type check reads each one's declarations, and the build fails first, naming the entry, when those imports and the kit's `package.json` exports with declarations, but the testing entry, differ (`src/noldova.ui.components.angular/scripts/packages/node-load-entries.ts`).
+The fixture names each entry in its own `await import`, so that the type check reads each one's declarations, `glyphs.json` as JSON, and the build fails first, naming the entry, when those imports and the kit's `package.json` exports with declarations or of a JSON file, but the testing entry, differ (`src/noldova.ui.components.angular/scripts/packages/node-load-entries.ts`).
 The build also resolves two fresh installs of the packed kit, each in an empty project: one with only the peers the kit names at their versions, each CONTEXT range at its lowest, and one of the kit alone, which leaves npm to pick its peers.
 Each fails when npm can't resolve it or finds any peer conflict, since it resolves with `--strict-peer-deps`.
 A release's build, which the shared release workflow runs with `RELEASE_ADDONS` set, then adds Angular's build tools, `@angular/build`, at the kit's own development pin of them to the one alone, as a new app does after it installs the kit, and fails when npm can't resolve that; any other build, such as a pull request's or main's, skips that step and says so.
@@ -139,10 +139,10 @@ It reads one line at a time: it refuses an assertion that a line break splits fr
 ### Part glyphs
 
 The part glyphs check, `src/noldova.ui.components.angular/scripts/checks/part-glyphs-check.ts`, reads the glyphs each part the kit's entries export can draw, as the build writes them to the package's `glyphs.json`, with TypeScript's type checker over every source file under `src/noldova.ui.components.angular/src` but the specs.
-A glyph is a string literal typed `IconName`, or, in a constant written `as const`, an icon name under a property whose name holds glyph or icon; an icon written between the symbol font's span tags in a template is one too.
+A glyph is a string literal typed `IconName`, or, in a constant written `as const`, an icon name under a property whose name holds glyph or icon; an icon written between the symbol font's span tags in a template is one too, and so is an icon name a template hands to an input whose name holds icon or glyph as written, such as `icon="forum"` or `[icon]="'forum'"`.
 A part's list holds the glyphs its own file gives, those of the files it imports, not only for types, that its code uses or its template names, the icons its template draws as written, and the same of every part it imports, which it shows.
 The check fails on each glyph of the source that no part's list holds, naming its file and line, since a part could draw it and a site's subset of the font would leave it out.
-It first reads a small source of its own, with a part that shows another, a resources class with a used and an unused glyph, a template's glyph and a constant's, and fails when that reading differs from the one it expects.
+It first reads a small source of its own, with a part that shows another, a resources class with a used and an unused glyph, a template's glyph, icons handed to an input as written, and a constant's, and fails when that reading differs from the one it expects.
 A glyph a part takes as an input or a model field, such as `IconButtonComponent.icon`, is the site's own and in no list.
 
 ### Kit bundles

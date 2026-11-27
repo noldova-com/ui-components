@@ -22,10 +22,10 @@ import type { PartGlyphsReading } from "../glyphs/part-glyphs-reading.ts";
 // from the kit's, and fails when a glyph of the kit's source is in no part's list: a part would draw it and a site's subset of the font leave it out.
 export class PartGlyphsCheck implements ICheck {
   private static readonly OWN_FOLDER: string = "_build/part-glyphs-check";
-  private static readonly OWN_NAMES: readonly string[] = ["add", "close", "menu", "search", "star", "zoom_in"];
+  private static readonly OWN_NAMES: readonly string[] = ["add", "close", "forum", "home", "menu", "search", "star", "zoom_in"];
   private static readonly OWN_ENTRY: string = "index.ts";
   private static readonly OWN_FILES: ReadonlyMap<string, string> = new Map([
-    ["icon-name.ts", "export type IconName = \"add\" | \"close\" | \"menu\" | \"search\" | \"star\" | \"zoom_in\";\n"],
+    ["icon-name.ts", "export type IconName = \"add\" | \"close\" | \"forum\" | \"home\" | \"menu\" | \"search\" | \"star\" | \"zoom_in\";\n"],
     ["component.ts", "export function Component(options: object): (target: object) => void {\n  return () => options;\n}\n"],
     ["header.resources.ts", [
       "import type { IconName } from \"./icon-name.js\";",
@@ -52,7 +52,11 @@ export class PartGlyphsCheck implements ICheck {
       "}",
       ""
     ].join("\n")],
-    ["header.component.html", "<span class=\"material-symbols-rounded\">{{ partResources.menuGlyph }}</span>\n"],
+    ["header.component.html", [
+      "<span class=\"material-symbols-rounded\">{{ partResources.menuGlyph }}</span>",
+      "<nol-button icon=\"forum\" [iconOnly]=\"true\" /><nol-button [icon]=\"'home'\" /><nol-button [icon]=\"partResources.label\" title=\"star\" />",
+      ""
+    ].join("\n")],
     ["panel.component.ts", [
       "import { Component } from \"./component.js\";",
       "import type { IconName } from \"./icon-name.js\";",
@@ -71,6 +75,8 @@ export class PartGlyphsCheck implements ICheck {
     "  \"parts\": {",
     "    \"HeaderComponent\": [",
     "      \"close\",",
+    "      \"forum\",",
+    "      \"home\",",
     "      \"menu\"",
     "    ],",
     "    \"PanelComponent\": [",
