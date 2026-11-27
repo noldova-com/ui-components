@@ -12492,21 +12492,21 @@ export declare class SiteSocialLink {
  */
 export declare enum SiteStage {
   /**
-   * The public site, such as `teamrun.noldova.com`, and every host that
+   * The public site, such as `example.noldova.com`, and every host that
    * names no stage, the prerender's and a local server's included.
    */
   Production = "Production",
 
   /**
    * The sandbox: a host whose label just before `noldova.com` or
-   * `noldova.dev` is `sandbox`, such as `teamrun.sandbox.noldova.com` or
+   * `noldova.dev` is `sandbox`, such as `example.sandbox.noldova.com` or
    * `sandbox.noldova.com`.
    */
   Sandbox = "Sandbox",
 
   /**
    * Staging: a host whose label just before `noldova.com` or `noldova.dev`
-   * is `staging`, such as `teamrun.staging.noldova.com`.
+   * is `staging`, such as `example.staging.noldova.com`.
    */
   Staging = "Staging"
 }
@@ -12530,7 +12530,7 @@ export declare enum SiteStage {
  *   template: `<a [href]="docs.href">{{ docs.label }}</a>`
  * })
  * export class DocsLinkComponent {
- *   protected readonly docs: SiteLink = inject(SiteStageService).link(new SiteLink("Docs", "https://teamrun.noldova.dev"));
+ *   protected readonly docs: SiteLink = inject(SiteStageService).link(new SiteLink("Docs", "https://example.noldova.dev"));
  * }
  * ```
  */
@@ -12545,7 +12545,7 @@ export declare class SiteStageService {
    * absolute address on `noldova.com` or `noldova.dev` that names no stage
    * gets the stage's label just before that domain, keeping its path, query
    * and fragment, and comes back as the URL standard writes it, such as
-   * `https://teamrun.sandbox.noldova.dev/` for `https://teamrun.noldova.dev`.
+   * `https://example.sandbox.noldova.dev/` for `https://example.noldova.dev`.
    * Every other address, and every address at production, comes back
    * unchanged: a relative one, one on another domain or with no host,
    * such as a `mailto:` address, and one that names a stage already.
@@ -12576,8 +12576,8 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as TeamRun's header draws its
-   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
+   * A product's own wordmark, as high as the site header draws one:
+   * 9.125rem wide in its proportions, 8.25rem in a header at most
    * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"

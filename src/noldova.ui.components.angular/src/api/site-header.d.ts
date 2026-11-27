@@ -51,7 +51,7 @@ import type { InputSignal, ModelSignal } from "@angular/core";
  * @Component({
  *   selector: "nol-page-header",
  *   imports: [SiteHeaderComponent],
- *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
+ *   template: "<nol-site-header wordmark=\"/noldova-wordmark.svg\" name=\"Example\" contentId=\"main\" [links]=\"links\" [social]=\"social\" downloadHref=\"/download\" />"
  * })
  * export class PageHeaderComponent {
  *   protected readonly links: readonly SiteLink[] = [new SiteLink("Features", "/features", true), new SiteLink("Docs", "/docs")];
@@ -76,8 +76,8 @@ export declare class SiteHeaderComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -89,7 +89,7 @@ export declare class SiteHeaderComponent {
 
   /**
    * The lockup link's accessible name, such as `UI Components docs home`;
-   * null, the default, names it from `name`, as `TeamRun home`, or
+   * null, the default, names it from `name`, as `Example home`, or
    * `Noldova home` without one. A site whose wordmark or icon already shows
    * the product's name passes no `name`, so the name isn't drawn twice, and
    * names the link here.
@@ -99,7 +99,7 @@ export declare class SiteHeaderComponent {
   /**
    * The wordmark's size: `SiteWordmarkSize.Small`, the default, for the
    * Noldova wordmark, or `SiteWordmarkSize.Large` for a product's own
-   * wordmark, such as TeamRun's.
+   * wordmark.
    */
   public readonly wordmarkSize: InputSignal<SiteWordmarkSize>;
 
@@ -291,8 +291,8 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as TeamRun's header draws its
-   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
+   * A product's own wordmark, as high as the site header draws one:
+   * 9.125rem wide in its proportions, 8.25rem in a header at most
    * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"

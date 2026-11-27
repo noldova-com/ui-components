@@ -8,7 +8,7 @@ A website's start imports the footer from the site entry, `@noldova/ui.component
 
 ## Default geometry
 
-Every site's footer has one look, TeamRun's.
+Every site's footer has one look.
 The content keeps to the [site header's](site-header.md) width and insets, 3.875rem from the footer's top (`--nol-site-footer-padding-block`) and 3.4375rem from its bottom (`--nol-site-footer-padding-end`).
 At the start, the lockup, with the site's `wordmarkSize`, then an optional line 1.125rem under it (`--nol-site-footer-line-gap`), then the notice 3.5rem under that (`--nol-site-footer-notice-gap`), both at most 18rem wide (`--nol-site-footer-line-width`), then any content the site projects.
 At the end, the link groups, 3rem apart (`--nol-site-footer-group-gap`), the last one ending at the content's end; when the footer is too narrow for both, the groups wrap under the lockup, 2rem from it (`--nol-site-footer-gap`).
@@ -28,9 +28,9 @@ The notice: as the line.
 
 The page's `contentinfo` landmark, on the window color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is the site header's: one link home named for the product's home, such as `TeamRun home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`.
+The lockup is the site header's: one link home named for the product's home, such as `Example home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
 The notice is `© <year>` and Noldova's logo, unless the site gives its own as plain text.
 The logo is the kit's `assets/brand/noldova-wordmark.svg`, the file noldova.com's own header draws, drawn in the notice's color as high as its capitals (`1cap`), on its baseline, in the file's proportions; it links to https://noldova.com at the page's stage (see `SiteStageService`), named Noldova; the link takes clicks and taps across at least the pointer target high, drawn nowhere, so the notice's line keeps its height.
 A hovered link is underlined in `text-strong`, and the notice's logo turns `text-strong`, and keyboard focus is an accent outline outside it.
-Under forced colors the wordmark, the product's name and the links' icons are `LinkText`, and keyboard focus is a 2px `Highlight` outline.
+Under forced colors the wordmark, the product's name, the links' icons and the notice's logo are `LinkText`, and keyboard focus is a 2px `Highlight` outline.

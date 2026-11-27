@@ -29,7 +29,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
   imports: [SiteFooterComponent],
   template: `
     @if (notice(); as text) {
-      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/teamrun" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/example" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
     } @else {
       <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" [line]="line()" [groups]="groups()" [wide]="wide()" />
     }
@@ -38,7 +38,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 class SiteFooterHostComponent {
   public readonly wordmark = signal(wordmark);
   public readonly wordmarkRatio = signal(20 / 3);
-  public readonly name = signal<string | null>("TeamRun");
+  public readonly name = signal<string | null>("Example");
   public readonly homeLabel = signal<string | null>(null);
   public readonly size = signal(SiteWordmarkSize.Small);
   public readonly line = signal<string | null>("Run a team of agents.");
@@ -102,7 +102,7 @@ describe("SiteFooterComponent", () => {
     const line = getComputedStyle(part(".nol-site-footer-line"));
     const ratio = Number.parseFloat(DefaultTheme.theme.readLook("site-footer-line-height") ?? "");
 
-    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "TeamRun home", "Less copying between agents.\nMore work done."]);
+    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "Example home", "Less copying between agents.\nMore work done."]);
     AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("site-footer-line-gap"));
     expect([line.color, line.whiteSpace]).toEqual([color("text-muted"), "pre-line"]);
     AppearanceFixture.expectPixels(Number.parseFloat(line.fontSize), AppearanceFixture.measureLook("text-message"));
@@ -113,12 +113,12 @@ describe("SiteFooterComponent", () => {
   it("names the lockup's link with the label the site gives, and draws a product's own wordmark at the large size", async () => {
     await renderAsync(t => {
       t.name.set(null);
-      t.homeLabel.set("TeamRun home");
+      t.homeLabel.set("Example home");
       t.size.set(SiteWordmarkSize.Large);
     });
 
-    expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["TeamRun home", null]);
-    // As high as TeamRun's header draws its wordmark, 9.125rem wide in its proportions.
+    expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["Example home", null]);
+    // As high as the site header draws a product's wordmark, 9.125rem wide in its proportions.
     AppearanceFixture.expectPixels(box(".nol-site-wordmark").height, AppearanceFixture.toPixels(9.125 * 201.396 / 1335.64));
   });
 
@@ -128,7 +128,7 @@ describe("SiteFooterComponent", () => {
       t.line.set(null);
     });
 
-    expect([part(".nol-site-lockup-link").getAttribute("href"), DomFixture.maybe(footer(), ".nol-site-footer-line")]).toEqual(["/teamrun", null]);
+    expect([part(".nol-site-lockup-link").getAttribute("href"), DomFixture.maybe(footer(), ".nol-site-footer-line")]).toEqual(["/example", null]);
   });
 
   it("draws each group as a navigation named by its title, its links in order with the current page marked", async () => {
@@ -221,7 +221,7 @@ describe("SiteFooterComponent", () => {
         expect([drawn.top >= line.top, drawn.bottom <= line.bottom]).toEqual([true, true]);
       });
 
-  for (const [hostname, href] of [["teamrun.sandbox.noldova.com", "https://sandbox.noldova.com/"], ["teamrun.staging.noldova.com", "https://staging.noldova.com/"]] as const)
+  for (const [hostname, href] of [["example.sandbox.noldova.com", "https://sandbox.noldova.com/"], ["example.staging.noldova.com", "https://staging.noldova.com/"]] as const)
     it(`links Noldova to ${href} on a page at ${hostname}, the page's own stage`, async () => {
       const stage = Injector.create({ providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { hostname } } } }, SiteStageService] }).get(SiteStageService);
       TestBed.configureTestingModule({ providers: [{ provide: SiteStageService, useValue: stage }] });
@@ -230,14 +230,15 @@ describe("SiteFooterComponent", () => {
       expect(part(".nol-site-footer-owner").getAttribute("href")).toBe(href);
     });
 
-  it("underlines the notice's link in the strong text color when hovered, and outlines it in the accent color when focused", async () => {
+  it("draws the notice's logo in the strong text color when its link is hovered, and outlines the link in the accent color when focused", async () => {
     await renderAsync();
     const owner = part(".nol-site-footer-owner");
+    const logo = DomFixture.oneOf(owner, "svg.nol-site-footer-logo path", SVGPathElement);
     owner.setAttribute("data-nol-state", "Hover");
-    const hovered = [getComputedStyle(owner).textDecorationLine, getComputedStyle(owner).color];
+    const hovered = getComputedStyle(logo).fill;
     owner.setAttribute("data-nol-state", "Focus");
 
-    expect([...hovered, getComputedStyle(owner).outlineColor]).toEqual(["underline", color("text-strong"), color("accent")]);
+    expect([hovered, getComputedStyle(owner).outlineColor]).toEqual([color("text-strong"), color("accent")]);
   });
 
   for (const width of [1280, 375])
@@ -245,7 +246,7 @@ describe("SiteFooterComponent", () => {
       await page.viewport(width, 800);
       await renderAsync(t => t.groups.update(u => [...u, new SiteLinkGroup("Follow", [new SiteLink("X", "#x")])]));
 
-      PointerTargetFixture.expectTargets(footer(), ["TeamRun home", "Download", "X", "Noldova"]);
+      PointerTargetFixture.expectTargets(footer(), ["Example home", "Download", "X", "Noldova"]);
       AppearanceFixture.expectPixels(box(".nol-site-footer-notice").height, Number.parseFloat(getComputedStyle(part(".nol-site-footer-notice")).lineHeight));
     });
 
@@ -345,5 +346,13 @@ describe("SiteFooterComponent", () => {
       const link = ForcedColorsFixture.resolve("LinkText");
 
       expect([getComputedStyle(part(".nol-site-wordmark")).backgroundColor, getComputedStyle(part(".nol-site-lockup-name")).color]).toEqual([link, link]);
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the notice's logo in LinkText under forced colors in ${mode} mode`, async () => {
+      await renderAsync(() => undefined, AppearanceFixture.themes[0], mode);
+      await ForcedColorsFixture.activateAsync();
+
+      expect(getComputedStyle(DomFixture.oneOf(footer(), "svg.nol-site-footer-logo path", SVGPathElement)).fill).toBe(ForcedColorsFixture.resolve("LinkText"));
     });
 });
