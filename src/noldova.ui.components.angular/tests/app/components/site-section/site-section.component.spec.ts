@@ -16,6 +16,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteShot } from "../../../../src/app/models/site-shot";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { EmulatedMediaFixture } from "../../../fixtures/emulated-media.fixture";
 
 const pixel = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1438 1022'%3E%3Crect width='1438' height='1022'/%3E%3C/svg%3E";
 const productShot = new SiteShot(pixel, `${pixel}#dark`, 1438, 1022, "A message to the team.", `${pixel}#light-2x`, `${pixel}#dark-2x`);
@@ -110,6 +111,7 @@ describe("SiteSectionComponent", () => {
   afterEach(async () => {
     AppearanceFixture.reset();
     document.documentElement.removeAttribute("data-nol-theme-mode");
+    await EmulatedMediaFixture.resetAsync();
     await page.viewport(windowWidth, windowHeight);
   });
 
@@ -184,6 +186,17 @@ describe("SiteSectionComponent", () => {
             AppearanceFixture.expectPixels(value, DomFixture.at(DomFixture.at(own.places, index), axis));
         projected.destroy();
       });
+
+  for (const scheme of ["light", "dark"]) {
+    it(`shows the ${scheme} theme's shot when the page sets no mode and the system's scheme is ${scheme}`, async () => {
+      await EmulatedMediaFixture.emulateAsync("prefers-color-scheme", scheme);
+      await renderAsync(t => t.shot.set(productShot));
+      document.documentElement.removeAttribute("data-nol-theme-mode");
+      const shown = DomFixture.all(section(), ".nol-site-section-shot-frame").filter(t => getComputedStyle(t).display !== "none");
+
+      expect(shown.map(t => DomFixture.one(t, "img").getAttribute("src"))).toEqual([scheme === "dark" ? `${pixel}#dark` : pixel]);
+    });
+  }
 
   for (const mode of AppearanceFixture.modes) {
     it(`draws the line above in the accent color, the title in the title color and the copy muted, ${mode}`, async () => {
