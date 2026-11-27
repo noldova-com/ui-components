@@ -204,8 +204,11 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
 }
 
 /* The actions, the site's gap apart: the theme switch, then the social links, then Download. Without links, the
- * switch's margin takes the free space, so the actions keep to the bar's end. */
+ * switch's margin takes the free space, so the actions keep to the bar's end. The switch's track stands as high as
+ * Download's face, inside its edge, so its pills take that height less the switch's padding. */
 nol-site-theme-switch {
+  --nol-site-theme-pill: calc(var(--nol-site-download-height) - 2 * var(--nol-border-width) - 2 * var(--nol-site-theme-switch-padding));
+
   flex: none;
   margin-inline-start: auto;
   order: 3;
