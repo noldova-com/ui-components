@@ -119,6 +119,29 @@ class SiteHeaderNames {
     return new NameRoom(needed, end - gap - this.box(".nol-site-header-brand").left);
   }
 
+  // Waits for the header's observer's first reading, which a new observer of the same element gets after it.
+  public observedAsync(): Promise<void> {
+    return new Promise(resolve => {
+      const observer = new ResizeObserver(() => {
+        observer.disconnect();
+        resolve();
+      });
+      observer.observe(DomFixture.one(this.header(), ".nol-site-header-width"));
+    });
+  }
+
+  // Declares a face of each family from the kit's own font file, drawn four times its size, so a name in it is far wider than
+  // in any fallback, and returns the style that declares them.
+  public addWideFaces(families: readonly string[]): HTMLStyleElement {
+    const sources = [...document.styleSheets].flatMap(sheet => [...sheet.cssRules]
+      .filter(t => t instanceof CSSFontFaceRule)
+      .flatMap(t => [...t.style.getPropertyValue("src").matchAll(/url\("([^"]*)"\)/gu)].map(u => new URL(DomFixture.at(u, 1), sheet.href ?? document.baseURI).href)));
+    const style = document.createElement("style");
+    style.textContent = families.map(t => `@font-face { font-family: "${t}"; src: url("${DomFixture.at(sources, 0)}"); size-adjust: 400%; }`).join("\n");
+    document.head.append(style);
+    return style;
+  }
+
   private box(selector: string): DOMRect {
     return DomFixture.one(this.header(), selector).getBoundingClientRect();
   }
@@ -1089,15 +1112,46 @@ describe("SiteHeaderComponent", () => {
     expect([narrowed, errors]).toEqual([[true, true], []]);
   });
 
+  it("measures again when Download's label changes, moving the theme switch into the menu for a label that leaves the name no room", async () => {
+    await page.viewport(520, 812);
+    await names.renderAsync(DomFixture.at(names.names, 0), false, ThemeMode.Light);
+    await names.observedAsync();
+    const before = [header().classList.contains(compact), shown("nol-site-theme-switch")];
+    host.downloadLabel.set("Download the latest version for every computer you use");
+    fixture.detectChanges();
+    await DomChangeFixture.untilAsync(() => expect(header().classList.contains(compact)).toBe(true));
+
+    expect([before, shown("nol-site-theme-switch")]).toEqual([[false, true], false]);
+  });
+
+  it("measures again when a font the name uses loads after the first reading, and not once the header is destroyed", async () => {
+    await page.viewport(600, 812);
+    await names.renderAsync(DomFixture.at(names.names, 1), true, ThemeMode.Light);
+    await names.observedAsync();
+    const before = header().classList.contains(compact);
+    const faces = names.addWideFaces(["Example wide", "Example later"]);
+    part(".nol-site-lockup-name").style.fontFamily = "'Example wide', sans-serif";
+    await document.fonts.load("1rem 'Example wide'");
+    await DomChangeFixture.untilAsync(() => expect(header().classList.contains(compact)).toBe(true));
+    const element = header();
+    fixture.destroy();
+    element.classList.remove("nol-site-header-measured", compact);
+    const loaded = new Promise(resolve => document.fonts.addEventListener("loadingdone", resolve, { once: true }));
+    await document.fonts.load("1rem 'Example later'");
+    await loaded;
+    faces.remove();
+
+    expect([before, element.classList.contains("nol-site-header-measured")]).toEqual([false, false]);
+  });
+
   it("hides the theme switch in a phone's bar until the header has measured the name, as a prerendered page first paints, and draws it in the open menu", async () => {
     await phoneAsync();
     await renderAsync(t => t.name.set(DomFixture.at(names.names, 0)));
+    await names.observedAsync();
     const measured = [header().classList.contains("nol-site-header-measured"), shown("nol-site-theme-switch")];
     header().classList.remove("nol-site-header-measured", compact);
     const unmeasured = shown("nol-site-theme-switch");
     await openAsync();
-    // Opening the menu resizes the header, which measures it again.
-    header().classList.remove("nol-site-header-measured", compact);
 
     expect([measured, unmeasured, shown("nol-site-theme-switch")]).toEqual([[true, true], false, true]);
     expect(box("nol-site-theme-switch").top).toBeGreaterThan(bar().getBoundingClientRect().top + AppearanceFixture.measureLook("site-header-height-phone") - 1 / 32);

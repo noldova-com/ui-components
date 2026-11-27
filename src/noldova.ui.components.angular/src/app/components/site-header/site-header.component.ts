@@ -96,6 +96,7 @@ export class SiteHeaderComponent {
       this.wordmarkSize();
       this.icon();
       this.hasDownload();
+      this.downloadLabel();
       this.hasSearch();
       this.wide();
       untracked(() => {
