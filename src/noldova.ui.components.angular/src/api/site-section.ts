@@ -7,3 +7,4 @@
  */
 
 export { SiteSectionComponent } from "../app/components/site-section/site-section.component.js";
+export { SiteShot } from "../app/models/site-shot.js";

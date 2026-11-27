@@ -55,6 +55,54 @@
   display: none;
 }
 
+.nol-site-section-shot {
+  margin-top: 2.625rem;
+}
+
+/* With no content, the heading's own space is the shot's. */
+.nol-site-section-heading + .nol-site-section-shot {
+  margin-top: 0;
+}
+
+.nol-site-section-shot-frame {
+  display: block;
+  overflow: hidden;
+  border: var(--nol-border-width) solid var(--nol-border);
+  border-radius: var(--nol-site-radius);
+  background: var(--nol-site-surface);
+}
+
+.nol-site-section-shot-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Each theme shows its own shot: the system's mode, unless the page sets one. */
+.nol-site-section-shot-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nol-site-section-shot-light {
+    display: none;
+  }
+
+  .nol-site-section-shot-dark {
+    display: block;
+  }
+}
+
+:host-context([data-nol-theme-mode="Light"]) .nol-site-section-shot-light,
+:host-context([data-nol-theme-mode="Dark"]) .nol-site-section-shot-dark {
+  display: block;
+}
+
+:host-context([data-nol-theme-mode="Light"]) .nol-site-section-shot-dark,
+:host-context([data-nol-theme-mode="Dark"]) .nol-site-section-shot-light {
+  display: none;
+}
+
 @container (width < 47.5rem) {
   .nol-site-section-block {
     --nol-site-shell-gutter: 1.25rem;
@@ -68,5 +116,13 @@
 
   .nol-site-section-copy {
     margin-top: 1.4375rem;
+  }
+
+  .nol-site-section-shot {
+    margin-top: 1.8125rem;
+  }
+
+  .nol-site-section-heading + .nol-site-section-shot {
+    margin-top: 0;
   }
 }

@@ -123,9 +123,10 @@ export declare class SiteHeroComponent {
 }
 
 /**
- * The shot of a product a {@link SiteHeroComponent} shows: a file for each
- * theme, each with an optional one at twice the size for sharper screens,
- * the files' size and their text alternative.
+ * The shot of a product a {@link SiteHeroComponent} or a
+ * {@link SiteSectionComponent} shows: a file for each theme, each with an
+ * optional one at twice the size for sharper screens, the files' size and
+ * their text alternative.
  */
 export declare class SiteShot {
   /**

@@ -13,13 +13,19 @@ import { page } from "vitest/browser";
 import { SiteSectionComponent } from "../../../../src/app/components/site-section/site-section.component";
 import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
+import { SiteShot } from "../../../../src/app/models/site-shot";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+
+const pixel = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1438 1022'%3E%3Crect width='1438' height='1022'/%3E%3C/svg%3E";
+const productShot = new SiteShot(pixel, `${pixel}#dark`, 1438, 1022, "A message to the team.", `${pixel}#light-2x`, `${pixel}#dark-2x`);
 
 @Component({
   imports: [SiteSectionComponent],
   template: `
-    <nol-site-section [eyebrow]="eyebrow()" [title]="title()" [copy]="copy()" headingId="workflow-title" [sectionId]="sectionId()"><div class="body">Body</div></nol-site-section>
+    <nol-site-section [eyebrow]="eyebrow()" [title]="title()" [copy]="copy()" headingId="workflow-title" [sectionId]="sectionId()" [shot]="shot()"
+      ><div class="body">Body</div></nol-site-section
+    >
   `
 })
 class SiteSectionHostComponent {
@@ -27,6 +33,31 @@ class SiteSectionHostComponent {
   public readonly title = signal("Agents that work together,\nwith you in charge.");
   public readonly copy = signal<string | null>("From the first question to the final review,\nevery step stays in front of you.");
   public readonly sectionId = signal<string | null>("workflow");
+  public readonly shot = signal<SiteShot | null>(null);
+}
+
+// A section with a shot and no content of its own.
+@Component({
+  imports: [SiteSectionComponent],
+  template: `<nol-site-section title="Agents that work together." copy="Every step stays in front of you." headingId="shot-title" [shot]="shot" />`
+})
+class SiteSectionShotHostComponent {
+  public readonly shot = productShot;
+}
+
+// A width the section is drawn at, and the rem sizes its layout takes there.
+class SectionWidth {
+  public readonly width: number;
+  public readonly gutter: number;
+  public readonly space: number;
+  public readonly contentGap: number;
+
+  public constructor(width: number, gutter: number, space: number, contentGap: number) {
+    this.width = width;
+    this.gutter = gutter;
+    this.space = space;
+    this.contentGap = contentGap;
+  }
 }
 
 // The same section with its copy projected, its lines marked as the section marks its own and holding markup of their own.
@@ -62,6 +93,8 @@ describe("SiteSectionComponent", () => {
 
   async function renderAsync(change: (host: SiteSectionHostComponent) => void = () => undefined, mode: ThemeMode = ThemeMode.Light): Promise<void> {
     AppearanceFixture.apply(DefaultTheme.theme, mode);
+    // A site marks the mode its visitor chose on the root, as its theme switch does.
+    document.documentElement.setAttribute("data-nol-theme-mode", mode);
     fixture = TestBed.createComponent(SiteSectionHostComponent);
     change(fixture.componentInstance);
     fixture.detectChanges();
@@ -76,6 +109,7 @@ describe("SiteSectionComponent", () => {
 
   afterEach(async () => {
     AppearanceFixture.reset();
+    document.documentElement.removeAttribute("data-nol-theme-mode");
     await page.viewport(windowWidth, windowHeight);
   });
 
@@ -99,6 +133,25 @@ describe("SiteSectionComponent", () => {
 
     expect([part("section").hasAttribute("id"), DomFixture.maybe(section(), ".nol-site-eyebrow"), DomFixture.maybe(section(), ".nol-site-section-copy-line")]).toEqual([false, null, null]);
     expect([part(".nol-site-section-copy").childElementCount, getComputedStyle(part(".nol-site-section-copy")).display]).toEqual([0, "none"]);
+    expect([DomFixture.maybe(section(), ".nol-site-section-shot"), DomFixture.maybe(section(), "img")]).toEqual([null, null]);
+  });
+
+  it("draws the shot under the content, each theme's image with its larger file, the shell's width, its size and alt text, loaded lazily", async () => {
+    await renderAsync(t => t.shot.set(productShot));
+    const images = DomFixture.allOf(section(), "img", HTMLImageElement);
+
+    expect(part(".body").nextElementSibling).toBe(part(".nol-site-section-shot"));
+    expect(images.map(t => [t.getAttribute("srcset"), t.alt, t.getAttribute("width"), t.getAttribute("height"), t.loading, t.decoding])).toEqual([
+      [`${pixel} 1438w, ${pixel}#light-2x 2876w`, "A message to the team.", "1438", "1022", "lazy", "async"],
+      [`${pixel}#dark 1438w, ${pixel}#dark-2x 2876w`, "A message to the team.", "1438", "1022", "lazy", "async"]]);
+    expect(images.map(t => t.getAttribute("sizes"))).toEqual([
+      "(max-width: 47.5em) calc(100vw - 2.5rem), min(75rem, calc(100vw - 5rem))", "(max-width: 47.5em) calc(100vw - 2.5rem), min(75rem, calc(100vw - 5rem))"]);
+  });
+
+  it("lists each shot alone when it has no larger file", async () => {
+    await renderAsync(t => t.shot.set(new SiteShot(pixel, `${pixel}#dark`, 1438, 1022, "A message.")));
+
+    expect(DomFixture.allOf(section(), "img", HTMLImageElement).map(t => t.getAttribute("srcset"))).toEqual([`${pixel} 1438w`, `${pixel}#dark 1438w`]);
   });
 
   for (const mode of AppearanceFixture.modes)
@@ -176,5 +229,47 @@ describe("SiteSectionComponent", () => {
       // The copy's own space under it falls within the heading's, as on a page.
       AppearanceFixture.expectPixels(part(".body").getBoundingClientRect().top - copy.bottom, rem(1.8125));
     });
+
+    it(`shows the shot of the theme the page sets, framed by the border line with the parts' radius on the site's surface, ${mode}`, async () => {
+      await renderAsync(t => t.shot.set(productShot), mode);
+      const shown = mode === ThemeMode.Dark ? ".nol-site-section-shot-dark" : ".nol-site-section-shot-light";
+      const hidden = mode === ThemeMode.Dark ? ".nol-site-section-shot-light" : ".nol-site-section-shot-dark";
+      const frame = getComputedStyle(part(shown));
+
+      expect([frame.display, getComputedStyle(part(hidden)).display, frame.borderTopStyle, frame.borderTopWidth, frame.borderTopColor, frame.borderTopLeftRadius,
+        frame.backgroundColor]).toEqual(["block", "none", "solid", "1px", color(mode, "border"), `${String(rem(0.75))}px`, color(mode, "panel")]);
+    });
+
+    for (const size of [new SectionWidth(1280, 2.5, 6.875, 2.625), new SectionWidth(375, 1.25, 4.375, 1.8125)]) {
+      it(`draws the shot at the shell's full width, under the content, keeping its ratio, at ${String(size.width)} pixels, ${mode}`, async () => {
+        await page.viewport(size.width, 800);
+        await renderAsync(t => t.shot.set(productShot), mode);
+        const outer = section().getBoundingClientRect();
+        const block = box("section");
+        const shot = box(mode === ThemeMode.Dark ? ".nol-site-section-shot-dark" : ".nol-site-section-shot-light");
+
+        AppearanceFixture.expectPixels(block.width, Math.min(rem(75), outer.width - 2 * rem(size.gutter)));
+        AppearanceFixture.expectPixels(shot.left, block.left);
+        AppearanceFixture.expectPixels(shot.width, block.width);
+        AppearanceFixture.expectPixels(shot.top - part(".body").getBoundingClientRect().bottom, rem(size.contentGap));
+        AppearanceFixture.expectPixels(shot.height, (shot.width - 2) * 1022 / 1438 + 2);
+        AppearanceFixture.expectPixels(block.bottom - shot.bottom, rem(size.space));
+      });
+
+      it(`draws the shot in the content's place when the section has none, at ${String(size.width)} pixels, ${mode}`, async () => {
+        await page.viewport(size.width, 800);
+        AppearanceFixture.apply(DefaultTheme.theme, mode);
+        document.documentElement.setAttribute("data-nol-theme-mode", mode);
+        const shotOnly = TestBed.createComponent(SiteSectionShotHostComponent);
+        shotOnly.detectChanges();
+        await shotOnly.whenStable();
+        const root = DomFixture.one(DomFixture.host(shotOnly), "nol-site-section");
+        const shot = DomFixture.one(root, mode === ThemeMode.Dark ? ".nol-site-section-shot-dark" : ".nol-site-section-shot-light").getBoundingClientRect();
+
+        AppearanceFixture.expectPixels(shot.top - DomFixture.one(root, ".nol-site-section-heading").getBoundingClientRect().bottom, rem(size.contentGap));
+        AppearanceFixture.expectPixels(DomFixture.one(root, "section").getBoundingClientRect().bottom - shot.bottom, rem(size.space));
+        shotOnly.destroy();
+      });
+    }
   }
 });

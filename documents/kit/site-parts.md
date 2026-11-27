@@ -40,13 +40,14 @@ Below 47.5em the hero is 2.6875rem under its top and 1.9375rem over its end, the
 
 ## Section
 
-**Default geometry.** A section keeps to the shell, `--nol-site-section-space` above and below, its title and its copy on one row, the copy at the row's end and 0.25rem over the title's foot, at least 1.875rem apart, and its content 2.625rem under them.
-Below 47.5em the copy goes 1.4375rem under the title, its lines running on, and the content is 1.8125rem under it.
+**Default geometry.** A section keeps to the shell, `--nol-site-section-space` above and below, its title and its copy on one row, the copy at the row's end and 0.25rem over the title's foot, at least 1.875rem apart, its content 2.625rem under them, and its shot, when the site gives one, the shell's full width and 2.625rem under the content, or in the content's place when there is none.
+Below 47.5em the copy goes 1.4375rem under the title, its lines running on, and the content is 1.8125rem under it, as the shot is under the content.
 
 **Text roles.** The line above: as `.nol-site-eyebrow`, 1em over the title. The title: `--nol-site-title-size` at the emphasis weight, balanced, in `setting-title`. The copy: `--nol-site-text` on a 1.7 line in `text-muted`.
 
 **Surface and behavior.** A region named by its title, a level-2 heading, with the id the site gives so a link can lead to it; a line break in the title starts a new line, and one in the copy does beside the title only.
 A site that needs markup in the copy, such as a key name that differs by platform, leaves `copy` unset and projects an element with the `nolSiteSectionCopy` attribute, which the section draws in its copy's place and style, each of its elements with the `nol-site-section-copy-line` class a line of the copy; with neither, the section has no copy.
+The shot is a `SiteShot`, drawn as the hero's is: framed by a 1px `border` line with the parts' radius on `--nol-site-surface`, one image for each theme with its 2× file in `srcset` and the shell's width in `sizes`, loaded lazily, with its width, height and alt text, the light one shown unless the site marks the dark mode or the system is dark.
 
 ## Cards
 

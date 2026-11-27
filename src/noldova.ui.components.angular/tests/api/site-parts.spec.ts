@@ -22,7 +22,7 @@ describe("the kit's site part entries", () => {
       footer: { SiteFooterComponent: site.SiteFooterComponent, SiteLink: site.SiteLink, SiteLinkGroup: site.SiteLinkGroup, SiteWordmarkSize: site.SiteWordmarkSize },
       header: { SiteHeaderComponent: site.SiteHeaderComponent, SiteLink: site.SiteLink, SiteSearchDirective: site.SiteSearchDirective, SiteSocialLink: site.SiteSocialLink, SiteWordmarkSize: site.SiteWordmarkSize },
       hero: { SiteAction: site.SiteAction, SiteHeroComponent: site.SiteHeroComponent, SiteShot: site.SiteShot },
-      section: { SiteSectionComponent: site.SiteSectionComponent }
+      section: { SiteSectionComponent: site.SiteSectionComponent, SiteShot: site.SiteShot }
     });
   });
 });
