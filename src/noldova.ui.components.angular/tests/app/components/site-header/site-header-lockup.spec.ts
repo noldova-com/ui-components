@@ -17,7 +17,7 @@ import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 
-// A product's own wordmark four times as wide as high, one as long as Commitline's, and an icon with no text in it.
+// A product's own wordmark four times as wide as high, a longer one, and an icon with no text in it.
 const ratio = 4;
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 200'%3E%3Crect width='800' height='200'/%3E%3C/svg%3E";
 const longRatio = 1708.818 / 201.396;
@@ -34,7 +34,7 @@ class SiteHeaderLockupHostComponent {
   public readonly ratio = signal(ratio);
   public readonly icon = signal<string | null>(icon);
   public readonly name = signal<string | null>(null);
-  public readonly homeLabel = signal<string | null>("Commitline home");
+  public readonly homeLabel = signal<string | null>("Example home");
   public readonly size = signal(SiteWordmarkSize.Large);
 }
 
@@ -85,7 +85,7 @@ describe("SiteHeaderComponent's lockup", () => {
 
   for (const mode of AppearanceFixture.modes)
     it(`draws the wordmark in the setting title color and the product's name in the strong text color in ${mode} mode`, async () => {
-      await renderInAsync(mode, t => t.name.set("Commitline"));
+      await renderInAsync(mode, t => t.name.set("Example"));
 
       expect([getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).backgroundColor, getComputedStyle(DomFixture.one(header(), ".nol-site-lockup-name")).color])
         .toEqual([AppearanceFixture.readColor(DefaultTheme.theme, mode, "setting-title"), AppearanceFixture.readColor(DefaultTheme.theme, mode, "text-strong")]);
@@ -114,7 +114,7 @@ describe("SiteHeaderComponent's lockup", () => {
     await renderAsync();
     const iconBox = DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect();
 
-    expect([DomFixture.maybe(header(), ".nol-site-lockup-name"), link().getAttribute("aria-label"), link().textContent?.trim()]).toEqual([null, "Commitline home", ""]);
+    expect([DomFixture.maybe(header(), ".nol-site-lockup-name"), link().getAttribute("aria-label"), link().textContent?.trim()]).toEqual([null, "Example home", ""]);
     AppearanceFixture.expectPixels(mark().left - iconBox.right, rem(0.75));
   });
 
@@ -160,20 +160,20 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const width of [360, 320]) {
-    it(`keeps a long wordmark whole, at its height in its file's proportions, the phone's gap before the menu button, with the theme switch in the menu, in a header ${width} pixels wide`, async () => {
+    it(`keeps the phone's gap between a long wordmark and the theme switch, the wordmark's box narrowed and drawn inside it in its file's proportions, in a header ${width} pixels wide`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => {
         t.wordmark.set(longWordmark);
         t.ratio.set(longRatio);
       });
       const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
-      const menu = DomFixture.one(header(), ".nol-site-menu-button").getBoundingClientRect();
+      const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
       const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-site-actions-gap-phone"));
 
-      expect(menu.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
+      expect(theme.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
       AppearanceFixture.expectPixels(mark().height, rem(7 / teamRunRatio));
-      AppearanceFixture.expectPixels(mark().width, rem(7 / teamRunRatio) * longRatio);
+      expect(mark().width).toBeLessThan(rem(7 / teamRunRatio) * longRatio - 1);
       expect(getComputedStyle(DomFixture.one(header(), ".nol-site-wordmark")).maskSize).toBe("contain");
       expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth);
     });

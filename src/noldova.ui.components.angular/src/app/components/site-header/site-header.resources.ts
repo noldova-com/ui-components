@@ -22,6 +22,8 @@ export class SiteHeaderResources {
   public static readonly downloadGlyph: IconName = "download";
   public static readonly skipLabel: string = "Skip to content";
   public static readonly currentPage: string = "page";
+  public static readonly compactClass: string = "nol-site-header-compact";
+  public static readonly lockupName: string = ".nol-site-lockup-name";
 
   public static formatTarget(id: string): string {
     return `#${id}`;
