@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, DOCUMENT, Injector, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { page } from "vitest/browser";
 
@@ -16,6 +16,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteLinkGroup } from "../../../../src/app/models/site-link-group";
+import { SiteStageService } from "../../../../src/app/services/site-stage.service";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
@@ -189,6 +190,15 @@ describe("SiteFooterComponent", () => {
     expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent, owner.getAttribute("href"), getComputedStyle(owner).color, getComputedStyle(owner).textDecorationLine])
       .toEqual([`© ${new Date().getFullYear()} Noldova`, "Noldova", "https://noldova.com", color("text-muted"), "none"]);
   });
+
+  for (const [hostname, href] of [["teamrun.sandbox.noldova.com", "https://sandbox.noldova.com/"], ["teamrun.staging.noldova.com", "https://staging.noldova.com/"]] as const)
+    it(`links Noldova to ${href} on a page at ${hostname}, the page's own stage`, async () => {
+      const stage = Injector.create({ providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { hostname } } } }, SiteStageService] }).get(SiteStageService);
+      TestBed.configureTestingModule({ providers: [{ provide: SiteStageService, useValue: stage }] });
+      await renderAsync();
+
+      expect(part(".nol-site-footer-owner").getAttribute("href")).toBe(href);
+    });
 
   it("underlines the notice's link in the strong text color when hovered, and outlines it in the accent color when focused", async () => {
     await renderAsync();

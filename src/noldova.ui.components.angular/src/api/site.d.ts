@@ -263,7 +263,8 @@ export declare class SiteFooterComponent {
 
   /**
    * The notice at the bottom, as plain text; null, the default, says
-   * `© <year> Noldova` with `Noldova` linking to https://noldova.com.
+   * `© <year> Noldova` with `Noldova` linking to https://noldova.com at
+   * the page's stage, as {@link SiteStageService.address} gives it.
    */
   public readonly notice: InputSignal<string | null>;
 

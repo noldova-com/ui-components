@@ -6,9 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { DOCUMENT, Injector } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
 import { Router, provideRouter, withComponentInputBinding } from "@angular/router";
 import { provideMarkdown } from "@noldova/ui.components.angular/markdown";
+import { SiteStageService } from "@noldova/ui.components.angular/site";
 import { TooltipFixture } from "@noldova/ui.components.angular/testing";
 import { userEvent } from "vitest/browser";
 
@@ -67,6 +69,18 @@ describe("DocsShellComponent", () => {
 
   const heading = (fixture: ComponentFixture<DocsShellComponent>): string | undefined =>
     DocsFixture.host(fixture).querySelector("main h1")?.textContent?.trim();
+
+  it.each([["angular.ui.sandbox.noldova.dev", "https://sandbox.noldova.com/privacy/"], ["angular.ui.staging.noldova.dev", "https://staging.noldova.com/privacy/"]])(
+    "links Privacy in the footer to %s's stage of noldova.com, %s, and Noldova to that stage's home",
+    async (hostname, privacy) => {
+      const stage = Injector.create({ providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { hostname } } } }, SiteStageService] }).get(SiteStageService);
+      TestBed.configureTestingModule({ providers: [{ provide: SiteStageService, useValue: stage }] });
+      const footer = DocsFixture.one(DocsFixture.host(await renderAsync("/")), "nol-site-footer");
+
+      expect([DocsFixture.all(footer, "a.nol-site-footer-link").find(t => t.textContent?.trim() === "Privacy")?.getAttribute("href"), DocsFixture.one(footer, ".nol-site-footer-owner").getAttribute("href")])
+        .toEqual([privacy, new URL(privacy).origin + "/"]);
+    }
+  );
 
   const topOf = (host: HTMLElement): number =>
     Math.max(...["nol-site-header", ".nol-docs-pages-bar"].map(t => DocsFixture.one(host, t).getBoundingClientRect()).filter(t => t.height > 0).map(t => t.bottom));
