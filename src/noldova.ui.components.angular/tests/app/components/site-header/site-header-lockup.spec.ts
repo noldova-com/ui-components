@@ -61,12 +61,12 @@ describe("SiteHeaderComponent's lockup", () => {
   const windowHeight = window.innerHeight;
   let fixture: ComponentFixture<SiteHeaderLockupHostComponent>;
 
-  async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
-    await renderInAsync(ThemeMode.Light, change);
+  async function renderAsync(change: (host: SiteHeaderLockupHostComponent) => void = () => undefined, theme = DefaultTheme.theme): Promise<void> {
+    await renderInAsync(ThemeMode.Light, change, theme);
   }
 
-  async function renderInAsync(mode: ThemeMode, change: (host: SiteHeaderLockupHostComponent) => void = () => undefined): Promise<void> {
-    AppearanceFixture.apply(DefaultTheme.theme, mode);
+  async function renderInAsync(mode: ThemeMode, change: (host: SiteHeaderLockupHostComponent) => void = () => undefined, theme = DefaultTheme.theme): Promise<void> {
+    AppearanceFixture.apply(theme, mode);
     fixture = TestBed.createComponent(SiteHeaderLockupHostComponent);
     change(fixture.componentInstance);
     fixture.detectChanges();
@@ -128,6 +128,18 @@ describe("SiteHeaderComponent's lockup", () => {
       AppearanceFixture.expectPixels(mark().height, rem(size.height));
       AppearanceFixture.expectPixels(mark().width, rem(size.height) * ratio);
     });
+
+    for (const theme of AppearanceFixture.themes)
+      it(`draws the icon's top and bottom on a large wordmark's as high as the reference wordmark ${size.referenceWidth}rem wide, in the ${theme.id} theme in a header ${size.width} pixels wide`, async () => {
+        await page.viewport(size.width, 800);
+        await renderAsync(() => undefined, theme);
+        const glyph = DomFixture.one(header(), ".nol-site-lockup-icon").getBoundingClientRect();
+
+        AppearanceFixture.expectPixels(mark().height, rem(size.height));
+        AppearanceFixture.expectPixels(glyph.top, mark().top);
+        AppearanceFixture.expectPixels(glyph.bottom, mark().bottom);
+        AppearanceFixture.expectPixels(glyph.width, mark().height);
+      });
   }
 
   for (const size of [new LargeWidth(1280, 9.125), new LargeWidth(760, 8.25), new LargeWidth(360, 7)]) {
@@ -158,7 +170,7 @@ describe("SiteHeaderComponent's lockup", () => {
     const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
     const theme = DomFixture.one(header(), "nol-site-theme-switch").getBoundingClientRect();
 
-    expect(lockup.width).toBeGreaterThanOrEqual(rem(1.75) + rem(0.75) + rem(7 / referenceRatio) * ratio - 1 / 32);
+    expect(lockup.width).toBeGreaterThanOrEqual(rem(7 / referenceRatio) + rem(0.75) + rem(7 / referenceRatio) * ratio - 1 / 32);
     AppearanceFixture.expectPixels(mark().width, rem(7 / referenceRatio) * ratio);
     expect([theme.width > 0, theme.left - lockup.right >= AppearanceFixture.measureLook("site-actions-gap-phone") - 1 / 32]).toEqual([true, true]);
   });
