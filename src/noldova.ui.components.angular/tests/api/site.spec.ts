@@ -29,7 +29,7 @@ class EntrySiteHostComponent {
 }
 
 describe("the kit's site entry", () => {
-  it("publishes the site header and footer, their links and the page parts, the same classes as the kit's API but for the header, footer and search, which only it publishes", () => {
+  it("publishes the site header and footer, their links, the page parts and the stage service, the same classes as the kit's API but for the header, footer and search, which only it publishes", () => {
     expect({ ...site }).toEqual({
       SiteAction: kit.SiteAction,
       SiteCardComponent: kit.SiteCardComponent,
@@ -44,6 +44,8 @@ describe("the kit's site entry", () => {
       SiteSectionComponent: kit.SiteSectionComponent,
       SiteShot: kit.SiteShot,
       SiteSocialLink: kit.SiteSocialLink,
+      SiteStage: kit.SiteStage,
+      SiteStageService: kit.SiteStageService,
       SiteWordmarkSize: kit.SiteWordmarkSize
     });
     expect(["SiteFooterComponent", "SiteHeaderComponent", "SiteSearchDirective"].filter(t => t in kit)).toEqual([]);
