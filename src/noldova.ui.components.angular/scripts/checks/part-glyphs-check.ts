@@ -66,7 +66,21 @@ export class PartGlyphsCheck implements ICheck {
     ["unused.ts", "import type { IconName } from \"./icon-name.js\";\nexport const zoomGlyph: IconName = \"zoom_in\";\n"],
     [PartGlyphsCheck.OWN_ENTRY, "export { HeaderComponent } from \"./header.component.js\";\nexport { PanelComponent } from \"./panel.component.js\";\n"]
   ]);
-  private static readonly OWN_LIST: string = "{\n  \"parts\": {\n    \"HeaderComponent\": [\n      \"close\",\n      \"menu\"\n    ],\n    \"PanelComponent\": [\n      \"add\",\n      \"star\"\n    ]\n  }\n}\n";
+  private static readonly OWN_LIST: string = [
+    "{",
+    "  \"parts\": {",
+    "    \"HeaderComponent\": [",
+    "      \"close\",",
+    "      \"menu\"",
+    "    ],",
+    "    \"PanelComponent\": [",
+    "      \"add\",",
+    "      \"star\"",
+    "    ]",
+    "  }",
+    "}",
+    ""
+  ].join("\n");
   private static readonly OWN_ORPHANS: string = "header.resources.ts:4: search,unused.ts:2: zoom_in";
 
   private readonly root: string;
@@ -81,10 +95,12 @@ export class PartGlyphsCheck implements ICheck {
     const own = this.readOwn();
     const isOwnRight = PartGlyphs.render(own.parts) === PartGlyphsCheck.OWN_LIST && own.orphans.join(",") === PartGlyphsCheck.OWN_ORPHANS;
     if (!isOwnRight)
-      output.write(`The check's own test read ${JSON.stringify(PartGlyphs.render(own.parts))} with the glyphs in no list ${JSON.stringify(own.orphans)} from a small source, not ${JSON.stringify(PartGlyphsCheck.OWN_LIST)} with ${PartGlyphsCheck.OWN_ORPHANS}.\n`);
+      output.write(`The check's own test read ${JSON.stringify(PartGlyphs.render(own.parts))} with the glyphs in no list ${JSON.stringify(own.orphans)} ` +
+        `from a small source, not ${JSON.stringify(PartGlyphsCheck.OWN_LIST)} with ${PartGlyphsCheck.OWN_ORPHANS}.\n`);
     const kit = await KitGlyphs.readAsync(this.root);
     for (const orphan of kit.orphans)
-      output.write(`${orphan} is a glyph no exported part's list in ${KitGlyphs.FILE_NAME} holds; name it in a resources class's field that the part that draws it uses, or in its template.\n`);
+      output.write(`${orphan} is a glyph no exported part's list in ${KitGlyphs.FILE_NAME} holds; ` +
+        "name it in a resources class's field that the part that draws it uses, or in its template.\n");
     if (kit.parts.size === 0)
       output.write(`The kit's entries export no part, so ${KitGlyphs.FILE_NAME} would list none.\n`);
     else
