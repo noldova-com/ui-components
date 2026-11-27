@@ -28,7 +28,7 @@ import type { InputSignal } from "@angular/core";
  * @Component({
  *   selector: "nol-page-footer",
  *   imports: [SiteFooterComponent],
- *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"TeamRun\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
+ *   template: "<nol-site-footer wordmark=\"/noldova-wordmark.svg\" name=\"Example\" line=\"Run a team of agents.\" [groups]=\"groups\" />"
  * })
  * export class PageFooterComponent {
  *   protected readonly groups: readonly SiteLinkGroup[] = [new SiteLinkGroup("Product", [new SiteLink("Download", "/download")])];
@@ -52,8 +52,8 @@ export declare class SiteFooterComponent {
   public readonly wordmarkRatio: InputSignal<number>;
 
   /**
-   * The product's name, drawn after the wordmark, such as `TeamRun`, which
-   * names the lockup's link `TeamRun home`; null, the default, draws the
+   * The product's name, drawn after the wordmark, such as `Example`, which
+   * names the lockup's link `Example home`; null, the default, draws the
    * wordmark alone, its link named `Noldova home`.
    */
   public readonly name: InputSignal<string | null>;
@@ -64,7 +64,7 @@ export declare class SiteFooterComponent {
   public readonly homeHref: InputSignal<string>;
 
   /**
-   * The lockup link's accessible name, such as `TeamRun home`; null, the
+   * The lockup link's accessible name, such as `Example home`; null, the
    * default, names it from `name`, or `Noldova home` without one. A site that
    * draws its own wordmark passes no `name` and names the link here.
    */
@@ -174,9 +174,9 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as TeamRun's header draws its
-   * wordmark: 9.125rem wide in its proportions, 8.25rem in a header at most
-   * 47.5rem wide and 7rem in one at most 22.5rem wide.
+   * A product's own wordmark, as high as one in the proportions 1335.64 by
+   * 201.396 is when 9.125rem wide, 8.25rem in a header at most 47.5rem wide
+   * and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"
 }
