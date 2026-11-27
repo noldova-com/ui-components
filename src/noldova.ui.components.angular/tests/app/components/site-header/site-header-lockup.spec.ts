@@ -176,18 +176,18 @@ describe("SiteHeaderComponent's lockup", () => {
   });
 
   for (const width of [360, 320]) {
-    it(`keeps a long wordmark whole, at its height in its file's proportions, the phone's gap before the menu button, with the theme switch in the menu, in a header ${width} pixels wide`, async () => {
+    it(`keeps a long wordmark whole, at its height in its file's proportions, the phone's gap before the bar's next part: the theme switch where it fits beside it, at 360 pixels, and otherwise the menu button, with the switch in the menu, in a header ${width} pixels wide`, async () => {
       await page.viewport(width, 800);
       await renderAsync(t => {
         t.wordmark.set(longWordmark);
         t.ratio.set(longRatio);
       });
       const lockup = DomFixture.one(header(), "nol-site-lockup").getBoundingClientRect();
-      const menu = DomFixture.one(header(), ".nol-site-menu-button").getBoundingClientRect();
+      const next = DomFixture.one(header(), width === 360 ? "nol-site-theme-switch" : ".nol-site-menu-button").getBoundingClientRect();
       const gap = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nol-site-actions-gap-phone"));
 
-      expect(getComputedStyle(DomFixture.one(header(), "nol-site-theme-switch")).display).toBe("none");
-      expect(menu.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
+      expect(getComputedStyle(DomFixture.one(header(), "nol-site-theme-switch")).display).toBe(width === 360 ? "flex" : "none");
+      expect(next.left - lockup.right).toBeGreaterThanOrEqual(rem(gap) - 1 / 32);
       expect(mark().right).toBeLessThanOrEqual(lockup.right + 1 / 32);
       AppearanceFixture.expectPixels(mark().height, rem(7 / referenceRatio));
       AppearanceFixture.expectPixels(mark().width, rem(7 / referenceRatio) * longRatio);

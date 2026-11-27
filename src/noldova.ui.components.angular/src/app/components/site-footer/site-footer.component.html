@@ -17,7 +17,10 @@ LICENSE file in the root directory of this source tree.
       @if (notice(); as noticeText) {
         {{ noticeText }}
       } @else {
-        {{ partResources.formatCopyright(year) }}<a class="nol-site-footer-owner" [href]="partResources.ownerHref">{{ partResources.owner }}</a>
+        {{ partResources.formatCopyright(year) }}<a class="nol-site-footer-owner" [href]="ownerHref" [attr.aria-label]="partResources.owner"
+          ><svg class="nol-site-footer-logo" [attr.viewBox]="logoResources.viewBox" aria-hidden="true" focusable="false"
+            ><path fill="currentColor" fill-rule="evenodd" [attr.d]="logoResources.path" /></svg
+        ></a>
       }
     </p>
     <ng-content />

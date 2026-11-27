@@ -14,9 +14,11 @@ export { SiteHeaderComponent } from "../app/components/site-header/site-header.c
 export { SiteSearchDirective } from "../app/components/site-header/site-search.directive.js";
 export { SiteHeroComponent } from "../app/components/site-hero/site-hero.component.js";
 export { SiteSectionComponent } from "../app/components/site-section/site-section.component.js";
+export { SiteStage } from "../app/enums/site-stage.js";
 export { SiteWordmarkSize } from "../app/enums/site-wordmark-size.js";
 export { SiteAction } from "../app/models/site-action.js";
 export { SiteLinkGroup } from "../app/models/site-link-group.js";
 export { SiteLink } from "../app/models/site-link.js";
 export { SiteShot } from "../app/models/site-shot.js";
 export { SiteSocialLink } from "../app/models/site-social-link.js";
+export { SiteStageService } from "../app/services/site-stage.service.js";

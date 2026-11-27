@@ -23,6 +23,7 @@ import { KitCopiesCheck } from "./checks/kit-copies-check.ts";
 import { KitManifestCheck } from "./checks/kit-manifest-check.ts";
 import { NativeElementAssertionCheck } from "./checks/native-element-assertion-check.ts";
 import { OnPushCheck } from "./checks/on-push-check.ts";
+import { PartGlyphsCheck } from "./checks/part-glyphs-check.ts";
 import { PollBoundCheck } from "./checks/poll-bound-check.ts";
 import CommandFailedException from "./command-failed.exception.ts";
 import Config from "./config.ts";
@@ -93,6 +94,7 @@ export class Test extends Script {
       await this.runCheckAsync(new OnPushCheck(Test.ROOT, new ProcessRunner()));
       await this.runCheckAsync(new PollBoundCheck(Test.ROOT));
       await this.runCheckAsync(new IconNamesCheck(Test.ROOT));
+      await this.runCheckAsync(new PartGlyphsCheck(Test.ROOT));
       await this.runCheckAsync(new FailureScreenshotCheck(Test.ROOT, new ProcessRunner()));
       if (process.platform === Test.KIT_CHECK_PLATFORM && process.arch === Test.KIT_CHECK_ARCHITECTURE) {
         await this.runCheckAsync(new KitBundleCheck(Test.ROOT, new ProcessRunner()));

@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, signal } from "@angular/core";
+import { Component, DOCUMENT, Injector, signal } from "@angular/core";
 import { type ComponentFixture, TestBed } from "@angular/core/testing";
-import { page } from "vitest/browser";
+import { commands, page } from "vitest/browser";
 
 import { SiteFooterComponent } from "../../../../src/app/components/site-footer/site-footer.component";
 import { SiteWordmarkSize } from "../../../../src/app/enums/site-wordmark-size";
@@ -16,6 +16,7 @@ import { ThemeMode } from "../../../../src/app/enums/theme-mode";
 import { DefaultTheme } from "../../../../src/app/models/default-theme";
 import { SiteLink } from "../../../../src/app/models/site-link";
 import { SiteLinkGroup } from "../../../../src/app/models/site-link-group";
+import { SiteStageService } from "../../../../src/app/services/site-stage.service";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
 import { ForcedColorsFixture } from "../../../fixtures/forced-colors.fixture";
@@ -28,7 +29,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
   imports: [SiteFooterComponent],
   template: `
     @if (notice(); as text) {
-      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/teamrun" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/example" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
     } @else {
       <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" [line]="line()" [groups]="groups()" [wide]="wide()" />
     }
@@ -37,7 +38,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
 class SiteFooterHostComponent {
   public readonly wordmark = signal(wordmark);
   public readonly wordmarkRatio = signal(20 / 3);
-  public readonly name = signal<string | null>("TeamRun");
+  public readonly name = signal<string | null>("Example");
   public readonly homeLabel = signal<string | null>(null);
   public readonly size = signal(SiteWordmarkSize.Small);
   public readonly line = signal<string | null>("Run a team of agents.");
@@ -101,7 +102,7 @@ describe("SiteFooterComponent", () => {
     const line = getComputedStyle(part(".nol-site-footer-line"));
     const ratio = Number.parseFloat(DefaultTheme.theme.readLook("site-footer-line-height") ?? "");
 
-    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "TeamRun home", "Less copying between agents.\nMore work done."]);
+    expect([link.getAttribute("href"), link.getAttribute("aria-label"), part(".nol-site-footer-line").textContent?.trim()]).toEqual(["/", "Example home", "Less copying between agents.\nMore work done."]);
     AppearanceFixture.expectPixels(box(".nol-site-footer-line").top - box("nol-site-lockup").bottom, AppearanceFixture.measureLook("site-footer-line-gap"));
     expect([line.color, line.whiteSpace]).toEqual([color("text-muted"), "pre-line"]);
     AppearanceFixture.expectPixels(Number.parseFloat(line.fontSize), AppearanceFixture.measureLook("text-message"));
@@ -112,12 +113,12 @@ describe("SiteFooterComponent", () => {
   it("names the lockup's link with the label the site gives, and draws a product's own wordmark at the large size", async () => {
     await renderAsync(t => {
       t.name.set(null);
-      t.homeLabel.set("TeamRun home");
+      t.homeLabel.set("Example home");
       t.size.set(SiteWordmarkSize.Large);
     });
 
-    expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["TeamRun home", null]);
-    // As high as TeamRun's header draws its wordmark, 9.125rem wide in its proportions.
+    expect([part(".nol-site-lockup-link").getAttribute("aria-label"), DomFixture.maybe(footer(), ".nol-site-lockup-name")]).toEqual(["Example home", null]);
+    // As high as the site header draws a product's wordmark, 9.125rem wide in its proportions.
     AppearanceFixture.expectPixels(box(".nol-site-wordmark").height, AppearanceFixture.toPixels(9.125 * 201.396 / 1335.64));
   });
 
@@ -127,7 +128,7 @@ describe("SiteFooterComponent", () => {
       t.line.set(null);
     });
 
-    expect([part(".nol-site-lockup-link").getAttribute("href"), DomFixture.maybe(footer(), ".nol-site-footer-line")]).toEqual(["/teamrun", null]);
+    expect([part(".nol-site-lockup-link").getAttribute("href"), DomFixture.maybe(footer(), ".nol-site-footer-line")]).toEqual(["/example", null]);
   });
 
   it("draws each group as a navigation named by its title, its links in order with the current page marked", async () => {
@@ -182,22 +183,62 @@ describe("SiteFooterComponent", () => {
       .toEqual(["underline", color("text-strong"), color("accent")]);
   });
 
-  it(`says © ${new Date().getFullYear()} Noldova at the bottom by default, Noldova linking to noldova.com in the notice's color`, async () => {
+  it(`says © ${new Date().getFullYear()} and Noldova's logo at the bottom by default, the logo the kit's own file, linking to noldova.com as Noldova in the notice's color`, async () => {
     await renderAsync();
     const owner = part(".nol-site-footer-owner");
+    const logo = DomFixture.oneOf(owner, "svg.nol-site-footer-logo", SVGSVGElement);
+    const file = new DOMParser().parseFromString(await commands.readFile("../../assets/brand/noldova-wordmark.svg"), "image/svg+xml");
+    const drawn = DomFixture.oneOf(logo, "path", SVGPathElement);
+    const source = DomFixture.oneOf(file, "path", SVGPathElement);
 
-    expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent, owner.getAttribute("href"), getComputedStyle(owner).color, getComputedStyle(owner).textDecorationLine])
-      .toEqual([`© ${new Date().getFullYear()} Noldova`, "Noldova", "https://noldova.com", color("text-muted"), "none"]);
+    expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent?.trim(), owner.getAttribute("aria-label"), owner.getAttribute("href"), getComputedStyle(owner).color,
+      getComputedStyle(owner).textDecorationLine, logo.getAttribute("aria-hidden"), getComputedStyle(drawn).fill])
+      .toEqual([`© ${new Date().getFullYear()}`, "", "Noldova", "https://noldova.com", color("text-muted"), "none", "true", color("text-muted")]);
+    expect([logo.getAttribute("viewBox"), drawn.getAttribute("d"), drawn.getAttribute("fill-rule")])
+      .toEqual([file.documentElement.getAttribute("viewBox"), source.getAttribute("d"), source.getAttribute("fill-rule")]);
   });
 
-  it("underlines the notice's link in the strong text color when hovered, and outlines it in the accent color when focused", async () => {
+  for (const mode of AppearanceFixture.modes)
+    for (const theme of AppearanceFixture.themes)
+      it(`draws Noldova's logo in the notice's color in the ${theme.id} theme in ${mode} mode, as high as the notice's capitals, on its baseline, in the logo's proportions`, async () => {
+        await renderAsync(() => undefined, theme, mode);
+        const notice = part(".nol-site-footer-notice");
+        const logo = DomFixture.oneOf(footer(), "svg.nol-site-footer-logo", SVGSVGElement);
+        const capitals = document.createElement("span");
+        capitals.style.cssText = "display: inline-block; block-size: 1cap; inline-size: 0";
+        notice.append(capitals);
+        const line = notice.getBoundingClientRect();
+        const cap = capitals.getBoundingClientRect();
+        const drawn = logo.getBoundingClientRect();
+        capitals.remove();
+        const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+        expect(getComputedStyle(DomFixture.oneOf(logo, "path", SVGPathElement)).fill).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        expect(cap.height / rem).toBeGreaterThan(0.5);
+        AppearanceFixture.expectPixels(drawn.height, cap.height);
+        AppearanceFixture.expectPixels(drawn.bottom, cap.bottom);
+        expect(drawn.width / drawn.height).toBeCloseTo(1311.818 / 197.396, 1);
+        expect([drawn.top >= line.top, drawn.bottom <= line.bottom]).toEqual([true, true]);
+      });
+
+  for (const [hostname, href] of [["example.sandbox.noldova.com", "https://sandbox.noldova.com/"], ["example.staging.noldova.com", "https://staging.noldova.com/"]] as const)
+    it(`links Noldova to ${href} on a page at ${hostname}, the page's own stage`, async () => {
+      const stage = Injector.create({ providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { hostname } } } }, SiteStageService] }).get(SiteStageService);
+      TestBed.configureTestingModule({ providers: [{ provide: SiteStageService, useValue: stage }] });
+      await renderAsync();
+
+      expect(part(".nol-site-footer-owner").getAttribute("href")).toBe(href);
+    });
+
+  it("draws the notice's logo in the strong text color when its link is hovered, and outlines the link in the accent color when focused", async () => {
     await renderAsync();
     const owner = part(".nol-site-footer-owner");
+    const logo = DomFixture.oneOf(owner, "svg.nol-site-footer-logo path", SVGPathElement);
     owner.setAttribute("data-nol-state", "Hover");
-    const hovered = [getComputedStyle(owner).textDecorationLine, getComputedStyle(owner).color];
+    const hovered = getComputedStyle(logo).fill;
     owner.setAttribute("data-nol-state", "Focus");
 
-    expect([...hovered, getComputedStyle(owner).outlineColor]).toEqual(["underline", color("text-strong"), color("accent")]);
+    expect([hovered, getComputedStyle(owner).outlineColor]).toEqual([color("text-strong"), color("accent")]);
   });
 
   for (const width of [1280, 375])
@@ -205,7 +246,7 @@ describe("SiteFooterComponent", () => {
       await page.viewport(width, 800);
       await renderAsync(t => t.groups.update(u => [...u, new SiteLinkGroup("Follow", [new SiteLink("X", "#x")])]));
 
-      PointerTargetFixture.expectTargets(footer(), ["TeamRun home", "Download", "X", "Noldova"]);
+      PointerTargetFixture.expectTargets(footer(), ["Example home", "Download", "X", "Noldova"]);
       AppearanceFixture.expectPixels(box(".nol-site-footer-notice").height, Number.parseFloat(getComputedStyle(part(".nol-site-footer-notice")).lineHeight));
     });
 
@@ -305,5 +346,13 @@ describe("SiteFooterComponent", () => {
       const link = ForcedColorsFixture.resolve("LinkText");
 
       expect([getComputedStyle(part(".nol-site-wordmark")).backgroundColor, getComputedStyle(part(".nol-site-lockup-name")).color]).toEqual([link, link]);
+    });
+
+  for (const mode of AppearanceFixture.modes)
+    it(`draws the notice's logo in LinkText under forced colors in ${mode} mode`, async () => {
+      await renderAsync(() => undefined, AppearanceFixture.themes[0], mode);
+      await ForcedColorsFixture.activateAsync();
+
+      expect(getComputedStyle(DomFixture.oneOf(footer(), "svg.nol-site-footer-logo path", SVGPathElement)).fill).toBe(ForcedColorsFixture.resolve("LinkText"));
     });
 });

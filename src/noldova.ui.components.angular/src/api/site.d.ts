@@ -263,7 +263,8 @@ export declare class SiteFooterComponent {
 
   /**
    * The notice at the bottom, as plain text; null, the default, says
-   * `© <year> Noldova` with `Noldova` linking to https://noldova.com.
+   * `© <year>` and Noldova's logo, linking to https://noldova.com as
+   * Noldova at the page's stage, as `SiteStageService.address` gives it.
    */
   public readonly notice: InputSignal<string | null>;
 
@@ -756,6 +757,85 @@ export declare class SiteSocialLink {
 }
 
 /**
+ * The stage a Noldova site is served at, told from the page's host by
+ * `SiteStageService`.
+ */
+export declare enum SiteStage {
+  /**
+   * The public site, such as `example.noldova.com`, and every host that
+   * names no stage, the prerender's and a local server's included.
+   */
+  Production = "Production",
+
+  /**
+   * The sandbox: a host whose label just before `noldova.com` or
+   * `noldova.dev` is `sandbox`, such as `example.sandbox.noldova.com` or
+   * `sandbox.noldova.com`.
+   */
+  Sandbox = "Sandbox",
+
+  /**
+   * Staging: a host whose label just before `noldova.com` or `noldova.dev`
+   * is `staging`, such as `example.staging.noldova.com`.
+   */
+  Staging = "Staging"
+}
+
+/**
+ * Gives a link to another Noldova site at the stage the page is served at,
+ * so that the sandbox's and staging's sites lead to the sandbox's and
+ * staging's, while production's lead to production. A site is prerendered
+ * once and served at every stage, so the stage is told in the browser, from
+ * the page's host; the prerendered page holds the production addresses,
+ * and the browser binds them at the page's stage. The service is provided
+ * in the root.
+ *
+ * @example
+ * ```ts
+ * import { Component, inject } from "@angular/core";
+ * import { SiteLink, SiteStageService } from "@noldova/ui.components.angular/site";
+ *
+ * @Component({
+ *   selector: "app-docs-link",
+ *   template: `<a [href]="docs.href">{{ docs.label }}</a>`
+ * })
+ * export class DocsLinkComponent {
+ *   protected readonly docs: SiteLink = inject(SiteStageService).link(new SiteLink("Docs", "https://example.noldova.dev"));
+ * }
+ * ```
+ */
+export declare class SiteStageService {
+  /**
+   * The stage the page is served at, from its host.
+   */
+  public readonly stage: SiteStage;
+
+  /**
+   * Gives an address at the page's stage. At the sandbox or staging, an
+   * absolute address on `noldova.com` or `noldova.dev` that names no stage
+   * gets the stage's label just before that domain, keeping its path, query
+   * and fragment, and comes back as the URL standard writes it, such as
+   * `https://example.sandbox.noldova.dev/` for `https://example.noldova.dev`.
+   * Every other address, and every address at production, comes back
+   * unchanged: a relative one, one on another domain or with no host,
+   * such as a `mailto:` address, and one that names a stage already.
+   *
+   * @param href The address, as production writes it.
+   * @returns The address at the page's stage.
+   */
+  public address(href: string): string;
+
+  /**
+   * Gives a link at the page's stage: its address from `address`, its
+   * label, current mark and icon kept.
+   *
+   * @param link The link, as production writes it.
+   * @returns A new link at the page's stage.
+   */
+  public link(link: SiteLink): SiteLink;
+}
+
+/**
  * The size of the wordmark of the site entry's header and footer, `SiteHeaderComponent` and `SiteFooterComponent`.
  */
 export declare enum SiteWordmarkSize {
@@ -766,9 +846,9 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as one in the proportions 1335.64 by
-   * 201.396 is when 9.125rem wide, 8.25rem in a header at most 47.5rem wide
-   * and 7rem in one at most 22.5rem wide.
+   * A product's own wordmark, as high as the site header draws one:
+   * 9.125rem wide in its proportions, 8.25rem in a header at most
+   * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"
 }

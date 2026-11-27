@@ -291,9 +291,9 @@ export declare enum SiteWordmarkSize {
   Small = "Small",
 
   /**
-   * A product's own wordmark, as high as one in the proportions 1335.64 by
-   * 201.396 is when 9.125rem wide, 8.25rem in a header at most 47.5rem wide
-   * and 7rem in one at most 22.5rem wide.
+   * A product's own wordmark, as high as the site header draws one:
+   * 9.125rem wide in its proportions, 8.25rem in a header at most
+   * 47.5rem wide and 7rem in one at most 22.5rem wide.
    */
   Large = "Large"
 }

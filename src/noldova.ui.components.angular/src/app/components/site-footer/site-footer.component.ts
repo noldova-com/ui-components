@@ -6,13 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Component, input } from "@angular/core";
+import { Component, inject, input } from "@angular/core";
 
 import { SiteWordmarkSize } from "../../enums/site-wordmark-size.js";
 
 import type { SiteLinkGroup } from "../../models/site-link-group.js";
+import { SiteStageService } from "../../services/site-stage.service.js";
 import { SiteLockupComponent } from "../site-lockup/site-lockup.component.js";
 import { SiteLockupResources } from "../site-lockup/site-lockup.resources.js";
+import { SiteFooterLogoResources } from "./site-footer-logo.resources.js";
 import { SiteFooterResources } from "./site-footer.resources.js";
 
 @Component({
@@ -39,7 +41,9 @@ export class SiteFooterComponent {
   public readonly wide = input<boolean>(false);
 
   protected readonly partResources: typeof SiteFooterResources = SiteFooterResources;
+  protected readonly logoResources: typeof SiteFooterLogoResources = SiteFooterLogoResources;
   protected readonly year: number = new Date().getFullYear();
+  protected readonly ownerHref: string = inject(SiteStageService).address(SiteFooterResources.ownerHref);
 
   protected maskOf(icon: string): string {
     return SiteLockupResources.formatMask(icon);

@@ -41,8 +41,8 @@ Under forced colors the wordmark, the product's name and the social icons are `L
 ## Theme switch
 
 Icon-only [choice pills](choice-pills.md) named Theme, offering Light, Dark and System in that order, on the raised color with the large radius and 0.1875rem padding (`--nol-site-theme-switch-padding`).
-Each pill is 2rem square (`--nol-site-theme-pill`), with the medium radius and a 1.125rem glyph (`--nol-site-header-icon`) in `text-muted`; the chosen one sits on the panel color with a `0 1px 3px` widget shadow, its glyph in the accent color.
-Where the pointer target is larger than the pill, each pill's box is the target, its face centred in it, so the boxes are the hit areas and never cover each other.
+In the bar its track stands as high as the Download button's face, inside its edge, 1.875rem, so each pill is that less the padding, 1.5rem square; on its own each pill is 2rem square (`--nol-site-theme-pill`); each has the medium radius and a 1.125rem glyph (`--nol-site-header-icon`) in `text-muted`; the chosen one sits on the panel color with a `0 1px 3px` widget shadow, its glyph in the accent color.
+Where the pointer target is larger than the pill, each pill's box is the target, its face centred in it, so the boxes are the hit areas and never cover each other. Below a 16px root text size the bar's pills are smaller than the 24px pointer target, which wins; the switch's padding gives way first, so the track stays as high as Download's face down to a 13px root and stands taller only below that.
 The switch is centred on the social links and the Download button, and stays in the bar on a phone.
 A choice sets `data-nol-theme-mode` to `Light` or `Dark` on the root element, or removes it for System, and is saved in `localStorage` under `noldova-theme` as `light`, `dark` or `system`; with nothing saved, or a value it doesn't know, it follows the system.
 It applies the saved choice once it renders, and a choice the browser refuses to save still applies to the page.

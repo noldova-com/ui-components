@@ -278,6 +278,14 @@ Each but the display text pair is a look key, which a theme can change like the 
 
 A compact row, as tall as an icon button, takes `--nol-icon-button`, 1.375rem, for its minimum height.
 
+## Icons a site subsets
+
+A site that serves a subset of the symbol font, rather than the whole font, takes the glyphs the kit's parts draw from the package's `glyphs.json`, exported as `@noldova/ui.components.angular/glyphs.json`.
+The kit's build writes it from the kit's source, as the README's [Part glyphs](../README.md#part-glyphs) check reads it; nobody keeps it by hand.
+It is `{ "parts": { "<class name>": ["<glyph>", …], … } }`: for each part the package's entries export, by its class name, such as `SiteHeaderComponent`, the sorted names of the glyphs it can draw, those of the kit's parts it shows included.
+A glyph the site passes to a part, such as an icon button's `icon` or a `SiteAction`'s, is in no list.
+A site subsets the font to the union of the lists of the parts it imports, with every icon it names itself.
+
 ## Controls
 
 Each control's specification is a file of its own in [kit/](kit/), which gives its default geometry, the text role it uses, and its surface and behavior.
