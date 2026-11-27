@@ -522,6 +522,14 @@ describe("SiteHeaderComponent", () => {
     expect([labelled, maybe(".nol-site-download")]).toEqual([["#download", "Get TeamRun"], null]);
   });
 
+  it("draws no Download for an empty link, and keeps the theme switch in the bar on a 520px window, as without one", async () => {
+    await page.viewport(520, 800);
+    await renderAsync(t => t.downloadHref.set(String.empty));
+
+    expect([maybe(".nol-site-download"), header().classList.contains("nol-site-header-with-download"), shown("nol-site-theme-switch")]).toEqual([null, false, true]);
+    AppearanceFixture.expectPixels(box(".nol-site-menu-button").left - box("nol-site-theme-switch").right, AppearanceFixture.measureLook("site-actions-gap-phone"));
+  });
+
   for (const theme of AppearanceFixture.themes)
     it(`draws Download at the ${theme.id} theme's site download height and text size with the button's edge, its icon after its label, a space step on, as wide as its padding, label and edge`, async () => {
       await renderAsync(() => undefined, theme);

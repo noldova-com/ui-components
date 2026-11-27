@@ -73,7 +73,7 @@ export class SiteHeaderComponent {
   private readonly isSearchFromButton: WritableSignal<boolean> = linkedSignal({ source: this.searchOpen, computation: () => false });
   private readonly searches: Signal<readonly SiteSearchDirective[]> = contentChildren(SiteSearchDirective);
   protected readonly hasSearch: Signal<boolean> = computed(() => this.searches().length > 0);
-  protected readonly hasDownload: Signal<boolean> = computed(() => !Object.isNull(this.downloadHref()));
+  protected readonly hasDownload: Signal<boolean> = computed(() => !String.isNullOrEmpty(this.downloadHref()));
   private readonly menuButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("menuButton", { read: ElementRef });
   private readonly searchButton: Signal<ElementRef<HTMLButtonElement>> = viewChild.required<string, ElementRef<HTMLButtonElement>>("searchButton", { read: ElementRef });
   private readonly searchPanel: Signal<ElementRef<HTMLElement>> = viewChild.required<string, ElementRef<HTMLElement>>("searchPanel", { read: ElementRef });
