@@ -185,10 +185,10 @@ describe("SiteFooterComponent", () => {
   it(`says © ${new Date().getFullYear()} and Noldova's logo at the bottom by default, the logo the kit's own file, linking to noldova.com as Noldova in the notice's color`, async () => {
     await renderAsync();
     const owner = part(".nol-site-footer-owner");
-    const logo = DomFixture.one(owner, "svg.nol-site-footer-logo");
+    const logo = DomFixture.oneOf(owner, "svg.nol-site-footer-logo", SVGSVGElement);
     const file = new DOMParser().parseFromString(await commands.readFile("../../assets/brand/noldova-wordmark.svg"), "image/svg+xml");
-    const drawn = DomFixture.one(logo, "path");
-    const source = DomFixture.one(file.documentElement, "path");
+    const drawn = DomFixture.oneOf(logo, "path", SVGPathElement);
+    const source = DomFixture.oneOf(file, "path", SVGPathElement);
 
     expect([part(".nol-site-footer-notice").textContent?.trim(), owner.textContent?.trim(), owner.getAttribute("aria-label"), owner.getAttribute("href"), getComputedStyle(owner).color,
       getComputedStyle(owner).textDecorationLine, logo.getAttribute("aria-hidden"), getComputedStyle(drawn).fill])
@@ -202,7 +202,7 @@ describe("SiteFooterComponent", () => {
       it(`draws Noldova's logo in the notice's color in the ${theme.id} theme in ${mode} mode, as high as the notice's capitals, on its baseline, in the logo's proportions`, async () => {
         await renderAsync(() => undefined, theme, mode);
         const notice = part(".nol-site-footer-notice");
-        const logo = part("svg.nol-site-footer-logo");
+        const logo = DomFixture.oneOf(footer(), "svg.nol-site-footer-logo", SVGSVGElement);
         const capitals = document.createElement("span");
         capitals.style.cssText = "display: inline-block; block-size: 1cap; inline-size: 0";
         notice.append(capitals);
@@ -212,7 +212,7 @@ describe("SiteFooterComponent", () => {
         capitals.remove();
         const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-        expect(getComputedStyle(DomFixture.one(logo, "path")).fill).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
+        expect(getComputedStyle(DomFixture.oneOf(logo, "path", SVGPathElement)).fill).toBe(AppearanceFixture.readColor(theme, mode, "text-muted"));
         expect(cap.height / rem).toBeGreaterThan(0.5);
         AppearanceFixture.expectPixels(drawn.height, cap.height);
         AppearanceFixture.expectPixels(drawn.bottom, cap.bottom);
