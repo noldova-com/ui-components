@@ -617,11 +617,11 @@ export declare class SiteSearchDirective {
 /**
  * A section of a website's page, `nol-site-section`: an optional line in the
  * monospace font and the accent color over its level-2 title, with an
- * optional muted line beside the title, at its foot, and the section's
- * content projected under them. It keeps to the site's content width, with
- * the site parts' space above and below. Below 47.5em the copy goes under
- * the title and its lines run together. It needs the site parts' styles,
- * `styles/site.css`.
+ * optional muted line beside the title, at its foot, the section's content
+ * projected under them and an optional shot of the product under that. It
+ * keeps to the site's content width, with the site parts' space above and
+ * below. Below 47.5em the copy goes under the title and its lines run
+ * together. It needs the site parts' styles, `styles/site.css`.
  *
  * @example
  * ```ts
@@ -668,10 +668,16 @@ export declare class SiteSectionComponent {
    * none.
    */
   public readonly sectionId: InputSignal<string | null>;
+
+  /**
+   * The shot of the product under the section's content, at its full width,
+   * drawn as the hero draws its own; null, the default, for none.
+   */
+  public readonly shot: InputSignal<SiteShot | null>;
 }
 
 /**
- * The shot of a product a {@link SiteHeroComponent} shows: a file for each
+ * The shot of a product a site's hero or section shows: a file for each
  * theme, each with an optional one at twice the size for sharper screens,
  * the files' size and their text alternative.
  */

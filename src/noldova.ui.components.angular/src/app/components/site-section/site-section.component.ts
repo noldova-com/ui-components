@@ -9,6 +9,9 @@
 import "@noldova/context.core";
 import { Component, computed, input } from "@angular/core";
 
+import type { SiteShot } from "../../models/site-shot.js";
+import { SiteHeroResources } from "../site-hero/site-hero.resources.js";
+
 @Component({
   selector: "nol-site-section",
   templateUrl: "./site-section.component.html",
@@ -23,6 +26,9 @@ export class SiteSectionComponent {
   public readonly copy = input<string | null>(null);
   public readonly headingId = input.required<string>();
   public readonly sectionId = input<string | null>(null);
+  public readonly shot = input<SiteShot | null>(null);
+
+  protected readonly shotResources: typeof SiteHeroResources = SiteHeroResources;
 
   // The copy's lines, which stand one under another beside the title and run together under it on a phone.
   protected readonly copyLines = computed<readonly string[]>(() => {

@@ -25,4 +25,16 @@ LICENSE file in the root directory of this source tree.
     }
   </div>
   <ng-content />
+  @if (shot(); as picture) {
+    <div class="nol-site-section-shot">
+      <picture class="nol-site-section-shot-frame nol-site-section-shot-light">
+        <img [src]="picture.light" [attr.srcset]="shotResources.formatSources(picture.light, picture.lightLarge, picture)" [attr.sizes]="shotResources.shotSizes"
+          [width]="picture.width" [height]="picture.height" [alt]="picture.alt" [style.aspect-ratio]="picture.width + ' / ' + picture.height" loading="lazy" decoding="async" />
+      </picture>
+      <picture class="nol-site-section-shot-frame nol-site-section-shot-dark">
+        <img [src]="picture.dark" [attr.srcset]="shotResources.formatSources(picture.dark, picture.darkLarge, picture)" [attr.sizes]="shotResources.shotSizes"
+          [width]="picture.width" [height]="picture.height" [alt]="picture.alt" [style.aspect-ratio]="picture.width + ' / ' + picture.height" loading="lazy" decoding="async" />
+      </picture>
+    </div>
+  }
 </section>
