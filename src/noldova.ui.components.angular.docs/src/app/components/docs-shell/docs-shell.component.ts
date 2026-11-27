@@ -10,7 +10,7 @@ import { Component, DOCUMENT, DestroyRef, ElementRef, Injector, type Signal, typ
 import { toSignal } from "@angular/core/rxjs-interop";
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { SectionHeaderComponent } from "@noldova/ui.components.angular";
-import { SiteFooterComponent, SiteHeaderComponent, SiteLink, SiteLinkGroup, SiteSearchDirective, SiteSocialLink } from "@noldova/ui.components.angular/site";
+import { SiteFooterComponent, SiteHeaderComponent, SiteLink, SiteLinkGroup, SiteSearchDirective, SiteSocialLink, SiteStageService } from "@noldova/ui.components.angular/site";
 import { filter, map } from "rxjs";
 
 import "@noldova/context.core";
@@ -48,6 +48,7 @@ export class DocsShellComponent {
   private readonly document: Document = inject(DOCUMENT);
   private readonly injector: Injector = inject(Injector);
   private readonly router: Router = inject(Router);
+  private readonly stage: SiteStageService = inject(SiteStageService);
   private readonly pagesBarButton: Signal<DocsPagesBarComponent> = viewChild.required(DocsPagesBarComponent);
   private readonly header: Signal<ElementRef<HTMLElement>> = viewChild.required("header", { read: ElementRef });
   private readonly pagesBar: Signal<ElementRef<HTMLElement>> = viewChild.required("pagesBar", { read: ElementRef });
@@ -73,7 +74,7 @@ export class DocsShellComponent {
       new SiteLink(this.tokens.title, this.tokens.link, this.path() === this.tokens.link),
       new SiteLink(Resources.changelogLabel, Resources.changelogLink)
     ]),
-    new SiteLinkGroup(Resources.helpGroupLabel, [new SiteLink(Resources.issuesLabel, Resources.issuesLink), new SiteLink(Resources.privacyLabel, Resources.privacyLink)]),
+    new SiteLinkGroup(Resources.helpGroupLabel, [new SiteLink(Resources.issuesLabel, Resources.issuesLink), this.stage.link(new SiteLink(Resources.privacyLabel, Resources.privacyLink))]),
     new SiteLinkGroup(Resources.followGroupLabel, this.social.map(t => new SiteLink(t.label, t.href)))
   ]);
 

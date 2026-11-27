@@ -17,7 +17,7 @@ LICENSE file in the root directory of this source tree.
       @if (notice(); as noticeText) {
         {{ noticeText }}
       } @else {
-        {{ partResources.formatCopyright(year) }}<a class="nol-site-footer-owner" [href]="partResources.ownerHref">{{ partResources.owner }}</a>
+        {{ partResources.formatCopyright(year) }}<a class="nol-site-footer-owner" [href]="ownerHref">{{ partResources.owner }}</a>
       }
     </p>
     <ng-content />

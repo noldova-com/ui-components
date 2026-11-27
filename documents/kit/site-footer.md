@@ -30,6 +30,6 @@ The page's `contentinfo` landmark, on the window color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
 The lockup is the site header's: one link home named for the product's home, such as `TeamRun home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
-The notice is `© <year> Noldova`, with `Noldova` linking to https://noldova.com in the notice's color, unless the site gives its own as plain text; the link takes clicks and taps across at least the pointer target high, drawn nowhere, so the notice's line keeps its height.
+The notice is `© <year> Noldova`, with `Noldova` linking to https://noldova.com at the page's stage (see `SiteStageService`) in the notice's color, unless the site gives its own as plain text; the link takes clicks and taps across at least the pointer target high, drawn nowhere, so the notice's line keeps its height.
 A hovered link, the notice's included, is underlined in `text-strong`, and keyboard focus is an accent outline outside it.
 Under forced colors the wordmark, the product's name and the links' icons are `LinkText`, and keyboard focus is a 2px `Highlight` outline.
