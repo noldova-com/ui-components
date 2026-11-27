@@ -4,6 +4,14 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.36
+
+- `@noldova/ui.components.angular`: each part of a site has its own entry, `@noldova/ui.components.angular/site/header`, `/site/footer`, `/site/hero`, `/site/section`, `/site/card` and `/site/closing`, each exporting the part's classes and the models it takes, the same ones `/site` exports, which keeps exporting them all. A website whose start shows only its header and footer imports them from their entries and the other parts from theirs in its lazy pages, so the hero, sections, cards and closing leave its start: 23,210 bytes less in the kit's own such app (#170).
+- `@noldova/ui.components.angular`: on a phone, the site header keeps the product's whole name, as long as Commitline's with a version: the theme switch moves into the menu, under the links, at 30rem wide or less, and under 37.5rem when Download is in the bar; an empty `downloadHref` draws no Download, as a null one (#178).
+- `@noldova/ui.components.angular`: a prerendered theme switch draws as chosen the pill the root's `data-nol-theme-mode` names, as a site's head script sets it from the saved choice, or System when it names none, so the switch and the page agree before the page hydrates (#140).
+- `@noldova/ui.components.angular`: the peer ranges on `@noldova/context.core` and `@noldova/context.exceptions` start at 0.0.18, `>=0.0.18 <0.1.0`, so an app on this version installs context's packages at 0.0.18 or later (#158, #163, #169, #174, #176).
+- Internal, with no change to the packages: the specs give the kit's resize observers their own through an injected token rather than replacing the page's `ResizeObserver` (#164); the menu group's dropping of a pending fit has a spec (#159); a draft turning ready runs each commit's checks once (#172); the workflows' pins on .github move to v2.51.2 and then v2.52.0 (#155, #167).
+
 ## 0.0.35
 
 - `@noldova/ui.components.angular`: the site's card grid takes `columns`, the number of columns on a screen 75rem and wider, two below 75rem and one below 47.5rem; the last card spans the columns its row leaves, so seven cards in four columns stand four and three, the last across two. Null, the default, keeps the auto-fit grid. With `copy` unset, the site section draws the content projected with `nolSiteSectionCopy` in the copy's place and style, each element with the `nol-site-section-copy-line` class a line, as the card does with `nolSiteCardText` (#142).
