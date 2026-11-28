@@ -110,6 +110,7 @@ export class Resources {
     "site-menu-text",
     "site-menu-icon",
     "site-menu-glyph",
+    "site-social-mark",
     "site-download-glyph-phone",
     "site-menu-download-text",
     "site-header-height-phone",

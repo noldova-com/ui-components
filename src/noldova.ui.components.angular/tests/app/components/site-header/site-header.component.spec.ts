@@ -339,17 +339,30 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(box(".nol-site-version").left - box("nol-site-lockup").right, AppearanceFixture.measureLook("space-2") - AppearanceFixture.measureLook("space-half"));
   });
 
-  it("stands the version on the lockup's line, a border width above it, without moving the lockup", async () => {
-    await renderAsync(t => t.version.set("v0.0.9"));
-    const version = getComputedStyle(part(".nol-site-version"));
-    const lockup = box("nol-site-lockup");
+  // The version's text baseline: its text moves into a box with an empty, zero-size box after it, which stands on that
+  // line without changing it.
+  function versionBaseline(): number {
+    const version = part(".nol-site-version");
+    const line = document.createElement("span");
+    const probe = document.createElement("span");
+    probe.style.cssText = "display: inline-block; width: 0; height: 0;";
+    line.append(...version.childNodes, probe);
+    version.append(line);
+    return probe.getBoundingClientRect().top;
+  }
 
-    expect(getComputedStyle(part(".nol-site-header-brand")).alignItems).toBe("baseline");
-    AppearanceFixture.expectPixels(Number.parseFloat(version.top), -AppearanceFixture.measureLook("border-width"));
-    AppearanceFixture.expectPixels(Number.parseFloat(version.marginBottom), -AppearanceFixture.measureLook("pointer-target"));
-    AppearanceFixture.expectPixels(box(".nol-site-header-brand").top, lockup.top);
-    AppearanceFixture.expectPixels(box(".nol-site-header-brand").height, lockup.height);
-  });
+  for (const hasIcon of [false, true])
+    it(`stands the version's text a border width above the wordmark's bottom ${hasIcon ? "after the product's icon" : "without an icon"}, without moving the lockup`, async () => {
+      await renderAsync(t => {
+        t.version.set("v0.0.9");
+        t.productIcon.set(hasIcon ? icon : null);
+      });
+      const lockup = box("nol-site-lockup");
+
+      AppearanceFixture.expectPixels(versionBaseline(), box(".nol-site-wordmark").bottom - AppearanceFixture.measureLook("border-width"));
+      AppearanceFixture.expectPixels(box(".nol-site-header-brand").top, lockup.top);
+      AppearanceFixture.expectPixels(box(".nol-site-header-brand").height, lockup.height);
+    });
 
   it("marks only the current page's link, in a navigation named Site", async () => {
     await renderAsync();
@@ -554,12 +567,12 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(box("nol-site-theme-switch").left, edges().left + AppearanceFixture.measureLook("site-padding-inline-phone"));
   });
 
-  it("draws each social link in the strong text color, named by its label with the label as its title, its box the theme pill size, its icon a mask a root size wide and high", async () => {
+  it("draws each social link in the strong text color, named by its label with the label as its title, its box the theme pill size, its icon a mask the social mark size wide and high", async () => {
     await page.viewport(1280, 800);
     await renderAsync();
     const links = all(".nol-site-social");
     const size = AppearanceFixture.measureLook("site-theme-pill");
-    const mark = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const mark = AppearanceFixture.measureLook("site-social-mark");
 
     expect(links.map(t => [t.getAttribute("href"), t.getAttribute("aria-label"), t.getAttribute("title"), t.hasAttribute("aria-describedby")]))
       .toEqual([["#github", "GitHub", "GitHub", false], ["#x", "X", "X", false]]);

@@ -227,7 +227,6 @@ nol-site-theme-switch {
  * as high as Download and the theme switch, so every action stands at one height. */
 .nol-site-header-social {
   --nol-site-social-face: var(--nol-site-download-height);
-  --nol-site-social-mark: 1rem;
 
   display: flex;
   flex: none;

@@ -442,6 +442,7 @@ export class FixtureTheme {
     ["site-menu-text", "1.0625rem"],
     ["site-menu-icon", "1.375rem"],
     ["site-menu-glyph", "1.125rem"],
+    ["site-social-mark", "1.0625rem"],
     ["site-download-glyph-phone", "1.25rem"],
     ["site-menu-download-text", "0.9375rem"],
     ["site-header-height-phone", "4.5rem"],
