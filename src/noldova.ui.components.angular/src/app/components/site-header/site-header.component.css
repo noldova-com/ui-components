@@ -84,18 +84,24 @@
   max-width: calc(var(--nol-site-content-width-wide) + 2 * var(--nol-site-padding-inline));
 }
 
+/* The version stands on the lockup's bottom line: an image's baseline is its bottom edge. */
 .nol-site-header-brand {
   display: inline-flex;
   flex: 0 1 auto;
-  align-items: center;
+  align-items: baseline;
   gap: calc(var(--nol-space-2) - var(--nol-space-half));
   min-width: 0;
 }
 
+/* Its negative end margin keeps the brand as high as the lockup, so standing on the lockup's line never moves the lockup.
+ * It stands a pixel higher than that line, where the wordmark's letters end inside their file's frame. */
 .nol-site-version {
+  position: relative;
+  inset-block-start: calc(var(--nol-border-width) * -1);
   display: inline-flex;
   align-items: center;
   min-height: var(--nol-pointer-target);
+  margin-block-end: calc(var(--nol-pointer-target) * -1);
   color: var(--nol-text-muted);
   font-size: var(--nol-text-small);
   line-height: var(--nol-line-small);
@@ -146,7 +152,6 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
 
 .nol-site-nav-link:is(:hover, [data-nol-state="Hover"]) {
   color: var(--nol-text-strong);
-  text-decoration: underline;
 
   @media (forced-colors: active) {
     outline: var(--nol-border-width) dashed Highlight;
@@ -205,20 +210,29 @@ a.nol-site-version:is(:focus-visible, [data-nol-state="Focus"]) {
 
 /* The actions, the site's gap apart: the theme switch, then the social links, then Download. Without links, the
  * switch's margin takes the free space, so the actions keep to the bar's end. The switch's track stands as high as
- * Download's face, inside its edge, so its pills take that height less the switch's padding. */
+ * Download, so its pills take that height less the switch's padding. Every action rounds its face alike, and the
+ * pills round to fit inside the switch's corner. */
 nol-site-theme-switch {
-  --nol-site-theme-pill: calc(var(--nol-site-download-height) - 2 * var(--nol-border-width) - 2 * var(--nol-site-theme-switch-padding));
+  --nol-site-theme-pill: calc(var(--nol-site-download-height) - 2 * var(--nol-site-theme-switch-padding));
+  --nol-choice-pill-radius: var(--nol-radius-hover);
+
+  border-radius: var(--nol-radius-small);
 
   flex: none;
   margin-inline-start: auto;
   order: 3;
 }
 
+/* A social link draws its brand mark as large as the font's icons fill their own box, and its hover and focus on a face
+ * as high as Download and the theme switch, so every action stands at one height. */
 .nol-site-header-social {
+  --nol-site-social-face: var(--nol-site-download-height);
+  --nol-site-social-mark: 1rem;
+
   display: flex;
   flex: none;
   align-items: center;
-  gap: var(--nol-site-actions-gap);
+  gap: var(--nol-space-1);
   margin-inline-start: var(--nol-site-actions-gap);
   order: 4;
 }
@@ -235,10 +249,42 @@ nol-site-theme-switch {
   text-decoration: none;
 }
 
+:host(:not(.nol-site-header-open)) .nol-site-social {
+  position: relative;
+}
+
+:host(:not(.nol-site-header-open)) .nol-site-social::before {
+  content: "";
+  position: absolute;
+  inset: calc(50% - var(--nol-site-social-face) / 2);
+  border-radius: var(--nol-radius-small);
+}
+
+:host(:not(.nol-site-header-open)) .nol-site-social:is(:hover, [data-nol-state="Hover"]) {
+  background-color: transparent;
+}
+
+:host(:not(.nol-site-header-open)) .nol-site-social:is(:hover, [data-nol-state="Hover"])::before {
+  background-color: var(--nol-toolbar-hover);
+}
+
+:host(:not(.nol-site-header-open)) .nol-site-social:is(:focus-visible, [data-nol-state="Focus"]) {
+  outline: none;
+}
+
+:host(:not(.nol-site-header-open)) .nol-site-social:is(:focus-visible, [data-nol-state="Focus"])::before {
+  outline: var(--nol-border-width) solid var(--nol-accent);
+
+  @media (forced-colors: active) {
+    outline: calc(var(--nol-border-width) * 2) solid Highlight;
+  }
+}
+
 .nol-site-social-icon {
+  position: relative;
   flex: none;
-  width: var(--nol-site-header-icon);
-  height: var(--nol-site-header-icon);
+  width: var(--nol-site-social-mark);
+  height: var(--nol-site-social-mark);
   background-color: var(--nol-brand-mark);
   mask-position: center;
   mask-repeat: no-repeat;
@@ -282,7 +328,8 @@ nol-site-theme-switch {
 .nol-site-menu-button {
   --nol-icon: var(--nol-site-menu-glyph);
   --nol-icon-button: var(--nol-site-menu-button);
-  --nol-icon-button-face-radius: var(--nol-radius-medium);
+  --nol-icon-button-face: var(--nol-site-download-height);
+  --nol-icon-button-face-radius: var(--nol-radius-small);
 
   display: none;
 }
