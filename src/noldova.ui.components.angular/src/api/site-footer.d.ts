@@ -71,6 +71,16 @@ export declare class SiteFooterComponent {
   public readonly homeLabel: InputSignal<string | null>;
 
   /**
+   * The product's icon, drawn before the wordmark as in the header's lockup, a square as high as the wordmark and 0.75rem from it; none when not bound. The image is decorative, so the link's name stays the product's home.
+   */
+  public readonly icon: InputSignal<string | null>;
+
+  /**
+   * The icon to draw in dark mode in place of `icon`; `icon` in both modes when not bound.
+   */
+  public readonly iconDark: InputSignal<string | null>;
+
+  /**
    * The wordmark's size, as in the header: `SiteWordmarkSize.Small`, the
    * default, or `SiteWordmarkSize.Large` for a product's own wordmark.
    */
