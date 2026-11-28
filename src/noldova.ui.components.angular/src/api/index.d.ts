@@ -13698,8 +13698,9 @@ export declare class TimeFormats {
 
   /**
    * Writes the date with the time of day: a message's time tooltip and the
-   * name its feed article takes, and a permission card's decided time on an
-   * earlier day. Null for the kit's own, in the app's `LOCALE_ID`, and for
+   * name its feed article takes, a permission card's decided time on an
+   * earlier day, and the tooltip of a link reference card's age. Null for
+   * the kit's own, in the app's `LOCALE_ID`, and for
    * a message's time on a 24-hour clock with
    * {@link MessageComponent.twentyFourHour}.
    */
@@ -13726,8 +13727,9 @@ export declare class TimeFormats {
 
 /**
  * Gives the kit the app's own ways to write a time, so every
- * {@link MessageComponent} and {@link PermissionCardComponent} writes its
- * times as the app's other panels do. The function runs once, in the
+ * {@link MessageComponent} and {@link PermissionCardComponent}, and every
+ * link reference card's age tooltip, writes its times as the app's other
+ * panels do. The function runs once, in the
  * environment injector's injection context, and returns a signal of the
  * formats, such as one read from the app's settings: a new value redraws
  * every message and card already shown. Without these providers, or with a

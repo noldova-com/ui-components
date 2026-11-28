@@ -35,9 +35,11 @@ import { LinkReferenceStatus } from "../../../../src/app/models/link-reference-s
 import { LinkReferenceTone } from "../../../../src/app/models/link-reference-tone";
 import { LinkReferenceWorkItemState } from "../../../../src/app/models/link-reference-work-item-state";
 import { MessageTime } from "../../../../src/app/models/message-time";
+import { TimeFormats } from "../../../../src/app/models/time-formats";
 import { TooltipTokens } from "../../../../src/app/models/tooltip-tokens";
 import { Typography } from "../../../../src/app/models/typography";
 import { provideMarkdown } from "../../../../src/app/services/provide-markdown";
+import { provideTimeFormats } from "../../../../src/app/services/provide-time-formats";
 import { TypographyPainter } from "../../../../src/app/services/typography-painter";
 import { DomResources } from "../../../../src/dom-resources";
 import { Resources } from "../../../../src/resources";
@@ -1348,6 +1350,34 @@ describe("LinkReferenceChipComponent outside a Markdown view", () => {
 
     expect(top > chip().getBoundingClientRect().bottom).toBe(true);
     expect([fixture.componentInstance.opens.map(t => t.url), card()]).toEqual([[url], null]);
+  });
+
+  async function ageTooltipAsync(): Promise<string | undefined> {
+    await renderAsync(itemOf());
+    await userEvent.hover(chip());
+    clock.advance(DomResources.tooltipRestDelay);
+    const age = await DomChangeFixture.untilAsync(() => DomFixture.one(document.body, ".nol-link-reference-card-age"));
+    await userEvent.hover(age);
+    clock.advance(DomResources.tooltipRestDelay);
+    return DomChangeFixture.untilAsync(() => {
+      const tip = document.querySelector<HTMLElement>(".cdk-overlay-container nol-tooltip")?.textContent?.trim();
+      expect(tip).toBeTruthy();
+      return tip;
+    });
+  }
+
+  it("writes the card's full time in its own format when the app gives none", async () => {
+    const tip = await ageTooltipAsync();
+
+    expect(tip).toBe(MessageTime.of("en-US", false).absoluteOf(new Date(Date.UTC(2026, 9, 13, 8, 0, 0))));
+  });
+
+  it("writes the card's full time in the app's format, keeping its own short age", async () => {
+    TestBed.configureTestingModule({ providers: [provideTimeFormats(() => signal(new TimeFormats(() => "clock", t => `full ${t.getUTCFullYear()}`)))] });
+    const tip = await ageTooltipAsync();
+
+    expect([tip, DomFixture.one(document.body, ".nol-link-reference-card-age").textContent]).toEqual(["full 2026",
+      MessageTime.of("en-US", false).shortRelativeOf(new Date(Date.UTC(2026, 9, 13, 8, 0, 0)), clock.now())]);
   });
 
   it("keeps the chip's text, underline, icon and mark in the link color under forced colors", async () => {
