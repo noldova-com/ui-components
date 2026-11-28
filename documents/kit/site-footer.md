@@ -28,7 +28,7 @@ The notice: as the line.
 
 The page's `contentinfo` landmark, on the window color, with no border or line.
 It takes its width from the block it is in, such as the page's body, and lays itself out by that width, never by its content's.
-The lockup is the site header's: one link home named for the product's home, such as `Example home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`.
+The lockup is the site header's: one link home named for the product's home, such as `Example home`, or by the site's `homeLabel`, its wordmark the file the site passes, drawn as a mask; a site that shows its product's own wordmark passes no `name` and `SiteWordmarkSize.Large`, and a site that passes its product's `icon`, with an optional `iconDark`, gets it before the wordmark as the header draws it, so the footer's lockup is the header's.
 Each group is a navigation landmark named by its title; the current page's link is marked `aria-current="page"`.
 The notice is `© <year>` and Noldova's logo, unless the site gives its own as plain text.
 The logo is the kit's `assets/brand/noldova-wordmark.svg`, the file noldova.com's own header draws, drawn in the notice's color as high as its capitals (`1cap`), on its baseline, in the file's proportions; it links to https://noldova.com at the page's stage (see `SiteStageService`), named Noldova; the link takes clicks and taps across at least the pointer target high, drawn nowhere, so the notice's line keeps its height.

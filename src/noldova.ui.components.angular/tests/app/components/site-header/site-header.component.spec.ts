@@ -339,16 +339,14 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(box(".nol-site-version").left - box("nol-site-lockup").right, AppearanceFixture.measureLook("space-2") - AppearanceFixture.measureLook("space-half"));
   });
 
-  it("stands the version's text on the lockup's bottom line, a border width above it, without moving the lockup", async () => {
+  it("stands the version on the lockup's line, a border width above it, without moving the lockup", async () => {
     await renderAsync(t => t.version.set("v0.0.9"));
-    const text = document.createRange();
-    text.selectNodeContents(part(".nol-site-version"));
-    const line = text.getBoundingClientRect();
+    const version = getComputedStyle(part(".nol-site-version"));
     const lockup = box("nol-site-lockup");
-    const baseline = lockup.bottom - AppearanceFixture.measureLook("border-width");
 
-    expect([line.top < baseline, line.bottom > baseline]).toEqual([true, true]);
-    expect(line.bottom - baseline).toBeLessThan(line.height / 2);
+    expect(getComputedStyle(part(".nol-site-header-brand")).alignItems).toBe("baseline");
+    AppearanceFixture.expectPixels(Number.parseFloat(version.top), -AppearanceFixture.measureLook("border-width"));
+    AppearanceFixture.expectPixels(Number.parseFloat(version.marginBottom), -AppearanceFixture.measureLook("pointer-target"));
     AppearanceFixture.expectPixels(box(".nol-site-header-brand").top, lockup.top);
     AppearanceFixture.expectPixels(box(".nol-site-header-brand").height, lockup.height);
   });
@@ -589,9 +587,15 @@ describe("SiteHeaderComponent", () => {
       AppearanceFixture.expectPixels(rectangle.height - Number.parseFloat(face.top) - Number.parseFloat(face.bottom), height);
       AppearanceFixture.expectPixels(rectangle.width - Number.parseFloat(face.left) - Number.parseFloat(face.right), height);
       AppearanceFixture.expectPixels(Number.parseFloat(face.borderTopLeftRadius), AppearanceFixture.measureLook("radius-small"));
+      const probe = document.createElement("span");
+      probe.style.backgroundColor = "var(--nol-toolbar-hover)";
+      header().append(probe);
+      const hover = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+
       expect(getComputedStyle(link).backgroundColor).toBe("rgba(0, 0, 0, 0)");
       if (state === "Hover")
-        expect(face.backgroundColor).toBe(AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "toolbar-hover"));
+        expect(face.backgroundColor).toBe(hover);
       else
         expect([face.outlineStyle, face.outlineColor]).toEqual(["solid", AppearanceFixture.readColor(DefaultTheme.theme, ThemeMode.Light, "accent")]);
     });
@@ -686,8 +690,7 @@ describe("SiteHeaderComponent", () => {
     const face = DomFixture.one(menuButton(), ".nol-icon-button-face");
 
     AppearanceFixture.expectPixels(face.getBoundingClientRect().height, AppearanceFixture.measureLook("site-download-height"));
-    AppearanceFixture.expectPixels(face.getBoundingClientRect().height, box(".nol-site-download").height);
-    AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(face).borderTopLeftRadius), AppearanceFixture.measureLook("radius-small"));
+    AppearanceFixture.expectPixels(Number.parseFloat(getComputedStyle(face, "::before").borderTopLeftRadius), AppearanceFixture.measureLook("radius-small"));
   });
 
   it("makes every target in the open phone menu at least the pointer target in both directions", async () => {
@@ -813,7 +816,10 @@ describe("SiteHeaderComponent", () => {
 
   it("opens the links, then the theme switch at the menu row size, then the social links named by their labels, in rows under the bar on a phone, then Download across the content, without the search", async () => {
     await phoneAsync();
-    await renderAsync(t => t.hasSearch.set(true));
+    await renderAsync(t => {
+      t.hasSearch.set(true);
+      t.name.set(DomFixture.at(names.names, 2));
+    });
     await openAsync();
     await userEvent.hover(part(".nol-site-header-brand"));
     const inset = AppearanceFixture.measureLook("site-padding-inline-phone");
@@ -853,19 +859,19 @@ describe("SiteHeaderComponent", () => {
     AppearanceFixture.expectPixels(edges().bottom - box(".nol-site-download").bottom, AppearanceFixture.measureLook("space-6"));
   });
 
-  it("makes Download, the search button and the menu button take taps at least a menu row tall and wide on a 600px window, and draws nothing there", async () => {
+  it("makes Download, the search button and the menu button take taps at least a menu row tall, and as wide or out to halfway to the next button, on a 600px window, and draws nothing there", async () => {
     await narrowAsync();
     await renderAsync(t => t.hasSearch.set(true));
     const reach = AppearanceFixture.measureLook("site-menu-row") / 2 - 1;
+    const half = AppearanceFixture.measureLook("site-actions-gap-phone") / 2;
     const taken = [".nol-site-download", ".nol-site-search-button", ".nol-site-menu-button"].map(selector => {
       const control = part(selector);
       const edge = control.getBoundingClientRect();
       const x = edge.left + edge.width / 2;
       const y = edge.top + edge.height / 2;
       const after = getComputedStyle(control, "::after");
-      const left = edge.left + Math.min(0, edge.width / 2 - reach);
-      const right = edge.right - Math.min(0, edge.width / 2 - reach);
-      return [[x, y - reach], [x, y + reach], [left + 1, y], [right - 1, y]].map(([u = 0, v = 0]) => control.contains(document.elementFromPoint(u, v)))
+      const side = Math.min(Math.max(0, reach - edge.width / 2), half);
+      return [[x, y - reach], [x, y + reach], [edge.left - side + 1, y], [edge.right + side - 1, y]].map(([u = 0, v = 0]) => control.contains(document.elementFromPoint(u, v)))
         .concat(after.backgroundColor === "rgba(0, 0, 0, 0)");
     });
 

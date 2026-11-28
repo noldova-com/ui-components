@@ -457,7 +457,7 @@ export class DefaultTheme {
       ["site-download-padding-inline", "0.875rem"],
       ["site-download-text", "0.875rem"],
       ["site-download-line", "1.25rem"],
-      ["site-menu-button", "2.375rem"],
+      ["site-menu-button", "2rem"],
       ["site-footer-padding-end", "3.4375rem"],
       ["site-footer-group-gap", "3rem"],
       ["site-footer-group-gap-phone", "2.5rem"],

@@ -328,6 +328,7 @@ nol-site-theme-switch {
 .nol-site-menu-button {
   --nol-icon: var(--nol-site-menu-glyph);
   --nol-icon-button: var(--nol-site-menu-button);
+  --nol-icon-button-target: var(--nol-site-menu-button);
   --nol-icon-button-face: var(--nol-site-download-height);
   --nol-icon-button-face-radius: var(--nol-radius-small);
 
@@ -412,8 +413,8 @@ nol-site-theme-switch {
     margin-inline-start: var(--nol-site-actions-gap-phone);
   }
 
-  /* The bar's buttons take taps at least a menu row tall and wide, drawn nowhere, so a thumb that lands just beside one
-   * still presses it. */
+  /* The bar's buttons take taps at least a menu row tall, and as wide or out to halfway to the next button, drawn
+   * nowhere, so a thumb that lands just beside one still presses it and never the one beside it. */
   :is(.nol-site-download, .nol-site-search-button, .nol-site-menu-button) {
     position: relative;
   }
@@ -422,7 +423,7 @@ nol-site-theme-switch {
     content: "";
     position: absolute;
     inset-block: min(0px, calc(50% - var(--nol-site-menu-row) / 2));
-    inset-inline: min(0px, calc(50% - var(--nol-site-menu-row) / 2));
+    inset-inline: max(min(0px, calc(50% - var(--nol-site-menu-row) / 2)), calc(var(--nol-site-actions-gap-phone) / -2));
   }
 
   :host(.nol-site-header-with-search) .nol-site-header-search,
