@@ -34,6 +34,8 @@ export class SiteFooterComponent {
   public readonly name = input<string | null>(null);
   public readonly homeHref = input<string>(SiteLockupResources.homeHref);
   public readonly homeLabel = input<string | null>(null);
+  public readonly icon = input<string | null>(null);
+  public readonly iconDark = input<string | null>(null);
   public readonly wordmarkSize = input<SiteWordmarkSize>(SiteWordmarkSize.Small);
   public readonly line = input<string | null>(null);
   public readonly groups = input<readonly SiteLinkGroup[]>([]);

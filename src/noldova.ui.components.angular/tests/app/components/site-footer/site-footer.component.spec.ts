@@ -24,6 +24,7 @@ import { PointerTargetFixture } from "../../../fixtures/pointer-target.fixture";
 
 const wordmark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 3'%3E%3Crect width='20' height='3'/%3E%3C/svg%3E";
 const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E";
+const darkMark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Crect width='2' height='2'/%3E%3C/svg%3E";
 
 @Component({
   imports: [SiteFooterComponent],
@@ -31,7 +32,7 @@ const mark = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewB
     @if (notice(); as text) {
       <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" homeHref="/example" [line]="line()" [groups]="groups()" [notice]="text" [wide]="wide()"><a class="extra" href="#privacy">Privacy</a></nol-site-footer>
     } @else {
-      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [homeLabel]="homeLabel()" [wordmarkSize]="size()" [line]="line()" [groups]="groups()" [wide]="wide()" />
+      <nol-site-footer [wordmark]="wordmark()" [wordmarkRatio]="wordmarkRatio()" [name]="name()" [homeLabel]="homeLabel()" [icon]="icon()" [iconDark]="iconDark()" [wordmarkSize]="size()" [line]="line()" [groups]="groups()" [wide]="wide()" />
     }
   `
 })
@@ -40,6 +41,8 @@ class SiteFooterHostComponent {
   public readonly wordmarkRatio = signal(20 / 3);
   public readonly name = signal<string | null>("Example");
   public readonly homeLabel = signal<string | null>(null);
+  public readonly icon = signal<string | null>(null);
+  public readonly iconDark = signal<string | null>(null);
   public readonly size = signal(SiteWordmarkSize.Small);
   public readonly line = signal<string | null>("Run a team of agents.");
   public readonly groups = signal<readonly SiteLinkGroup[]>([
@@ -74,6 +77,7 @@ describe("SiteFooterComponent", () => {
     AppearanceFixture.reset();
     await ForcedColorsFixture.resetAsync();
     await page.viewport(viewport.width, viewport.height);
+    document.documentElement.removeAttribute("data-nol-theme-mode");
   });
 
   it("reserves the wordmark's width from the ratio the site passes before its file loads", async () => {
@@ -87,6 +91,48 @@ describe("SiteFooterComponent", () => {
     expect(image.naturalWidth).toBe(0);
     AppearanceFixture.expectPixels(size.height, AppearanceFixture.measureLook("site-wordmark"));
     AppearanceFixture.expectPixels(size.width, size.height * 4);
+  });
+
+  for (const size of [SiteWordmarkSize.Small, SiteWordmarkSize.Large])
+    it(`draws the product's icon before the wordmark as the header's lockup does, a square as high as the wordmark on its lines, a space-3 step before it, inside the link home, with a ${size} wordmark`, async () => {
+      await renderAsync(t => {
+        t.icon.set(mark);
+        t.size.set(size);
+        t.name.set(null);
+        t.homeLabel.set("Example home");
+      });
+      const glyph = DomFixture.oneOf(footer(), "img.nol-site-lockup-icon", HTMLImageElement);
+      const icon = glyph.getBoundingClientRect();
+      const word = box(".nol-site-wordmark");
+      const link = box(".nol-site-lockup-link");
+
+      AppearanceFixture.expectPixels(icon.width, word.height);
+      AppearanceFixture.expectPixels(icon.height, word.height);
+      AppearanceFixture.expectPixels(icon.top, word.top);
+      AppearanceFixture.expectPixels(word.left - icon.right, AppearanceFixture.measureLook("space-3"));
+      expect([glyph.getAttribute("alt"), part(".nol-site-lockup-link").getAttribute("aria-label"), icon.left >= link.left - 1 / 32]).toEqual(["", "Example home", true]);
+    });
+
+  for (const mode of ["Light", "Dark"])
+    it(`draws the ${mode === "Dark" ? "dark" : "light"} icon alone when the site passes both and the page is in ${mode} mode, and the one icon in either mode without a dark one`, async () => {
+      await renderAsync(t => {
+        t.icon.set(mark);
+        t.iconDark.set(darkMark);
+      });
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
+      const drawn = all(".nol-site-lockup-icon").filter(t => getComputedStyle(t).display !== "none").map(t => t.getAttribute("src"));
+      fixture.destroy();
+      await renderAsync(t => t.icon.set(mark));
+      document.documentElement.setAttribute("data-nol-theme-mode", mode);
+      const single = all(".nol-site-lockup-icon").filter(t => getComputedStyle(t).display !== "none").map(t => t.getAttribute("src"));
+
+      expect([drawn, single]).toEqual([[mode === "Dark" ? darkMark : mark], [mark]]);
+    });
+
+  it("draws no icon without the product's icon", async () => {
+    await renderAsync();
+
+    expect(DomFixture.maybe(footer(), ".nol-site-lockup-icon")).toBeNull();
   });
 
   it("is the page's content information, on the window color with no border", async () => {

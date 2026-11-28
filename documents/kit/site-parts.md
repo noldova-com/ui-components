@@ -9,6 +9,7 @@ A website imports the parts from the site entry, `@noldova/ui.components.angular
 ## Type scale and spacing
 
 `styles/site.css` holds the parts' own properties, which the site's own pages use as well; they are not the kit's tokens and stay out of KIT.md's token table.
+It also draws every Material Symbols icon at one optical size, weight, fill and grade, `"opsz" 24, "wght" 400, "FILL" 0, "GRAD" 0`, whatever its size, so a site's icons all look alike; the variable font would otherwise take each icon's optical size from its size.
 The parts lay themselves out by their own width, as the header and footer do: the hero and the section are each a container as wide as the block they are in, usually the page, and a card takes its spacing by the width of the section around it, so the widths below are the part's, not the window's. A page's own blocks take the phone values by the window's width. Sizes in `cqi` follow the nearest container, the window outside any.
 
 | Property | Value | Below 47.5em |

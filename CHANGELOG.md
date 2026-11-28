@@ -4,6 +4,13 @@
 
 Each version's section is written by the pull request that changes the version, from the pull requests merged since the previous version, as the [README](README.md#releases) says; other pull requests don't edit this file.
 
+## 0.0.39
+
+- `@noldova/ui.components.angular`: in the site header's bar, the theme switch's track, each social link's hover and focus face, and the phone's search and menu buttons stand as high as the Download button, 2rem (`--nol-site-menu-button`, in place of 2.375rem), each with Download's small radius, in place of 1.875rem, 1.5rem and the medium radius; the switch's pills take the hover radius to fit inside its corner. GitHub and X stand 0.25rem apart as one group, their marks 1rem (`--nol-site-social-mark`, a new token) in place of 1.125rem, and the groups stay 1.25rem apart. On a phone each bar button's taps reach a menu row tall and out to halfway to the next button, so a tap never lands on its neighbor (#206).
+- `@noldova/ui.components.angular`: a hovered header link is drawn in `text-strong` with no underline, and the version's text stands on the lockup's bottom line without moving the lockup (#206).
+- `@noldova/ui.components.angular`: `styles/site.css` draws every Material Symbols icon at `"opsz" 24, "wght" 400, "FILL" 0, "GRAD" 0`, so a site's icons look alike whatever their size (#206).
+- `@noldova/ui.components.angular`: the site footer takes the product's `icon` and `iconDark`, drawn before the wordmark as in the header's lockup, so a site's footer lockup matches its header (#206).
+
 ## 0.0.38
 
 - `@noldova/ui.components.angular`: a site section takes a `shot`, a `SiteShot` drawn as the hero draws its own: a framed image for each theme, with its 2× file in `srcset`, the shell's width in `sizes`, its width, height and alt text, loaded lazily. It stands at the shell's full width, 2.625rem under the section's content, 1.8125rem below 47.5em, or in the content's place when there is none; null, the default, draws none. The section's entry, `/site/section`, exports `SiteShot` too (#199).

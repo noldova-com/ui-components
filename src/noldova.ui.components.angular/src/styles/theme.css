@@ -270,6 +270,7 @@
   --nol-site-menu-text: 1rem;
   --nol-site-menu-icon: 1.25rem;
   --nol-site-menu-glyph: 1rem;
+  --nol-site-social-mark: 1rem;
   --nol-site-download-glyph-phone: 1.125rem;
   --nol-site-menu-download-text: 0.875rem;
   --nol-site-header-height-phone: 4.25rem;
@@ -284,7 +285,7 @@
   --nol-site-download-padding-inline: 0.875rem;
   --nol-site-download-text: 0.875rem;
   --nol-site-download-line: 1.25rem;
-  --nol-site-menu-button: 2.375rem;
+  --nol-site-menu-button: 2rem;
   --nol-site-footer-padding-end: 3.4375rem;
   --nol-site-footer-group-gap: 3rem;
   --nol-site-footer-group-gap-phone: 2.5rem;

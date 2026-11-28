@@ -67,3 +67,9 @@
     content: " ";
   }
 }
+
+/* A website draws every icon at one optical size, weight, fill and grade, whatever its size, so each site's icons look
+ * alike: the variable font would otherwise take its optical size from each icon's size. */
+.material-symbols-rounded {
+  font-variation-settings: "opsz" 24, "wght" 400, "FILL" 0, "GRAD" 0;
+}

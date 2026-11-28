@@ -77,7 +77,7 @@ export class GalleryResources {
   public static readonly siteWordmark: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1333.817 201.396'%3E%3Ctext x='0' y='196' font-family='sans-serif' font-weight='700' font-size='270' textLength='1333' lengthAdjust='spacingAndGlyphs'%3ENOLDOVA%3C/text%3E%3C/svg%3E";
   public static readonly siteSocialIcon: string = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7'/%3E%3C/svg%3E";
   public static readonly siteHref: string = "#";
-  public static readonly hoveredSiteLink: string = ".nol-site-nav-link:not(.nol-site-nav-link-current)";
+  public static readonly hoveredSiteLink: string = ".nol-site-social";
   public static readonly focusedSiteLink: string = ".nol-site-nav-link-current";
   public static readonly hoveredFooterLink: string = ".nol-site-footer-link";
   public static readonly focusedFooterLink: string = ".nol-site-footer-link[aria-current]";
