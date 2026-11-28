@@ -18,6 +18,7 @@ import { SiteAction } from "../../../../src/app/models/site-action";
 import { SiteShot } from "../../../../src/app/models/site-shot";
 import { AppearanceFixture } from "../../../../src/testing/services/appearance-fixture";
 import { DomFixture } from "../../../fixtures/dom.fixture";
+import { EmulatedMediaFixture } from "../../../fixtures/emulated-media.fixture";
 
 const pixel = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1438 1022'%3E%3Crect width='1438' height='1022'/%3E%3C/svg%3E";
 
@@ -83,6 +84,7 @@ describe("SiteHeroComponent", () => {
   afterEach(async () => {
     AppearanceFixture.reset();
     document.documentElement.removeAttribute("data-nol-theme-mode");
+    await EmulatedMediaFixture.resetAsync();
     await page.viewport(windowWidth, windowHeight);
   });
 
@@ -126,6 +128,17 @@ describe("SiteHeroComponent", () => {
       .toEqual([null, null, null, null, null]);
     expect(part("h1").textContent).toBe("Your AI agents,");
   });
+
+  for (const scheme of ["light", "dark"]) {
+    it(`shows the ${scheme} theme's shot when the page sets no mode and the system's scheme is ${scheme}`, async () => {
+      await EmulatedMediaFixture.emulateAsync("prefers-color-scheme", scheme);
+      await renderAsync();
+      document.documentElement.removeAttribute("data-nol-theme-mode");
+      const shown = DomFixture.all(hero(), ".nol-site-hero-shot-frame").filter(t => getComputedStyle(t).display !== "none");
+
+      expect(shown.map(t => DomFixture.one(t, "img").getAttribute("src"))).toEqual([scheme === "dark" ? `${pixel}#dark` : pixel]);
+    });
+  }
 
   for (const mode of AppearanceFixture.modes) {
     it(`draws the line above in the accent color in spaced monospace capitals, the headline in the title color with its second line in the accent color, and the side text muted with its closing words in the text color, ${mode}`, async () => {
